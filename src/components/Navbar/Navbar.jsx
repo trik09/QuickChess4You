@@ -1,10 +1,18 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import styles from './Navbar.module.css';
 import logo from "../../assets/logo.png"
 
-function Navbar({ onLoginClick, isLoggedIn = false }) {
+function Navbar({ onLoginClick }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const isHomePage = location.pathname === '/';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -33,9 +41,25 @@ function Navbar({ onLoginClick, isLoggedIn = false }) {
         </ul>
 
         <div className={styles.userSection}>
-          {isLoggedIn ? (
-            <div className={styles.userAvatar}>
-              <span>👤</span>
+          {isAuthenticated ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className={styles.userAvatar} title={user?.name || user?.username || 'User'}>
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <span>👤</span>
+                )}
+              </div>
+              <span style={{ color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }}>
+                {user?.name || user?.username || 'User'}
+              </span>
+              <button 
+                className={styles.loginBtn} 
+                onClick={handleLogout}
+                style={{ marginLeft: '8px', padding: '8px 16px', fontSize: '0.875rem' }}
+              >
+                Logout
+              </button>
             </div>
           ) : (
             <button className={styles.loginBtn} onClick={onLoginClick}>

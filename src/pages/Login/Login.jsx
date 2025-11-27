@@ -1,12 +1,120 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { authAPI } from '../../services/api';
 import styles from './Login.module.css';
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    otp: ''
+  });
+  const [isOTPMode, setIsOTPMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleLogin = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError('');
+    setSuccess('');
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    if (!formData.email || !formData.password) {
+      setError('Email and password are required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authAPI.login(formData.email, formData.password);
+
+      // Use context to store token and user data
+      login(response.user, response.token);
+
+      setSuccess('Login successful! Redirecting...');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+    } catch (err) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    if (!formData.email) {
+      setError('Email is required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await authAPI.sendOTP(formData.email);
+      setSuccess('OTP sent to your email! Please check your inbox.');
+      setIsOTPMode(true);
+    } catch (err) {
+      setError(err.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    if (!formData.email || !formData.otp) {
+      setError('Email and OTP are required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authAPI.verifyOTP(formData.email, formData.otp);
+
+      // Use context to store token and user data
+      login(response.user, response.token);
+
+      setSuccess('OTP verified! Logging in...');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
+    } catch (err) {
+      setError(err.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!formData.email) {
+      setError('Please enter your email first');
+      return;
+    }
+    handleSendOTP(e);
   };
 
   return (
@@ -22,34 +130,124 @@ function Login() {
             Sign in to access your launcher, games, videos, and weblooms.
           </p>
           
-          <form onSubmit={handleLogin} className={styles.form}>
+          {error && (
+            <div style={{ 
+              padding: '12px', 
+              background: '#fee2e2', 
+              border: '1px solid #fca5a5', 
+              borderRadius: '8px', 
+              color: '#dc2626', 
+              marginBottom: '16px',
+              fontSize: '0.875rem'
+            }}>
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div style={{ 
+              padding: '12px', 
+              background: '#d1fae5', 
+              border: '1px solid #86efac', 
+              borderRadius: '8px', 
+              color: '#059669', 
+              marginBottom: '16px',
+              fontSize: '0.875rem'
+            }}>
+              {success}
+            </div>
+          )}
+
+          <form onSubmit={isOTPMode ? handleVerifyOTP : handleLogin} className={styles.form}>
             <input 
               type="email" 
+              name="email"
               placeholder="Email address" 
               className={styles.input}
+              value={formData.email}
+              onChange={handleInputChange}
               required
+              disabled={isOTPMode}
             />
-            <div className={styles.passwordContainer}>
+            
+            {isOTPMode ? (
               <input 
-                type="password" 
-                placeholder="Password" 
+                type="text" 
+                name="otp"
+                placeholder="Enter 6-digit OTP" 
                 className={styles.input}
+                value={formData.otp}
+                onChange={handleInputChange}
+                maxLength={6}
                 required
               />
-              <span className={styles.eyeIcon}>👁</span>
-            </div>
+            ) : (
+              <div className={styles.passwordContainer}>
+                <input 
+                  type="password" 
+                  name="password"
+                  placeholder="Password" 
+                  className={styles.input}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                />
+                <span className={styles.eyeIcon}>👁</span>
+              </div>
+            )}
             
-            <div className={styles.rememberRow}>
-              <label className={styles.checkbox}>
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </label>
-              <a href="#" className={styles.forgotLink}>Forgot password?</a>
-            </div>
+            {!isOTPMode && (
+              <div className={styles.rememberRow}>
+                <label className={styles.checkbox}>
+                  <input type="checkbox" />
+                  <span>Remember me</span>
+                </label>
+                <button 
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className={styles.forgotLink}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
 
-            <button type="submit" className={styles.loginBtn}>
-              Log in
+            <button 
+              type="submit" 
+              className={styles.loginBtn}
+              disabled={loading}
+              style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+            >
+              {loading 
+                ? 'Please wait...' 
+                : isOTPMode 
+                  ? 'Verify OTP' 
+                  : 'Log in'}
             </button>
+
+            {isOTPMode && (
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsOTPMode(false);
+                  setFormData(prev => ({ ...prev, otp: '' }));
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: '#d97706', 
+                  cursor: 'pointer', 
+                  marginTop: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500
+                }}
+              >
+                Back to Login
+              </button>
+            )}
 
             <div className={styles.socialButtons}>
               <button type="button" className={styles.socialBtn}>

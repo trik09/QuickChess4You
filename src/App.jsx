@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import Home from './pages/Home/Home';
 import Dashboard from './pages/Dashboard/Dashboard';
 import PuzzlePage from './pages/PuzzlePage/PuzzlePage';
@@ -24,11 +25,26 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
+    <AuthProvider>
+      <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/puzzle" element={<PuzzlePage />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/puzzle" 
+          element={
+            <ProtectedRoute>
+              <PuzzlePage />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* Admin Login Route */}
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -47,7 +63,7 @@ function App() {
         <Route 
           path="/admin" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <AdminLayout />
             </ProtectedRoute>
           }
@@ -69,7 +85,8 @@ function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 

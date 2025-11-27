@@ -1,47 +1,44 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserShield, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { adminAPI } from '../../../services/api';
 import logo from '../../../assets/logo.png';
 import styles from './AdminLogin.module.css';
 
 function AdminLogin() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Static credentials (in production, this would be handled by backend)
-  const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'admin123'
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      if (
-        formData.username === ADMIN_CREDENTIALS.username &&
-        formData.password === ADMIN_CREDENTIALS.password
-      ) {
-        // Store auth token in localStorage
+    try {
+      const response = await adminAPI.login(formData.email, formData.password);
+      
+      if (response.atoken) {
+        // Store token in localStorage
+        localStorage.setItem('atoken', response.atoken);
         localStorage.setItem('adminAuth', 'true');
-        localStorage.setItem('adminUser', formData.username);
+        localStorage.setItem('adminUser', formData.email);
         
         // Navigate to admin dashboard
         navigate('/admin/dashboard');
       } else {
-        setError('Invalid username or password');
+        setError('Login failed: No token received');
         setLoading(false);
       }
-    }, 800);
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,13 +66,13 @@ function AdminLogin() {
 
             <div className={styles.formGroup}>
               <label>
-                <FaUserShield /> Username
+                <FaUserShield /> Email
               </label>
               <input
-                type="text"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                placeholder="Enter username"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="Enter email"
                 required
                 autoFocus
               />
@@ -117,8 +114,8 @@ function AdminLogin() {
             <div className={styles.demoCredentials}>
               <p>Demo Credentials:</p>
               <div className={styles.credentials}>
-                <span><strong>Username:</strong> admin</span>
-                <span><strong>Password:</strong> admin123</span>
+                <span><strong>Email:</strong> Use admin email from environment</span>
+                <span><strong>Password:</strong> Use admin password from environment</span>
               </div>
             </div>
           </form>

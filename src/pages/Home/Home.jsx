@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Navbar from '../../components/Navbar/Navbar';
 import LoginModal from '../../components/LoginModal/LoginModal';
 import ChessBoard from '../../components/ChessBoard/ChessBoard';
@@ -9,6 +10,14 @@ function Home() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState(180); // 3 minutes demo timer
   const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuth();
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [navigate, isAuthenticated, loading]);
 
   // Demo timer
   useEffect(() => {

@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Navbar from '../../components/Navbar/Navbar';
 import styles from './Dashboard.module.css';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const tournaments = [
     {
@@ -46,7 +48,7 @@ function Dashboard() {
 
   return (
     <div className={styles.container}>
-      <Navbar isLoggedIn={true} />
+      <Navbar />
       
       <div className={styles.content}>
         <div className={styles.header}>
