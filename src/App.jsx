@@ -1,7 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home/Home';
 import Dashboard from './pages/Dashboard/Dashboard';
 import PuzzlePage from './pages/PuzzlePage/PuzzlePage';
+import AdminLogin from './pages/Admin/AdminLogin/AdminLogin';
 import AdminLayout from './layouts/AdminLayout/AdminLayout';
 import AdminDashboard from './pages/Admin/AdminDashboard/AdminDashboard';
 import CategoryList from './pages/Admin/CategoryList/CategoryList';
@@ -18,6 +19,7 @@ import Leaderboard from './pages/Admin/Leaderboard/Leaderboard';
 import Reports from './pages/Admin/Reports/Reports';
 import SystemMonitor from './pages/Admin/SystemMonitor/SystemMonitor';
 import Settings from './pages/Admin/Settings/Settings';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -28,9 +30,29 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/puzzle" element={<PuzzlePage />} />
         
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
+        {/* Admin Login Route */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        
+        {/* Redirect /admin to /admin/login or dashboard based on auth */}
+        <Route 
+          path="/admin" 
+          element={
+            localStorage.getItem('adminAuth') === 'true' 
+              ? <Navigate to="/admin/dashboard" replace /> 
+              : <Navigate to="/admin/login" replace />
+          } 
+        />
+        
+        {/* Protected Admin Routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="categories" element={<CategoryList />} />
           <Route path="puzzles" element={<PuzzleList />} />
           <Route path="puzzles/create" element={<CreatePuzzle />} />

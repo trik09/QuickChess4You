@@ -1,17 +1,25 @@
 import { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { 
   FaChartLine, FaPuzzlePiece, FaFolder, FaChess, FaTrophy, 
   FaList, FaPlus, FaCircle, FaHistory, FaMedal, FaUsers, 
   FaUserGraduate, FaUserShield, FaChartBar, FaDesktop, 
-  FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser 
+  FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt 
 } from 'react-icons/fa';
 import logo from '../../assets/logo.png';
 import styles from './AdminLayout.module.css';
 
 function AdminLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminUser');
+    navigate('/admin/login');
+  };
 
   const menuItems = [
     { path: '/admin', icon: FaChartLine, label: 'Dashboard', exact: true },
@@ -123,9 +131,16 @@ function AdminLayout() {
           <div className={styles.topbarRight}>
             <button className={styles.notificationBtn}><FaBell /></button>
             <div className={styles.adminProfile}>
-              <span>Admin</span>
+              <span>{localStorage.getItem('adminUser') || 'Admin'}</span>
               <div className={styles.avatar}><FaUser /></div>
             </div>
+            <button 
+              className={styles.logoutBtn}
+              onClick={() => setShowLogoutConfirm(true)}
+              title="Logout"
+            >
+              <FaSignOutAlt />
+            </button>
           </div>
         </header>
 
@@ -133,6 +148,34 @@ function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {showLogoutConfirm && (
+        <div className={styles.modal} onClick={() => setShowLogoutConfirm(false)}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.confirmHeader}>
+              <FaSignOutAlt className={styles.logoutIcon} />
+              <h3>Confirm Logout</h3>
+            </div>
+            <div className={styles.confirmBody}>
+              <p>Are you sure you want to logout from the admin panel?</p>
+            </div>
+            <div className={styles.confirmActions}>
+              <button 
+                className={styles.cancelBtn}
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.confirmBtn}
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt /> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
