@@ -1,0 +1,50 @@
+/* Global Orange Theme for Admin Panel */
+
+/* Primary Gradient Buttons */
+.admin-primary-btn {
+  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%) !important;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3) !important;
+}
+
+.admin-primary-btn:hover {
+  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4) !important;
+}
+
+/* Primary Color */
+.admin-primary-color {
+  color: #ff9800 !important;
+}
+
+/* Primary Background */
+.admin-primary-bg {
+  background: #ff9800 !important;
+}
+
+/* Primary Border */
+.admin-primary-border {
+  border-color: #ff9800 !important;
+}
+
+/* Focus States */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #ff9800 !important;
+}
+
+/* Gradient Text */
+.admin-gradient-text {
+  background: linear-gradient(135deg, #ff9800 0%, #ffd54f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Table Headers */
+.admin-table-header {
+  background: #fff8e1 !important;
+}
+
+/* Hover States */
+.admin-hover-bg:hover {
+  background: #fffbf0 !important;
+}

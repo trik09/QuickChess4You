@@ -1,0 +1,126 @@
+.categoryList {
+  max-width: 1400px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header h2 {
+  font-size: 2rem;
+  margin: 0 0 5px 0;
+  color: #1a1a2e;
+}
+
+.header p {
+  color: #666;
+  margin: 0;
+}
+
+.createBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.createBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #1a1a2e;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.actionBtn:hover {
+  background: #f0f0f0;
+  transform: scale(1.1);
+}
+
+.actionBtn.delete:hover {
+  background: #ffebee;
+}
+
+.description {
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 15px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

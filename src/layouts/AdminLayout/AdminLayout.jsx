@@ -1,0 +1,140 @@
+import { useState } from 'react';
+import { Link, useLocation, Outlet } from 'react-router-dom';
+import { 
+  FaChartLine, FaPuzzlePiece, FaFolder, FaChess, FaTrophy, 
+  FaList, FaPlus, FaCircle, FaHistory, FaMedal, FaUsers, 
+  FaUserGraduate, FaUserShield, FaChartBar, FaDesktop, 
+  FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser 
+} from 'react-icons/fa';
+import logo from '../../assets/logo.png';
+import styles from './AdminLayout.module.css';
+
+function AdminLayout() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const location = useLocation();
+
+  const menuItems = [
+    { path: '/admin', icon: FaChartLine, label: 'Dashboard', exact: true },
+    { 
+      label: 'Puzzle Management',
+      icon: FaPuzzlePiece,
+      submenu: [
+        { path: '/admin/categories', icon: FaFolder, label: 'Categories' },
+        { path: '/admin/puzzles', icon: FaChess, label: 'Puzzles' },
+      ]
+    },
+    { 
+      label: 'Competition',
+      icon: FaTrophy,
+      submenu: [
+        { path: '/admin/competitions', icon: FaList, label: 'All Competitions' },
+        { path: '/admin/competitions/create', icon: FaPlus, label: 'Create Competition' },
+        { path: '/admin/competitions/live', icon: FaCircle, label: 'Live Tournaments' },
+        { path: '/admin/competitions/history', icon: FaHistory, label: 'History' },
+      ]
+    },
+    { path: '/admin/leaderboard', icon: FaMedal, label: 'Leaderboard' },
+    { 
+      label: 'User Management',
+      icon: FaUsers,
+      submenu: [
+        { path: '/admin/students', icon: FaUserGraduate, label: 'Students' },
+        { path: '/admin/admins', icon: FaUserShield, label: 'Admins' },
+      ]
+    },
+    { path: '/admin/reports', icon: FaChartBar, label: 'Reports' },
+    { path: '/admin/monitoring', icon: FaDesktop, label: 'System Monitor' },
+    { path: '/admin/settings', icon: FaCog, label: 'Settings' },
+  ];
+
+  const isActive = (path, exact = false) => {
+    if (exact) return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
+
+  return (
+    <div className={styles.adminLayout}>
+      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+        <div className={styles.sidebarHeader}>
+          {!sidebarCollapsed && (
+            <div className={styles.brandLogo}>
+              {/* <img src={logo} alt="QuickChess4You" /> */}
+              <span>Admin Panel</span>
+            </div>
+          )}
+          <button 
+            className={styles.toggleBtn}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? <FaBars /> : <FaTimes />}
+          </button>
+        </div>
+
+        <nav className={styles.sidebarNav}>
+          {menuItems.map((item, index) => (
+            item.submenu ? (
+              <div key={index} className={styles.menuGroup}>
+                {!sidebarCollapsed && (
+                  <div className={styles.menuGroupLabel}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </div>
+                )}
+                {item.submenu.map((subItem) => (
+                  <Link
+                    key={subItem.path}
+                    to={subItem.path}
+                    className={`${styles.menuItem} ${isActive(subItem.path) ? styles.active : ''}`}
+                    title={sidebarCollapsed ? subItem.label : ''}
+                  >
+                    <span className={styles.menuIcon}><subItem.icon /></span>
+                    {!sidebarCollapsed && <span>{subItem.label}</span>}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`${styles.menuItem} ${isActive(item.path, item.exact) ? styles.active : ''}`}
+                title={sidebarCollapsed ? item.label : ''}
+              >
+                <span className={styles.menuIcon}><item.icon /></span>
+                {!sidebarCollapsed && <span>{item.label}</span>}
+              </Link>
+            )
+          ))}
+        </nav>
+
+        <div className={styles.sidebarFooter}>
+          <Link to="/" className={styles.menuItem}>
+            <span className={styles.menuIcon}><FaHome /></span>
+            {!sidebarCollapsed && <span>Back to Site</span>}
+          </Link>
+        </div>
+      </aside>
+
+      <div className={styles.mainContent}>
+        <header className={styles.topbar}>
+          <div className={styles.topbarLeft}>
+            <img src={logo} alt="QuickChess4You" className={styles.topbarLogo} />
+            <h1>QuickChess4You Admin</h1>
+          </div>
+          <div className={styles.topbarRight}>
+            <button className={styles.notificationBtn}><FaBell /></button>
+            <div className={styles.adminProfile}>
+              <span>Admin</span>
+              <div className={styles.avatar}><FaUser /></div>
+            </div>
+          </div>
+        </header>
+
+        <main className={styles.content}>
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default AdminLayout;
