@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authAPI } from '../../services/api';
 import styles from './LoginModal.module.css';
+import { FaFacebookF } from 'react-icons/fa';
+import { FaInstagram } from 'react-icons/fa';
 
 function LoginModal({ onClose }) {
   const navigate = useNavigate();
@@ -372,7 +374,7 @@ function LoginModal({ onClose }) {
             )}
 
             <div className={styles.divider}>
-              <span>or continue with</span>
+              <span className={styles.dividerText}>or continue with</span>
             </div>
 
             <div className={styles.socialButtons}>
@@ -380,10 +382,10 @@ function LoginModal({ onClose }) {
                 <span className={styles.googleIcon}>G</span>
               </button>
               <button type="button" className={styles.socialBtn}>
-                <span className={styles.fbIcon}>f</span>
+                <FaFacebookF className={styles.fbIcon} />
               </button>
               <button type="button" className={styles.socialBtn}>
-                <span className={styles.appleIcon}></span>
+                <FaInstagram className={styles.igIcon} />
               </button>
             </div>
 

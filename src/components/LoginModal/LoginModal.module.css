@@ -12,6 +12,7 @@
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
   padding: 20px;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -22,15 +23,17 @@
 .modal {
   background: white;
   border-radius: 16px;
-  padding: 48px;
-  max-width: 460px;
+  padding: 32px;
+  max-width: 440px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
   position: relative;
   border: 1px solid #fde68a;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -46,14 +49,14 @@
 
 .closeBtn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   background: #fef3c7;
   border: 1px solid #fde68a;
   color: #d97706;
   font-size: 1.5rem;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -62,6 +65,7 @@
   transition: all 0.3s ease;
   line-height: 1;
   font-weight: 300;
+  z-index: 10;
 }
 
 .closeBtn:hover {
@@ -71,51 +75,61 @@
 
 .modalContent {
   color: #1f2937;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.modalContent::-webkit-scrollbar {
+  display: none;
 }
 
 .modalHeader {
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 28px;
 }
 
 .logo {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .logoIcon {
-  font-size: 3.5rem;
+  font-size: 3rem;
   display: inline-block;
   color: #d97706;
 }
 
 .title {
-  font-size: 1.875rem;
+  font-size: 1.75rem;
   font-weight: 800;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: #1f2937;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
   color: #6b7280;
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .input {
-  padding: 14px 18px;
+  padding: 12px 16px;
   background: #fafaf9;
   border: 1px solid #fde68a;
   border-radius: 8px;
   color: #1f2937;
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .input:focus {
@@ -137,21 +151,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  margin-top: -6px;
 }
 
 .checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   color: #6b7280;
 }
 
 .checkbox input {
   cursor: pointer;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   accent-color: #d97706;
 }
 
@@ -160,6 +175,7 @@
   text-decoration: none;
   transition: color 0.3s ease;
   font-weight: 500;
+  font-size: 0.85rem;
 }
 
 .forgotLink:hover {
@@ -167,15 +183,16 @@
 }
 
 .submitBtn {
-  padding: 14px;
+  padding: 12px;
   background: #d97706;
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 6px;
 }
 
 .submitBtn:hover {
@@ -186,38 +203,38 @@
 .divider {
   text-align: center;
   position: relative;
-  margin: 16px 0;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 42%;
-  height: 1px;
-  background: #fde68a;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
   left: 0;
-}
-
-.divider::after {
   right: 0;
+  height: 1px;
+  background: #fde68a;
+  z-index: 1;
 }
 
-.divider span {
+.dividerText {
   color: #9ca3af;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   background: white;
-  padding: 0 12px;
+  padding: 0 14px;
+  position: relative;
+  z-index: 2;
+  margin: 0;
 }
 
 .socialButtons {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   justify-content: center;
+  margin-bottom: 6px;
 }
 
 .socialBtn {
@@ -227,13 +244,14 @@
   border: 1px solid #fde68a;
   background: #fafaf9;
   color: #1f2937;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
 }
 
 .socialBtn:hover {
@@ -247,25 +265,30 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
 .fbIcon {
   color: #1877f2;
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
-.appleIcon {
-  width: 20px;
-  height: 20px;
-  background: #1f2937;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z'/%3E%3C/svg%3E") center/contain no-repeat;
+.igIcon {
+  color: #e4405f;
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
 }
 
 .switchText {
   text-align: center;
   color: #6b7280;
-  font-size: 0.875rem;
-  margin-top: 12px;
+  font-size: 0.85rem;
+  margin-top: 20px;
+  margin-bottom: 0;
 }
 
 .switchBtn {
@@ -275,74 +298,85 @@
   font-weight: 600;
   cursor: pointer;
   transition: color 0.3s ease;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  padding: 0;
+  text-decoration: underline;
 }
 
 .switchBtn:hover {
   color: #92400e;
 }
 
-/* Scrollbar */
-.modal::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal::-webkit-scrollbar-track {
-  background: #fafaf9;
-}
-
-.modal::-webkit-scrollbar-thumb {
-  background: #fde68a;
-  border-radius: 3px;
-}
-
-.modal::-webkit-scrollbar-thumb:hover {
-  background: #d97706;
-}
-
 @media (max-width: 768px) {
   .modal {
-    padding: 36px 28px;
-  }
-
-  .title {
-    font-size: 1.625rem;
-  }
-
-  .logoIcon {
-    font-size: 3rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .overlay {
-    padding: 16px;
-  }
-
-  .modal {
-    padding: 32px 24px;
+    padding: 28px 24px;
+    max-height: 85vh;
   }
 
   .title {
     font-size: 1.5rem;
   }
 
-  .subtitle {
-    font-size: 0.875rem;
+  .logoIcon {
+    font-size: 2.75rem;
   }
 
-  .input {
-    padding: 12px 16px;
-    font-size: 0.875rem;
-  }
-
-  .submitBtn {
-    padding: 12px;
-    font-size: 0.9375rem;
+  .socialButtons {
+    gap: 10px;
   }
 
   .socialBtn {
     width: 44px;
     height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .modal {
+    padding: 24px 20px;
+    max-height: 80vh;
+  }
+
+  .title {
+    font-size: 1.4rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .input {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  .submitBtn {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .socialBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .socialButtons {
+    gap: 8px;
+  }
+
+  .form {
+    gap: 14px;
+  }
+
+  .modalHeader {
+    margin-bottom: 24px;
+  }
+
+  .logo {
+    margin-bottom: 14px;
   }
 }

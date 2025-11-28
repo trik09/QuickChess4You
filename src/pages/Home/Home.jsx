@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import Navbar from '../../components/Navbar/Navbar';
 import LoginModal from '../../components/LoginModal/LoginModal';
 import ChessBoard from '../../components/ChessBoard/ChessBoard';
+import { FaTrophy, FaUsers, FaChartLine, FaGraduationCap, FaCheck, FaRobot, FaMobile, FaPlay, FaAward, FaStar, FaGift, FaEnvelope, FaPhone, FaMapMarkerAlt, FaWhatsapp, FaClock, FaRocket } from 'react-icons/fa';
+import { GiChessKing, GiTargetPrize } from 'react-icons/gi';
 import styles from './Home.module.css';
 
 function Home() {
@@ -45,22 +47,22 @@ function Home() {
 
   const features = [
     {
-      icon: '🎯',
+      icon: <GiTargetPrize size={48} />,
       title: 'Daily Puzzles',
       description: 'Sharpen your tactical skills with thousands of chess puzzles'
     },
     {
-      icon: '🏆',
+      icon: <FaTrophy size={48} />,
       title: 'Tournaments',
       description: 'Compete in exciting tournaments and win amazing prizes'
     },
     {
-      icon: '📊',
+      icon: <FaChartLine size={48} />,
       title: 'Track Progress',
       description: 'Monitor your improvement with detailed analytics'
     },
     {
-      icon: '👥',
+      icon: <FaUsers size={48} />,
       title: 'Global Community',
       description: 'Connect with chess players from around the world'
     }
@@ -70,22 +72,22 @@ function Home() {
     {
       title: 'Professional Training',
       description: 'Learn from grandmasters and improve your game',
-      icon: '🎓'
+      icon: <FaGraduationCap size={48} />
     },
     {
       title: 'Fair Play Guaranteed',
       description: 'Advanced anti-cheat system ensures fair competition',
-      icon: '✅'
+      icon: <FaCheck size={48} />
     },
     {
       title: 'Real-time Analysis',
       description: 'Get instant feedback on your moves with AI analysis',
-      icon: '🤖'
+      icon: <FaRobot size={48} />
     },
     {
       title: 'Mobile Friendly',
       description: 'Play anywhere, anytime on any device',
-      icon: '📱'
+      icon: <FaMobile size={48} />
     }
   ];
 
@@ -95,21 +97,21 @@ function Home() {
       school: 'Delhi Public School',
       text: 'I improved my rating by 300 points in just 2 months! The puzzles are amazing.',
       rating: 5,
-      image: '👨‍🎓'
+      image: <GiChessKing size={32} />
     },
     {
       name: 'Priya Patel',
       school: 'Kendriya Vidyalaya',
       text: 'Won my first tournament here! The platform is so easy to use.',
       rating: 5,
-      image: '👩‍🎓'
+      image: <GiChessKing size={32} />
     },
     {
       name: 'Arjun Kumar',
       school: 'DAV Public School',
       text: 'Best chess platform for students. Love the live tournaments!',
       rating: 5,
-      image: '👨‍🎓'
+      image: <GiChessKing size={32} />
     }
   ];
 
@@ -138,13 +140,13 @@ function Home() {
                 className={styles.primaryBtn}
                 onClick={() => setShowLoginModal(true)}
               >
-                🎯 Join Beta Now
+                <GiTargetPrize style={{marginRight: '8px'}} /> Join Beta Now
               </button>
               <button 
                 className={styles.secondaryBtn}
                 onClick={() => document.getElementById('demo').scrollIntoView({ behavior: 'smooth' })}
               >
-                ▶ Watch Demo
+                <FaPlay style={{marginRight: '8px'}} /> Watch Demo
               </button>
             </div>
             <div className={styles.stats}>
@@ -171,7 +173,7 @@ function Home() {
                 Try Live Demo - {demoPuzzle.type}
               </div>
               <div className={styles.demoTimer}>
-                ⏱️ {formatTime(timeLeft)}
+                <FaClock style={{marginRight: '8px'}} /> {formatTime(timeLeft)}
               </div>
             </div>
             <div className={styles.boardWrapper}>
@@ -204,7 +206,7 @@ function Home() {
           </p>
           <div className={styles.videoContainer}>
             <div className={styles.videoPlaceholder}>
-              <div className={styles.playButton}>▶</div>
+              <div className={styles.playButton}><FaPlay size={24} /></div>
               <p>Platform Demo Video</p>
             </div>
           </div>
@@ -233,8 +235,8 @@ function Home() {
       {/* Tournaments Banner */}
       <section className={styles.tournamentBanner} id="tournaments">
         <div className={styles.bannerContent}>
-          <div className={styles.comingSoonBadge}>🚀 Launching December 2025</div>
-          <h2 className={styles.bannerTitle}>🏆 National Student Chess Championship</h2>
+          <div className={styles.comingSoonBadge}><FaRocket style={{marginRight: '8px'}} /> Launching December 2025</div>
+          <h2 className={styles.bannerTitle}><FaTrophy style={{marginRight: '12px'}} /> National Student Chess Championship</h2>
           <p className={styles.bannerText}>
             Be among the first 1000 students to register and get FREE lifetime access! 
             Compete with students across India, win cash prizes up to ₹1 Lakh, and get 
@@ -242,19 +244,19 @@ function Home() {
           </p>
           <div className={styles.bannerFeatures}>
             <div className={styles.bannerFeature}>
-              <span className={styles.bannerIcon}>💰</span>
+              <span className={styles.bannerIcon}><FaTrophy /></span>
               <span>₹1L Prize Pool</span>
             </div>
             <div className={styles.bannerFeature}>
-              <span className={styles.bannerIcon}>🎖️</span>
+              <span className={styles.bannerIcon}><FaAward /></span>
               <span>School Certificates</span>
             </div>
             <div className={styles.bannerFeature}>
-              <span className={styles.bannerIcon}>⭐</span>
+              <span className={styles.bannerIcon}><FaStar /></span>
               <span>National Ranking</span>
             </div>
             <div className={styles.bannerFeature}>
-              <span className={styles.bannerIcon}>🎁</span>
+              <span className={styles.bannerIcon}><FaGift /></span>
               <span>Free Coaching</span>
             </div>
           </div>
@@ -268,7 +270,7 @@ function Home() {
             className={styles.bannerBtn}
             onClick={() => setShowLoginModal(true)}
           >
-            🎯 Reserve Your Spot Now
+            <GiTargetPrize style={{marginRight: '8px'}} /> Reserve Your Spot Now
           </button>
         </div>
       </section>
@@ -291,7 +293,7 @@ function Home() {
                   </div>
                 </div>
                 <div className={styles.testimonialRating}>
-                  {'⭐'.repeat(testimonial.rating)}
+                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
                 </div>
                 <p className={styles.testimonialText}>"{testimonial.text}"</p>
               </div>
@@ -365,21 +367,21 @@ function Home() {
           <div className={styles.contactGrid}>
             <div className={styles.contactInfo}>
               <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>📧</div>
+                <div className={styles.contactIcon}><FaEnvelope size={24} /></div>
                 <div>
                   <h4>Email</h4>
                   <p>quickchess4kids@gmail.com</p>
                 </div>
               </div>
               <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>📞</div>
+                <div className={styles.contactIcon}><FaPhone size={24} /></div>
                 <div>
                   <h4>Phone</h4>
                   <p>+91 99017 39147</p>
                 </div>
               </div>
               <div className={styles.contactItem}>
-                <div className={styles.contactIcon}>📍</div>
+                <div className={styles.contactIcon}><FaMapMarkerAlt size={24} /></div>
                 <div>
                   <h4>Address</h4>
                   <p>Banglauru, India</p>
@@ -430,9 +432,7 @@ function Home() {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <svg viewBox="0 0 32 32" className={styles.whatsappIcon}>
-          <path fill="currentColor" d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 7.933-2.127c2.42 1.37 5.173 2.127 8.067 2.127 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.467c-2.482 0-4.908-0.646-7.07-1.87l-0.507-0.292-4.713 1.262 1.262-4.669-0.292-0.508c-1.207-2.100-1.847-4.507-1.847-6.924 0-7.435 6.050-13.485 13.485-13.485s13.485 6.050 13.485 13.485c0 7.435-6.050 13.485-13.485 13.485zM21.960 18.735c-0.353-0.177-2.085-1.030-2.408-1.147-0.323-0.117-0.558-0.177-0.793 0.177s-0.912 1.147-1.117 1.383c-0.205 0.235-0.41 0.265-0.763 0.088s-1.487-0.548-2.833-1.748c-1.048-0.935-1.755-2.090-1.960-2.443s-0.022-0.543 0.155-0.72c0.159-0.159 0.353-0.41 0.530-0.617 0.177-0.205 0.235-0.353 0.353-0.587 0.117-0.235 0.058-0.44-0.030-0.617s-0.793-1.913-1.088-2.618c-0.287-0.687-0.578-0.593-0.793-0.605-0.205-0.010-0.44-0.012-0.675-0.012s-0.617 0.088-0.94 0.44c-0.323 0.353-1.235 1.207-1.235 2.943s1.265 3.413 1.44 3.648c0.177 0.235 2.465 3.825 6.033 5.327 3.568 1.502 3.568 1.002 4.213 0.94 0.645-0.063 2.085-0.852 2.378-1.675 0.293-0.823 0.293-1.528 0.205-1.675-0.088-0.147-0.323-0.235-0.675-0.41z"/>
-        </svg>
+        <FaWhatsapp size={24} />
       </a>
 
       {showLoginModal && (

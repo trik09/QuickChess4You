@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './Navbar.module.css';
-import logo from "../../assets/logo.png"
+import logo from "../../assets/QuickChessForYou-Logo.svg"
 
 function Navbar({ onLoginClick }) {
   const location = useLocation();
