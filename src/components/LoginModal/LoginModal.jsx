@@ -11,6 +11,9 @@ function LoginModal({ onClose }) {
   const { login } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isOTPMode, setIsOTPMode] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [tempToken, setTempToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -20,7 +23,9 @@ function LoginModal({ onClose }) {
     password: '',
     confirmPassword: '',
     username: '',
-    otp: ''
+    otp: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
   const handleInputChange = (e) => {
@@ -152,14 +157,11 @@ function LoginModal({ onClose }) {
     try {
       const response = await authAPI.verifyOTP(formData.email, formData.otp);
 
-      // Use context to store token and user data
-      login(response.user, response.token);
-
-      setSuccess('OTP verified! Logging in...');
-      setTimeout(() => {
-        onClose();
-        navigate('/dashboard');
-      }, 1500);
+      // Instead of logging in directly, switch to reset password mode
+      setTempToken(response.token);
+      setIsResetMode(true);
+      setIsOTPMode(false);
+      setSuccess('OTP verified! Please set your new password.');
     } catch (err) {
       setError(err.message || 'Invalid OTP. Please try again.');
     } finally {
@@ -170,6 +172,8 @@ function LoginModal({ onClose }) {
   const handleSubmit = (e) => {
     if (isOTPMode) {
       handleVerifyOTP(e);
+    } else if (isResetMode) {
+      handleResetPassword(e);
     } else if (isSignUp) {
       handleRegister(e);
     } else {
@@ -184,6 +188,48 @@ function LoginModal({ onClose }) {
       return;
     }
     handleSendOTP(e);
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.newPassword) {
+      setError('Password is required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await authAPI.resetPassword(formData.newPassword, tempToken);
+      setSuccess('Password reset successful! Please login with your new password.');
+      
+      // Reset all states after success
+      setTimeout(() => {
+        setIsResetMode(false);
+        setShowNewPassword(false);
+        setTempToken(null);
+        setFormData(prev => ({
+          ...prev,
+          password: '',
+          otp: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
+      }, 2000);
+    } catch (err) {
+      setError(err.message || 'Failed to reset password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -266,10 +312,43 @@ function LoginModal({ onClose }) {
               value={formData.email}
               onChange={handleInputChange}
               required
-              disabled={isOTPMode}
+              disabled={isOTPMode || isResetMode}
             />
 
-            {isOTPMode ? (
+            {isResetMode ? (
+              <>
+                <div className={styles.passwordContainer}>
+                  <input 
+                    type={showNewPassword ? "text" : "password"}
+                    name="newPassword"
+                    placeholder="New Password" 
+                    className={styles.input}
+                    value={formData.newPassword}
+                    onChange={handleInputChange}
+                    required
+                    minLength={6}
+                  />
+                  <span 
+                    className={styles.eyeIcon}
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? '👁️' : '👁'}
+                  </span>
+                </div>
+                <div className={styles.passwordContainer} style={{ marginTop: '16px' }}>
+                  <input 
+                    type="password" 
+                    name="confirmPassword"
+                    placeholder="Confirm New Password" 
+                    className={styles.input}
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </>
+            ) : isOTPMode ? (
               <input 
                 type="text" 
                 name="otp"
@@ -325,7 +404,7 @@ function LoginModal({ onClose }) {
               </>
             )}
             
-            {!isSignUp && !isOTPMode && (
+            {!isSignUp && !isOTPMode && !isResetMode && (
               <div className={styles.rememberRow}>
                 <label className={styles.checkbox}>
                   <input type="checkbox" />
@@ -350,18 +429,21 @@ function LoginModal({ onClose }) {
             >
               {loading 
                 ? 'Please wait...' 
-                : isOTPMode 
-                  ? 'Verify OTP' 
-                  : isSignUp 
+                : isResetMode
+                  ? 'Reset Password'
+                  : isOTPMode 
+                    ? 'Verify OTP' 
+                    : isSignUp 
                     ? 'Sign Up' 
                     : 'Log In'}
             </button>
 
-            {isOTPMode && (
+            {(isOTPMode || isResetMode) && (
               <button 
                 type="button"
                 onClick={() => {
                   setIsOTPMode(false);
+                  setIsResetMode(false);
                   setFormData(prev => ({ ...prev, otp: '' }));
                   setError('');
                   setSuccess('');

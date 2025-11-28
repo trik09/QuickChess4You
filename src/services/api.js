@@ -100,6 +100,14 @@ export const authAPI = {
       body: JSON.stringify({ email, otp }),
     });
   },
+
+  // Reset password
+  resetPassword: async (password, token) => {
+    return apiRequest('/user/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }, token);
+  },
 };
 
 /**
