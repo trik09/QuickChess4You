@@ -1,74 +1,138 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import styles from './Navbar.module.css';
-import logo from "../../assets/QuickChessForYou-Logo.svg"
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import styles from "./Navbar.module.css";
+import logo from "../../assets/QuickChessForYou-Logo.svg";
 
 function Navbar({ onLoginClick }) {
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const isHomePage = location.pathname === '/';
+
+  const isHomePage = location.pathname === "/";
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location]);
+
+  // Lock scroll when drawer is open
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "unset";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   return (
-    <nav className={styles.navbar}>
-      <div className={styles.container}>
-        <Link to="/" className={styles.logo}>
-          <span className={styles.logoIcon}><img src={logo} alt="" height={60}/></span>
-          {/* <span className={styles.logoText}>Quick Chess For You</span> */}
-        </Link>
-        
-        <ul className={styles.navLinks}>
-          {isHomePage ? (
-            <>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#tournaments">Tournaments</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#why-choose-us">Why Choose Us</a></li>
-              <li><a href="#contact">Contact</a></li>
-            </>
-          ) : (
-            <>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/dashboard">Dashboard</Link></li>
-              <li><Link to="/puzzle">Puzzles</Link></li>
-            </>
-          )}
-        </ul>
+    <>
+      {/* Dark overlay for mobile menu */}
+      <div
+        className={`${styles.overlay} ${isOpen ? styles.active : ""}`}
+        onClick={() => setIsOpen(false)}
+      />
 
-        <div className={styles.userSection}>
-          {isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className={styles.userAvatar} title={user?.name || user?.username || 'User'}>
-                {user?.avatar ? (
-                  <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                ) : (
-                  <span>👤</span>
-                )}
-              </div>
-              <span style={{ color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }}>
-                {user?.name || user?.username || 'User'}
-              </span>
-              <button 
-                className={styles.loginBtn} 
-                onClick={handleLogout}
-                style={{ marginLeft: '8px', padding: '8px 16px', fontSize: '0.875rem' }}
-              >
-                Logout
-              </button>
+      <nav className={styles.navbar}>
+        <div className={styles.container}>
+          {/* LOGO */}
+          <Link to="/" className={styles.logo}>
+            <img src={logo} alt="Quick Chess" className={styles.logoImg} />
+            <span className={styles.logoText}>QUICK CHESS 4 YOU</span>
+          </Link>
+
+          {/* HAMBURGER BUTTON */}
+          <button
+            className={`${styles.hamburger} ${isOpen ? styles.open : ""}`}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle navigation"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          {/* NAVIGATION MENU */}
+          <div
+            className={`${styles.navMenu} ${isOpen ? styles.active : ""}`}
+          >
+            <ul className={styles.navLinks}>
+              {isHomePage ? (
+                <>
+                  <li>
+                    <a href="#features">Features</a>
+                  </li>
+                  <li>
+                    <Link to="/dashboard">Tournaments</Link>
+                  </li>
+                  <li>
+                    <a href="#about">About</a>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link to="/">Home</Link>
+                  </li>
+                  <li>
+                    <Link to="/dashboard">Tournaments</Link>
+                  </li>
+                  <li>
+                    <Link to="/puzzle">Puzzles</Link>
+                  </li>
+                </>
+              )}
+            </ul>
+
+            {/* AUTHENTICATION */}
+            <div className={styles.authSection}>
+              {isAuthenticated ? (
+                <div className={styles.userProfile}>
+                  <div className={styles.userInfo}>
+                    <div className={styles.avatar}>
+                      {user?.avatar ? (
+                        <img src={user.avatar} alt="User" />
+                      ) : (
+                        <span>
+                          {user?.username?.[0]?.toUpperCase() || "U"}
+                        </span>
+                      )}
+                    </div>
+                    <span className={styles.username}>
+                      {user?.name || user?.username || "Player"}
+                    </span>
+                  </div>
+                  <button className={styles.logoutBtn} onClick={handleLogout}>
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.authButtons}>
+                  <button
+                    className={styles.loginBtn}
+                    onClick={() => {
+                      onLoginClick();
+                      setIsOpen(false);
+                    }}
+                  >
+                    Log In
+                  </button>
+
+                  <button className={styles.signupBtn}>
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </div>
-          ) : (
-            <button className={styles.loginBtn} onClick={onLoginClick}>
-              Log In
-            </button>
-          )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 }
 

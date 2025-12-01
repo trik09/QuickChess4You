@@ -46,7 +46,7 @@ function AdminLogin() {
       <div className={styles.loginContainer}>
         <div className={styles.loginCard}>
           <div className={styles.logoSection}>
-            <img src={logo} alt="QuickChess4You" className={styles.logo} />
+            {/* <img src={logo} alt="QuickChess4You" className={styles.logo} /> */}
             <h1>QuickChess4You</h1>
             <p>Admin Panel</p>
           </div>
@@ -111,18 +111,16 @@ function AdminLogin() {
               )}
             </button>
 
-            <div className={styles.demoCredentials}>
+            {/* <div className={styles.demoCredentials}>
               <p>Demo Credentials:</p>
               <div className={styles.credentials}>
                 <span><strong>Email:</strong> Use admin email from environment</span>
                 <span><strong>Password:</strong> Use admin password from environment</span>
               </div>
-            </div>
+            </div> */}
           </form>
 
-          <div className={styles.footer}>
-            <a href="/">← Back to Home</a>
-          </div>
+         
         </div>
       </div>
     </div>

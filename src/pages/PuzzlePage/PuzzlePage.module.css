@@ -1,13 +1,13 @@
 .container {
   min-height: 100vh;
-  background: #fafaf9;
+  background: var(--off-white);
   padding-top: 80px;
 }
 
 .content {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 60px 8%;
+  padding: 60px 40px;
   display: flex;
   gap: 40px;
   align-items: flex-start;
@@ -55,17 +55,17 @@
 }
 
 .timerCard {
-  background: white;
-  border: 1px solid #d97706;
-  border-radius: 12px;
+  background: var(--white);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-lg);
   padding: 28px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 .timerLabel {
-  font-size: 0.8125rem;
-  color: #6b7280;
+  font-size: 13px;
+  color: var(--text-secondary);
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -73,90 +73,71 @@
 }
 
 .timer {
-  font-size: 3rem;
+  font-size: 48px;
   font-weight: 800;
-  color: #d97706;
-}
-
-.statsCard {
-  background: white;
-  border: 1px solid #fde68a;
-  border-radius: 12px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.statItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.statLabel {
-  color: #6b7280;
-  font-size: 0.9375rem;
-  font-weight: 500;
-}
-
-.statValue {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #059669;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .actionsCard {
-  background: white;
-  border: 1px solid #fde68a;
-  border-radius: 12px;
+  background: var(--white);
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-lg);
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 .actionBtn {
   padding: 12px 18px;
-  background: #fafaf9;
-  border: 1px solid #fde68a;
-  border-radius: 8px;
+  background: var(--off-white);
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 0.9375rem;
-  color: #1f2937;
+  font-size: 15px;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   font-weight: 500;
 }
 
 .actionBtn:hover {
-  background: white;
-  border-color: #d97706;
+  background: var(--white);
+  border-color: var(--primary);
   transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
 }
 
 .submitBtn {
-  padding: 12px 18px;
-  background: #d97706;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .submitBtn:hover {
-  background: #92400e;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .centerPanel {
@@ -170,26 +151,38 @@
 
 .puzzleInfo {
   text-align: center;
-  background: white;
+  background: var(--white);
   padding: 24px 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 650px;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--gray);
+  box-shadow: var(--shadow-sm);
 }
 
 .puzzleInfo h2 {
-  color: #1f2937;
+  color: var(--text-primary);
   margin-bottom: 12px;
-  font-size: 1.625rem;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .puzzleInfo p {
-  color: #6b7280;
-  font-size: 1rem;
+  color: var(--text-secondary);
+  font-size: 16px;
   line-height: 1.6;
+}
+
+.footer {
+  margin-top: 20px;
+  color: var(--dark-gray);
+  font-size: 12px;
+  text-align: center;
 }
 
 .rightPanel {
@@ -198,15 +191,16 @@
 }
 
 .puzzleSelector {
-  background: white;
-  border: 1px solid #fde68a;
-  border-radius: 12px;
+  background: var(--white);
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-lg);
   padding: 28px;
+  box-shadow: var(--shadow-sm);
 }
 
 .selectorTitle {
-  color: #d97706;
-  font-size: 1.125rem;
+  color: var(--primary);
+  font-size: 18px;
   font-weight: 800;
   margin-bottom: 24px;
   text-align: center;
@@ -222,26 +216,28 @@
 
 .puzzleBtn {
   padding: 16px;
-  background: #fafaf9;
-  border: 1px solid #fde68a;
-  border-radius: 8px;
+  background: var(--off-white);
+  border: 1px solid var(--gray);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
-  color: #6b7280;
-  transition: all 0.3s ease;
+  color: var(--text-secondary);
+  transition: var(--transition);
 }
 
 .puzzleBtn:hover {
-  background: white;
-  border-color: #d97706;
+  background: var(--white);
+  border-color: var(--primary);
   transform: scale(1.05);
+  color: var(--primary);
 }
 
 .puzzleBtn.active {
-  background: #d97706;
-  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: var(--white);
   border-color: transparent;
+  box-shadow: var(--shadow-sm);
 }
 
 .navigation {
@@ -253,25 +249,27 @@
 .navBtn {
   width: 52px;
   height: 52px;
-  background: #d97706;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   border: none;
   border-radius: 50%;
-  color: white;
-  font-size: 1.25rem;
+  color: var(--white);
+  font-size: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .navBtn:hover:not(:disabled) {
-  background: #92400e;
-  transform: scale(1.05);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
 }
 
 .navBtn:disabled {
-  background: #e5e7eb;
+  background: var(--gray);
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -294,7 +292,6 @@
   }
   
   .timerCard,
-  .statsCard,
   .actionsCard {
     flex: 1;
     min-width: 200px;
@@ -307,7 +304,7 @@
   }
 
   .content {
-    padding: 40px 5%;
+    padding: 40px 20px;
     gap: 32px;
   }
 
@@ -316,13 +313,12 @@
   }
 
   .timerCard,
-  .statsCard,
   .actionsCard {
     width: 100%;
   }
 
   .timer {
-    font-size: 2.5rem;
+    font-size: 40px;
   }
 
   .puzzleInfo {
@@ -330,11 +326,11 @@
   }
 
   .puzzleInfo h2 {
-    font-size: 1.375rem;
+    font-size: 22px;
   }
 
   .puzzleInfo p {
-    font-size: 0.9375rem;
+    font-size: 15px;
   }
 
   .puzzleGrid {
@@ -343,13 +339,13 @@
 
   .puzzleBtn {
     padding: 14px;
-    font-size: 0.9375rem;
+    font-size: 15px;
   }
 }
 
 @media (max-width: 480px) {
   .content {
-    padding: 32px 5%;
+    padding: 32px 15px;
     gap: 24px;
   }
 
@@ -358,22 +354,17 @@
   }
 
   .timer {
-    font-size: 2.25rem;
+    font-size: 36px;
   }
 
-  .statsCard,
   .actionsCard {
     padding: 20px;
-  }
-
-  .statValue {
-    font-size: 1.5rem;
   }
 
   .actionBtn,
   .submitBtn {
     padding: 10px 16px;
-    font-size: 0.875rem;
+    font-size: 14px;
   }
 
   .puzzleInfo {
@@ -381,11 +372,11 @@
   }
 
   .puzzleInfo h2 {
-    font-size: 1.25rem;
+    font-size: 20px;
   }
 
   .puzzleInfo p {
-    font-size: 0.875rem;
+    font-size: 14px;
   }
 
   .puzzleSelector {
@@ -393,7 +384,7 @@
   }
 
   .selectorTitle {
-    font-size: 1rem;
+    font-size: 16px;
   }
 
   .puzzleGrid {
@@ -402,12 +393,12 @@
 
   .puzzleBtn {
     padding: 12px;
-    font-size: 0.875rem;
+    font-size: 14px;
   }
 
   .navBtn {
     width: 48px;
     height: 48px;
-    font-size: 1.125rem;
+    font-size: 18px;
   }
 }

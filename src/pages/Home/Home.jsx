@@ -15,11 +15,12 @@ function Home() {
   const { isAuthenticated, loading } = useAuth();
 
   // Redirect to dashboard if already logged in
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [navigate, isAuthenticated, loading]);
+  // Temporarily disabled to allow non-authenticated access to tournaments
+  // useEffect(() => {
+  //   if (!loading && isAuthenticated) {
+  //     navigate('/dashboard');
+  //   }
+  // }, [navigate, isAuthenticated, loading]);
 
   // Demo timer
   useEffect(() => {

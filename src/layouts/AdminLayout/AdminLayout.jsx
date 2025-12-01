@@ -29,7 +29,7 @@ function AdminLayout() {
   };
 
   const menuItems = [
-    { path: '/admin', icon: FaChartLine, label: 'Dashboard', exact: true },
+    { path: '/admin/dashboard', icon: FaChartLine, label: 'Dashboard', exact: true },
     { 
       label: 'Puzzle Management',
       icon: FaPuzzlePiece,

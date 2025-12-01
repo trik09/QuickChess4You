@@ -3,40 +3,41 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid #fde68a;
+  padding: 24px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray);
   position: relative;
 }
 
 .feedback {
   position: absolute;
   top: -50px;
-  padding: 12px 28px;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 12px 30px;
+  border-radius: var(--radius-md);
+  font-size: 16px;
   font-weight: 700;
   z-index: 10;
   animation: slideDown 0.3s ease-out;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+  letter-spacing: 0.3px;
 }
 
 .correct {
-  background: #059669;
-  color: white;
+  background: linear-gradient(135deg, var(--success), #2ecc71);
+  color: var(--white);
 }
 
 .wrong {
-  background: #dc2626;
-  color: white;
+  background: linear-gradient(135deg, var(--error), #c0392b);
+  color: var(--white);
 }
 
 .solved {
-  background: #d97706;
-  color: white;
-  font-size: 1.125rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: var(--white);
+  font-size: 18px;
 }
 
 @keyframes slideDown {
@@ -53,9 +54,9 @@
 .board {
   display: flex;
   flex-direction: column;
-  border: 3px solid #8b7355;
-  border-radius: 6px;
-  box-shadow: 0 6px 20px rgba(139, 115, 85, 0.2);
+  border: 4px solid var(--primary-dark);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(139, 115, 85, 0.25);
   overflow: hidden;
 }
 
@@ -71,7 +72,7 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
 .lightSquare {
@@ -94,21 +95,34 @@
 .possibleMove::after {
   content: '';
   position: absolute;
-  width: 18px;
-  height: 18px;
-  background-color: rgba(0, 0, 0, 0.2);
+  width: 20px;
+  height: 20px;
+  background-color: rgba(139, 111, 71, 0.4);
   border-radius: 50%;
+  border: 2px solid rgba(139, 111, 71, 0.6);
 }
 
 .lastMove {
-  background-color: rgba(217, 119, 6, 0.3) !important;
+  position: relative;
+}
+
+.lastMove::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(212, 165, 116, 0.5);
+  z-index: 1;
 }
 
 .piece {
-  font-size: 52px;
+  font-size: 54px;
   user-select: none;
   pointer-events: none;
   font-weight: 400;
+  z-index: 2;
 }
 
 .whitePiece {
@@ -118,7 +132,7 @@
     1px -1px 0 #000,
     -1px 1px 0 #000,
     1px 1px 0 #000,
-    0 2px 4px rgba(0, 0, 0, 0.5);
+    0 3px 6px rgba(0, 0, 0, 0.6);
 }
 
 .blackPiece {
@@ -128,32 +142,34 @@
     1px -1px 0 #fff,
     -1px 1px 0 #fff,
     1px 1px 0 #fff,
-    0 2px 4px rgba(0, 0, 0, 0.3);
+    0 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .rankLabel {
   position: absolute;
   top: 3px;
   left: 5px;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: inherit;
-  opacity: 0.6;
+  opacity: 0.7;
+  z-index: 2;
 }
 
 .fileLabel {
   position: absolute;
   bottom: 3px;
   right: 5px;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: inherit;
-  opacity: 0.6;
+  opacity: 0.7;
+  z-index: 2;
 }
 
 .lightSquare .rankLabel,
 .lightSquare .fileLabel {
-  color: #b58863;
+  color: var(--primary);
 }
 
 .darkSquare .rankLabel,
@@ -163,31 +179,40 @@
 
 @media (max-width: 768px) {
   .boardContainer {
-    padding: 16px;
+    padding: 18px;
+  }
+
+  .board {
+    border-width: 3px;
   }
 
   .square {
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
   }
   
   .piece {
-    font-size: 38px;
+    font-size: 40px;
   }
   
   .rankLabel,
   .fileLabel {
-    font-size: 8px;
+    font-size: 9px;
+  }
+
+  .possibleMove::after {
+    width: 16px;
+    height: 16px;
   }
 
   .feedback {
     top: -45px;
-    padding: 10px 20px;
-    font-size: 0.9375rem;
+    padding: 10px 24px;
+    font-size: 15px;
   }
 
   .solved {
-    font-size: 1rem;
+    font-size: 16px;
   }
 }
 
@@ -201,17 +226,24 @@
   }
 
   .square {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
   }
   
   .piece {
-    font-size: 30px;
+    font-size: 32px;
   }
   
   .rankLabel,
   .fileLabel {
-    font-size: 7px;
+    font-size: 8px;
+    top: 2px;
+    left: 3px;
+  }
+
+  .fileLabel {
+    bottom: 2px;
+    right: 3px;
   }
 
   .possibleMove::after {
@@ -221,11 +253,11 @@
 
   .feedback {
     top: -40px;
-    padding: 8px 16px;
-    font-size: 0.875rem;
+    padding: 8px 18px;
+    font-size: 14px;
   }
 
   .solved {
-    font-size: 0.9375rem;
+    font-size: 15px;
   }
 }

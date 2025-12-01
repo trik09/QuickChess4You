@@ -29,21 +29,25 @@ function App() {
       <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        {/* Temporarily removed login requirement for tournaments */}
         <Route 
           path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
+          element={<Dashboard />}
+          // element={
+          //   <ProtectedRoute>
+          //     <Dashboard />
+          //   </ProtectedRoute>
+          // } 
         />
+        {/* Temporarily removed login requirement for puzzle play */}
         <Route 
           path="/puzzle" 
-          element={
-            <ProtectedRoute>
-              <PuzzlePage />
-            </ProtectedRoute>
-          } 
+          element={<PuzzlePage />}
+          // element={
+          //   <ProtectedRoute>
+          //     <PuzzlePage />
+          //   </ProtectedRoute>
+          // } 
         />
         
         {/* Admin Login Route */}
