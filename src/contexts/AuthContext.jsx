@@ -1,95 +1,93 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext(null);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// Initialize state from localStorage
-const getInitialState = () => {
-  const storedToken = localStorage.getItem('token');
-  const storedUser = localStorage.getItem('user');
-
-  if (storedToken && storedUser) {
-    try {
-      return {
-        token: storedToken,
-        user: JSON.parse(storedUser),
-        loading: false
-      };
-    } catch (error) {
-      console.error('Error parsing stored user data:', error);
-      // Clear invalid data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('isAuthenticated');
-    }
-  }
-  return { token: null, user: null, loading: false };
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const initialState = useMemo(() => getInitialState(), []);
-  const [user, setUser] = useState(initialState.user);
-  const [token, setToken] = useState(initialState.token);
-  const [loading] = useState(initialState.loading);
+  // ------------------ USER AUTH ------------------
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || null
+  );
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-  // Login function
-  const login = (userData, authToken) => {
+  const isUserAuthenticated = !!token;
+
+  const userLogin = (userData, authToken) => {
     setUser(userData);
     setToken(authToken);
-    localStorage.setItem('token', authToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('isAuthenticated', 'true');
+
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", authToken);
   };
 
-  // Logout function
-  const logout = () => {
+  const userLogout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('isAuthenticated');
+
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
-  // Update user data
-  const updateUser = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  // ------------------ ADMIN AUTH ------------------
+  const [admin, setAdmin] = useState(
+    JSON.parse(localStorage.getItem("admin")) || null
+  );
+  const [atoken, setAToken] = useState(localStorage.getItem("atoken") || null);
+
+  const isAdminAuthenticated = !!atoken;
+
+  const adminLogin = (adminData, adminToken) => {
+    setAdmin(adminData);
+    setAToken(adminToken);
+
+    localStorage.setItem("admin", JSON.stringify(adminData));
+    localStorage.setItem("atoken", adminToken);
   };
 
-  // Check if user is authenticated
-  const isAuthenticated = () => {
-    return !!(token && user);
+  const adminLogout = () => {
+    setAdmin(null);
+    setAToken(null);
+
+    localStorage.removeItem("admin");
+    localStorage.removeItem("atoken");
   };
 
-  // Get authorization header
+  // --------------- GET AUTH HEADER BASED ON USER/ADMIN ---------------
   const getAuthHeader = () => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  const value = {
-    user,
-    token,
-    loading,
-    login,
-    logout,
-    updateUser,
-    isAuthenticated: isAuthenticated(),
-    getAuthHeader,
+    if (atoken) return { Authorization: `Bearer ${atoken}` }; // admin first
+    if (token) return { Authorization: `Bearer ${token}` };   // user next
+    return {};
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        // user auth
+        user,
+        token,
+        isUserAuthenticated,
+        userLogin,
+        userLogout,
+
+        // legacy aliases for backwards compatibility
+        // (so existing components using login/logout/isAuthenticated keep working)
+        isAuthenticated: isUserAuthenticated,
+        login: userLogin,
+        logout: userLogout,
+
+        // admin auth
+        admin,
+        atoken,
+        isAdminAuthenticated,
+        adminLogin,
+        adminLogout,
+
+        // shared
+        getAuthHeader,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
-
-export default AuthContext;
-

@@ -111,7 +111,7 @@ export const authAPI = {
 };
 
 /**
- * Admin APIs
+ * Admin APIs - puzzle management
  */
 export const adminAPI = {
   // Login admin
@@ -121,10 +121,74 @@ export const adminAPI = {
       body: JSON.stringify({ email, password }),
     }, null); // Don't send token for login
   },
+  // Get all puzzles (admin view)
+  getPuzzles: async () => {
+    const adminToken = localStorage.getItem('atoken');
+    // Matches backend router: app.use('/api/puzzles', puzzleRouter)
+    // backend route: router.get('/get-puzzles', ...)
+    return apiRequest('/puzzle/get-puzzles', {
+      method: 'GET',
+    }, adminToken);
+  },
+  // Get a puzzle by id
+  getPuzzleById: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.get('/get-puzzle/:id', ...)
+    return apiRequest(`/puzzle/get-puzzle/${id}`, {
+      method: 'GET',
+    }, adminToken);
+  },
+
+  // Create a puzzle
+  createPuzzle: async (puzzleData) => {
+    const adminToken = localStorage.getItem('atoken');
+  
+    return apiRequest(
+      '/puzzle/create-puzzle',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`, 
+        },
+        body: JSON.stringify(puzzleData),
+      }
+    );
+  },
+  
+  // Update a puzzle
+  updatePuzzle: async (id, puzzleData) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.put('/update-puzzle/:id', ...)
+    return apiRequest(`/puzzle/update-puzzle/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(puzzleData),
+    }, adminToken);
+  },
+  // Delete a puzzle
+  deletePuzzle: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.delete('/delete-puzzle/:id', ...)
+    return apiRequest(`/puzzle/delete-puzzle/${id}`, {
+      method: 'DELETE',
+    }, adminToken);
+  },
+};
+
+/**
+ * Public puzzle APIs
+ */
+export const puzzleAPI = {
+  getAll: async () => {
+    return apiRequest('/puzzle/get-puzzles', {
+      method: 'GET',
+    }, null);
+  },
 };
 
 export default {
   authAPI,
   adminAPI,
+  puzzleAPI,
 };
 

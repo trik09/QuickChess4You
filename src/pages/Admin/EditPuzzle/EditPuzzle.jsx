@@ -1,24 +1,94 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaChess, FaSave, FaTimes, FaLayerGroup, FaSignal, FaLightbulb } from 'react-icons/fa';
 import { PageHeader, Button } from '../../../components/Admin';
+import { adminAPI } from '../../../services/api';
 import styles from './EditPuzzle.module.css';
 
 function EditPuzzle() {
   const navigate = useNavigate();
   const { id } = useParams();
-  
+
   const [formData, setFormData] = useState({
-    title: 'Checkmate in 3',
-    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-    correctMove: 'e2e4',
-    difficulty: 'Hard',
+    title: '',
+    fen: '',
+    correctMove: '',
+    difficulty: 'Medium',
     category: 'Tactics',
-    description: 'Find the winning combination',
-    hints: 'Look for a forcing move'
+    description: '',
+    hints: '',
   });
   const [fenError, setFenError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState('');
+
+  // Convert description/hints from backend into our form shape
+  const hydrateFormFromPuzzle = (puzzle) => {
+    const description = puzzle.description || '';
+    let mainDesc = description;
+    let hints = '';
+
+    // Simple split: if description contains double newline, treat last part as hints
+    const parts = description.split('\n\n');
+    if (parts.length > 1) {
+      mainDesc = parts.slice(0, -1).join('\n\n');
+      hints = parts[parts.length - 1];
+    }
+
+    const difficultyNormalized = (puzzle.difficulty || 'medium').toLowerCase();
+    const difficultyLabelMap = {
+      easy: 'Easy',
+      medium: 'Medium',
+      hard: 'Hard',
+    };
+
+    setFormData({
+      title: puzzle.title || '',
+      fen: puzzle.fen || '',
+      correctMove: Array.isArray(puzzle.solutionMoves)
+        ? puzzle.solutionMoves.join(', ')
+        : '',
+      difficulty: difficultyLabelMap[difficultyNormalized] || 'Medium',
+      category: puzzle.category || 'Tactics',
+      description: mainDesc,
+      hints,
+    });
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPuzzle = async () => {
+      setIsLoading(true);
+      setApiError('');
+      try {
+        const puzzle = await adminAPI.getPuzzleById(id);
+        if (!isMounted) return;
+        hydrateFormFromPuzzle(puzzle);
+      } catch (error) {
+        const errorMsg = error.message || 'Unable to load puzzle details';
+        if (isMounted) {
+          setApiError(errorMsg);
+          toast.error(errorMsg);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPuzzle();
+    } else {
+      setIsLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const validateFEN = (fen) => {
     try {
@@ -36,15 +106,64 @@ function EditPuzzle() {
     validateFEN(value);
   };
 
-  const handleSubmit = (e) => {
+  const parseSolutionMoves = (raw) =>
+    raw
+      .split(/[\n,]/)
+      .map((m) => m.trim())
+      .filter(Boolean);
+
+  const difficultyMap = {
+    Easy: 'easy',
+    Medium: 'medium',
+    Hard: 'hard',
+    Expert: 'hard',
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError('');
+
     if (!validateFEN(formData.fen)) {
-      alert('Please enter a valid FEN notation');
+      const errorMsg = 'Please enter a valid FEN notation before saving.';
+      setApiError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
-    console.log('Updating puzzle:', formData);
-    alert('Puzzle updated successfully!');
-    navigate('/admin/puzzles');
+
+    const solutionMoves = parseSolutionMoves(formData.correctMove);
+    if (!solutionMoves.length) {
+      const errorMsg = 'Add at least one solution move (comma separated).';
+      setApiError(errorMsg);
+      toast.error(errorMsg);
+      return;
+    }
+
+    const payload = {
+      title: formData.title.trim(),
+      fen: formData.fen.trim(),
+      difficulty: difficultyMap[formData.difficulty] || 'medium',
+      category: formData.category,
+      solutionMoves,
+      description: [formData.description.trim(), formData.hints.trim()]
+        .filter(Boolean)
+        .join('\n\n'),
+    };
+
+    setIsSubmitting(true);
+    try {
+      await adminAPI.updatePuzzle(id, payload);
+      toast.success('Puzzle updated successfully!');
+      // Delay navigation to allow toast to be visible
+      setTimeout(() => {
+        navigate('/admin/puzzles');
+      }, 1500);
+    } catch (error) {
+      const errorMsg = error.message || 'Failed to update puzzle. Try again.';
+      setApiError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderChessBoard = () => {
@@ -100,6 +219,43 @@ function EditPuzzle() {
 
   return (
     <div className={styles.editPuzzle}>
+      <Toaster 
+        position="top-center" 
+        reverseOrder={false} 
+        toastOptions={{ 
+          duration: 5000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            padding: '16px 24px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            zIndex: 9999,
+          },
+          success: {
+            style: {
+              background: '#10b981',
+              color: '#fff',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#10b981',
+            },
+          },
+          error: {
+            style: {
+              background: '#ef4444',
+              color: '#fff',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#ef4444',
+            },
+          },
+        }} 
+      />
       <PageHeader
         icon={FaChess}
         title={`Edit Puzzle #${id}`}
@@ -109,6 +265,9 @@ function EditPuzzle() {
       <div className={styles.content}>
         <div className={styles.formSection}>
           <form onSubmit={handleSubmit}>
+            {isLoading && <p>Loading puzzle...</p>}
+            {/* {apiError && <p className={styles.apiError}>{apiError}</p>} */}
+
             <div className={styles.formGroup}>
               <label><FaChess /> Puzzle Title *</label>
               <input
@@ -198,8 +357,8 @@ function EditPuzzle() {
               >
                 Cancel
               </Button>
-              <Button type="submit" icon={FaSave}>
-                Update Puzzle
+              <Button type="submit" icon={FaSave} disabled={isSubmitting}>
+                {isSubmitting ? 'Updating...' : 'Update Puzzle'}
               </Button>
             </div>
           </form>

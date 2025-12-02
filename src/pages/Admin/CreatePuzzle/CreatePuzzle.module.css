@@ -113,6 +113,12 @@
   border-top: 2px solid #f0f0f0;
 }
 
+.apiError {
+  margin-top: 12px;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
 .previewSection {
   background: white;
   border-radius: 12px;

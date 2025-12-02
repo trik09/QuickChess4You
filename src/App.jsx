@@ -1,71 +1,70 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import Home from './pages/Home/Home';
-import Dashboard from './pages/Dashboard/Dashboard';
-import PuzzlePage from './pages/PuzzlePage/PuzzlePage';
-import AdminLogin from './pages/Admin/AdminLogin/AdminLogin';
-import AdminLayout from './layouts/AdminLayout/AdminLayout';
-import AdminDashboard from './pages/Admin/AdminDashboard/AdminDashboard';
-import CategoryList from './pages/Admin/CategoryList/CategoryList';
-import PuzzleList from './pages/Admin/PuzzleList/PuzzleList';
-import CompetitionList from './pages/Admin/CompetitionList/CompetitionList';
-import CreateCompetition from './pages/Admin/CreateCompetition/CreateCompetition';
-import CompetitionHistory from './pages/Admin/CompetitionHistory/CompetitionHistory';
-import LiveTournament from './pages/Admin/LiveTournament/LiveTournament';
-import StudentList from './pages/Admin/StudentList/StudentList';
-import AdminManagement from './pages/Admin/AdminManagement/AdminManagement';
-import CreatePuzzle from './pages/Admin/CreatePuzzle/CreatePuzzle';
-import EditPuzzle from './pages/Admin/EditPuzzle/EditPuzzle';
-import Leaderboard from './pages/Admin/Leaderboard/Leaderboard';
-import Reports from './pages/Admin/Reports/Reports';
-import SystemMonitor from './pages/Admin/SystemMonitor/SystemMonitor';
-import Settings from './pages/Admin/Settings/Settings';
-import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home/Home";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import PuzzlePage from "./pages/PuzzlePage/PuzzlePage";
+
+import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
+import AdminLayout from "./layouts/AdminLayout/AdminLayout";
+import AdminDashboard from "./pages/Admin/AdminDashboard/AdminDashboard";
+
+import CategoryList from "./pages/Admin/CategoryList/CategoryList";
+import PuzzleList from "./pages/Admin/PuzzleList/PuzzleList";
+import CreatePuzzle from "./pages/Admin/CreatePuzzle/CreatePuzzle";
+import EditPuzzle from "./pages/Admin/EditPuzzle/EditPuzzle";
+import CompetitionList from "./pages/Admin/CompetitionList/CompetitionList";
+import CreateCompetition from "./pages/Admin/CreateCompetition/CreateCompetition";
+import CompetitionHistory from "./pages/Admin/CompetitionHistory/CompetitionHistory";
+import LiveTournament from "./pages/Admin/LiveTournament/LiveTournament";
+import StudentList from "./pages/Admin/StudentList/StudentList";
+import AdminManagement from "./pages/Admin/AdminManagement/AdminManagement";
+import Leaderboard from "./pages/Admin/Leaderboard/Leaderboard";
+import Reports from "./pages/Admin/Reports/Reports";
+import SystemMonitor from "./pages/Admin/SystemMonitor/SystemMonitor";
+import Settings from "./pages/Admin/Settings/Settings";
+
+import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
+import AdminProtectedRoute from "./components/ProtectedRoute/AdminProtectedRoute";
+import AdminRedirect from "./components/AdminRedirect";   // NEW
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
       <Routes>
+
+        {/* Public */}
         <Route path="/" element={<Home />} />
-        <Route 
-          path="/dashboard" 
+
+        {/* User protected */}
+        <Route
+          path="/dashboard"
           element={
-            <ProtectedRoute>
+            <UserProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
-          } 
+            </UserProtectedRoute>
+          }
         />
-        <Route 
-          path="/puzzle" 
+        <Route
+          path="/puzzle"
           element={
-            <ProtectedRoute>
+            <UserProtectedRoute>
               <PuzzlePage />
-            </ProtectedRoute>
-          } 
+            </UserProtectedRoute>
+          }
         />
-        
-        {/* Admin Login Route */}
+
+        {/* Admin login */}
         <Route path="/admin/login" element={<AdminLogin />} />
-        
-        {/* Redirect /admin to /admin/login or dashboard based on auth */}
-        <Route 
-          path="/admin" 
+
+        {/* Automatic admin redirect */}
+        <Route path="/admin" element={<AdminRedirect />} />
+
+        {/* Admin protected pages */}
+        <Route
+          path="/admin"
           element={
-            localStorage.getItem('adminAuth') === 'true' 
-              ? <Navigate to="/admin/dashboard" replace /> 
-              : <Navigate to="/admin/login" replace />
-          } 
-        />
-        
-        {/* Protected Admin Routes */}
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute requireAdmin={true}>
+            <AdminProtectedRoute>
               <AdminLayout />
-            </ProtectedRoute>
+            </AdminProtectedRoute>
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -84,9 +83,9 @@ function App() {
           <Route path="monitoring" element={<SystemMonitor />} />
           <Route path="settings" element={<Settings />} />
         </Route>
+
       </Routes>
-      </Router>
-    </AuthProvider>
+    </Router>
   );
 }
 

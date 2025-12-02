@@ -192,6 +192,12 @@
   line-height: 1.6;
 }
 
+.statusMessage {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #92400e;
+}
+
 .rightPanel {
   width: 300px;
   animation: fadeInRight 0.8s ease-out;
