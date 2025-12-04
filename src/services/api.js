@@ -1,3 +1,5 @@
+//import { updateCompetition } from "../../../backend/controllers/compition.controlller";
+
 // API Base URL - Update this to match your backend server
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
@@ -186,9 +188,48 @@ export const puzzleAPI = {
   },
 };
 
+export const competitionAPi={
+  getAll: async () => {
+    return apiRequest('/competition/', {
+      method: 'GET',
+    }, null);
+  },
+  createCompetition: async (competitionData) => {
+    const adminToken = localStorage.getItem('atoken');
+  
+    return apiRequest(
+      '/competition/create-competition',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`, 
+        },
+        body: JSON.stringify(competitionData),
+      }
+    );
+  },
+  updateCompetition: async (id, competitionData) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.put('/update-competition/:id', ...)
+    return apiRequest(`/competition/update-competition/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(competitionData),
+    }, adminToken);
+  },
+  deleteCompetition: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.delete('/delete-competition/:id', ...)
+    return apiRequest(`/competition/delete-competition/${id}`, {
+      method: 'DELETE',
+    }, adminToken);
+  },
+}
+
 export default {
   authAPI,
   adminAPI,
   puzzleAPI,
+  competitionAPi
 };
 
