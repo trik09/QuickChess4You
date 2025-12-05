@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Home from './pages/Home/Home';
 import Dashboard from './pages/Dashboard/Dashboard';
 import PuzzlePage from './pages/PuzzlePage/PuzzlePage';
@@ -26,7 +27,8 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <ThemeProvider>
+        <Router>
       <Routes>
         <Route path="/" element={<Home />} />
         {/* Temporarily removed login requirement for tournaments */}
@@ -89,7 +91,8 @@ function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
-      </Router>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

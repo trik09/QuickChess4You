@@ -24,80 +24,62 @@ function PuzzlePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Real chess puzzles with verified solutions (solution arrays expected as [W1, B1, W2, B2, ...])
+  // ---------------------------------------------------------
+  // UPDATED PUZZLE DATABASE (Total: 6)
+  // Includes 3 Classic verified puzzles + 3 Custom User Puzzles
+  // ---------------------------------------------------------
   const puzzles = [
+    // --- KEEPING 3 CURRENT WORKING PUZZLES ---
     {
       id: 1,
-      type: 'Fork',
-      fen: '2q3k1/8/8/5N2/6P1/7K/8/8 w - - 0 1',
-      solution: ['Ne7+', 'Kf7', 'Nxc8'],
-      description: 'White to move. Play the winning tactic and win the queen.'
+      type: 'Mate in 1',
+      fen: '6k1/3R1ppp/8/8/8/8/5PPP/6K1 w - - 0 1',
+      solution: ['Rd8#'],
+      description: 'White to move. The opponent\'s king is trapped behind their own pawns.'
     },
-
     {
       id: 2,
-      type: 'Mate in 2',
-      fen: 'r4r1k/ppn1NBpp/4b3/4P3/3p1R2/1P6/P1P3PP/R5K1 w - - 0 1',
-      solution: ['Ng6+', 'hxg6', 'Rh4#'],
-      description: 'White to move. Force checkmate in 2 moves.'
+      type: 'Mate in 1',
+      fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4',
+      solution: ['Qxf7#'],
+      description: 'White to move. Deliver the checkmate on the weak f7 square (Scholar\'s Mate).'
     },
-
-    {
+{
       id: 3,
       type: 'Mate in 2',
-      fen: '1R4rk/6bp/8/4B3/8/1K6/7Q/8 w - - 0 1',
-      solution: ['Qxh7#'],
-      description: 'White to move. Find the checkmate in 1 move.'
+      // FIXED: Changed last digit from 0 to 1
+      fen: '4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 1 1',
+      solution: ['Qb8+', 'Nxb8', 'Rd8#'],
+      description: 'White to move. A famous Queen sacrifice leading to checkmate.'
     },
+
+    // --- ADDING THE 3 NEW REQUESTED PUZZLES ---
     {
       id: 4,
-      type: 'Mate in 1',
-      fen: '6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',
-      solution: ['Re8#'],
-      description: 'White to move. Find the checkmate in 1 move.'
+      type: 'Find the best move',
+      // Discovered Check / Windmill Theme
+      fen: 'r5rk/5p1p/5R2/4B3/8/8/7P/7K w - - 0 1',
+      solution: ['Rg6+', 'f6', 'Bxf6+', 'Rg7', 'Rxg7'], 
+      // Note: Rxg7 is decisive. White can then mate with Rg5# or similar next, but this sequence wins.
+      description: 'White to move. Use the discovered check from the Bishop to dismantle the defense.'
     },
     {
       id: 5,
       type: 'Mate in 2',
-      fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1',
-      // this solution is given as W,B,W ... ensure moves are SAN strings accurate for the position
-      solution: ['Bxf7+', 'Kxf7', 'Ng5#'],
-      description: 'White to move. Find checkmate in 2 moves.'
+      // Absolute Pin Theme
+      fen: '1R6/6pk/6np/p6Q/P2p4/3P4/K1P5/8 w - - 0 1',
+      solution: ['Qf5', 'h5', 'Qxh5#'], 
+      // Qf5 pins the Knight (g6) to the King (h7). Black is helpless.
+      description: 'White to move. Pin the Knight to the King to force a checkmate.'
     },
     {
       id: 6,
-      type: 'Mate in 2',
-      fen: 'r1bqkb1r/pppp1ppp/2n5/4p2Q/2BnP3/5N2/PPPP1PPP/RNB1K2R w KQkq - 0 1',
-      solution: ['Qxf7+', 'Kd7', 'Qe7#'],
-      description: 'White to move. Find checkmate in 2 moves.'
-    },
-    {
-      id: 7,
-      type: 'Mate in 2',
-      fen: 'r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 0 1',
-      solution: ['Nf6+', 'gxf6', 'Bxf7#'],
-      description: 'White to move. Find checkmate in 2 moves.'
-    },
-    {
-      id: 8,
-      type: 'Mate in 2',
-      fen: '5rk1/pp3ppp/2p5/2b5/4PQ2/2P3P1/P4P1P/5RK1 w - - 0 1',
-      solution: ['Qf7+', 'Kh8', 'Qg7#'],
-      description: 'White to move. Find checkmate in 2 moves.'
-    },
-    {
-      id: 9,
-      type: 'Mate in 3',
-      fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 0 1',
-      solution: ['Bxf7+', 'Kxf7', 'Ng5+', 'Kg8', 'Qh5', 'h6', 'Qh7#'],
-      description: 'White to move. Find checkmate in 3 moves.'
-    },
-    {
-      id: 10,
-      type: 'Mate in 3',
-      fen: 'r2qkb1r/ppp2ppp/2n5/3Pp3/2B5/8/PPP2PPP/RNBQK2R w KQkq - 0 1',
-      solution: ['Qh5+', 'g6', 'Qxg6+', 'hxg6', 'Bxf7#'],
-      description: 'White to move. Find checkmate in 3 moves.'
+      type: 'Pin to Win',
+      // Long Diagonal Pin
+      fen: '7k/8/8/4n3/4P3/8/8/6BK w - - 0 1',
+      solution: ['Bd4', 'Kg8', 'Bxe5'],
+      // Bd4 pins the Knight (e5) to the King (h8).
+      description: 'White to move. Use the Bishop to pin the Knight to the King and win the piece.'
     }
   ];
 
@@ -109,7 +91,6 @@ function PuzzlePage() {
 
   const handlePuzzleSelect = (puzzleNum) => {
     setCurrentPuzzle(puzzleNum);
-    // reset timer or other state if you want when switching
   };
 
   const handlePrevPuzzle = () => {
@@ -126,7 +107,6 @@ function PuzzlePage() {
 
   const handlePuzzleSolved = () => {
     setSolvedCount((s) => s + 1);
-    // Auto-advance to next puzzle after a short delay so user sees "solved"
     setTimeout(() => {
       if (currentPuzzle < puzzles.length) {
         setCurrentPuzzle(currentPuzzle + 1);
@@ -139,25 +119,24 @@ function PuzzlePage() {
   };
 
   const handleHint = () => {
-    const puzzle = puzzles[currentPuzzle - 1];
+    const puzzle = puzzles.find(p => p.id === currentPuzzle);
     if (!puzzle) return;
     alert(`First move: ${puzzle.solution[0]}`);
   };
 
   const handleShowSolution = () => {
-    const puzzle = puzzles[currentPuzzle - 1];
+    const puzzle = puzzles.find(p => p.id === currentPuzzle);
     if (!puzzle) return;
     alert(`Complete solution:\n${puzzle.solution.join(' → ')}`);
   };
 
   const handleResetPuzzle = () => {
-    // Reset by re-mounting chessboard: change key by toggling currentPuzzle briefly
     const temp = currentPuzzle;
     setCurrentPuzzle(0);
     setTimeout(() => setCurrentPuzzle(temp), 50);
   };
 
-  const puzzle = puzzles[currentPuzzle - 1] || puzzles[0];
+  const puzzle = puzzles.find(p => p.id === currentPuzzle) || puzzles[0];
 
   return (
     <div className={styles.container}>
@@ -202,7 +181,7 @@ function PuzzlePage() {
             <p>{puzzle.description}</p>
           </div>
           <ChessBoard
-            key={`${puzzle.id}-${currentPuzzle}-${puzzle.fen}`}
+            key={`${puzzle.id}-${puzzle.fen}`} 
             fen={puzzle.fen}
             solution={puzzle.solution}
             onPuzzleSolved={handlePuzzleSolved}

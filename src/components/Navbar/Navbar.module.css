@@ -318,3 +318,25 @@
   opacity: 1;
   visibility: visible;
 }
+
+
+.settingsBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: var(--bg-off-white);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settingsBtn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
+}

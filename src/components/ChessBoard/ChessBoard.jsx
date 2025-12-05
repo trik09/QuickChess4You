@@ -1,10 +1,93 @@
 import { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
+import { useTheme } from '../../contexts/ThemeContext';
 import styles from './ChessBoard.module.css';
 
-const pieceSymbols = {
-  'p': '♟︎', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
-  'P': '♟︎', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚'
+// Import chess piece SVGs - Set 1 (pieces folder)
+import whitePawn1 from '../../assets/pieces/whitepawn.svg';
+import whiteKnight1 from '../../assets/pieces/whiteknight.svg';
+import whiteBishop1 from '../../assets/pieces/whitebishop.svg';
+import whiteRook1 from '../../assets/pieces/whiterook.svg';
+import whiteQueen1 from '../../assets/pieces/whitequeen.svg';
+import whiteKing1 from '../../assets/pieces/whiteking.svg';
+import blackPawn1 from '../../assets/pieces/blackpawn.svg';
+import blackKnight1 from '../../assets/pieces/blackknight.svg';
+import blackBishop1 from '../../assets/pieces/blackbishop.svg';
+import blackRook1 from '../../assets/pieces/blackrook.svg';
+import blackQueen1 from '../../assets/pieces/blackqueen.svg';
+import blackKing1 from '../../assets/pieces/blackking.svg';
+
+// Import chess piece SVGs - Set 2 (pieces2 folder)
+import whitePawn2 from '../../assets/pieces2/whitepawn.svg';
+import whiteKnight2 from '../../assets/pieces2/whiteknight.svg';
+import whiteBishop2 from '../../assets/pieces2/whitebishop.svg';
+import whiteRook2 from '../../assets/pieces2/whiterook.svg';
+import whiteQueen2 from '../../assets/pieces2/whitequeen.svg';
+import whiteKing2 from '../../assets/pieces2/whiteking.svg';
+import blackPawn2 from '../../assets/pieces2/blackpawn.svg';
+import blackKnight2 from '../../assets/pieces2/blackknight.svg';
+import blackBishop2 from '../../assets/pieces2/blackbishop.svg';
+import blackRook2 from '../../assets/pieces2/blackrook.svg';
+import blackQueen2 from '../../assets/pieces2/blackqueen.svg';
+import blackKing2 from '../../assets/pieces2/blackking.svg';
+
+// Import chess piece SVGs - Set 3 (pieces3 folder)
+import whitePawn3 from '../../assets/pieces3/whitepawn.svg';
+import whiteKnight3 from '../../assets/pieces3/whiteknight.svg';
+import whiteBishop3 from '../../assets/pieces3/whitebishop.svg';
+import whiteRook3 from '../../assets/pieces3/whiterook.svg';
+import whiteQueen3 from '../../assets/pieces3/whitequeen.svg';
+import whiteKing3 from '../../assets/pieces3/whiteking.svg';
+import blackPawn3 from '../../assets/pieces3/blackpawn.svg';
+import blackKnight3 from '../../assets/pieces3/blackknight.svg';
+import blackBishop3 from '../../assets/pieces3/blackbishop.svg';
+import blackRook3 from '../../assets/pieces3/blackrook.svg';
+import blackQueen3 from '../../assets/pieces3/blackqueen.svg';
+import blackKing3 from '../../assets/pieces3/blackking.svg';
+
+const pieceImageSets = {
+  set1: {
+    'p': blackPawn1,
+    'n': blackKnight1,
+    'b': blackBishop1,
+    'r': blackRook1,
+    'q': blackQueen1,
+    'k': blackKing1,
+    'P': whitePawn1,
+    'N': whiteKnight1,
+    'B': whiteBishop1,
+    'R': whiteRook1,
+    'Q': whiteQueen1,
+    'K': whiteKing1
+  },
+  set2: {
+    'p': blackPawn2,
+    'n': blackKnight2,
+    'b': blackBishop2,
+    'r': blackRook2,
+    'q': blackQueen2,
+    'k': blackKing2,
+    'P': whitePawn2,
+    'N': whiteKnight2,
+    'B': whiteBishop2,
+    'R': whiteRook2,
+    'Q': whiteQueen2,
+    'K': whiteKing2
+  },
+  set3: {
+    'p': blackPawn3,
+    'n': blackKnight3,
+    'b': blackBishop3,
+    'r': blackRook3,
+    'q': blackQueen3,
+    'k': blackKing3,
+    'P': whitePawn3,
+    'N': whiteKnight3,
+    'B': whiteBishop3,
+    'R': whiteRook3,
+    'Q': whiteQueen3,
+    'K': whiteKing3
+  }
 };
 
 function normalizeSAN(san) {
@@ -14,7 +97,15 @@ function normalizeSAN(san) {
 }
 
 function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
+  const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
+  
+  // Select piece images based on current piece set
+  const pieceImages = pieceSet === 'modern' 
+    ? pieceImageSets.set2 
+    : pieceSet === 'elegant'
+    ? pieceImageSets.set3
+    : pieceImageSets.set1;
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [lastMove, setLastMove] = useState(null);
@@ -96,7 +187,6 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
         const expectedBlackMove = solution[nextIndex];
         // Attempt to play black's reply SAN on the current game state
         // Note: chess.js accepts SAN strings in game.move(san)
-        const beforeFen = game.fen();
         const blackResult = game.move(expectedBlackMove);
 
         if (!blackResult) {
@@ -201,22 +291,27 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
               const piece = getPiece(square);
               const isLight = isLightSquare(fileIndex, rankIndex);
 
+              const squareColor = isLight ? currentBoardColors.light : currentBoardColors.dark;
+
               return (
                 <div
                   key={square}
                   className={`
                     ${styles.square}
-                    ${isLight ? styles.lightSquare : styles.darkSquare}
                     ${isSelected(square) ? styles.selected : ''}
                     ${isPossibleMove(square) ? styles.possibleMove : ''}
                     ${isLastMove(square) ? styles.lastMove : ''}
                   `}
+                  style={{ backgroundColor: squareColor }}
                   onClick={() => handleSquareClick(square)}
                 >
                   {piece && (
-                    <div className={`${styles.piece} ${piece.color === 'w' ? styles.whitePiece : styles.blackPiece}`}>
-                      {pieceSymbols[piece.type.toUpperCase()]}
-                    </div>
+                    <img 
+                      src={pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]} 
+                      alt={`${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`}
+                      className={styles.piece}
+                      draggable="false"
+                    />
                   )}
                   {fileIndex === 0 && (
                     <div className={styles.rankLabel}>{rank}</div>

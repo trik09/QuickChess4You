@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import ThemeModal from "../ThemeModal/ThemeModal";
 import styles from "./Navbar.module.css";
 import logo from "../../assets/QuickChessForYou-Logo.svg";
 
 function Navbar({ onLoginClick }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
@@ -91,6 +93,18 @@ function Navbar({ onLoginClick }) {
 
             {/* AUTHENTICATION */}
             <div className={styles.authSection}>
+              {/* Theme Settings Button */}
+              <button 
+                className={styles.settingsBtn}
+                onClick={() => {
+                  setIsThemeModalOpen(true);
+                  setIsOpen(false);
+                }}
+                title="Customize Board"
+              >
+                ⚙️
+              </button>
+
               {isAuthenticated ? (
                 <div className={styles.userProfile}>
                   <div className={styles.userInfo}>
@@ -132,6 +146,12 @@ function Navbar({ onLoginClick }) {
           </div>
         </div>
       </nav>
+
+      {/* Theme Customization Modal */}
+      <ThemeModal 
+        isOpen={isThemeModalOpen} 
+        onClose={() => setIsThemeModalOpen(false)} 
+      />
     </>
   );
 }
