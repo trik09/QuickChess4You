@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../../components/Navbar/Navbar';
+
 import ChessBoard from '../../components/ChessBoard/ChessBoard';
 import { puzzleAPI } from '../../services/api';
 import styles from './PuzzlePage.module.css';
@@ -226,7 +226,7 @@ function PuzzlePage() {
 
   return (
     <div className={styles.container}>
-      <Navbar isLoggedIn={true} />
+
 
       <div className={styles.content}>
         {/* LEFT PANEL - Timer and Actions */}
@@ -243,7 +243,7 @@ function PuzzlePage() {
             </div>
             <div className={styles.statItem}>
               <span className={styles.statLabel}>Mistakes</span>
-              <span className={styles.statValue}>{wrongCount}</span>
+              <span className={styles.statValue} style={{ color: 'var(--error)' }}>{wrongCount}</span>
             </div>
           </div>
 

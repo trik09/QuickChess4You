@@ -6,7 +6,7 @@ import styles from './LoginModal.module.css';
 import { FaFacebookF } from 'react-icons/fa';
 import { FaInstagram } from 'react-icons/fa';
 
-function LoginModal({ onClose }) {
+function LoginModal({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -24,8 +24,7 @@ function LoginModal({ onClose }) {
     confirmPassword: '',
     username: '',
     otp: '',
-    newPassword: '',
-    confirmPassword: ''
+    newPassword: ''
   });
 
   const handleInputChange = (e) => {
@@ -231,6 +230,8 @@ function LoginModal({ onClose }) {
       setLoading(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.overlay} onClick={onClose}>

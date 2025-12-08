@@ -87,6 +87,11 @@ function Navbar({ onLoginClick }) {
                   <li>
                     <Link to="/puzzle">Puzzles</Link>
                   </li>
+                  {isAuthenticated && (
+                    <li>
+                      <Link to="/profile">Profile</Link>
+                    </li>
+                  )}
                 </>
               )}
             </ul>

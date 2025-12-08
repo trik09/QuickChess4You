@@ -1,0 +1,373 @@
+/* MainLayout container */
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-dark, #161512);
+    /* Lichess-like dark bg fallback */
+    color: var(--text-primary);
+    /* Removed padding-top since we no longer have a fixed top header */
+}
+
+/* Sidebar (Desktop) */
+.sidebar {
+    width: var(--sidebar-width, 240px);
+    background: #262421;
+    /* Darker Lichess sidebar tone */
+    border-right: 1px solid #363431;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+    color: #bababa;
+}
+
+.sidebar.collapsed {
+    width: 72px;
+    /* Slimmer collapsed state */
+}
+
+/* Logo Section */
+.logoSection {
+    height: 64px;
+    /* Standard header height match */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    border-bottom: 1px solid #363431;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.logoLink {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+.logoImg {
+    height: 32px;
+    width: 32px;
+    object-fit: contain;
+}
+
+.logoText {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #b58863;
+    /* Accent color */
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+}
+
+.toggleBtn {
+    background: transparent;
+    border: none;
+    color: #bababa;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.toggleBtn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+
+
+.sidebar.collapsed .logoSection {
+    justify-content: center;
+    padding: 0;
+}
+
+.sidebar.collapsed .logoLink {
+    display: none;
+    /* Hide logo text/img link in collapsed, show only toggle or icon */
+}
+
+/* Re-enable logo icon in collapsed if desired, otherwise just menu button */
+.sidebar.collapsed .toggleBtn {
+    width: 100%;
+}
+
+
+/* Navigation */
+.navLinks {
+    flex: 1;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-y: auto;
+}
+
+.separator {
+    height: 1px;
+    background: #363431;
+    margin: 0.5rem 1rem;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    color: #bababa;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.navItem:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e0e0e0;
+}
+
+.navItem.active {
+    background: rgba(181, 136, 99, 0.1);
+    /* Low opacity accent */
+    border-left-color: #b58863;
+    color: #b58863;
+}
+
+.navIcon {
+    font-size: 1.1rem;
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navLabel {
+    margin-left: 1rem;
+    white-space: nowrap;
+    font-size: 0.95rem;
+}
+
+.sidebar.collapsed .navItem {
+    padding: 0.75rem 0;
+    justify-content: center;
+}
+
+.sidebar.collapsed .navLabel {
+    display: none;
+}
+
+.sidebar.collapsed .navIcon {
+    font-size: 1.3rem;
+}
+
+
+/* Footer / Auth Section */
+.sidebarFooter {
+    padding: 1rem;
+    border-top: 1px solid #363431;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.userProfile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    overflow: hidden;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #b58863, #d4a574);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.userDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.userName {
+    font-weight: 600;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logoutBtn {
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0;
+    margin-top: 0.2rem;
+}
+
+.logoutBtn:hover {
+    color: #ff6b6b;
+}
+
+.authButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.loginBtn,
+.signupBtn {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.loginBtn {
+    background: transparent;
+    border: 1px solid #4a4a4a;
+    color: #bababa;
+}
+
+.loginBtn:hover {
+    border-color: #b58863;
+    color: #b58863;
+}
+
+.signupBtn {
+    background: #b58863;
+    color: #fff;
+}
+
+.signupBtn:hover {
+    background: #a07452;
+}
+
+.iconBtn {
+    width: 100%;
+    height: 36px;
+    background: transparent;
+    border: 1px solid #4a4a4a;
+    color: #b58863;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconBtn:hover {
+    background: rgba(181, 136, 99, 0.1);
+}
+
+/* Main Content Area */
+.mainContent {
+    flex: 1;
+    margin-left: 240px;
+    /* Matched to sidebar expanded width */
+    padding: 2rem;
+    width: calc(100% - 240px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #161512;
+    /* Fallback Main bg */
+}
+
+.mainContent.expanded {
+    margin-left: 72px;
+    width: calc(100% - 72px);
+}
+
+
+/* Bottom Navigation (Mobile) */
+.bottomNav {
+    display: none;
+    /* Hidden by default */
+}
+
+/* Responsive Styles */
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    /* Tablet specific adjustments if needed */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+        /* Hide sidebar on mobile, show bottom nav or simple header? 
+                        Lichess uses a top header + burger menu on mobile.
+                        For now, implementing Bottom Nav for critical actions as placeholder */
+    }
+
+    .mainContent {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+        padding-bottom: 70px;
+        /* Space for bottom nav */
+    }
+
+    .bottomNav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background: #262421;
+        border-top: 1px solid #363431;
+        z-index: 100;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .mobileNavItem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        text-decoration: none;
+        font-size: 0.75rem;
+        gap: 4px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        height: 100%;
+        flex: 1;
+    }
+
+    .mobileNavItem.active,
+    .mobileNavItem:hover {
+        color: #b58863;
+    }
+}

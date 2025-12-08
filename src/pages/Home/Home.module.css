@@ -1,1324 +1,148 @@
-/* Premium Color Variables */
-:root {
-  --primary-orange: #d97706;
-  --secondary-brown: #92400e;
-  --light-cream: #fef3c7;
-  --white: #ffffff;
-  --dark-text: #1f2937;
-  --gray-text: #6b7280;
-  --border-light: #fde68a;
-  --success: #059669;
-}
-
 .container {
-  min-height: 100vh;
-  background: #fafaf9;
-  color: var(--dark-text);
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-primary);
 }
 
-/* Hero Section - Full Screen */
+/* Hero Section */
 .hero {
-  min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 100px 8% 60px;
-  background: linear-gradient(to bottom, #ffffff 0%, #fef3c7 100%);
+  text-align: center;
+  padding: 4rem 1rem;
+  /* Use the new banner image with a dark overlay */
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../../assets/chess-banner.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
 }
 
 .heroContent {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-}
-
-.heroText {
-  animation: fadeInUp 0.8s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 24px;
-  background: var(--white);
-  border: 2px solid var(--primary-orange);
-  border-radius: 50px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--primary-orange);
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
-}
-
-.badgeDot {
-  width: 8px;
-  height: 8px;
-  background: var(--success);
-  border-radius: 50%;
-  animation: blink 1.5s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  max-width: 700px;
 }
 
 .heroTitle {
-  font-size: 3.5rem;
+  font-size: 3rem;
   font-weight: 800;
+  margin-bottom: 1rem;
   line-height: 1.1;
-  margin-bottom: 24px;
-  color: var(--dark-text);
-  letter-spacing: -0.02em;
-}
-
-.highlight {
-  display: block;
-  color: var(--primary-orange);
 }
 
 .heroSubtitle {
-  font-size: 1.125rem;
-  line-height: 1.7;
-  color: var(--gray-text);
-  margin-bottom: 40px;
-  max-width: 540px;
-}
-
-.heroButtons {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 60px;
-}
-
-.primaryBtn {
-  padding: 16px 40px;
-  font-size: 1rem;
-  font-weight: 600;
-  background: var(--primary-orange);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
-}
-
-.primaryBtn:hover {
-  background: var(--secondary-brown);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3);
-}
-
-.secondaryBtn {
-  padding: 16px 40px;
-  font-size: 1rem;
-  font-weight: 600;
-  background: transparent;
-  color: var(--primary-orange);
-  border: 2px solid var(--primary-orange);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.secondaryBtn:hover {
-  background: var(--primary-orange);
-  color: var(--white);
-  transform: translateY(-2px);
-}
-
-.stats {
-  display: flex;
-  gap: 48px;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-}
-
-.statNumber {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--primary-orange);
-  line-height: 1;
-}
-
-.statLabel {
-  font-size: 0.875rem;
-  color: var(--gray-text);
-  margin-top: 8px;
-}
-
-/* Live Demo Board */
-.demoBoard {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 32px;
-  border: 1px solid var(--border-light);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  animation: fadeInUp 0.8s ease-out 0.3s both;
-  /* height: 80%; */
-}
-
-.demoHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.demoTitle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--dark-text);
-}
-
-.liveDot {
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  animation: blink 1.5s ease-in-out infinite;
-}
-
-.demoTimer {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-orange);
-}
-
-.boardWrapper {
-  margin-bottom: 24px;
-}
-
-.demoFooter {
-  text-align: center;
-}
-
-.demoFooter p {
-  color: var(--gray-text);
-  margin-bottom: 16px;
-  font-size: 0.875rem;
-}
-
-.demoBtn {
-  width: 100%;
-  padding: 14px;
-  background: var(--primary-orange);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.demoBtn:hover {
-  background: var(--secondary-brown);
-  transform: translateY(-2px);
-}
-
-/* Demo Video Section */
-.demoVideo {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: var(--white);
-}
-
-.sectionContent {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.sectionTitle {
-  font-size: 2.5rem;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 16px;
-  color: var(--dark-text);
-  letter-spacing: -0.02em;
-}
-
-.sectionSubtitle {
-  text-align: center;
-  font-size: 1.125rem;
-  color: var(--gray-text);
-  margin-bottom: 60px;
-}
-
-.videoContainer {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.videoPlaceholder {
-  background: var(--dark-text);
-  border-radius: 16px;
-  padding: 120px 60px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--border-light);
-}
-
-.playButton {
-  width: 80px;
-  height: 80px;
-  background: var(--primary-orange);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: var(--white);
-  margin: 0 auto 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.playButton:hover {
-  transform: scale(1.1);
-  background: var(--secondary-brown);
-}
-
-.videoPlaceholder p {
-  color: var(--white);
   font-size: 1.25rem;
-  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
 }
 
-/* Features Section */
-.features {
-  min-height: 100vh;
+.ctaButtons {
   display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: #fafaf9;
+  gap: 1rem;
+  justify-content: center;
 }
 
+.btnPrimary,
+.btnSecondary {
+  padding: 0.8rem 2rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.btnPrimary {
+  background-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(181, 136, 99, 0.4);
+}
+
+.btnPrimary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(181, 136, 99, 0.6);
+}
+
+.btnSecondary {
+  background-color: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btnSecondary:hover {
+  border-color: var(--primary);
+  background-color: var(--bg-hover);
+}
+
+/* Features Grid */
 .featuresGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 0;
 }
 
 .featureCard {
-  background: var(--white);
-  padding: 40px 32px;
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
-  text-align: center;
+  background-color: var(--bg-white);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .featureCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-  border-color: var(--primary-orange);
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
 }
 
-.featureIcon {
-  font-size: 3rem;
-  margin-bottom: 20px;
+.iconWrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background-color: rgba(181, 136, 99, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .featureTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--dark-text);
-}
-
-.featureDescription {
-  color: var(--gray-text);
-  line-height: 1.6;
-  font-size: 0.9375rem;
-}
-
-/* Tournament Banner */
-.tournamentBanner {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: var(--primary-orange);
-  position: relative;
-}
-
-.bannerContent {
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
-  position: relative;
-  z-index: 1;
-}
-
-.comingSoonBadge {
-  display: inline-block;
-  padding: 10px 24px;
-  background: var(--white);
-  color: var(--primary-orange);
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 0.875rem;
-  margin-bottom: 24px;
-}
-
-.bannerTitle {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 24px;
-  color: var(--white);
-  letter-spacing: -0.02em;
-}
-
-.bannerText {
-  font-size: 1.125rem;
-  line-height: 1.7;
-  margin-bottom: 40px;
-  color: var(--white);
-  opacity: 0.95;
-}
-
-.bannerFeatures {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-}
-
-.bannerFeature {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--white);
-}
-
-.bannerIcon {
   font-size: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
-.countdown {
-  margin-bottom: 40px;
-}
-
-.countdownItem {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px 48px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-}
-
-.countdownNumber {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--white);
-  line-height: 1;
-}
-
-.countdownLabel {
-  font-size: 1rem;
-  color: var(--white);
-  opacity: 0.9;
-  margin-top: 8px;
-}
-
-.bannerBtn {
-  padding: 18px 48px;
-  font-size: 1.125rem;
-  font-weight: 700;
-  background: var(--white);
-  color: var(--primary-orange);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.bannerBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* Testimonials */
-.testimonials {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: var(--white);
-}
-
-.testimonialsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-}
-
-.testimonialCard {
-  background: #fafaf9;
-  padding: 32px;
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
-}
-
-.testimonialCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-  border-color: var(--primary-orange);
-}
-
-.testimonialHeader {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.testimonialAvatar {
-  width: 56px;
-  height: 56px;
-  background: var(--white);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.75rem;
-  border: 2px solid var(--primary-orange);
-}
-
-.testimonialName {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--dark-text);
-  margin-bottom: 4px;
-}
-
-.testimonialSchool {
-  font-size: 0.875rem;
-  color: var(--gray-text);
-}
-
-.testimonialRating {
-  font-size: 1rem;
-  margin-bottom: 16px;
-}
-
-.testimonialText {
-  color: var(--gray-text);
+.featureDesc {
+  color: var(--text-muted);
   line-height: 1.6;
-  font-style: italic;
-  font-size: 0.9375rem;
 }
 
-/* Why Choose Us */
-.whyChooseUs {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: #fafaf9;
-}
-
-.whyGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
-}
-
-.whyCard {
-  background: var(--white);
-  padding: 40px 32px;
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.whyCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-  border-color: var(--primary-orange);
-}
-
-.whyIcon {
-  font-size: 3rem;
-  margin-bottom: 20px;
-}
-
-.whyTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--dark-text);
-}
-
-.whyDescription {
-  color: var(--gray-text);
-  line-height: 1.6;
-  font-size: 0.9375rem;
-}
-
-/* About Section */
-.about {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: var(--white);
-}
-
-.aboutContent {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
-}
-
-.aboutTitle {
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 32px;
-  color: var(--dark-text);
-  letter-spacing: -0.02em;
-}
-
-.aboutDescription {
-  font-size: 1.0625rem;
-  line-height: 1.7;
-  color: var(--gray-text);
-  margin-bottom: 24px;
-}
-
-.aboutStats {
-  display: flex;
-  gap: 48px;
-  margin-top: 40px;
-}
-
-.aboutStat {
-  text-align: center;
-}
-
-.aboutStat h3 {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--primary-orange);
-  margin-bottom: 8px;
-  line-height: 1;
-}
-
-.aboutStat p {
-  color: var(--gray-text);
-  font-size: 0.875rem;
-}
-
-.aboutImage {
-  position: relative;
-  height: 500px;
-}
-
-.imageCard {
-  width: 100%;
-  height: 100%;
-  background: #fafaf9;
-  border-radius: 16px;
-  border: 1px solid var(--border-light);
-  position: relative;
-  overflow: hidden;
-}
-
-.imageCard::before {
-  content: '♔';
-  position: absolute;
-  font-size: 20rem;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.05;
-  color: var(--primary-orange);
-}
-
-/* Contact Section */
-.contact {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 100px 8%;
-  background: #fafaf9;
-}
-
-.contactContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.contactGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  margin-top: 60px;
-}
-
-.contactInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.contactItem {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  padding: 24px;
-  background: var(--white);
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
-}
-
-.contactItem:hover {
-  border-color: var(--primary-orange);
-  transform: translateX(8px);
-}
-
-.contactIcon {
-  font-size: 1.5rem;
-}
-
-.contactItem h4 {
-  font-size: 1rem;
-  margin-bottom: 8px;
-  color: var(--dark-text);
-  font-weight: 600;
-}
-
-.contactItem p {
-  color: var(--gray-text);
-  font-size: 0.9375rem;
-}
-
-.contactForm {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.input,
-.textarea {
-  padding: 16px 20px;
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  color: var(--dark-text);
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  font-family: inherit;
-}
-
-.input:focus,
-.textarea:focus {
-  outline: none;
-  border-color: var(--primary-orange);
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
-}
-
-.textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.submitBtn {
-  padding: 16px;
-  background: var(--primary-orange);
-  color: var(--white);
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.submitBtn:hover {
-  background: var(--secondary-brown);
-  transform: translateY(-2px);
-}
-
-/* Footer */
-.footer {
-  background: var(--dark-text);
-  padding: 60px 8% 32px;
-  color: var(--white);
-}
-
-.footerContent {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 60px;
-  margin-bottom: 40px;
-}
-
-.footerSection h3 {
-  font-size: 1.25rem;
-  margin-bottom: 16px;
-  color: var(--primary-orange);
-  font-weight: 700;
-}
-
-.footerSection h4 {
-  font-size: 1.125rem;
-  margin-bottom: 16px;
-  color: var(--primary-orange);
-  font-weight: 600;
-}
-
-.footerSection p {
-  color: #d1d5db;
-  line-height: 1.6;
-  font-size: 0.9375rem;
-}
-
-.footerSection a {
-  display: block;
-  color: #d1d5db;
-  text-decoration: none;
-  margin-bottom: 12px;
-  transition: color 0.3s ease;
-  font-size: 0.9375rem;
-}
-
-.footerSection a:hover {
-  color: var(--primary-orange);
-}
-
-.socialLinks {
-  display: flex;
-  gap: 16px;
-}
-
-.footerBottom {
-  text-align: center;
-  padding-top: 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
-  font-size: 0.875rem;
-}
-
-/* WhatsApp Button */
-.whatsappBtn {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  width: 60px;
-  height: 60px;
-  background: #25d366;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
-  z-index: 999;
-  transition: all 0.3s ease;
-}
-
-.whatsappBtn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-}
-
-.whatsappIcon {
-  width: 32px;
-  height: 32px;
-  color: var(--white);
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .heroContent,
-  .aboutContent,
-  .contactGrid {
-    grid-template-columns: 1fr;
-    gap: 60px;
-  }
-
-  .featuresGrid,
-  .whyGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .testimonialsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .demoBoard {
-    margin-top: 40px;
-  }
-
-   .badge {
-    margin-top: 50px;
-  }
-}
-
+/* Mobile Optimizations */
 @media (max-width: 768px) {
-  .hero,
-  .demoVideo,
-  .features,
-  .tournamentBanner,
-  .testimonials,
-  .whyChooseUs,
-  .about,
-  .contact {
-    padding: 80px 5%;
-    min-height: auto;
-  }
-
-  .heroTitle {
-    font-size: 2.5rem;
-  }
-
-  .sectionTitle {
-    font-size: 2rem;
-  }
-
-  .heroButtons {
-    flex-direction: column;
-  }
-
-  .primaryBtn,
-  .secondaryBtn {
-    width: 100%;
-  }
-
-  .stats {
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .featuresGrid,
-  .whyGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .demoHeader {
-    flex-direction: column;
-    gap: 12px;
+  .hero {
+    padding: 3rem 1rem;
     text-align: center;
   }
 
-  .videoPlaceholder {
-    padding: 80px 40px;
-  }
-
-  .bannerFeatures {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .footerContent {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .whatsappBtn {
-    width: 56px;
-    height: 56px;
-    bottom: 24px;
-    right: 24px;
-  }
-
-  .whatsappIcon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .badge {
-    margin-top: 50px;
-  }
-}
-
-@media (max-width: 480px) {
   .heroTitle {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
-  .sectionTitle {
-    font-size: 1.75rem;
-  }
-
-  .badge {
-    font-size: 0.75rem;
-    padding: 8px 16px;
-    margin-top: 30px;
-  }
-
-  .statNumber {
-    font-size: 2rem;
-  }
-
-  .demoBoard {
-    padding: 24px;
-  }
-
-  .videoPlaceholder {
-    padding: 60px 24px;
-  }
-
-  .playButton {
-    width: 64px;
-    height: 64px;
-    font-size: 1.5rem;
-  }
-
-  .countdownItem {
-    padding: 20px 32px;
-  }
-
-  .countdownNumber {
-    font-size: 2.5rem;
-  }
-
-  .whatsappBtn {
-    width: 52px;
-    height: 52px;
-    bottom: 20px;
-    right: 20px;
-  }
-}
-
-/* Enhanced Mobile Responsive Design for below 450px */
-@media (max-width: 450px) {
-  .hero,
-  .demoVideo,
-  .features,
-  .tournamentBanner,
-  .testimonials,
-  .whyChooseUs,
-  .about,
-  .contact {
-    padding: 60px 4% 40px;
-  }
-
-  .heroTitle {
-    font-size: 1.75rem;
-    line-height: 1.2;
-    margin-bottom: 16px;
-  }
-
-  .heroSubtitle {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 32px;
-  }
-
-  .heroButtons {
-    margin-bottom: 40px;
-  }
-
-  .primaryBtn,
-  .secondaryBtn {
-    padding: 14px 24px;
-    font-size: 0.9rem;
-  }
-
-  .stats {
-    gap: 20px;
-  }
-
-  .statNumber {
-    font-size: 1.75rem;
-  }
-
-  .statLabel {
-    font-size: 0.8rem;
-  }
-
-  .demoBoard {
-    padding: 20px;
-    margin-top: 30px;
-  }
-
-  .demoHeader {
+  .ctaButtons {
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
+    width: 100%;
   }
 
-  .demoTitle {
-    font-size: 0.9rem;
-  }
-
-  .demoTimer {
-    font-size: 1.25rem;
-  }
-
-  .demoFooter p {
-    font-size: 0.8rem;
-    margin-bottom: 12px;
-  }
-
-  .sectionTitle {
-    font-size: 1.5rem;
-    margin-bottom: 12px;
-  }
-
-  .sectionSubtitle {
-    font-size: 1rem;
-    margin-bottom: 40px;
-  }
-
-  .videoPlaceholder {
-    padding: 50px 20px;
-  }
-
-  .playButton {
-    width: 56px;
-    height: 56px;
-    font-size: 1.25rem;
-  }
-
-  .videoPlaceholder p {
-    font-size: 1.1rem;
-  }
-
-  .featureCard,
-  .whyCard {
-    padding: 24px 16px;
-  }
-
-  .featureIcon,
-  .whyIcon {
-    font-size: 2.5rem;
-    margin-bottom: 16px;
-  }
-
-  .featureTitle,
-  .whyTitle {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-  }
-
-  .featureDescription,
-  .whyDescription {
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .bannerTitle {
-    font-size: 1.75rem;
-    line-height: 1.3;
-  }
-
-  .bannerText {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 32px;
-  }
-
-  .bannerFeatures {
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-
-  .bannerFeature {
-    font-size: 0.9rem;
-  }
-
-  .bannerIcon {
-    font-size: 1.25rem;
-  }
-
-  .countdownItem {
-    padding: 16px 24px;
-  }
-
-  .countdownNumber {
-    font-size: 2rem;
-  }
-
-  .countdownLabel {
-    font-size: 0.9rem;
-  }
-
-  .bannerBtn {
-    padding: 16px 32px;
-    font-size: 1rem;
-  }
-
-  .testimonialCard {
-    padding: 20px;
-  }
-
-  .testimonialHeader {
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .testimonialAvatar {
-    width: 48px;
-    height: 48px;
-    font-size: 1.5rem;
-  }
-
-  .testimonialName {
-    font-size: 0.9rem;
-  }
-
-  .testimonialSchool {
-    font-size: 0.8rem;
-  }
-
-  .testimonialText {
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .aboutContent {
-    gap: 40px;
-  }
-
-  .aboutTitle {
-    font-size: 1.75rem;
-    margin-bottom: 24px;
-  }
-
-  .aboutDescription {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-
-  .aboutStats {
-    gap: 24px;
-    margin-top: 32px;
-  }
-
-  .aboutStat h3 {
-    font-size: 2.5rem;
-  }
-
-  .aboutStat p {
-    font-size: 0.8rem;
-  }
-
-  .aboutImage {
-    height: 300px;
-  }
-
-  .contactGrid {
-    gap: 40px;
-    margin-top: 40px;
-  }
-
-  .contactItem {
-    padding: 20px;
-    gap: 16px;
-  }
-
-  .contactIcon {
-    font-size: 1.25rem;
-  }
-
-  .contactItem h4 {
-    font-size: 0.9rem;
-  }
-
-  .contactItem p {
-    font-size: 0.875rem;
-  }
-
-  .input,
-  .textarea {
-    padding: 14px 16px;
-    font-size: 0.9rem;
-  }
-
-  .submitBtn {
-    padding: 14px;
-    font-size: 0.9rem;
-  }
-
-  .footer {
-    padding: 40px 4% 24px;
-  }
-
-  .footerContent {
-    gap: 32px;
-    margin-bottom: 32px;
-  }
-
-  .footerSection h3 {
-    font-size: 1.1rem;
-  }
-
-  .footerSection h4 {
-    font-size: 1rem;
-  }
-
-  .footerSection p,
-  .footerSection a {
-    font-size: 0.875rem;
-  }
-
-  .footerBottom {
-    padding-top: 24px;
-    font-size: 0.8rem;
-  }
-
-  .whatsappBtn {
-    width: 48px;
-    height: 48px;
-    bottom: 16px;
-    right: 16px;
-  }
-
-  .badge {
-    padding: 6px 12px;
-    font-size: 0.7rem;
-    margin-bottom: 16px;
-  }
-
-  .badgeDot {
-    width: 6px;
-    height: 6px;
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
   }
 }

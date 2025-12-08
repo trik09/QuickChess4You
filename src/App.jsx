@@ -3,10 +3,18 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import Home from "./pages/Home/Home";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import PuzzlePage from "./pages/PuzzlePage/PuzzlePage";
+import Profile from "./pages/Profile/Profile";
+import UserSettings from "./pages/Settings/Settings";
+import About from "./pages/About/About";
+import Courses from "./pages/Courses/Courses";
+import Coaching from "./pages/Coaching/Coaching";
+import Pricing from "./pages/Pricing/Pricing";
+import Contact from "./pages/Contact/Contact";
 
 import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import AdminDashboard from "./pages/Admin/AdminDashboard/AdminDashboard";
+import MainLayout from "./layouts/MainLayout/MainLayout";
 
 import CategoryList from "./pages/Admin/CategoryList/CategoryList";
 import PuzzleList from "./pages/Admin/PuzzleList/PuzzleList";
@@ -21,7 +29,7 @@ import AdminManagement from "./pages/Admin/AdminManagement/AdminManagement";
 import Leaderboard from "./pages/Admin/Leaderboard/Leaderboard";
 import Reports from "./pages/Admin/Reports/Reports";
 import SystemMonitor from "./pages/Admin/SystemMonitor/SystemMonitor";
-import Settings from "./pages/Admin/Settings/Settings";
+import AdminSettings from "./pages/Admin/Settings/Settings";
 
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import AdminProtectedRoute from "./components/ProtectedRoute/AdminProtectedRoute";
@@ -33,62 +41,69 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <Router>
-      <Routes>
+          <Routes>
 
-        {/* Public */}
-        <Route path="/" element={<Home />} />
+            {/* User Layout w/ Sidebar & Bottom Nav */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/coaching" element={<Coaching />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <UserProtectedRoute>
+                    <Dashboard />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<UserSettings />} />
+              <Route
+                path="/puzzle"
+                element={
+                  <UserProtectedRoute>
+                    <PuzzlePage />
+                  </UserProtectedRoute>
+                }
+              />
+            </Route>
 
-        {/* User protected */}
-        <Route
-          path="/dashboard"
-          element={
-            <UserProtectedRoute>
-              <Dashboard />
-            </UserProtectedRoute>
-          }
-        />
-        <Route
-          path="/puzzle"
-          element={
-            <UserProtectedRoute>
-              <PuzzlePage />
-            </UserProtectedRoute>
-          }
-        />
+            {/* Admin login */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Admin login */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+            {/* Automatic admin redirect */}
+            <Route path="/admin" element={<AdminRedirect />} />
 
-        {/* Automatic admin redirect */}
-        <Route path="/admin" element={<AdminRedirect />} />
+            {/* Admin protected pages */}
+            <Route
+              path="/admin"
+              element={
+                <AdminProtectedRoute>
+                  <AdminLayout />
+                </AdminProtectedRoute>
+              }
+            >
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="categories" element={<CategoryList />} />
+              <Route path="puzzles" element={<PuzzleList />} />
+              <Route path="puzzles/create" element={<CreatePuzzle />} />
+              <Route path="puzzles/edit/:id" element={<EditPuzzle />} />
+              <Route path="competitions" element={<CompetitionList />} />
+              <Route path="competitions/create" element={<CreateCompetition />} />
+              <Route path="competitions/live" element={<LiveTournament />} />
+              <Route path="competitions/history" element={<CompetitionHistory />} />
+              <Route path="students" element={<StudentList />} />
+              <Route path="admins" element={<AdminManagement />} />
+              <Route path="leaderboard" element={<Leaderboard />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="monitoring" element={<SystemMonitor />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-        {/* Admin protected pages */}
-        <Route
-          path="/admin"
-          element={
-            <AdminProtectedRoute>
-              <AdminLayout />
-            </AdminProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="categories" element={<CategoryList />} />
-          <Route path="puzzles" element={<PuzzleList />} />
-          <Route path="puzzles/create" element={<CreatePuzzle />} />
-          <Route path="puzzles/edit/:id" element={<EditPuzzle />} />
-          <Route path="competitions" element={<CompetitionList />} />
-          <Route path="competitions/create" element={<CreateCompetition />} />
-          <Route path="competitions/live" element={<LiveTournament />} />
-          <Route path="competitions/history" element={<CompetitionHistory />} />
-          <Route path="students" element={<StudentList />} />
-          <Route path="admins" element={<AdminManagement />} />
-          <Route path="leaderboard" element={<Leaderboard />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="monitoring" element={<SystemMonitor />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-
-      </Routes>
+          </Routes>
         </Router>
       </ThemeProvider>
     </AuthProvider>

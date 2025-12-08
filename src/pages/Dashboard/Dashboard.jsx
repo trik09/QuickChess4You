@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import Navbar from '../../components/Navbar/Navbar';
+
 import styles from './Dashboard.module.css';
 
 function Dashboard() {
@@ -48,8 +48,8 @@ function Dashboard() {
 
   return (
     <div className={styles.container}>
-      <Navbar />
-      
+
+
       <div className={styles.content}>
         <div className={styles.header}>
           <h1>Upcoming Tournaments</h1>
@@ -77,7 +77,7 @@ function Dashboard() {
                   <span>{tournament.prize}</span>
                 </div>
               </div>
-              <button 
+              <button
                 className={styles.participateBtn}
                 onClick={handleParticipate}
               >
