@@ -26,6 +26,7 @@ import Settings from "./pages/Admin/Settings/Settings";
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import AdminProtectedRoute from "./components/ProtectedRoute/AdminProtectedRoute";
 import AdminRedirect from "./components/AdminRedirect";   // NEW
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   return (

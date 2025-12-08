@@ -187,6 +187,7 @@ function PuzzlePage() {
 
   const handlePuzzleSolved = () => {
     setSolvedCount((s) => s + 1);
+    // Auto-advance to next puzzle after a short delay so user sees "solved"
     setTimeout(() => {
       setCurrentPuzzle((prev) => {
         if (totalPuzzles && prev < totalPuzzles) {
@@ -214,6 +215,7 @@ function PuzzlePage() {
   };
 
   const handleResetPuzzle = () => {
+    // Reset by re-mounting chessboard: change key by toggling currentPuzzle briefly
     const temp = currentPuzzle;
     setCurrentPuzzle(0);
     setTimeout(() => setCurrentPuzzle(temp), 50);
