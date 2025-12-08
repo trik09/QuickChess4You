@@ -17,13 +17,13 @@ function AdminLayout() {
 
   const handleLogout = () => {
     // Remove admin-specific items
-    localStorage.removeItem('adminAuth');
-    localStorage.removeItem('adminUser');
+    localStorage.removeItem('admin');
+    //localStorage.removeItem('adminUser');
     // Remove token if it's an admin token (you might want to check this more carefully)
     // For now, we'll remove it to ensure clean logout
-    const adminToken = localStorage.getItem('token');
+    const adminToken = localStorage.getItem('atoken');
     if (adminToken) {
-      localStorage.removeItem('token');
+      localStorage.removeItem('atoken');
     }
     navigate('/admin/login');
   };

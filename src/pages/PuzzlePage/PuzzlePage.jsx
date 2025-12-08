@@ -1,13 +1,94 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import ChessBoard from '../../components/ChessBoard/ChessBoard';
+import { puzzleAPI } from '../../services/api';
 import styles from './PuzzlePage.module.css';
+
+// Real chess puzzles with verified solutions (solution arrays expected as [W1, B1, W2, B2, ...])
+// const samplePuzzles = [
+//   {
+//     id: 1,
+//     type: 'Fork',
+//     fen: '2q3k1/8/8/5N2/6P1/7K/8/8 w - - 0 1',
+//     solution: ['Ne7+', 'Kf7', 'Nxc8'],
+//     description: 'White to move. Play the winning tactic and win the queen.'
+//   },
+
+//   {
+//     id: 2,
+//     type: 'Mate in 2',
+//     fen: 'r4r1k/ppn1NBpp/4b3/4P3/3p1R2/1P6/P1P3PP/R5K1 w - - 0 1',
+//     solution: ['Ng6+', 'hxg6', 'Rh4#'],
+//     description: 'White to move. Force checkmate in 2 moves.'
+//   },
+
+//   {
+//     id: 3,
+//     type: 'Mate in 2',
+//     fen: '1R4rk/6bp/8/4B3/8/1K6/7Q/8 w - - 0 1',
+//     solution: ['Qxh7#'],
+//     description: 'White to move. Find the checkmate in 1 move.'
+//   },
+//   {
+//     id: 4,
+//     type: 'Mate in 1',
+//     fen: '6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1',
+//     solution: ['Re8#'],
+//     description: 'White to move. Find the checkmate in 1 move.'
+//   },
+//   {
+//     id: 5,
+//     type: 'Mate in 2',
+//     fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 0 1',
+//     // this solution is given as W,B,W ... ensure moves are SAN strings accurate for the position
+//     solution: ['Bxf7+', 'Kxf7', 'Ng5#'],
+//     description: 'White to move. Find checkmate in 2 moves.'
+//   },
+//   {
+//     id: 6,
+//     type: 'Mate in 2',
+//     fen: 'r1bqkb1r/pppp1ppp/2n5/4p2Q/2BnP3/5N2/PPPP1PPP/RNB1K2R w KQkq - 0 1',
+//     solution: ['Qxf7+', 'Kd7', 'Qe7#'],
+//     description: 'White to move. Find checkmate in 2 moves.'
+//   },
+//   {
+//     id: 7,
+//     type: 'Mate in 2',
+//     fen: 'r2qkb1r/pp2nppp/3p4/2pNN1B1/2BnP3/3P4/PPP2PPP/R2bK2R w KQkq - 0 1',
+//     solution: ['Nf6+', 'gxf6', 'Bxf7#'],
+//     description: 'White to move. Find checkmate in 2 moves.'
+//   },
+//   {
+//     id: 8,
+//     type: 'Mate in 2',
+//     fen: '5rk1/pp3ppp/2p5/2b5/4PQ2/2P3P1/P4P1P/5RK1 w - - 0 1',
+//     solution: ['Qf7+', 'Kh8', 'Qg7#'],
+//     description: 'White to move. Find checkmate in 2 moves.'
+//   },
+//   {
+//     id: 9,
+//     type: 'Mate in 3',
+//     fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 0 1',
+//     solution: ['Bxf7+', 'Kxf7', 'Ng5+', 'Kg8', 'Qh5', 'h6', 'Qh7#'],
+//     description: 'White to move. Find checkmate in 3 moves.'
+//   },
+//   {
+//     id: 10,
+//     type: 'Mate in 3',
+//     fen: 'r2qkb1r/ppp2ppp/2n5/3Pp3/2B5/8/PPP2PPP/RNBQK2R w KQkq - 0 1',
+//     solution: ['Qh5+', 'g6', 'Qxg6+', 'hxg6', 'Bxf7#'],
+//     description: 'White to move. Find checkmate in 3 moves.'
+//   }
+// ];
 
 function PuzzlePage() {
   const [currentPuzzle, setCurrentPuzzle] = useState(1);
   const [timeLeft, setTimeLeft] = useState(299);
   const [solvedCount, setSolvedCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
+  const [puzzles, setPuzzles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
   // Timer functionality
   useEffect(() => {
@@ -24,64 +105,58 @@ function PuzzlePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // ---------------------------------------------------------
-  // UPDATED PUZZLE DATABASE (Total: 6)
-  // Includes 3 Classic verified puzzles + 3 Custom User Puzzles
-  // ---------------------------------------------------------
-  const puzzles = [
-    // --- KEEPING 3 CURRENT WORKING PUZZLES ---
-    {
-      id: 1,
-      type: 'Mate in 1',
-      fen: '6k1/3R1ppp/8/8/8/8/5PPP/6K1 w - - 0 1',
-      solution: ['Rd8#'],
-      description: 'White to move. The opponent\'s king is trapped behind their own pawns.'
-    },
-    {
-      id: 2,
-      type: 'Mate in 1',
-      fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4',
-      solution: ['Qxf7#'],
-      description: 'White to move. Deliver the checkmate on the weak f7 square (Scholar\'s Mate).'
-    },
-{
-      id: 3,
-      type: 'Mate in 2',
-      // FIXED: Changed last digit from 0 to 1
-      fen: '4kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 1 1',
-      solution: ['Qb8+', 'Nxb8', 'Rd8#'],
-      description: 'White to move. A famous Queen sacrifice leading to checkmate.'
-    },
+  useEffect(() => {
+    let isMounted = true;
 
-    // --- ADDING THE 3 NEW REQUESTED PUZZLES ---
-    {
-      id: 4,
-      type: 'Find the best move',
-      // Discovered Check / Windmill Theme
-      fen: 'r5rk/5p1p/5R2/4B3/8/8/7P/7K w - - 0 1',
-      solution: ['Rg6+', 'f6', 'Bxf6+', 'Rg7', 'Rxg7'], 
-      // Note: Rxg7 is decisive. White can then mate with Rg5# or similar next, but this sequence wins.
-      description: 'White to move. Use the discovered check from the Bishop to dismantle the defense.'
-    },
-    {
-      id: 5,
-      type: 'Mate in 2',
-      // Absolute Pin Theme
-      fen: '1R6/6pk/6np/p6Q/P2p4/3P4/K1P5/8 w - - 0 1',
-      solution: ['Qf5', 'h5', 'Qxh5#'], 
-      // Qf5 pins the Knight (g6) to the King (h7). Black is helpless.
-      description: 'White to move. Pin the Knight to the King to force a checkmate.'
-    },
-    {
-      id: 6,
-      type: 'Pin to Win',
-      // Long Diagonal Pin
-      fen: '7k/8/8/4n3/4P3/8/8/6BK w - - 0 1',
-      solution: ['Bd4', 'Kg8', 'Bxe5'],
-      // Bd4 pins the Knight (e5) to the King (h8).
-      description: 'White to move. Use the Bishop to pin the Knight to the King and win the piece.'
-    }
-  ];
+    const fetchPuzzles = async () => {
+      try {
+        const data = await puzzleAPI.getAll();
+        console.log(data.data);
+
+        if (!Array.isArray(data)) {
+          throw new Error('Unexpected puzzle response');
+        }
+
+        const normalized = data
+          .filter((p) => p?.fen && Array.isArray(p?.solutionMoves) && p.solutionMoves.length)
+          .map((puzzle, index) => ({
+            id: index + 1,
+            dbId: puzzle._id,
+            type: puzzle.title || (puzzle.difficulty ? `${puzzle.difficulty} puzzle` : `Puzzle ${index + 1}`),
+            fen: puzzle.fen,
+            solution: puzzle.solutionMoves,
+            description: puzzle.description || 'Solve the puzzle.',
+          }));
+
+        if (!normalized.length) {
+          throw new Error('No ready puzzles returned. Showing sample set.');
+        }
+
+        if (isMounted) {
+          setPuzzles(normalized);
+          setCurrentPuzzle(1);
+          setFetchError('');
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error('Failed to load puzzles:', error);
+          setFetchError(error.message || 'Unable to load live puzzles. Showing sample set.');
+          setPuzzles([]);
+          setCurrentPuzzle(1);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchPuzzles();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -89,28 +164,36 @@ function PuzzlePage() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const totalPuzzles = puzzles.length;
+
   const handlePuzzleSelect = (puzzleNum) => {
-    setCurrentPuzzle(puzzleNum);
+    if (puzzleNum >= 1 && puzzleNum <= totalPuzzles) {
+      setCurrentPuzzle(puzzleNum);
+      // reset timer or other state if you want when switching
+    }
   };
 
   const handlePrevPuzzle = () => {
     if (currentPuzzle > 1) {
-      setCurrentPuzzle(currentPuzzle - 1);
+      setCurrentPuzzle((prev) => prev - 1);
     }
   };
 
   const handleNextPuzzle = () => {
-    if (currentPuzzle < puzzles.length) {
-      setCurrentPuzzle(currentPuzzle + 1);
+    if (totalPuzzles && currentPuzzle < totalPuzzles) {
+      setCurrentPuzzle((prev) => prev + 1);
     }
   };
 
   const handlePuzzleSolved = () => {
     setSolvedCount((s) => s + 1);
     setTimeout(() => {
-      if (currentPuzzle < puzzles.length) {
-        setCurrentPuzzle(currentPuzzle + 1);
-      }
+      setCurrentPuzzle((prev) => {
+        if (totalPuzzles && prev < totalPuzzles) {
+          return prev + 1;
+        }
+        return prev;
+      });
     }, 1200);
   };
 
@@ -119,14 +202,14 @@ function PuzzlePage() {
   };
 
   const handleHint = () => {
-    const puzzle = puzzles.find(p => p.id === currentPuzzle);
-    if (!puzzle) return;
+    const puzzle = puzzles[currentPuzzle - 1] || puzzles[0];
+    if (!puzzle || !puzzle.solution?.length) return;
     alert(`First move: ${puzzle.solution[0]}`);
   };
 
   const handleShowSolution = () => {
-    const puzzle = puzzles.find(p => p.id === currentPuzzle);
-    if (!puzzle) return;
+    const puzzle = puzzles[currentPuzzle - 1] || puzzles[0];
+    if (!puzzle || !puzzle.solution?.length) return;
     alert(`Complete solution:\n${puzzle.solution.join(' → ')}`);
   };
 
@@ -136,7 +219,8 @@ function PuzzlePage() {
     setTimeout(() => setCurrentPuzzle(temp), 50);
   };
 
-  const puzzle = puzzles.find(p => p.id === currentPuzzle) || puzzles[0];
+  const puzzleIndex = totalPuzzles ? Math.min(Math.max(currentPuzzle - 1, 0), totalPuzzles - 1) : 0;
+  const puzzle = totalPuzzles ? puzzles[puzzleIndex] : null;
 
   return (
     <div className={styles.container}>
@@ -176,17 +260,26 @@ function PuzzlePage() {
 
         {/* CENTER PANEL - Chessboard */}
         <div className={styles.centerPanel}>
-          <div className={styles.puzzleInfo}>
-            <h2>{puzzle.type}</h2>
-            <p>{puzzle.description}</p>
-          </div>
-          <ChessBoard
-            key={`${puzzle.id}-${puzzle.fen}`} 
-            fen={puzzle.fen}
-            solution={puzzle.solution}
-            onPuzzleSolved={handlePuzzleSolved}
-            onWrongMove={handleWrongMove}
-          />
+          {puzzle && (
+            <div className={styles.puzzleInfo}>
+              <h2>{puzzle.type}</h2>
+              <p>{puzzle.description}</p>
+              {(isLoading || fetchError) && (
+                <p className={styles.statusMessage}>
+                  {isLoading ? 'Loading puzzles…' : fetchError}
+                </p>
+              )}
+            </div>
+          )}
+          {puzzle && (
+            <ChessBoard
+              key={`${puzzle.dbId || puzzle.id || 'puzzle'}-${currentPuzzle}-${puzzle.fen}`}
+              fen={puzzle.fen}
+              solution={puzzle.solution || []}
+              onPuzzleSolved={handlePuzzleSolved}
+              onWrongMove={handleWrongMove}
+            />
+          )}
         </div>
 
         {/* RIGHT PANEL - Puzzle Selector */}
@@ -196,7 +289,7 @@ function PuzzlePage() {
             <div className={styles.puzzleGrid}>
               {puzzles.map((p) => (
                 <button
-                  key={p.id}
+                  key={p.dbId || p.id}
                   className={`${styles.puzzleBtn} ${currentPuzzle === p.id ? styles.active : ''}`}
                   onClick={() => handlePuzzleSelect(p.id)}
                   title={`${p.type}`}
@@ -216,7 +309,7 @@ function PuzzlePage() {
               <button
                 className={styles.navBtn}
                 onClick={handleNextPuzzle}
-                disabled={currentPuzzle === puzzles.length}
+                disabled={!totalPuzzles || currentPuzzle === totalPuzzles}
               >
                 ▶
               </button>

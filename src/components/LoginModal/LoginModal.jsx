@@ -74,8 +74,8 @@ function LoginModal({ onClose }) {
         null // No avatar during registration
       );
 
-      // Use context to store token and user data
-      login(response.user, response.token);
+      // Use context to store token, user data, and optional admin token (atoken)
+      login(response.user, response.token, response.atoken);
 
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => {
@@ -104,8 +104,8 @@ function LoginModal({ onClose }) {
     try {
       const response = await authAPI.login(formData.email, formData.password);
 
-      // Use context to store token and user data
-      login(response.user, response.token);
+      // Use context to store token, user data, and optional admin token (atoken)
+      login(response.user, response.token, response.atoken);
 
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {

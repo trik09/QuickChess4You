@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import styles from './DataTable.module.css';
 
 function DataTable({ columns, data, actions, emptyMessage = 'No data available' }) {
+  //console.log(data);
   return (
     <div className={styles.tableContainer}>
       <table className={styles.table}>

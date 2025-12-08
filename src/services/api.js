@@ -1,3 +1,5 @@
+//import { updateCompetition } from "../../../backend/controllers/compition.controlller";
+
 // API Base URL - Update this to match your backend server
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
@@ -111,7 +113,7 @@ export const authAPI = {
 };
 
 /**
- * Admin APIs
+ * Admin APIs - puzzle management
  */
 export const adminAPI = {
   // Login admin
@@ -121,10 +123,113 @@ export const adminAPI = {
       body: JSON.stringify({ email, password }),
     }, null); // Don't send token for login
   },
+  // Get all puzzles (admin view)
+  getPuzzles: async () => {
+    const adminToken = localStorage.getItem('atoken');
+    // Matches backend router: app.use('/api/puzzles', puzzleRouter)
+    // backend route: router.get('/get-puzzles', ...)
+    return apiRequest('/puzzle/get-puzzles', {
+      method: 'GET',
+    }, adminToken);
+  },
+  // Get a puzzle by id
+  getPuzzleById: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.get('/get-puzzle/:id', ...)
+    return apiRequest(`/puzzle/get-puzzle/${id}`, {
+      method: 'GET',
+    }, adminToken);
+  },
+
+  // Create a puzzle
+  createPuzzle: async (puzzleData) => {
+    const adminToken = localStorage.getItem('atoken');
+  
+    return apiRequest(
+      '/puzzle/create-puzzle',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`, 
+        },
+        body: JSON.stringify(puzzleData),
+      }
+    );
+  },
+  
+  // Update a puzzle
+  updatePuzzle: async (id, puzzleData) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.put('/update-puzzle/:id', ...)
+    return apiRequest(`/puzzle/update-puzzle/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(puzzleData),
+    }, adminToken);
+  },
+  // Delete a puzzle
+  deletePuzzle: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.delete('/delete-puzzle/:id', ...)
+    return apiRequest(`/puzzle/delete-puzzle/${id}`, {
+      method: 'DELETE',
+    }, adminToken);
+  },
 };
+
+/**
+ * Public puzzle APIs
+ */
+export const puzzleAPI = {
+  getAll: async () => {
+    return apiRequest('/puzzle/get-puzzles', {
+      method: 'GET',
+    }, null);
+  },
+};
+
+export const competitionAPi={
+  getAll: async () => {
+    return apiRequest('/competition/', {
+      method: 'GET',
+    }, null);
+  },
+  createCompetition: async (competitionData) => {
+    const adminToken = localStorage.getItem('atoken');
+  
+    return apiRequest(
+      '/competition/create-competition',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`, 
+        },
+        body: JSON.stringify(competitionData),
+      }
+    );
+  },
+  updateCompetition: async (id, competitionData) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.put('/update-competition/:id', ...)
+    return apiRequest(`/competition/update-competition/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(competitionData),
+    }, adminToken);
+  },
+  deleteCompetition: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    // backend route: router.delete('/delete-competition/:id', ...)
+    return apiRequest(`/competition/delete-competition/${id}`, {
+      method: 'DELETE',
+    }, adminToken);
+  },
+}
 
 export default {
   authAPI,
   adminAPI,
+  puzzleAPI,
+  competitionAPi
 };
 

@@ -2,15 +2,19 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserShield, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { adminAPI } from '../../../services/api';
+import { useAuth } from '../../../contexts/AuthContext';
 import logo from '../../../assets/logo.png';
 import styles from './AdminLogin.module.css';
 
 function AdminLogin() {
   const navigate = useNavigate();
+  const { adminLogin } = useAuth();   // <-- use AdminAuthContext
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,21 +26,22 @@ function AdminLogin() {
 
     try {
       const response = await adminAPI.login(formData.email, formData.password);
-      
+
       if (response.atoken) {
-        // Store token in localStorage
-        localStorage.setItem('atoken', response.atoken);
-        localStorage.setItem('adminAuth', 'true');
-        localStorage.setItem('adminUser', formData.email);
-        
-        // Navigate to admin dashboard
+        // Store admin session using context
+        adminLogin(
+          { email: formData.email },  // admin info
+          response.atoken             // admin JWT token
+        );
+
         navigate('/admin/dashboard');
       } else {
         setError('Login failed: No token received');
-        setLoading(false);
       }
+
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      setError(err?.message || 'Invalid email or password');
+    } finally {
       setLoading(false);
     }
   };
@@ -45,12 +50,15 @@ function AdminLogin() {
     <div className={styles.loginPage}>
       <div className={styles.loginContainer}>
         <div className={styles.loginCard}>
+          
+          {/* Logo Section */}
           <div className={styles.logoSection}>
             {/* <img src={logo} alt="QuickChess4You" className={styles.logo} /> */}
             <h1>QuickChess4You</h1>
             <p>Admin Panel</p>
           </div>
 
+          {/* Login Form */}
           <form onSubmit={handleSubmit} className={styles.loginForm}>
             <h2>
               <FaUserShield /> Admin Login
@@ -65,9 +73,7 @@ function AdminLogin() {
             )}
 
             <div className={styles.formGroup}>
-              <label>
-                <FaUserShield /> Email
-              </label>
+              <label><FaUserShield /> Email</label>
               <input
                 type="email"
                 value={formData.email}
@@ -79,9 +85,7 @@ function AdminLogin() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>
-                <FaLock /> Password
-              </label>
+              <label><FaLock /> Password</label>
               <div className={styles.passwordInput}>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -100,7 +104,11 @@ function AdminLogin() {
               </div>
             </div>
 
-            <button type="submit" className={styles.loginBtn} disabled={loading}>
+            <button
+              type="submit"
+              className={styles.loginBtn}
+              disabled={loading}
+            >
               {loading ? (
                 <>
                   <span className={styles.spinner}></span>
@@ -114,8 +122,8 @@ function AdminLogin() {
             {/* <div className={styles.demoCredentials}>
               <p>Demo Credentials:</p>
               <div className={styles.credentials}>
-                <span><strong>Email:</strong> Use admin email from environment</span>
-                <span><strong>Password:</strong> Use admin password from environment</span>
+                <span><strong>Email:</strong> From environment</span>
+                <span><strong>Password:</strong> From environment</span>
               </div>
             </div> */}
           </form>
