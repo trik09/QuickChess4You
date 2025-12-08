@@ -1,50 +1,86 @@
-/* Global Orange Theme for Admin Panel */
+/* Global Light Gold Theme for Admin Panel */
 
-/* Primary Gradient Buttons */
+:root {
+  --admin-primary: #d2b561;
+  --admin-primary-dark: #b58863;
+  --admin-primary-darker: #8b7332;
+  --admin-primary-light: #e5d9a8;
+  --admin-primary-lighter: #f5f0dc;
+  --admin-bg: #faf8f3;
+  --admin-card-bg: #ffffff;
+  --admin-text: #2d2416;
+  --admin-text-light: #666;
+  --admin-border: #e8e3d5;
+  --admin-hover: #f5f0dc;
+}
+
+/* Primary Buttons */
 .admin-primary-btn {
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%) !important;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3) !important;
+  background: var(--admin-primary) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(210, 181, 97, 0.25) !important;
+  border: none !important;
 }
 
 .admin-primary-btn:hover {
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4) !important;
+  background: var(--admin-primary-dark) !important;
+  box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35) !important;
+  transform: translateY(-1px);
 }
 
 /* Primary Color */
 .admin-primary-color {
-  color: #ff9800 !important;
+  color: var(--admin-primary) !important;
 }
 
 /* Primary Background */
 .admin-primary-bg {
-  background: #ff9800 !important;
+  background: var(--admin-primary) !important;
 }
 
 /* Primary Border */
 .admin-primary-border {
-  border-color: #ff9800 !important;
+  border-color: var(--admin-primary) !important;
 }
 
 /* Focus States */
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #ff9800 !important;
+  border-color: var(--admin-primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1) !important;
 }
 
-/* Gradient Text */
-.admin-gradient-text {
-  background: linear-gradient(135deg, #ff9800 0%, #ffd54f 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Text Styles */
+.admin-text {
+  color: var(--admin-text) !important;
+}
+
+.admin-text-light {
+  color: var(--admin-text-light) !important;
 }
 
 /* Table Headers */
 .admin-table-header {
-  background: #fff8e1 !important;
+  background: var(--admin-primary-lighter) !important;
+  color: var(--admin-text) !important;
 }
 
 /* Hover States */
 .admin-hover-bg:hover {
-  background: #fffbf0 !important;
+  background: var(--admin-hover) !important;
+}
+
+/* Card Styles */
+.admin-card {
+  background: var(--admin-card-bg) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 8px !important;
+}
+
+/* Badge Styles */
+.admin-badge-primary {
+  background: var(--admin-primary-lighter) !important;
+  color: var(--admin-primary-darker) !important;
 }

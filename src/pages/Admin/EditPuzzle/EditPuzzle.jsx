@@ -7,6 +7,20 @@ import { PageHeader, Button } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
 import styles from './EditPuzzle.module.css';
 
+// Import chess pieces
+import whitePawn from '../../../assets/pieces3/whitepawn.svg';
+import whiteKnight from '../../../assets/pieces3/whiteknight.svg';
+import whiteBishop from '../../../assets/pieces3/whitebishop.svg';
+import whiteRook from '../../../assets/pieces3/whiterook.svg';
+import whiteQueen from '../../../assets/pieces3/whitequeen.svg';
+import whiteKing from '../../../assets/pieces3/whiteking.svg';
+import blackPawn from '../../../assets/pieces3/blackpawn.svg';
+import blackKnight from '../../../assets/pieces3/blackknight.svg';
+import blackBishop from '../../../assets/pieces3/blackbishop.svg';
+import blackRook from '../../../assets/pieces3/blackrook.svg';
+import blackQueen from '../../../assets/pieces3/blackqueen.svg';
+import blackKing from '../../../assets/pieces3/blackking.svg';
+
 function EditPuzzle() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -184,9 +198,11 @@ function EditPuzzle() {
                     className={`${styles.square} ${isLight ? styles.light : styles.dark}`}
                   >
                     {square && (
-                      <span className={styles.piece}>
-                        {getPieceSymbol(square.type, square.color)}
-                      </span>
+                      <img 
+                        src={getPieceImage(square.type, square.color)} 
+                        alt={`${square.color}${square.type}`}
+                        className={styles.piece}
+                      />
                     )}
                   </div>
                 );
@@ -205,16 +221,16 @@ function EditPuzzle() {
     }
   };
 
-  const getPieceSymbol = (type, color) => {
-    const pieces = {
-      p: { w: '♙', b: '♟' },
-      n: { w: '♘', b: '♞' },
-      b: { w: '♗', b: '♝' },
-      r: { w: '♖', b: '♜' },
-      q: { w: '♕', b: '♛' },
-      k: { w: '♔', b: '♚' }
+  const getPieceImage = (type, color) => {
+    const pieceMap = {
+      p: { w: whitePawn, b: blackPawn },
+      n: { w: whiteKnight, b: blackKnight },
+      b: { w: whiteBishop, b: blackBishop },
+      r: { w: whiteRook, b: blackRook },
+      q: { w: whiteQueen, b: blackQueen },
+      k: { w: whiteKing, b: blackKing },
     };
-    return pieces[type]?.[color] || '';
+    return pieceMap[type]?.[color] || null;
   };
 
   return (

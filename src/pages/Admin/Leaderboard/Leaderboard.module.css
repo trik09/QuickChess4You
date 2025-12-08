@@ -10,9 +10,7 @@
 .header h2 {
   font-size: 2.5rem;
   margin: 0 0 10px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #d2b561;
 }
 
 .header p {
@@ -38,7 +36,7 @@
 
 .exportBtn {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #d2b561;
   color: white;
   border: none;
   border-radius: 8px;
@@ -48,8 +46,9 @@
 }
 
 .exportBtn:hover {
+  background: #b58863;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35);
 }
 
 .podium {
@@ -100,7 +99,8 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #d2b561;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,7 +117,7 @@
 .podiumScore {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: #d2b561;
   margin: 0;
 }
 
@@ -136,8 +136,8 @@
 .table th {
   text-align: left;
   padding: 15px 20px;
-  background: #f8f9fa;
-  color: #666;
+  background: #f5f0dc;
+  color: #2d2416;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -151,7 +151,7 @@
 }
 
 .table tbody tr:hover {
-  background: #f8f9fa;
+  background: #faf8f3;
 }
 
 .playerInfo {

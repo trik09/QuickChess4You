@@ -92,7 +92,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: #d2b561;
   transition: width 0.5s;
 }
 
@@ -119,13 +119,13 @@
 }
 
 .viewBtn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #d2b561;
   color: white;
 }
 
 .pauseBtn {
-  background: #fff3e0;
-  color: #e65100;
+  background: #f5f0dc;
+  color: #8b7332;
 }
 
 .endBtn {
@@ -176,7 +176,7 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #d2b561;
   color: white;
   display: flex;
   align-items: center;

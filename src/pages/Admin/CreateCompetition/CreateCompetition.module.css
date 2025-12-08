@@ -57,7 +57,8 @@
 .formGroup textarea:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: #ff9800;
+  border-color: #d2b561;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1);
 }
 
 .formRow {
@@ -96,14 +97,15 @@
 }
 
 .submitBtn {
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  background: #d2b561;
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(210, 181, 97, 0.25);
 }
 
 .submitBtn:hover {
+  background: #b58863;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35);
 }
 
 @media (max-width: 768px) {

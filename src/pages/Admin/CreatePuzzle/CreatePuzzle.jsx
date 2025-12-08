@@ -8,6 +8,20 @@ import styles from "./CreatePuzzle.module.css";
 import {useAuth} from "../../../contexts/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
 
+// Import chess pieces
+import whitePawn from '../../../assets/pieces3/whitepawn.svg';
+import whiteKnight from '../../../assets/pieces3/whiteknight.svg';
+import whiteBishop from '../../../assets/pieces3/whitebishop.svg';
+import whiteRook from '../../../assets/pieces3/whiterook.svg';
+import whiteQueen from '../../../assets/pieces3/whitequeen.svg';
+import whiteKing from '../../../assets/pieces3/whiteking.svg';
+import blackPawn from '../../../assets/pieces3/blackpawn.svg';
+import blackKnight from '../../../assets/pieces3/blackknight.svg';
+import blackBishop from '../../../assets/pieces3/blackbishop.svg';
+import blackRook from '../../../assets/pieces3/blackrook.svg';
+import blackQueen from '../../../assets/pieces3/blackqueen.svg';
+import blackKing from '../../../assets/pieces3/blackking.svg';
+
 function CreatePuzzle() {
   const navigate = useNavigate();
   const { isAdminAuthenticated } = useAuth();
@@ -124,9 +138,11 @@ function CreatePuzzle() {
                     }`}
                   >
                     {sq && (
-                      <span className={styles.piece}>
-                        {getPieceSymbol(sq.type, sq.color)}
-                      </span>
+                      <img 
+                        src={getPieceImage(sq.type, sq.color)} 
+                        alt={`${sq.color}${sq.type}`}
+                        className={styles.piece}
+                      />
                     )}
                   </div>
                 );
@@ -145,16 +161,16 @@ function CreatePuzzle() {
     }
   };
 
-  const getPieceSymbol = (type, color) => {
-    const map = {
-      p: { w: "♙", b: "♟" },
-      n: { w: "♘", b: "♞" },
-      b: { w: "♗", b: "♝" },
-      r: { w: "♖", b: "♜" },
-      q: { w: "♕", b: "♛" },
-      k: { w: "♔", b: "♚" },
+  const getPieceImage = (type, color) => {
+    const pieceMap = {
+      p: { w: whitePawn, b: blackPawn },
+      n: { w: whiteKnight, b: blackKnight },
+      b: { w: whiteBishop, b: blackBishop },
+      r: { w: whiteRook, b: blackRook },
+      q: { w: whiteQueen, b: blackQueen },
+      k: { w: whiteKing, b: blackKing },
     };
-    return map[type]?.[color] || "";
+    return pieceMap[type]?.[color] || null;
   };
 
   const presetPositions = [

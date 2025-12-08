@@ -24,7 +24,7 @@
 }
 
 .exportBtn {
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  background: #d2b561;
   color: white;
   padding: 12px 24px;
   border: none;
@@ -32,12 +32,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(210, 181, 97, 0.25);
 }
 
 .exportBtn:hover {
+  background: #b58863;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35);
 }
 
 .tableContainer {
@@ -55,8 +56,8 @@
 .table th {
   text-align: left;
   padding: 15px 20px;
-  background: #fff8e1;
-  color: #666;
+  background: #f5f0dc;
+  color: #2d2416;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -70,7 +71,7 @@
 }
 
 .table tbody tr:hover {
-  background: #fffbf0;
+  background: #faf8f3;
 }
 
 .compName,
@@ -82,12 +83,12 @@
 }
 
 .icon {
-  color: #ff9800;
+  color: #d2b561;
 }
 
 .viewBtn {
-  background: #fff3e0;
-  color: #ff6f00;
+  background: #f5f0dc;
+  color: #8b7332;
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
@@ -100,7 +101,7 @@
 }
 
 .viewBtn:hover {
-  background: #ffe0b2;
+  background: #e5d9a8;
   transform: translateY(-2px);
 }
 

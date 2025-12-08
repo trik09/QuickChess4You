@@ -42,9 +42,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #d2b561;
 }
 
 .healthSection {
@@ -99,8 +97,8 @@
 }
 
 .statusBadge.warning {
-  background: #fff3e0;
-  color: #e65100;
+  background: #f5f0dc;
+  color: #8b7332;
 }
 
 .statusBadge.error {

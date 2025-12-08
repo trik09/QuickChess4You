@@ -36,7 +36,8 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #d2b561;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1);
 }
 
 .filterSelect {
@@ -63,8 +64,8 @@
 .table th {
   text-align: left;
   padding: 15px 20px;
-  background: #f8f9fa;
-  color: #666;
+  background: #f5f0dc;
+  color: #2d2416;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -78,7 +79,7 @@
 }
 
 .table tbody tr:hover {
-  background: #f8f9fa;
+  background: #faf8f3;
 }
 
 .studentInfo {
@@ -91,7 +92,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #d2b561;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;

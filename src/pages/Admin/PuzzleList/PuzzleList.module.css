@@ -21,22 +21,23 @@
 }
 
 .createBtn {
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  background: #d2b561;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(210, 181, 97, 0.25);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .createBtn:hover {
+  background: #b58863;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35);
 }
 
 .header h2 {
@@ -77,7 +78,8 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: #ff9800;
+  border-color: #d2b561;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1);
 }
 
 .filterSelect {
@@ -92,7 +94,8 @@
 
 .filterSelect:focus {
   outline: none;
-  border-color: #ff9800;
+  border-color: #d2b561;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1);
 }
 
 .tableContainer {
@@ -110,8 +113,8 @@
 .table th {
   text-align: left;
   padding: 15px 20px;
-  background: #f8f9fa;
-  color: #666;
+  background: #f5f0dc;
+  color: #2d2416;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -129,7 +132,7 @@
 }
 
 .table tbody tr:hover {
-  background: #f8f9fa;
+  background: #faf8f3;
 }
 
 .badge {
@@ -146,8 +149,8 @@
 }
 
 .badge.medium {
-  background: #fff3e0;
-  color: #ef6c00;
+  background: #f5f0dc;
+  color: #8b7332;
 }
 
 .badge.hard {
@@ -258,7 +261,7 @@
 .boardPlaceholder {
   width: 100%;
   height: 300px;
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  background: #d2b561;
   border-radius: 8px;
   display: flex;
   align-items: center;

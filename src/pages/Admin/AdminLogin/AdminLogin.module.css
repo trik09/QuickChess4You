@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ff9800 100%);
+  background: linear-gradient(135deg, #e5d9a8 0%, #d2b561 50%, #b58863 100%);
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -57,7 +57,7 @@
 }
 
 .logoSection {
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  background: #d2b561;
   padding: 40px 30px;
   text-align: center;
   color: white;
@@ -146,8 +146,8 @@
 
 .formGroup input:focus {
   outline: none;
-  border-color: #ff9800;
-  box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.1);
+  border-color: #d2b561;
+  box-shadow: 0 0 0 4px rgba(210, 181, 97, 0.1);
 }
 
 .passwordInput {
@@ -173,13 +173,13 @@
 }
 
 .togglePassword:hover {
-  color: #ff9800;
+  color: #d2b561;
 }
 
 .loginBtn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  background: #d2b561;
   color: white;
   border: none;
   border-radius: 10px;
@@ -187,7 +187,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(210, 181, 97, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,8 +195,9 @@
 }
 
 .loginBtn:hover:not(:disabled) {
+  background: #b58863;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35);
 }
 
 .loginBtn:disabled {
@@ -222,8 +223,8 @@
 .demoCredentials {
   margin-top: 25px;
   padding: 15px;
-  background: #fff8e1;
-  border: 1px solid #ffe0b2;
+  background: #f5f0dc;
+  border: 1px solid #e5d9a8;
   border-radius: 10px;
   text-align: center;
 }
@@ -231,7 +232,7 @@
 .demoCredentials p {
   margin: 0 0 10px 0;
   font-weight: 600;
-  color: #ff6f00;
+  color: #8b7332;
   font-size: 0.9rem;
 }
 
@@ -257,14 +258,14 @@
 }
 
 .footer a {
-  color: #ff9800;
+  color: #d2b561;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s;
 }
 
 .footer a:hover {
-  color: #ff6f00;
+  color: #b58863;
 }
 
 @media (max-width: 480px) {

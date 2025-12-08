@@ -6,7 +6,7 @@ import {
   FaUserGraduate, FaUserShield, FaChartBar, FaDesktop, 
   FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt 
 } from 'react-icons/fa';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/QuickChessForYou-Logo.svg';
 import styles from './AdminLayout.module.css';
 
 function AdminLayout() {
@@ -133,7 +133,7 @@ function AdminLayout() {
         <header className={styles.topbar}>
           <div className={styles.topbarLeft}>
             <img src={logo} alt="QuickChess4You" className={styles.topbarLogo} />
-            <h1>QuickChess4You Admin</h1>
+            <h1>QC4U</h1>
           </div>
           <div className={styles.topbarRight}>
             <button className={styles.notificationBtn}><FaBell /></button>
