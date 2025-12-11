@@ -41,6 +41,93 @@
   line-height: 1.6;
 }
 
+/* Loading State */
+.loadingState {
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingState p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Error State */
+.errorState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.errorState p {
+  color: #c62828;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.retryBtn {
+  padding: 0.75rem 2rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.retryBtn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+  color: var(--text-secondary);
+}
+
+/* Tournament Grid */
 .tournamentGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -63,7 +150,7 @@
 }
 
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -90,16 +177,43 @@
   margin-bottom: 1rem;
 }
 
+/* Status Badges */
 .status {
-  background: rgba(39, 174, 96, 0.2);
-  color: #2ecc71;
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.statusUpcoming {
+  background: rgba(255, 152, 0, 0.15);
+  color: #f57c00;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.statusLive {
+  background: rgba(39, 174, 96, 0.2);
+  color: #2ecc71;
   border: 1px solid rgba(39, 174, 96, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.statusCompleted {
+  background: rgba(33, 150, 243, 0.15);
+  color: #1976d2;
+  border: 1px solid rgba(33, 150, 243, 0.3);
 }
 
 .cardTitle {
@@ -113,7 +227,7 @@
 .cardInfo {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
   flex: 1;
 }
@@ -139,6 +253,19 @@
   text-align: center;
 }
 
+.timeRemaining {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #f57c00;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+}
+
 .participateBtn {
   width: 100%;
   padding: 0.875rem;
@@ -155,10 +282,21 @@
   text-transform: uppercase;
 }
 
-.participateBtn:hover {
+.participateBtn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+
+.disabledBtn {
+  background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important;
+  cursor: not-allowed !important;
+  opacity: 0.8;
+}
+
+.disabledBtn:hover {
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 /* Responsive */
@@ -175,5 +313,23 @@
 
   .header h1 {
     font-size: 1.75rem;
+  }
+
+  .tournamentGrid {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 0 1rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  .cardTitle {
+    font-size: 1.1rem;
   }
 }

@@ -67,6 +67,13 @@
   color: white;
 }
 
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
 .tableContainer {
   background: white;
   border-radius: 12px;
@@ -119,8 +126,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .badge.upcoming {
@@ -157,4 +169,351 @@
 
 .actionBtn.delete:hover {
   background: #ffebee;
+}
+
+/* Modal Base */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Larger Puzzle Modal */
+.puzzleModal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, #f5f0dc 0%, #fff 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modalBody {
+  padding: 20px 25px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Puzzle Filters */
+.puzzleFilters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.puzzleFilters > * {
+  flex: 1;
+  min-width: 180px;
+}
+
+.puzzleCount {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #f5f0dc;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #8b7332;
+  text-align: center;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  color: #ddd;
+  margin-bottom: 20px;
+}
+
+.emptyState p {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+}
+
+.emptyHint {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px 25px;
+  border-top: 2px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 16px 16px;
+}
+
+.closeModalBtn {
+  padding: 12px 30px;
+  background: #d2b561;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeModalBtn:hover {
+  background: #b58863;
+  transform: translateY(-2px);
+}
+
+/* Preview Modal */
+.previewOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.previewModal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.previewHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1a1a2e;
+}
+
+.previewHeader button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+}
+
+.previewHeader button:hover {
+  color: #333;
+}
+
+.previewBody {
+  padding: 25px;
+}
+
+.chessboardPreview {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.chessboardPreview p {
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.boardPlaceholder {
+  background: linear-gradient(135deg, #f5f0dc, #e8e0c8);
+  padding: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  color: #8b7332;
+  border: 2px solid #d2b561;
+}
+
+.puzzleDetails {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.puzzleDetails p {
+  margin: 0 0 10px 0;
+}
+
+.puzzleDetails p:last-child {
+  margin-bottom: 0;
+}
+
+/* Confirm Delete Modal */
+.confirmModal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.confirmHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 25px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.confirmHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1a1a2e;
+}
+
+.dangerIcon {
+  font-size: 2rem;
+  color: #c62828;
+  background: #ffebee;
+  padding: 12px;
+  border-radius: 50%;
+}
+
+.confirmBody {
+  padding: 25px;
+  text-align: center;
+}
+
+.confirmBody p {
+  margin: 0 0 10px 0;
+}
+
+.warningText {
+  color: #c62828;
+  font-size: 0.9rem;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 25px;
+  border-top: 2px solid #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .puzzleModal {
+    max-height: 95vh;
+    max-width: 100%;
+  }
+
+  .puzzleFilters {
+    flex-direction: column;
+  }
+
+  .puzzleFilters > * {
+    min-width: 100%;
+  }
+
+  .modalHeader h3 {
+    font-size: 1rem;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    min-width: 80px;
+  }
 }
