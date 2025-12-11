@@ -13,7 +13,7 @@ function Dashboard() {
       title: 'Spring Championship 2025',
       date: 'March 15-20, 2025',
       participants: 128,
-      prize: '$5,000',
+      prize: '₹4,00,000',
       status: 'Open'
     },
     {
@@ -21,7 +21,7 @@ function Dashboard() {
       title: 'Rapid Chess Tournament',
       date: 'April 5, 2025',
       participants: 64,
-      prize: '$2,500',
+      prize: '₹2,00,000',
       status: 'Open'
     },
     {
@@ -29,7 +29,7 @@ function Dashboard() {
       title: 'Blitz Masters Cup',
       date: 'April 20, 2025',
       participants: 32,
-      prize: '$3,000',
+      prize: '₹2,50,000',
       status: 'Open'
     },
     {
@@ -37,7 +37,7 @@ function Dashboard() {
       title: 'Classical Chess Open',
       date: 'May 10-15, 2025',
       participants: 256,
-      prize: '$10,000',
+      prize: '₹8,00,000',
       status: 'Open'
     }
   ];

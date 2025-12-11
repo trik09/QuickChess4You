@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
-import { 
-  FaChartLine, FaPuzzlePiece, FaFolder, FaChess, FaTrophy, 
-  FaList, FaPlus, FaCircle, FaHistory, FaMedal, FaUsers, 
-  FaUserGraduate, FaUserShield, FaChartBar, FaDesktop, 
-  FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt 
+import {
+  FaChartLine, FaPuzzlePiece, FaFolder, FaChess, FaTrophy,
+  FaList, FaPlus, FaCircle, FaHistory, FaMedal, FaUsers,
+  FaUserGraduate, FaUserShield, FaChartBar, FaDesktop,
+  FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt
 } from 'react-icons/fa';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 import styles from './AdminLayout.module.css';
@@ -30,15 +30,16 @@ function AdminLayout() {
 
   const menuItems = [
     { path: '/admin/dashboard', icon: FaChartLine, label: 'Dashboard', exact: true },
-    { 
+    {
       label: 'Puzzle Management',
       icon: FaPuzzlePiece,
       submenu: [
+        // { path: '/admin/puzzle-library', icon: FaFolder, label: 'Puzzle Library' },
         { path: '/admin/categories', icon: FaFolder, label: 'Categories' },
         { path: '/admin/puzzles', icon: FaChess, label: 'Puzzles' },
       ]
     },
-    { 
+    {
       label: 'Competition',
       icon: FaTrophy,
       submenu: [
@@ -49,7 +50,7 @@ function AdminLayout() {
       ]
     },
     { path: '/admin/leaderboard', icon: FaMedal, label: 'Leaderboard' },
-    { 
+    {
       label: 'User Management',
       icon: FaUsers,
       submenu: [
@@ -77,7 +78,7 @@ function AdminLayout() {
               <span>Admin Panel</span>
             </div>
           )}
-          <button 
+          <button
             className={styles.toggleBtn}
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           >
@@ -133,7 +134,7 @@ function AdminLayout() {
         <header className={styles.topbar}>
           <div className={styles.topbarLeft}>
             <img src={logo} alt="QuickChess4You" className={styles.topbarLogo} />
-            <h1>QC4U</h1>
+            <h1>QCFY</h1>
           </div>
           <div className={styles.topbarRight}>
             <button className={styles.notificationBtn}><FaBell /></button>
@@ -141,7 +142,7 @@ function AdminLayout() {
               <span>{localStorage.getItem('adminUser') || 'Admin'}</span>
               <div className={styles.avatar}><FaUser /></div>
             </div>
-            <button 
+            <button
               className={styles.logoutBtn}
               onClick={() => setShowLogoutConfirm(true)}
               title="Logout"
@@ -167,13 +168,13 @@ function AdminLayout() {
               <p>Are you sure you want to logout from the admin panel?</p>
             </div>
             <div className={styles.confirmActions}>
-              <button 
+              <button
                 className={styles.cancelBtn}
                 onClick={() => setShowLogoutConfirm(false)}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className={styles.confirmBtn}
                 onClick={handleLogout}
               >

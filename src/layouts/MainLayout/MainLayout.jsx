@@ -28,7 +28,7 @@ const MainLayout = () => {
 
     // Navigation items - "Home" is now implied by the Logo
     const navItems = [
-        { path: '/puzzle', label: 'Puzzles', icon: <FaChessBoard /> },
+        // { path: '/puzzles', label: 'Puzzles', icon: <FaChessBoard /> },
         { path: '/dashboard', label: 'Tournaments', icon: <FaTrophy /> },
         { path: '/courses', label: 'Courses', icon: <FaGraduationCap /> },
         { path: '/coaching', label: 'Coaching', icon: <FaChalkboardTeacher /> },
@@ -56,7 +56,7 @@ const MainLayout = () => {
                 <div className={styles.logoSection}>
                     <Link to="/" className={styles.logoLink} title="Home">
                         <img src={logo} alt="Quick Chess 4 You" className={styles.logoImg} />
-                        {!isSidebarCollapsed && <span className={styles.logoText}>QC4U</span>}
+                        {!isSidebarCollapsed && <span className={styles.logoText}>QCFY</span>}
                     </Link>
                     <button
                         className={styles.toggleBtn}

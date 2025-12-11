@@ -92,7 +92,7 @@ function Coaching() {
         <div className={styles.pricingGrid}>
           <div className={styles.priceCard}>
             <h3>Single Session</h3>
-            <div className={styles.price}>$50<span>/hour</span></div>
+            <div className={styles.price}>₹3,999<span>/hour</span></div>
             <ul>
               <li>1 hour live session</li>
               <li>Game analysis</li>
@@ -103,7 +103,7 @@ function Coaching() {
           <div className={`${styles.priceCard} ${styles.popular}`}>
             <div className={styles.badge}>Most Popular</div>
             <h3>Monthly Package</h3>
-            <div className={styles.price}>$180<span>/month</span></div>
+            <div className={styles.price}>₹14,999<span>/month</span></div>
             <ul>
               <li>4 hours of coaching</li>
               <li>Weekly sessions</li>
@@ -114,7 +114,7 @@ function Coaching() {
           </div>
           <div className={styles.priceCard}>
             <h3>Intensive Program</h3>
-            <div className={styles.price}>$500<span>/3 months</span></div>
+            <div className={styles.price}>₹39,999<span>/3 months</span></div>
             <ul>
               <li>12 hours of coaching</li>
               <li>Bi-weekly sessions</li>

@@ -21,7 +21,7 @@ function Pricing() {
     },
     {
       name: 'Premium',
-      price: 19,
+      price: 1499,
       period: 'month',
       popular: true,
       features: [
@@ -36,7 +36,7 @@ function Pricing() {
     },
     {
       name: 'Pro',
-      price: 49,
+      price: 3999,
       period: 'month',
       features: [
         'Everything in Premium',
@@ -67,8 +67,8 @@ function Pricing() {
             
             <h3 className={styles.planName}>{plan.name}</h3>
             <div className={styles.price}>
-              ${plan.price}
-              <span>/{plan.period}</span>
+              {plan.price === 0 ? 'Free' : `₹${plan.price}`}
+              {plan.price !== 0 && <span>/{plan.period}</span>}
             </div>
 
             <ul className={styles.features}>
@@ -106,7 +106,7 @@ function Pricing() {
           </div>
           <div className={styles.faqItem}>
             <h3>What payment methods do you accept?</h3>
-            <p>We accept all major credit cards, PayPal, and bank transfers for annual subscriptions.</p>
+            <p>We accept UPI, credit/debit cards, net banking, and all major payment methods through Razorpay.</p>
           </div>
           <div className={styles.faqItem}>
             <h3>Can I cancel anytime?</h3>

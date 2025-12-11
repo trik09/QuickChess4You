@@ -4,26 +4,29 @@ import { Chess } from 'chess.js';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaChess, FaSave, FaTimes, FaLayerGroup, FaSignal, FaLightbulb } from 'react-icons/fa';
 import { PageHeader, Button } from '../../../components/Admin';
-import { adminAPI } from '../../../services/api';
+import { adminAPI, categoryAPI } from '../../../services/api';
 import styles from './EditPuzzle.module.css';
 
 // Import chess pieces
-import whitePawn from '../../../assets/pieces3/whitepawn.svg';
-import whiteKnight from '../../../assets/pieces3/whiteknight.svg';
-import whiteBishop from '../../../assets/pieces3/whitebishop.svg';
-import whiteRook from '../../../assets/pieces3/whiterook.svg';
-import whiteQueen from '../../../assets/pieces3/whitequeen.svg';
-import whiteKing from '../../../assets/pieces3/whiteking.svg';
-import blackPawn from '../../../assets/pieces3/blackpawn.svg';
-import blackKnight from '../../../assets/pieces3/blackknight.svg';
-import blackBishop from '../../../assets/pieces3/blackbishop.svg';
-import blackRook from '../../../assets/pieces3/blackrook.svg';
-import blackQueen from '../../../assets/pieces3/blackqueen.svg';
-import blackKing from '../../../assets/pieces3/blackking.svg';
+import whitePawn from '../../../assets/pieces/whitepawn.svg';
+import whiteKnight from '../../../assets/pieces/whiteknight.svg';
+import whiteBishop from '../../../assets/pieces/whitebishop.svg';
+import whiteRook from '../../../assets/pieces/whiterook.svg';
+import whiteQueen from '../../../assets/pieces/whitequeen.svg';
+import whiteKing from '../../../assets/pieces/whiteking.svg';
+import blackPawn from '../../../assets/pieces/blackpawn.svg';
+import blackKnight from '../../../assets/pieces/blackknight.svg';
+import blackBishop from '../../../assets/pieces/blackbishop.svg';
+import blackRook from '../../../assets/pieces/blackrook.svg';
+import blackQueen from '../../../assets/pieces/blackqueen.svg';
+import blackKing from '../../../assets/pieces/blackking.svg';
 
 function EditPuzzle() {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -75,6 +78,21 @@ function EditPuzzle() {
   useEffect(() => {
     let isMounted = true;
 
+    const fetchCategories = async () => {
+      try {
+        const data = await categoryAPI.getAll(false);
+        if (isMounted) {
+          setCategories(data);
+          setLoadingCategories(false);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        if (isMounted) {
+          setLoadingCategories(false);
+        }
+      }
+    };
+
     const fetchPuzzle = async () => {
       setIsLoading(true);
       setApiError('');
@@ -94,6 +112,7 @@ function EditPuzzle() {
     };
 
     if (id) {
+      fetchCategories();
       fetchPuzzle();
     } else {
       setIsLoading(false);
@@ -184,22 +203,25 @@ function EditPuzzle() {
     try {
       const chess = new Chess(formData.fen);
       const board = chess.board();
-      
+      const turn = chess.turn(); // 'w' or 'b'
+
+      const displayBoard = turn === 'w' ? board : [...board].reverse().map(row => [...row].reverse());
+
       return (
         <div className={styles.chessboard}>
-          {board.map((row, rowIndex) => (
+          {displayBoard.map((row, rowIndex) => (
             <div key={rowIndex} className={styles.row}>
               {row.map((square, colIndex) => {
                 const isLight = (rowIndex + colIndex) % 2 === 0;
-                
+
                 return (
                   <div
                     key={colIndex}
                     className={`${styles.square} ${isLight ? styles.light : styles.dark}`}
                   >
                     {square && (
-                      <img 
-                        src={getPieceImage(square.type, square.color)} 
+                      <img
+                        src={getPieceImage(square.type, square.color)}
                         alt={`${square.color}${square.type}`}
                         className={styles.piece}
                       />
@@ -235,10 +257,10 @@ function EditPuzzle() {
 
   return (
     <div className={styles.editPuzzle}>
-      <Toaster 
-        position="top-center" 
-        reverseOrder={false} 
-        toastOptions={{ 
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
           duration: 5000,
           style: {
             background: '#333',
@@ -270,7 +292,7 @@ function EditPuzzle() {
               secondary: '#ef4444',
             },
           },
-        }} 
+        }}
       />
       <PageHeader
         icon={FaChess}
@@ -289,7 +311,7 @@ function EditPuzzle() {
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
               />
             </div>
@@ -297,28 +319,34 @@ function EditPuzzle() {
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
                 <label><FaLayerGroup /> Category *</label>
-                <select 
-                  value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
-                >
-                  <option>Tactics</option>
-                  <option>Endgame</option>
-                  <option>Opening</option>
-                  <option>Middlegame</option>
-                  <option>Strategy</option>
-                </select>
+                {loadingCategories ? (
+                  <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.9rem' }}>Loading...</p>
+                ) : categories.length === 0 ? (
+                  <p style={{ color: 'var(--admin-danger)', fontSize: '0.9rem' }}>No categories available</p>
+                ) : (
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    required
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat.name}>
+                        {cat.title}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className={styles.formGroup}>
                 <label><FaSignal /> Difficulty *</label>
-                <select 
+                <select
                   value={formData.difficulty}
-                  onChange={(e) => setFormData({...formData, difficulty: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
                 >
                   <option>Easy</option>
                   <option>Medium</option>
                   <option>Hard</option>
-                  <option>Expert</option>
                 </select>
               </div>
             </div>
@@ -340,7 +368,7 @@ function EditPuzzle() {
               <input
                 type="text"
                 value={formData.correctMove}
-                onChange={(e) => setFormData({...formData, correctMove: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, correctMove: e.target.value })}
                 placeholder="e.g., e2e4"
                 required
               />
@@ -351,7 +379,7 @@ function EditPuzzle() {
               <textarea
                 rows="3"
                 value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
 
@@ -360,7 +388,7 @@ function EditPuzzle() {
               <textarea
                 rows="2"
                 value={formData.hints}
-                onChange={(e) => setFormData({...formData, hints: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, hints: e.target.value })}
               />
             </div>
 
@@ -385,7 +413,7 @@ function EditPuzzle() {
             <h3>Live Preview</h3>
             <span className={styles.previewBadge}>{formData.difficulty}</span>
           </div>
-          
+
           <div className={styles.boardContainer}>
             {renderChessBoard()}
           </div>

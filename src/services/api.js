@@ -175,6 +175,32 @@ export const adminAPI = {
       method: 'DELETE',
     }, adminToken);
   },
+  
+  // Import puzzles from Lichess
+  importFromLichess: async (count = 50) => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest('/puzzle/import-lichess', {
+      method: 'POST',
+      body: JSON.stringify({ count }),
+    }, adminToken);
+  },
+  
+  // Get puzzles with filters
+  getPuzzlesFiltered: async (filters = {}) => {
+    const adminToken = localStorage.getItem('atoken');
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(`/puzzle/puzzles-filtered?${queryParams}`, {
+      method: 'GET',
+    }, adminToken);
+  },
+  
+  // Get puzzle statistics
+  getPuzzleStats: async () => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest('/puzzle/puzzle-stats', {
+      method: 'GET',
+    }, adminToken);
+  },
 };
 
 /**
@@ -186,43 +212,134 @@ export const puzzleAPI = {
       method: 'GET',
     }, null);
   },
-};
-
-export const competitionAPi={
-  getAll: async () => {
-    return apiRequest('/competition/', {
+  
+  // Get random puzzle from Lichess (for casual play)
+  getRandomPuzzle: async () => {
+    return apiRequest('/puzzle/random-puzzle', {
       method: 'GET',
     }, null);
   },
+};
+
+/**
+ * Category APIs
+ */
+export const categoryAPI = {
+  // Get all categories
+  getAll: async (includeInactive = false) => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest(`/category/get-categories?includeInactive=${includeInactive}`, {
+      method: 'GET',
+    }, adminToken);
+  },
+  
+  // Get category by ID
+  getById: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest(`/category/get-category/${id}`, {
+      method: 'GET',
+    }, adminToken);
+  },
+  
+  // Create category
+  createCategory: async (categoryData) => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest('/category/create-category', {
+      method: 'POST',
+      body: JSON.stringify(categoryData),
+    }, adminToken);
+  },
+  
+  // Update category
+  updateCategory: async (id, categoryData) => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest(`/category/update-category/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData),
+    }, adminToken);
+  },
+  
+  // Delete category
+  deleteCategory: async (id) => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest(`/category/delete-category/${id}`, {
+      method: 'DELETE',
+    }, adminToken);
+  },
+  
+  // Get category statistics
+  getStats: async () => {
+    const adminToken = localStorage.getItem('atoken');
+    return apiRequest('/category/category-stats', {
+      method: 'GET',
+    }, adminToken);
+  },
+};
+
+export const competitionAPI = {
+  // Get all competitions
+  getAll: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(`/competition/?${queryParams}`, {
+      method: 'GET',
+    }, null);
+  },
+  
+  // Get competition by ID
+  getById: async (id) => {
+    return apiRequest(`/competition/${id}`, {
+      method: 'GET',
+    });
+  },
+  
+  // Create competition
   createCompetition: async (competitionData) => {
     const adminToken = localStorage.getItem('atoken');
-  
-    return apiRequest(
-      '/competition/create-competition',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminToken}`, 
-        },
-        body: JSON.stringify(competitionData),
-      }
-    );
+    return apiRequest('/competition/create-competition', {
+      method: 'POST',
+      body: JSON.stringify(competitionData),
+    }, adminToken);
   },
+  
+  // Update competition
   updateCompetition: async (id, competitionData) => {
     const adminToken = localStorage.getItem('atoken');
-    // backend route: router.put('/update-competition/:id', ...)
     return apiRequest(`/competition/update-competition/${id}`, {
       method: 'PUT',
       body: JSON.stringify(competitionData),
     }, adminToken);
   },
+  
+  // Delete competition
   deleteCompetition: async (id) => {
     const adminToken = localStorage.getItem('atoken');
-    // backend route: router.delete('/delete-competition/:id', ...)
     return apiRequest(`/competition/delete-competition/${id}`, {
       method: 'DELETE',
     }, adminToken);
+  },
+  
+  // Join competition (user)
+  joinCompetition: async (id) => {
+    const userToken = localStorage.getItem('token');
+    return apiRequest(`/competition/${id}/join`, {
+      method: 'POST',
+    }, userToken);
+  },
+  
+  // Submit solution (user)
+  submitSolution: async (competitionId, puzzleId, moves, timeTaken) => {
+    const userToken = localStorage.getItem('token');
+    return apiRequest(`/competition/${competitionId}/submit/${puzzleId}`, {
+      method: 'POST',
+      body: JSON.stringify({ moves, timeTaken }),
+    }, userToken);
+  },
+  
+  // Get leaderboard
+  getLeaderboard: async (id) => {
+    return apiRequest(`/competition/${id}/leaderboard`, {
+      method: 'GET',
+    });
   },
 }
 
@@ -230,6 +347,7 @@ export default {
   authAPI,
   adminAPI,
   puzzleAPI,
-  competitionAPi
+  categoryAPI,
+  competitionAPI
 };
 

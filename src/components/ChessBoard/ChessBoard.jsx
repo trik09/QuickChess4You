@@ -131,7 +131,11 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
   const [feedback, setFeedback] = useState(null);
   const [solutionIndex, setSolutionIndex] = useState(0);
   const [initialFen, setInitialFen] = useState(fen);
+  const [userColor, setUserColor] = useState('w'); // 'w' or 'b'
 
+  const [normalizedSolution, setNormalizedSolution] = useState([]);
+
+  // Re-initialize when FEN changes
   // Re-initialize when FEN changes
   useEffect(() => {
     const newGame = new Chess(fen);
@@ -143,7 +147,58 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
     setFeedback(null);
     setSolutionIndex(0);
     setInitialFen(fen);
-  }, [fen]);
+
+    // Determine user color based on FEN side to move
+    const turn = newGame.turn();
+    setUserColor(turn);
+
+    // Normalize solution moves to SAN
+    try {
+      // Create a temp game to validate/normalize moves
+      const tempGame = new Chess(fen);
+      const sanMoves = [];
+
+      if (Array.isArray(solution)) {
+        for (const move of solution) {
+          let result = null;
+
+          // 1. Try passing the move directly (works for SAN and Move Objects)
+          try {
+            result = tempGame.move(move);
+          } catch (e) {
+            // 2. If it failed and looks like a UCI string (e.g. "e2e4" or "a7a8q"), try converting to object
+            if (typeof move === 'string' && (move.length === 4 || move.length === 5)) {
+              const from = move.substring(0, 2);
+              const to = move.substring(2, 4);
+              const promotion = move.length === 5 ? move[4] : undefined;
+
+              try {
+                result = tempGame.move({ from, to, promotion });
+              } catch (e2) {
+                // Still failed
+                console.warn(`Failed to parse move: ${move}`, e2);
+              }
+            }
+          }
+
+          if (result) {
+            sanMoves.push(result.san);
+          } else {
+            console.warn(`Invalid move in solution: ${move}`);
+            // If we can't parse a move, the puzzle might be unplayable. 
+            // Depending on strictness, we might break or continue. 
+            // Continuing allows partial solving.
+            break;
+          }
+        }
+      }
+      setNormalizedSolution(sanMoves);
+    } catch (error) {
+      console.error('Error normalizing solution:', error);
+      // Fallback to empty to avoid crashing
+      setNormalizedSolution([]);
+    }
+  }, [fen, solution]);
 
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -166,7 +221,8 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
   };
 
   const handleUserMove = (from, to) => {
-    if (game.turn() !== 'w') return;
+    // Check against userColor instead of hardcoded 'w'
+    if (game.turn() !== userColor) return;
 
     const moveAttempt = { from, to, promotion: 'q' };
     let result = null;
@@ -187,7 +243,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
     setMoveHistory(newHistory);
     setLastMove({ from, to });
 
-    const expected = solution[solutionIndex] || null;
+    const expected = normalizedSolution[solutionIndex] || null;
     if (expected && normalizeSAN(san) === normalizeSAN(expected)) {
       // Correct Move
       setFeedback('correct');
@@ -195,9 +251,9 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
       let nextIndex = solutionIndex + 1;
 
       // Auto-play Black's response
-      if (nextIndex < solution.length) {
+      if (nextIndex < normalizedSolution.length) {
         setTimeout(() => {
-          const expectedBlackMove = solution[nextIndex];
+          const expectedBlackMove = normalizedSolution[nextIndex];
           const blackResult = game.move(expectedBlackMove);
           if (blackResult) {
             playSound(blackResult.san.includes('x') ? 'capture' : 'move');
@@ -206,7 +262,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
             setSolutionIndex(nextIndex + 1);
             setGame(new Chess(game.fen())); // Force update
 
-            if ((nextIndex + 1) >= solution.length || game.isCheckmate()) {
+            if ((nextIndex + 1) >= normalizedSolution.length || game.isCheckmate()) {
               setTimeout(() => {
                 setFeedback('solved');
                 playSound('solved');
@@ -258,7 +314,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
 
       // Switch selection to new piece if own color
       const piece = getPiece(square);
-      if (piece && piece.color === 'w') {
+      if (piece && piece.color === userColor) {
         setSelectedSquare(square);
         const moves = game.moves({ square, verbose: true }) || [];
         setPossibleMoves(moves.map((m) => m.to));
@@ -273,7 +329,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
       // Select Logic
       const piece = getPiece(square);
       if (!piece) return;
-      if (piece.color !== 'w' || game.turn() !== 'w') return;
+      if (piece.color !== userColor || game.turn() !== userColor) return;
 
       setSelectedSquare(square);
       const moves = game.moves({ square, verbose: true }) || [];
@@ -323,9 +379,9 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
         </div>
       )}
       <div className={styles.board}>
-        {ranks.map((rank, rankIndex) => (
+        {(userColor === 'w' ? ranks : [...ranks].reverse()).map((rank, rankIndex) => (
           <div key={rank} className={styles.row}>
-            {files.map((file, fileIndex) => {
+            {(userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
               const square = getSquare(file, rank);
               const piece = getPiece(square);
               const isLight = isLightSquare(fileIndex, rankIndex);
@@ -354,9 +410,11 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
                       onDragStart={(e) => handleDragStart(e, square)}
                     />
                   )}
+                  {/* Rank Labels (Numbers) - Show on first file for the user's view (whether 'a' or 'h') */}
                   {fileIndex === 0 && (
                     <div className={styles.rankLabel}>{rank}</div>
                   )}
+                  {/* File Labels (Letters) - Show on last rank for the user's view (whether '1' or '8') */}
                   {rankIndex === 7 && (
                     <div className={styles.fileLabel}>{file}</div>
                   )}

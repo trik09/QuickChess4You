@@ -1,36 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Chess } from "chess.js";
 import { FaChess, FaSave, FaTimes, FaLightbulb } from "react-icons/fa";
 import { PageHeader, Button } from "../../../components/Admin";
-import { adminAPI } from "../../../services/api";
+import { adminAPI, categoryAPI } from "../../../services/api";
 import styles from "./CreatePuzzle.module.css";
-import {useAuth} from "../../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
 
 // Import chess pieces
-import whitePawn from '../../../assets/pieces3/whitepawn.svg';
-import whiteKnight from '../../../assets/pieces3/whiteknight.svg';
-import whiteBishop from '../../../assets/pieces3/whitebishop.svg';
-import whiteRook from '../../../assets/pieces3/whiterook.svg';
-import whiteQueen from '../../../assets/pieces3/whitequeen.svg';
-import whiteKing from '../../../assets/pieces3/whiteking.svg';
-import blackPawn from '../../../assets/pieces3/blackpawn.svg';
-import blackKnight from '../../../assets/pieces3/blackknight.svg';
-import blackBishop from '../../../assets/pieces3/blackbishop.svg';
-import blackRook from '../../../assets/pieces3/blackrook.svg';
-import blackQueen from '../../../assets/pieces3/blackqueen.svg';
-import blackKing from '../../../assets/pieces3/blackking.svg';
+import whitePawn from '../../../assets/pieces/whitepawn.svg';
+import whiteKnight from '../../../assets/pieces/whiteknight.svg';
+import whiteBishop from '../../../assets/pieces/whitebishop.svg';
+import whiteRook from '../../../assets/pieces/whiterook.svg';
+import whiteQueen from '../../../assets/pieces/whitequeen.svg';
+import whiteKing from '../../../assets/pieces/whiteking.svg';
+import blackPawn from '../../../assets/pieces/blackpawn.svg';
+import blackKnight from '../../../assets/pieces/blackknight.svg';
+import blackBishop from '../../../assets/pieces/blackbishop.svg';
+import blackRook from '../../../assets/pieces/blackrook.svg';
+import blackQueen from '../../../assets/pieces/blackqueen.svg';
+import blackKing from '../../../assets/pieces/blackking.svg';
 
 function CreatePuzzle() {
   const navigate = useNavigate();
   const { isAdminAuthenticated } = useAuth();
-  //console.log(admin);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
   const [formData, setFormData] = useState({
     title: "",
     fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     correctMove: "",
     difficulty: "medium", // Backend expects: easy, medium, hard
+    category: "", // Will be set after categories load
     description: "",
     hints: "",
   });
@@ -38,6 +41,29 @@ function CreatePuzzle() {
   const [fenError, setFenError] = useState("");
   const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const data = await categoryAPI.getAll(false);
+      setCategories(data);
+
+      // Set default category if available
+      if (data.length > 0) {
+        setFormData(prev => ({ ...prev, category: data[0].name }));
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error('Failed to load categories');
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   // Validate FEN using chess.js
   const validateFEN = (fen) => {
@@ -65,12 +91,12 @@ function CreatePuzzle() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!isAdminAuthenticated) {
       setApiError("You are not authorized to create puzzles.");
       return;
     }
-    
+
     setApiError("");
 
     // Validate FEN
@@ -86,11 +112,18 @@ function CreatePuzzle() {
       return;
     }
 
+    // Validate category
+    if (!formData.category) {
+      setApiError("Please select a category. Create one first if none exist.");
+      return;
+    }
+
     // Build final payload matching backend API requirements
     const payload = {
       title: formData.title.trim(),
       fen: formData.fen.trim(),
       difficulty: formData.difficulty.toLowerCase(), // Backend expects: easy, medium, hard
+      category: formData.category, // Add category
       solutionMoves, // Array of moves
       description: [formData.description.trim(), formData.hints.trim()]
         .filter(Boolean)
@@ -123,23 +156,29 @@ function CreatePuzzle() {
     try {
       const chess = new Chess(formData.fen);
       const board = chess.board();
+      const turn = chess.turn(); // 'w' or 'b'
+
+      // If black to move, reverse the board (rank 1 at top, rank 8 at bottom; File h on left)
+      // chess.board() returns [rank8, rank7, ..., rank1] (top to bottom as white sees it)
+      // So if 'b', we reverse the Outer Array (ranks) AND the Inner Arrays (files)
+
+      const displayBoard = turn === 'w' ? board : [...board].reverse().map(row => [...row].reverse());
 
       return (
         <div className={styles.chessboard}>
-          {board.map((row, r) => (
+          {displayBoard.map((row, r) => (
             <div key={r} className={styles.row}>
               {row.map((sq, c) => {
                 const isLight = (r + c) % 2 === 0;
                 return (
                   <div
                     key={c}
-                    className={`${styles.square} ${
-                      isLight ? styles.light : styles.dark
-                    }`}
+                    className={`${styles.square} ${isLight ? styles.light : styles.dark
+                      }`}
                   >
                     {sq && (
-                      <img 
-                        src={getPieceImage(sq.type, sq.color)} 
+                      <img
+                        src={getPieceImage(sq.type, sq.color)}
                         alt={`${sq.color}${sq.type}`}
                         className={styles.piece}
                       />
@@ -182,10 +221,10 @@ function CreatePuzzle() {
 
   return (
     <div className={styles.createPuzzle}>
-      <Toaster 
-        position="top-center" 
-        reverseOrder={false} 
-        toastOptions={{ 
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
           duration: 5000,
           style: {
             background: '#333',
@@ -217,7 +256,7 @@ function CreatePuzzle() {
               secondary: '#ef4444',
             },
           },
-        }} 
+        }}
       />
 
       <PageHeader
@@ -280,6 +319,40 @@ function CreatePuzzle() {
                 }
                 placeholder="e.g., Qh5, e2e4"
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Category *</label>
+              {loadingCategories ? (
+                <p style={{ color: 'var(--admin-text-muted)' }}>Loading categories...</p>
+              ) : categories.length === 0 ? (
+                <div>
+                  <p style={{ color: 'var(--admin-danger)', marginBottom: '0.5rem' }}>
+                    No categories available. Please create a category first.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => navigate("/admin/categories")}
+                  >
+                    Go to Categories
+                  </Button>
+                </div>
+              ) : (
+                <select
+                  required
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, category: e.target.value }))
+                  }
+                >
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat.name}>
+                      {cat.title}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className={styles.formGroup}>

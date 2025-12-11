@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from './contexts/ThemeContext';
 import Home from "./pages/Home/Home";
 import Dashboard from "./pages/Dashboard/Dashboard";
-import PuzzlePage from "./pages/PuzzlePage/PuzzlePage";
+import CasualPuzzlePage from "./pages/PuzzlePage/CasualPuzzlePage"; // Sidebar puzzles - no timer
+import PuzzlePage from "./pages/PuzzlePage/PuzzlePage"; // Tournament puzzles - with timer
 import Profile from "./pages/Profile/Profile";
 import UserSettings from "./pages/Settings/Settings";
 import About from "./pages/About/About";
@@ -18,6 +19,7 @@ import MainLayout from "./layouts/MainLayout/MainLayout";
 
 import CategoryList from "./pages/Admin/CategoryList/CategoryList";
 import PuzzleList from "./pages/Admin/PuzzleList/PuzzleList";
+import PuzzleLibrary from "./pages/Admin/PuzzleLibrary/PuzzleLibrary";
 import CreatePuzzle from "./pages/Admin/CreatePuzzle/CreatePuzzle";
 import EditPuzzle from "./pages/Admin/EditPuzzle/EditPuzzle";
 import CompetitionList from "./pages/Admin/CompetitionList/CompetitionList";
@@ -61,8 +63,35 @@ function App() {
               />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<UserSettings />} />
+              {/* Casual Puzzles - No Timer (Sidebar Link) */}
+              <Route
+                path="/puzzles"
+                element={
+                  <UserProtectedRoute>
+                    <CasualPuzzlePage />
+                  </UserProtectedRoute>
+                }
+              />
+              
+              {/* Tournament/Competition Puzzles - With Timer */}
               <Route
                 path="/puzzle"
+                element={
+                  <UserProtectedRoute>
+                    <PuzzlePage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="/competition/:id/puzzle"
+                element={
+                  <UserProtectedRoute>
+                    <PuzzlePage />
+                  </UserProtectedRoute>
+                }
+              />
+              <Route
+                path="/tournament/:id/puzzle"
                 element={
                   <UserProtectedRoute>
                     <PuzzlePage />
@@ -89,6 +118,7 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="categories" element={<CategoryList />} />
               <Route path="puzzles" element={<PuzzleList />} />
+              <Route path="puzzle-library" element={<PuzzleLibrary />} />
               <Route path="puzzles/create" element={<CreatePuzzle />} />
               <Route path="puzzles/edit/:id" element={<EditPuzzle />} />
               <Route path="competitions" element={<CompetitionList />} />

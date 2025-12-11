@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup } from 'react-icons/fa';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader, SearchBar, FilterSelect, Button, DataTable, Badge, IconButton } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
 import styles from './PuzzleList.module.css';
 
 function PuzzleList() {
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'all';
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterCategory, setFilterCategory] = useState(initialCategory);
   const [filterDifficulty, setFilterDifficulty] = useState('all');
   const [showPreview, setShowPreview] = useState(false);
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);

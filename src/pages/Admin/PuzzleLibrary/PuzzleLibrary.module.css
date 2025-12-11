@@ -1,0 +1,326 @@
+.puzzleLibrary {
+  max-width: 1600px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tab {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.tab:hover {
+  background: #f5f0dc;
+}
+
+.tab.active {
+  background: #d2b561;
+  color: white;
+}
+
+.actionsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.leftActions,
+.rightActions {
+  display: flex;
+  gap: 10px;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.searchWrapper {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 20px 12px 45px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #d2b561;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1);
+}
+
+.filterSelect,
+.ratingInput {
+  padding: 12px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.filterSelect:focus,
+.ratingInput:focus {
+  outline: none;
+  border-color: #d2b561;
+  box-shadow: 0 0 0 3px rgba(210, 181, 97, 0.1);
+}
+
+.ratingInput {
+  width: 120px;
+}
+
+.tableContainer {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.loading,
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666;
+  gap: 20px;
+}
+
+.empty svg {
+  font-size: 4rem;
+  color: #d2b561;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 15px 20px;
+  background: #f5f0dc;
+  color: #2d2416;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  padding: 18px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+
+.table tbody tr:hover {
+  background: #faf8f3;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.miniBoard {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #f0d9b5 0%, #b58863 100%);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleCell strong {
+  color: #1a1a2e;
+}
+
+.lichessId {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.categoryBadge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #f5f0dc;
+  color: #8b7332;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.difficultyBadge {
+  display: inline-block;
+  padding: 5px 12px;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.ratingBadge {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.sourceBadge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.sourceBadge.manual {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.sourceBadge.lichess {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.actionBtn:hover {
+  background: #f0f0f0;
+  transform: scale(1.1);
+}
+
+.actionBtn.addBtn {
+  color: #d2b561;
+}
+
+.actionBtn.addBtn:hover {
+  background: #f5f0dc;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 25px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.pageBtn {
+  padding: 10px 20px;
+  background: #d2b561;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #c9a84e;
+  transform: translateY(-2px);
+}
+
+.pageBtn:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-weight: 600;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .actionsBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .leftActions,
+  .rightActions {
+    width: 100%;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .searchWrapper,
+  .ratingInput {
+    width: 100%;
+  }
+  
+  .tableContainer {
+    overflow-x: auto;
+  }
+}
