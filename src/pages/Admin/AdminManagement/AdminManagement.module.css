@@ -59,7 +59,7 @@
 .table th {
   text-align: left;
   padding: 15px 20px;
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #2d2416;
   font-weight: 600;
   font-size: 0.85rem;
@@ -98,7 +98,7 @@
 .roleBadge {
   display: inline-block;
   padding: 5px 12px;
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #8b7332;
   border-radius: 20px;
   font-size: 0.8rem;
@@ -135,7 +135,7 @@
 }
 
 .actionBtn:hover {
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #d2b561;
   transform: scale(1.1);
 }

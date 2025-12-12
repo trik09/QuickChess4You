@@ -153,7 +153,7 @@
 .table th {
   text-align: left;
   padding: 12px;
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #2d2416;
   font-weight: 600;
   font-size: 0.85rem;
@@ -189,7 +189,7 @@
 }
 
 .badge.upcoming {
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #8b7332;
 }
 
@@ -204,7 +204,7 @@
 }
 
 .badge.medium {
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #8b7332;
 }
 

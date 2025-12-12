@@ -11,7 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000
  */
 const apiRequest = async (endpoint, options = {}, token = null) => {
   const authToken = token || localStorage.getItem('token');
-  
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
+
     // Handle non-JSON responses
     let data;
     const contentType = response.headers.get('content-type');
@@ -38,11 +38,11 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
       const text = await response.text();
       throw new Error(text || 'An error occurred');
     }
-    
+
     if (!response.ok) {
       throw new Error(data.message || data.error || 'An error occurred');
     }
-    
+
     return data;
   } catch (error) {
     // Re-throw with more context if it's a network error
@@ -64,11 +64,11 @@ export const authAPI = {
     formData.append('email', userData.email);
     formData.append('password', userData.password);
     formData.append('username', userData.username);
-    
+
     if (userData.wins !== undefined) formData.append('wins', userData.wins);
     if (userData.losses !== undefined) formData.append('losses', userData.losses);
     if (userData.draws !== undefined) formData.append('draws', userData.draws);
-    
+
     if (avatarFile) {
       formData.append('avatar', avatarFile);
     }
@@ -144,20 +144,20 @@ export const adminAPI = {
   // Create a puzzle
   createPuzzle: async (puzzleData) => {
     const adminToken = localStorage.getItem('atoken');
-  
+
     return apiRequest(
       '/puzzle/create-puzzle',
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminToken}`, 
+          'Authorization': `Bearer ${adminToken}`,
         },
         body: JSON.stringify(puzzleData),
       }
     );
   },
-  
+
   // Update a puzzle
   updatePuzzle: async (id, puzzleData) => {
     const adminToken = localStorage.getItem('atoken');
@@ -175,7 +175,7 @@ export const adminAPI = {
       method: 'DELETE',
     }, adminToken);
   },
-  
+
   // Import puzzles from Lichess
   importFromLichess: async (count = 50) => {
     const adminToken = localStorage.getItem('atoken');
@@ -184,7 +184,7 @@ export const adminAPI = {
       body: JSON.stringify({ count }),
     }, adminToken);
   },
-  
+
   // Get puzzles with filters
   getPuzzlesFiltered: async (filters = {}) => {
     const adminToken = localStorage.getItem('atoken');
@@ -193,7 +193,7 @@ export const adminAPI = {
       method: 'GET',
     }, adminToken);
   },
-  
+
   // Get puzzle statistics
   getPuzzleStats: async () => {
     const adminToken = localStorage.getItem('atoken');
@@ -212,10 +212,14 @@ export const puzzleAPI = {
       method: 'GET',
     }, null);
   },
-  
-  // Get random puzzle from Lichess (for casual play)
-  getRandomPuzzle: async () => {
-    return apiRequest('/puzzle/random-puzzle', {
+
+  // Get random puzzle (Local DB)
+  getRandomPuzzle: async (type) => {
+    let url = '/puzzle/random-puzzle';
+    if (type) {
+      url += `?type=${type}`;
+    }
+    return apiRequest(url, {
       method: 'GET',
     }, null);
   },
@@ -232,7 +236,7 @@ export const categoryAPI = {
       method: 'GET',
     }, adminToken);
   },
-  
+
   // Get category by ID
   getById: async (id) => {
     const adminToken = localStorage.getItem('atoken');
@@ -240,7 +244,7 @@ export const categoryAPI = {
       method: 'GET',
     }, adminToken);
   },
-  
+
   // Create category
   createCategory: async (categoryData) => {
     const adminToken = localStorage.getItem('atoken');
@@ -249,7 +253,7 @@ export const categoryAPI = {
       body: JSON.stringify(categoryData),
     }, adminToken);
   },
-  
+
   // Update category
   updateCategory: async (id, categoryData) => {
     const adminToken = localStorage.getItem('atoken');
@@ -258,7 +262,7 @@ export const categoryAPI = {
       body: JSON.stringify(categoryData),
     }, adminToken);
   },
-  
+
   // Delete category
   deleteCategory: async (id) => {
     const adminToken = localStorage.getItem('atoken');
@@ -266,7 +270,7 @@ export const categoryAPI = {
       method: 'DELETE',
     }, adminToken);
   },
-  
+
   // Get category statistics
   getStats: async () => {
     const adminToken = localStorage.getItem('atoken');
@@ -284,14 +288,14 @@ export const competitionAPI = {
       method: 'GET',
     }, null);
   },
-  
+
   // Get competition by ID
   getById: async (id) => {
     return apiRequest(`/competition/${id}`, {
       method: 'GET',
     });
   },
-  
+
   // Create competition
   createCompetition: async (competitionData) => {
     const adminToken = localStorage.getItem('atoken');
@@ -300,7 +304,7 @@ export const competitionAPI = {
       body: JSON.stringify(competitionData),
     }, adminToken);
   },
-  
+
   // Update competition
   updateCompetition: async (id, competitionData) => {
     const adminToken = localStorage.getItem('atoken');
@@ -309,7 +313,7 @@ export const competitionAPI = {
       body: JSON.stringify(competitionData),
     }, adminToken);
   },
-  
+
   // Delete competition
   deleteCompetition: async (id) => {
     const adminToken = localStorage.getItem('atoken');
@@ -317,7 +321,7 @@ export const competitionAPI = {
       method: 'DELETE',
     }, adminToken);
   },
-  
+
   // Join competition (user)
   joinCompetition: async (id) => {
     const userToken = localStorage.getItem('token');
@@ -325,7 +329,7 @@ export const competitionAPI = {
       method: 'POST',
     }, userToken);
   },
-  
+
   // Submit solution (user)
   submitSolution: async (competitionId, puzzleId, moves, timeTaken) => {
     const userToken = localStorage.getItem('token');
@@ -334,7 +338,7 @@ export const competitionAPI = {
       body: JSON.stringify({ moves, timeTaken }),
     }, userToken);
   },
-  
+
   // Get leaderboard
   getLeaderboard: async (id) => {
     return apiRequest(`/competition/${id}/leaderboard`, {

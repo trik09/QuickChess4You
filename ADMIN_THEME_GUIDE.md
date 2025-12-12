@@ -9,7 +9,7 @@ The admin panel uses a **light gold theme** with the following color scheme:
 - **Primary Dark**: `#b58863` - Hover states and darker accents
 - **Primary Darker**: `#8b7332` - Text on light backgrounds, borders
 - **Primary Light**: `#e5d9a8` - Light backgrounds, subtle highlights
-- **Primary Lighter**: `#f5f0dc` - Very light backgrounds, table headers
+- **Primary Lighter**: `#ffd9d9` - Very light backgrounds, table headers
 
 ### Background Colors
 - **Main Background**: `#faf8f3` - Light warm background for content area
@@ -24,7 +24,7 @@ The admin panel uses a **light gold theme** with the following color scheme:
 ### Semantic Colors (Keep as is)
 - **Success**: `#2e7d32` / `#e8f5e9` (background)
 - **Error/Danger**: `#c62828` / `#ffebee` (background)
-- **Warning**: `#8b7332` / `#f5f0dc` (background)
+- **Warning**: `#8b7332` / `#ffd9d9` (background)
 - **Info**: `#1565c0` / `#e3f2fd` (background)
 
 ## Design Principles
@@ -72,7 +72,7 @@ box-shadow: 0 4px 12px rgba(210, 181, 97, 0.35);
 ### Tables
 ```css
 /* Table Header */
-background: #f5f0dc;
+background: #ffd9d9;
 color: #2d2416;
 
 /* Row Hover */
@@ -82,7 +82,7 @@ background: #faf8f3;
 ### Badges
 ```css
 /* Primary Badge */
-background: #f5f0dc;
+background: #ffd9d9;
 color: #8b7332;
 ```
 
@@ -114,13 +114,13 @@ Use these CSS variables for consistency:
   --admin-primary-dark: #b58863;
   --admin-primary-darker: #8b7332;
   --admin-primary-light: #e5d9a8;
-  --admin-primary-lighter: #f5f0dc;
+  --admin-primary-lighter: #ffd9d9;
   --admin-bg: #faf8f3;
   --admin-card-bg: #ffffff;
   --admin-text: #2d2416;
   --admin-text-light: #666;
   --admin-border: #e8e3d5;
-  --admin-hover: #f5f0dc;
+  --admin-hover: #ffd9d9;
 }
 ```
 
@@ -167,5 +167,5 @@ If updating from the old orange/purple theme:
 - Replace `#667eea` → `#d2b561`
 - Replace `#764ba2` → `#b58863`
 - Replace gradients with solid colors
-- Update table headers from `#f8f9fa` → `#f5f0dc`
+- Update table headers from `#f8f9fa` → `#ffd9d9`
 - Update hover backgrounds from `#f8f9fa` → `#faf8f3`

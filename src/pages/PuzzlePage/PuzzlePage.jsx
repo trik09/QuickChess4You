@@ -118,11 +118,16 @@ function PuzzlePage() {
         }
 
         const normalized = data
-          .filter((p) => p?.fen && Array.isArray(p?.solutionMoves) && p.solutionMoves.length)
+          .filter((p) => p?.fen && (
+            (Array.isArray(p?.solutionMoves) && p.solutionMoves.length) ||
+            (p?.type === 'kids' && p?.kidsConfig)
+          ))
           .map((puzzle, index) => ({
             id: index + 1,
             dbId: puzzle._id,
-            type: puzzle.title || (puzzle.difficulty ? `${puzzle.difficulty} puzzle` : `Puzzle ${index + 1}`),
+            type: puzzle?.type === 'kids' ? 'Kids Puzzle 🍕' : (puzzle.title || `${puzzle.difficulty || 'Normal'} Puzzle`),
+            puzzleType: puzzle.type || 'normal', // Pass the raw type
+            kidsConfig: puzzle.kidsConfig, // Pass config
             fen: puzzle.fen,
             solution: puzzle.solutionMoves,
             description: puzzle.description || 'Solve the puzzle.',
@@ -278,6 +283,8 @@ function PuzzlePage() {
               key={`${puzzle.dbId || puzzle.id || 'puzzle'}-${currentPuzzle}-${puzzle.fen}`}
               fen={puzzle.fen}
               solution={puzzle.solution || []}
+              puzzleType={puzzle.puzzleType}
+              kidsConfig={puzzle.kidsConfig}
               onPuzzleSolved={handlePuzzleSolved}
               onWrongMove={handleWrongMove}
             />
