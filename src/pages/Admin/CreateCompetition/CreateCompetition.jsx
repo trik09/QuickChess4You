@@ -112,16 +112,17 @@ function CreateCompetition() {
     try {
       // Prepare competition data with selected puzzle IDs
       const competitionData = {
-        title: formData.name,
+        name: formData.name,
         description: formData.description,
-        startDate: formData.startTime,
-        endDate: formData.endTime,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
         duration: parseInt(formData.duration) || 2,
-        maxPlayers: parseInt(formData.maxPlayers) || 100,
-        puzzles: selectedPuzzles.map((p) => p._id), // Send puzzle IDs
+        maxParticipants: parseInt(formData.maxPlayers) || 100,
+        puzzles: selectedPuzzles.map((p) => p._id),
       };
 
       await competitionAPI.createCompetition(competitionData);
+      console.log(competitionData);
       toast.success("Competition created successfully!");
 
       setTimeout(() => {
@@ -205,22 +206,21 @@ function CreateCompetition() {
                 required
               />
             </div>
-          
 
-          <div className={styles.formGroup}>
-            <label>
-              <FaUsers /> Maximum Players
-            </label>
-            <input
-              type="number"
-              placeholder="100"
-              value={formData.maxPlayers}
-              onChange={(e) =>
-                setFormData({ ...formData, maxPlayers: e.target.value })
-              }
-              required
-            />
-          </div>
+            <div className={styles.formGroup}>
+              <label>
+                <FaUsers /> Maximum Players
+              </label>
+              <input
+                type="number"
+                placeholder="100"
+                value={formData.maxPlayers}
+                onChange={(e) =>
+                  setFormData({ ...formData, maxPlayers: e.target.value })
+                }
+                required
+              />
+            </div>
           </div>
 
           <div className={styles.formGroup}>

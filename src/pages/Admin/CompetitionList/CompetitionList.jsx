@@ -57,39 +57,51 @@ function CompetitionList() {
     fetchCompetitions();
   }, []);
   const formatDuration = (minutes) => {
-  if (!minutes && minutes !== 0) return "N/A";
+    if (!minutes && minutes !== 0) return "N/A";
 
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
+    if (minutes < 60) {
+      return `${minutes} min`;
+    }
 
-  const hours = (minutes / 60).toFixed(1); // 1 decimal, like 1.5 hrs
-  return `${hours} hrs`;
-};
-
+    const hours = (minutes / 60).toFixed(1); // 1 decimal, like 1.5 hrs
+    return `${hours} hrs`;
+  };
 
   const fetchCompetitions = async () => {
     setLoading(true);
     try {
+      // console.log("🔍 Fetching competitions...");
       const response = await competitionAPI.getAll();
+      // console.log("📦 API Response:", response);
+      // console.log("✅ Response success:", response.success);
+      // console.log("📊 Response data:", response.data);
+      // console.log("📝 Is Array?", Array.isArray(response.data));
+
       if (response.success && Array.isArray(response.data)) {
+        // console.log("✔️ Mapping competitions, count:", response.data.length);
         const mappedCompetitions = response.data.map((comp) => ({
           id: comp._id,
           _id: comp._id,
           name: comp.title || comp.name,
           status: getCompetitionStatus(comp),
-          startTime: comp.startDate
-            ? new Date(comp.startDate).toLocaleString()
+          startTime: comp.startTime
+            ? new Date(comp.startTime).toLocaleString()
             : "N/A",
-duration: comp.duration ? formatDuration(comp.duration) : "N/A",
+          duration: comp.duration ? formatDuration(comp.duration) : "N/A",
           players: comp.participants?.length || 0,
           maxPlayers: comp.maxPlayers || 100,
           puzzles: comp.puzzles || [],
         }));
+        // console.log("✅ Mapped competitions:", mappedCompetitions);
         setCompetitions(mappedCompetitions);
+      } else {
+        // console.warn("⚠️ Response structure unexpected or not successful");
+        // console.warn("Response:", response);
       }
     } catch (error) {
-      console.error("Failed to fetch competitions:", error);
+      // console.error("❌ Failed to fetch competitions:", error);
+      // console.error("Error message:", error.message);
+      // console.error("Error stack:", error.stack);
       setCompetitions([
         {
           id: 1,
@@ -119,8 +131,8 @@ duration: comp.duration ? formatDuration(comp.duration) : "N/A",
 
   const getCompetitionStatus = (competition) => {
     const now = new Date();
-    const startDate = new Date(competition.startDate);
-    const endDate = new Date(competition.endDate);
+    const startDate = new Date(competition.startTime);
+    const endDate = new Date(competition.endTime);
 
     if (now < startDate) return "Upcoming";
     if (now > endDate) return "Completed";
@@ -174,21 +186,23 @@ duration: comp.duration ? formatDuration(comp.duration) : "N/A",
     setShowPreview(true);
   };
 
-  const handleDelete = (puzzle) => {
-    setDeleteConfirm(puzzle);
+  const handleDelete = (competition) => {
+    setDeleteConfirm(competition);
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirm?._id) return;
     try {
-      await adminAPI.deletePuzzle(deleteConfirm._id);
-      setSelectedCompetitionPuzzles((prev) =>
+      await competitionAPI.deleteCompetition(deleteConfirm._id);
+      setCompetitions((prev) =>
         prev.filter((p) => p._id !== deleteConfirm._id)
       );
-      toast.success(`Puzzle "${deleteConfirm.title}" deleted successfully!`);
+      toast.success(
+        `Competition "${deleteConfirm.name}" deleted successfully!`
+      );
     } catch (err) {
-      console.error("Failed to delete puzzle:", err);
-      toast.error(err.message || "Failed to delete puzzle");
+      console.error("Failed to delete competition:", err);
+      toast.error(err.message || "Failed to delete competition");
     } finally {
       setDeleteConfirm(null);
     }
@@ -378,7 +392,7 @@ duration: comp.duration ? formatDuration(comp.duration) : "N/A",
               />
               <IconButton
                 icon={FaTrash}
-                onClick={() => confirm("Delete this competition?")}
+                onClick={() => handleDelete(comp)}
                 title="Delete"
                 variant="danger"
               />
@@ -547,12 +561,12 @@ duration: comp.duration ? formatDuration(comp.duration) : "N/A",
           >
             <div className={styles.confirmHeader}>
               <FaTrash className={styles.dangerIcon} />
-              <h3>Delete Puzzle</h3>
+              <h3>Delete Competition</h3>
             </div>
             <div className={styles.confirmBody}>
               <p>
                 Are you sure you want to delete{" "}
-                <strong>"{deleteConfirm.title}"</strong>?
+                <strong>"{deleteConfirm.name}"</strong>?
               </p>
               <p className={styles.warningText}>
                 This action cannot be undone.
@@ -566,7 +580,7 @@ duration: comp.duration ? formatDuration(comp.duration) : "N/A",
                 Cancel
               </Button>
               <Button variant="danger" icon={FaTrash} onClick={confirmDelete}>
-                Delete Puzzle
+                Delete Competition
               </Button>
             </div>
           </div>

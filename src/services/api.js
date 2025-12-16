@@ -11,50 +11,36 @@ const API_BASE_URL =
  * @param {string} token - Optional token (if not provided, will get from localStorage)
  */
 const apiRequest = async (endpoint, options = {}, token = null) => {
-  const authToken = token || localStorage.getItem("token");
+  const authToken = token || localStorage.getItem("atoken");
 
   const config = {
+    ...options,
     headers: {
+      ...options.headers,
       "Content-Type": "application/json",
       ...(authToken && { Authorization: `Bearer ${authToken}` }),
-      ...options.headers,
     },
-    ...options,
   };
 
-  // Handle FormData (for file uploads)
+  // Handle FormData
   if (options.body instanceof FormData) {
     delete config.headers["Content-Type"];
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-    // Handle non-JSON responses
-    let data;
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      throw new Error(text || "An error occurred");
-    }
+  const contentType = response.headers.get("content-type");
+  const data = contentType?.includes("application/json")
+    ? await response.json()
+    : await response.text();
 
-    if (!response.ok) {
-      throw new Error(data.message || data.error || "An error occurred");
-    }
-
-    return data;
-  } catch (error) {
-    // Re-throw with more context if it's a network error
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      throw new Error(
-        "Network error: Could not connect to server. Please check if the backend is running."
-      );
-    }
-    throw error;
+  if (!response.ok) {
+    throw new Error(data.message || data || "Request failed");
   }
+
+  return data;
 };
+
 
 /**
  * Authentication APIs
@@ -367,16 +353,21 @@ export const competitionAPI = {
 
   // Create competition
   createCompetition: async (competitionData) => {
-    const adminToken = localStorage.getItem("atoken");
-    return apiRequest(
-      "/competition/create-competition",
-      {
-        method: "POST",
-        body: JSON.stringify(competitionData),
+  const adminToken = localStorage.getItem("atoken");
+
+  return apiRequest(
+    "/competition/create-competition",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      adminToken
-    );
-  },
+      body: JSON.stringify(competitionData),
+    },
+    adminToken
+  );
+},
+
 
   // Update competition
   updateCompetition: async (id, competitionData) => {
