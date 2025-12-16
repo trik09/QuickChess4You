@@ -27,18 +27,31 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
     delete config.headers["Content-Type"];
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-  const contentType = response.headers.get("content-type");
-  const data = contentType?.includes("application/json")
-    ? await response.json()
-    : await response.text();
+    // Handle non-JSON responses
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(text || 'An error occurred');
+    }
 
-  if (!response.ok) {
-    throw new Error(data.message || data || "Request failed");
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'An error occurred');
+    }
+
+    return data;
+  } catch (error) {
+    // Re-throw with more context if it's a network error
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Could not connect to server. Please check if the backend is running.');
+    }
+    throw error;
   }
-
-  return data;
 };
 
 
@@ -49,15 +62,14 @@ export const authAPI = {
   // Register a new user
   register: async (userData, avatarFile) => {
     const formData = new FormData();
-    formData.append("name", userData.name);
-    formData.append("email", userData.email);
-    formData.append("password", userData.password);
-    formData.append("username", userData.username);
+    formData.append('name', userData.name);
+    formData.append('email', userData.email);
+    formData.append('password', userData.password);
+    formData.append('username', userData.username);
 
-    if (userData.wins !== undefined) formData.append("wins", userData.wins);
-    if (userData.losses !== undefined)
-      formData.append("losses", userData.losses);
-    if (userData.draws !== undefined) formData.append("draws", userData.draws);
+    if (userData.wins !== undefined) formData.append('wins', userData.wins);
+    if (userData.losses !== undefined) formData.append('losses', userData.losses);
+    if (userData.draws !== undefined) formData.append('draws', userData.draws);
 
     if (avatarFile) {
       formData.append("avatar", avatarFile);

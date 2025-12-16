@@ -22,8 +22,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .empty h2 {
@@ -104,6 +111,46 @@
   color: var(--primary);
 }
 
+.modeToggleSection {
+  max-width: 1400px;
+  margin: 0 auto 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.modeToggle {
+  background: var(--bg-white);
+  padding: 5px;
+  border-radius: 12px;
+  display: flex;
+  gap: 5px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.modeBtn {
+  padding: 10px 25px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.modeBtn:hover {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-primary);
+}
+
+.modeBtn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3);
+}
+
 .content {
   max-width: 1400px;
   margin: 0 auto;
@@ -169,7 +216,7 @@
 
 .categoryBadge {
   padding: 6px 14px;
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #8b7332;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -392,6 +439,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -414,17 +462,17 @@
   .content {
     grid-template-columns: 1fr;
   }
-  
+
   .puzzleInfo {
     position: static;
   }
-  
+
   .header {
     flex-direction: column;
     gap: 20px;
     text-align: center;
   }
-  
+
   .headerLeft {
     flex-direction: column;
   }
@@ -434,28 +482,28 @@
   .casualPuzzlePage {
     padding: 10px;
   }
-  
+
   .header {
     padding: 20px;
   }
-  
+
   .headerIcon {
     font-size: 2rem;
   }
-  
+
   .headerLeft h1 {
     font-size: 1.5rem;
   }
-  
+
   .puzzleInfo,
   .boardSection {
     padding: 20px;
   }
-  
+
   .navigation {
     flex-direction: column;
   }
-  
+
   .navBtn {
     width: 100%;
   }

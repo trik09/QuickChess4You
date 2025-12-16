@@ -17,14 +17,6 @@ import blackRook1 from '../../assets/pieces/blackrook.svg';
 import blackQueen1 from '../../assets/pieces/blackqueen.svg';
 import blackKing1 from '../../assets/pieces/blackking.svg';
 
-// ... (Assuming standard imports for set 2 and 3 exist, keeping it robust) 
-// Note: To save space in this response, I am assuming the other imports are preserved if I use a multi-replace, 
-// but since I am rewriting the full logic, I will re-declare the essential maps or assume the user has them. 
-// For safety, I will only include Set 1 for brevity in this tool call logic or I need to re-import all.
-// Actually, I should keep all imports to avoid breaking other sets.
-// I will just use the provided imports from the original file context variable if possible, but I must provide full content.
-// I will re-include them all to be safe.
-
 import whitePawn2 from '../../assets/pieces2/whitepawn.svg';
 import whiteKnight2 from '../../assets/pieces2/whiteknight.svg';
 import whiteBishop2 from '../../assets/pieces2/whitebishop.svg';
@@ -62,7 +54,7 @@ function normalizeSAN(san) {
   return san.replace(/[\+#\s]+$/g, '').trim();
 }
 
-// Simple Audio Synthesis for Sounds (No assets needed)
+// Simple Audio Synthesis for Sounds
 const playSound = (type) => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -118,7 +110,7 @@ const playSound = (type) => {
 }
 
 
-function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
+function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleType = 'normal', kidsConfig = null }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
 
@@ -135,7 +127,22 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
 
   const [normalizedSolution, setNormalizedSolution] = useState([]);
 
-  // Re-initialize when FEN changes
+  // Kids Mode State
+  const [capturedTargets, setCapturedTargets] = useState([]); // Array of captured squares
+  const [kidsTargets, setKidsTargets] = useState([]); // Initial targets from config
+
+  // Custom Drag State
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedPiece, setDraggedPiece] = useState(null);
+  const [dragOverSquare, setDragOverSquare] = useState(null);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [draggedPieceImage, setDraggedPieceImage] = useState(null);
+  const boardRef = useRef(null);
+  const mouseHandlersRef = useRef({});
+  const dragStateRef = useRef({ draggedPiece: null, possibleMoves: [] });
+  const dragTimeoutRef = useRef(null);
+  const isMouseDownRef = useRef(false);
+
   // Re-initialize when FEN changes
   useEffect(() => {
     const newGame = new Chess(fen);
@@ -152,53 +159,58 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
     const turn = newGame.turn();
     setUserColor(turn);
 
-    // Normalize solution moves to SAN
-    try {
-      // Create a temp game to validate/normalize moves
-      const tempGame = new Chess(fen);
-      const sanMoves = [];
+    // Initialize Kids Mode stuff
+    setCapturedTargets([]);
+    if (puzzleType === 'kids' && kidsConfig) {
+      setKidsTargets(kidsConfig.targets || []);
+    } else {
+      setKidsTargets([]);
+    }
 
-      if (Array.isArray(solution)) {
-        for (const move of solution) {
-          let result = null;
+    // Normalize solution moves to SAN (only for normal)
+    if (puzzleType === 'normal') {
+      try {
+        const tempGame = new Chess(fen);
+        const sanMoves = [];
 
-          // 1. Try passing the move directly (works for SAN and Move Objects)
-          try {
-            result = tempGame.move(move);
-          } catch (e) {
-            // 2. If it failed and looks like a UCI string (e.g. "e2e4" or "a7a8q"), try converting to object
-            if (typeof move === 'string' && (move.length === 4 || move.length === 5)) {
-              const from = move.substring(0, 2);
-              const to = move.substring(2, 4);
-              const promotion = move.length === 5 ? move[4] : undefined;
-
-              try {
-                result = tempGame.move({ from, to, promotion });
-              } catch (e2) {
-                // Still failed
-                console.warn(`Failed to parse move: ${move}`, e2);
+        if (Array.isArray(solution)) {
+          for (const move of solution) {
+            let result = null;
+            try {
+              result = tempGame.move(move);
+            } catch (e) {
+              if (typeof move === 'string' && (move.length === 4 || move.length === 5)) {
+                const from = move.substring(0, 2);
+                const to = move.substring(2, 4);
+                const promotion = move.length === 5 ? move[4] : undefined;
+                try { result = tempGame.move({ from, to, promotion }); } catch (e2) { }
               }
             }
-          }
-
-          if (result) {
-            sanMoves.push(result.san);
-          } else {
-            console.warn(`Invalid move in solution: ${move}`);
-            // If we can't parse a move, the puzzle might be unplayable. 
-            // Depending on strictness, we might break or continue. 
-            // Continuing allows partial solving.
-            break;
+            if (result) sanMoves.push(result.san);
+            else break;
           }
         }
+        setNormalizedSolution(sanMoves);
+      } catch (error) {
+        setNormalizedSolution([]);
       }
-      setNormalizedSolution(sanMoves);
-    } catch (error) {
-      console.error('Error normalizing solution:', error);
-      // Fallback to empty to avoid crashing
-      setNormalizedSolution([]);
     }
-  }, [fen, solution]);
+  }, [fen, solution, puzzleType, kidsConfig]);
+
+  // Cleanup effect for mouse event listeners
+  useEffect(() => {
+    return () => {
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+      if (mouseHandlersRef.current.handleMouseMove) {
+        document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
+      }
+      if (mouseHandlersRef.current.handleMouseUp) {
+        document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
+      }
+    };
+  }, []);
 
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -217,11 +229,84 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
       setSelectedSquare(null);
       setPossibleMoves([]);
       setFeedback(null);
+      setCapturedTargets([]); // Reset targets
     }, delay);
   };
 
+  const checkKidsWinCondition = (currentCaptured) => {
+    // Check if all targets are captured
+    // We need to know how many targets were there
+    const totalTargets = kidsTargets.length;
+    if (currentCaptured.length >= totalTargets) {
+      return true;
+    }
+    return false;
+  };
+
+  const handleKidsMove = (from, to) => {
+    // Allow any legal move
+    // No turn check needed as we force user color usually, but game.turn() handles it
+
+    const moveAttempt = { from, to, promotion: 'q' };
+    let result = null;
+    try { result = game.move(moveAttempt); } catch (e) { result = null; }
+
+    if (!result) return;
+
+    // STARTING NEW LOGIC FOR KIDS:
+    // Check if 'to' square had a target
+    // Targets are logically pieces (pawns) of opposite color so they are 'captured' by engine move
+    // But we need to track them visually as Pizza/Chocolate
+    const targetHit = kidsTargets.find(t => t.square === to);
+    const isCapture = !!targetHit; // Physically it is a capture in engine if we put enemy pieces there
+
+    playSound(isCapture ? 'capture' : 'move');
+
+    const newHistory = [...moveHistory, result.san];
+    setMoveHistory(newHistory);
+    setLastMove({ from, to });
+
+    // Update visually captured targets
+    let newCaptured = capturedTargets;
+    if (targetHit) {
+      // If we haven't already captured it (should be impossible if piece is there but safe check)
+      if (!capturedTargets.includes(targetHit.square)) {
+        newCaptured = [...capturedTargets, targetHit.square];
+        setCapturedTargets(newCaptured);
+      }
+    }
+
+    // Force update board state AND keep turn on player logic
+    // We want the player to keep moving until all targets captured
+    // So we must hack the FEN to set turn back to userColor
+    const currentFen = game.fen();
+    const fenParts = currentFen.split(' ');
+    fenParts[1] = userColor; // Force turn back to user
+    const newFen = fenParts.join(' ');
+
+    setGame(new Chess(newFen));
+    setFeedback(null); // Clear feedback? Or keep it briefly?
+
+    // Check win
+    if (checkKidsWinCondition(newCaptured)) {
+      setTimeout(() => {
+        setFeedback('solved');
+        playSound('solved');
+        if (onPuzzleSolved) onPuzzleSolved();
+      }, 300);
+    }
+
+    // No computer response in Kids Mode
+  };
+
   const handleUserMove = (from, to) => {
-    // Check against userColor instead of hardcoded 'w'
+    // Branch based on Puzzle Type
+    if (puzzleType === 'kids') {
+      handleKidsMove(from, to);
+      return;
+    }
+
+    // Normal Puzzle Logic
     if (game.turn() !== userColor) return;
 
     const moveAttempt = { from, to, promotion: 'q' };
@@ -234,7 +319,6 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
 
     if (!result) return; // Invalid move
 
-    // Move is valid on board, now check against puzzle solution
     const san = result.san;
     const isCapture = san.includes('x');
     playSound(isCapture ? 'capture' : 'move');
@@ -245,7 +329,6 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
 
     const expected = normalizedSolution[solutionIndex] || null;
     if (expected && normalizeSAN(san) === normalizeSAN(expected)) {
-      // Correct Move
       setFeedback('correct');
 
       let nextIndex = solutionIndex + 1;
@@ -260,7 +343,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
             setMoveHistory((prev) => [...prev, blackResult.san]);
             setLastMove({ from: blackResult.from, to: blackResult.to });
             setSolutionIndex(nextIndex + 1);
-            setGame(new Chess(game.fen())); // Force update
+            setGame(new Chess(game.fen()));
 
             if ((nextIndex + 1) >= normalizedSolution.length || game.isCheckmate()) {
               setTimeout(() => {
@@ -272,29 +355,24 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
               setFeedback(null);
             }
           }
-        }, 300); // Small delay for black move to feel natural
-        setSolutionIndex(nextIndex); // Update index immediately for safety
+        }, 300);
+        setSolutionIndex(nextIndex);
       } else {
-        // Puzzle solved (no more black moves needed)
         setTimeout(() => {
           setFeedback('solved');
           playSound('solved');
           if (onPuzzleSolved) onPuzzleSolved();
         }, 300);
       }
-
-      // Update game state for UI
       setGame(new Chess(game.fen()));
-
     } else {
-      // Wrong Move
       if (onWrongMove) onWrongMove();
       resetToInitial();
     }
   };
 
   const handleSquareClick = (square) => {
-    if (feedback === 'solved') return;
+    if (feedback === 'solved' || isDragging) return;
 
     // Move Logic
     if (selectedSquare) {
@@ -303,33 +381,27 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
         setPossibleMoves([]);
         return;
       }
-
-      // Attempt move
       if (possibleMoves.includes(square)) {
         handleUserMove(selectedSquare, square);
         setSelectedSquare(null);
         setPossibleMoves([]);
         return;
       }
-
-      // Switch selection to new piece if own color
+      // Switch selection logic
       const piece = getPiece(square);
-      if (piece && piece.color === userColor) {
+      if (piece && piece.color === game.turn()) { // Allow switching if valid turn
         setSelectedSquare(square);
         const moves = game.moves({ square, verbose: true }) || [];
         setPossibleMoves(moves.map((m) => m.to));
         return;
       }
-
-      // Invalid click (empty square or enemy piece not capture)
       setSelectedSquare(null);
       setPossibleMoves([]);
 
     } else {
-      // Select Logic
       const piece = getPiece(square);
       if (!piece) return;
-      if (piece.color !== userColor || game.turn() !== userColor) return;
+      if (piece.color !== game.turn()) return; // Must be moving side
 
       setSelectedSquare(square);
       const moves = game.moves({ square, verbose: true }) || [];
@@ -337,32 +409,142 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
     }
   };
 
-  // Drag and Drop Handlers
-  const handleDragStart = (e, square) => {
-    e.dataTransfer.setData('text/plain', square);
-    e.dataTransfer.effectAllowed = 'move';
+  // Custom Mouse Drag Handlers using useRef to avoid circular dependency
+  useEffect(() => {
+    mouseHandlersRef.current.handleMouseMove = (e) => {
+      if (!boardRef.current) return;
 
-    // Optional: Set drag image or highlighting
-    setSelectedSquare(square); // Auto-select on drag
+      const rect = boardRef.current.getBoundingClientRect();
+      setDragPosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+
+      // Determine which square we're over
+      const squareSize = rect.width / 8;
+      const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
+      const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+      
+      if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
+        const files = userColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+        const ranks = userColor === 'w' ? ['8', '7', '6', '5', '4', '3', '2', '1'] : ['1', '2', '3', '4', '5', '6', '7', '8'];
+        const targetSquare = files[fileIndex] + ranks[rankIndex];
+        
+        setPossibleMoves(prevMoves => {
+          if (prevMoves.includes(targetSquare)) {
+            setDragOverSquare(targetSquare);
+          } else {
+            setDragOverSquare(null);
+          }
+          return prevMoves;
+        });
+      } else {
+        setDragOverSquare(null);
+      }
+    };
+
+    mouseHandlersRef.current.handleMouseUp = (e) => {
+      // Clear the mouse down flag
+      isMouseDownRef.current = false;
+      
+      // Remove global event listeners
+      document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
+      document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
+
+      // Get current drag state from ref
+      const currentDraggedPiece = dragStateRef.current.draggedPiece;
+      const currentPossibleMoves = dragStateRef.current.possibleMoves;
+
+      // Determine drop target
+      let targetSquare = null;
+      if (boardRef.current) {
+        const rect = boardRef.current.getBoundingClientRect();
+        const squareSize = rect.width / 8;
+        const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
+        const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+        
+        if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
+          const files = userColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+          const ranks = userColor === 'w' ? ['8', '7', '6', '5', '4', '3', '2', '1'] : ['1', '2', '3', '4', '5', '6', '7', '8'];
+          targetSquare = files[fileIndex] + ranks[rankIndex];
+        }
+      }
+
+      // Reset drag state first
+      setIsDragging(false);
+      setDraggedPiece(null);
+      setDragOverSquare(null);
+      setDraggedPieceImage(null);
+      
+      // Clear ref
+      dragStateRef.current = { draggedPiece: null, possibleMoves: [] };
+
+      // Then handle the move if valid
+      if (currentDraggedPiece && targetSquare && targetSquare !== currentDraggedPiece && currentPossibleMoves.includes(targetSquare)) {
+        handleUserMove(currentDraggedPiece, targetSquare);
+        // Clear selection after successful drag move
+        setSelectedSquare(null);
+        setPossibleMoves([]);
+      }
+    };
+  }, [userColor, handleUserMove]);
+
+  const startDrag = (square, e) => {
+    const piece = getPiece(square);
     const moves = game.moves({ square, verbose: true }) || [];
-    setPossibleMoves(moves.map((m) => m.to));
+    const movesToSquares = moves.map((m) => m.to);
+    
+    // Update ref with current drag state
+    dragStateRef.current = {
+      draggedPiece: square,
+      possibleMoves: movesToSquares
+    };
+    
+    // Start drag
+    setIsDragging(true);
+    setDraggedPiece(square);
+    setDraggedPieceImage(pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]);
+    setPossibleMoves(movesToSquares);
+
+    // Get mouse position relative to board
+    const rect = boardRef.current.getBoundingClientRect();
+    setDragPosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+
+    // Add global mouse event listeners
+    document.addEventListener('mousemove', mouseHandlersRef.current.handleMouseMove, { passive: false });
+    document.addEventListener('mouseup', mouseHandlersRef.current.handleMouseUp, { passive: false });
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
+  const handleMouseDown = (e, square) => {
+    if (feedback === 'solved') return;
 
-  const handleDrop = (e, targetSquare) => {
-    e.preventDefault();
-    const sourceSquare = e.dataTransfer.getData('text/plain');
-    if (sourceSquare && sourceSquare !== targetSquare) {
-      handleUserMove(sourceSquare, targetSquare);
-    }
-    setSelectedSquare(null);
-    setPossibleMoves([]);
-  };
+    const piece = getPiece(square);
+    if (!piece || piece.color !== game.turn()) return;
 
+    // Only handle left mouse button
+    if (e.button !== 0) return;
+
+    isMouseDownRef.current = true;
+
+    // Start drag after a short delay to allow for clicks
+    dragTimeoutRef.current = setTimeout(() => {
+      if (isMouseDownRef.current) {
+        startDrag(square, e);
+      }
+    }, 150); // 150ms delay to distinguish click from drag
+
+    // Add temporary mouseup listener to cancel drag if mouse is released quickly
+    const quickMouseUp = () => {
+      clearTimeout(dragTimeoutRef.current);
+      isMouseDownRef.current = false;
+      document.removeEventListener('mouseup', quickMouseUp);
+    };
+
+    document.addEventListener('mouseup', quickMouseUp, { once: true });
+  };
 
   const isLightSquare = (fileIndex, rankIndex) => (fileIndex + rankIndex) % 2 === 0;
   const isSelected = (square) => selectedSquare === square;
@@ -373,12 +555,12 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
     <div className={styles.boardContainer}>
       {feedback && (
         <div className={`${styles.feedback} ${styles[feedback]}`}>
-          {feedback === 'correct' && '✓ Correct!'}
+          {feedback === 'correct' && (puzzleType === 'kids' ? 'Yummy! 😋' : '✓ Correct!')}
           {feedback === 'wrong' && '✗ Wrong Move!'}
           {feedback === 'solved' && '🎉 Puzzle Solved!'}
         </div>
       )}
-      <div className={styles.board}>
+      <div className={styles.board} ref={boardRef}>
         {(userColor === 'w' ? ranks : [...ranks].reverse()).map((rank, rankIndex) => (
           <div key={rank} className={styles.row}>
             {(userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
@@ -387,34 +569,66 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
               const isLight = isLightSquare(fileIndex, rankIndex);
               const squareColor = isLight ? currentBoardColors.light : currentBoardColors.dark;
 
+              // Check for Kids Target -> Override rendering
+              // If square is in kidsTargets AND NOT captured
+              let kidsContent = null;
+              if (puzzleType === 'kids') {
+                const target = kidsTargets.find(t => t.square === square);
+                if (target && !capturedTargets.includes(square)) {
+                  // It might have a piece on it (e.g. enemy pawn from FEN), but we render Pizza/Chocolate
+                  kidsContent = (
+                    <div
+                      className={styles.piece}
+                      style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      {target.item === 'pizza' ? '🍕' : '🍫'}
+                    </div>
+                  );
+                }
+              }
+
+              // Hide Kings in Kids Mode if not covered by kidsContent
+              if (puzzleType === 'kids' && !kidsContent && piece && piece.type === 'k') {
+                // Do not render anything for kings
+              } else if (puzzleType === 'kids' && !kidsContent && piece) {
+                // Explicitly render pieces for Kids mode if not king/target (e.g. the main piece)
+                kidsContent = <img src={pieceImages[piece.color + piece.type]} alt="" className={styles.piece} />;
+              }
+
               return (
-                <div
-                  key={square}
-                  className={`
-                    ${styles.square}
-                    ${isSelected(square) ? styles.selected : ''}
-                    ${isPossibleMove(square) ? styles.possibleMove : ''}
-                    ${isLastMove(square) ? styles.lastMove : ''}
-                  `}
+              <div
+  key={square}
+  className={`
+    ${styles.square}
+    ${isSelected(square) ? styles.selected : ''}
+    ${isPossibleMove(square) ? styles.possibleMove : ''}
+    ${isLastMove(square) ? styles.lastMove : ''}
+    ${dragOverSquare === square ? styles.dragOver : ''}
+    ${isDragging && draggedPiece === square ? styles.dragSource : ''}
+  `}
+
+
                   style={{ backgroundColor: squareColor }}
                   onClick={() => handleSquareClick(square)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, square)}
                 >
-                  {piece && (
-                    <img
-                      src={pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]}
-                      alt={`${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`}
-                      className={styles.piece}
-                      draggable={game.turn() === piece.color && feedback !== 'solved'} // Only allow dragging if turn matches
-                      onDragStart={(e) => handleDragStart(e, square)}
-                    />
+                  {/* Render Kids Content OR Standard Piece */}
+                  {kidsContent ? kidsContent : (
+                    piece && (
+                      <img
+                        src={pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]}
+                        alt={`${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`}
+                        className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
+                        draggable={false}
+                        onMouseDown={(e) => handleMouseDown(e, square)}
+                        style={{ cursor: game.turn() === piece.color && feedback !== 'solved' ? 'grab' : 'default' }}
+                      />
+                    )
                   )}
-                  {/* Rank Labels (Numbers) - Show on first file for the user's view (whether 'a' or 'h') */}
+
+
                   {fileIndex === 0 && (
                     <div className={styles.rankLabel}>{rank}</div>
                   )}
-                  {/* File Labels (Letters) - Show on last rank for the user's view (whether '1' or '8') */}
                   {rankIndex === 7 && (
                     <div className={styles.fileLabel}>{file}</div>
                   )}
@@ -424,6 +638,20 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove }) {
           </div>
         ))}
       </div>
+      
+      {/* Floating dragged piece */}
+      {isDragging && draggedPieceImage && (
+        <img
+          src={draggedPieceImage}
+          alt="Dragged piece"
+          className={styles.floatingPiece}
+          style={{
+            left: dragPosition.x - 35, // Center the piece on cursor
+            top: dragPosition.y - 35,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
     </div>
   );
 }

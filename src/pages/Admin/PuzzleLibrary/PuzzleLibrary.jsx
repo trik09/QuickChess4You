@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
-import { FaBook, FaPlus, FaDownload, FaFilter, FaSearch, FaTrophy } from 'react-icons/fa';
+import { FaBook, FaPlus, FaTrophy, FaSearch } from 'react-icons/fa';
 import { PageHeader, Button } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
 import toast, { Toaster } from 'react-hot-toast';
 import styles from './PuzzleLibrary.module.css';
 
 function PuzzleLibrary() {
-  const [activeTab, setActiveTab] = useState('manual'); // 'manual' or 'lichess'
   const [puzzles, setPuzzles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [importing, setImporting] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
-    minRating: '',
-    maxRating: '',
+    type: '', // 'normal' or 'kids'
     search: '',
     page: 1,
     limit: 20
@@ -23,17 +20,13 @@ function PuzzleLibrary() {
 
   useEffect(() => {
     fetchPuzzles();
-  }, [activeTab, filters]);
+  }, [filters]);
 
   const fetchPuzzles = async () => {
     setLoading(true);
     try {
-      const filterParams = {
-        source: activeTab,
-        ...filters
-      };
-      
-      const response = await adminAPI.getPuzzlesFiltered(filterParams);
+      // filters now include 'type' directly
+      const response = await adminAPI.getPuzzlesFiltered(filters);
       setPuzzles(response.puzzles || []);
       setPagination(response.pagination || {});
     } catch (error) {
@@ -41,20 +34,6 @@ function PuzzleLibrary() {
       console.error(error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleImportFromLichess = async () => {
-    setImporting(true);
-    try {
-      const response = await adminAPI.importFromLichess(50);
-      toast.success(`Imported ${response.imported} puzzles from Lichess!`);
-      fetchPuzzles();
-    } catch (error) {
-      toast.error('Failed to import from Lichess');
-      console.error(error);
-    } finally {
-      setImporting(false);
     }
   };
 
@@ -73,11 +52,11 @@ function PuzzleLibrary() {
       toast.error('Please select at least one puzzle');
       return;
     }
-    
+
     // Store selected puzzles in localStorage for competition creation
     localStorage.setItem('selectedPuzzles', JSON.stringify(selectedPuzzles));
     toast.success(`${selectedPuzzles.length} puzzles selected for competition`);
-    
+
     // Navigate to create competition page
     window.location.href = '/admin/competitions/create';
   };
@@ -91,66 +70,27 @@ function PuzzleLibrary() {
     }
   };
 
-  const getRatingColor = (rating) => {
-    if (rating < 1500) return '#2e7d32';
-    if (rating < 2000) return '#8b7332';
-    return '#c62828';
-  };
-
   return (
     <div className={styles.puzzleLibrary}>
       <Toaster position="top-center" />
-      
+
       <PageHeader
         icon={FaBook}
         title="Puzzle Library"
-        subtitle="Manage manual and Lichess puzzles"
+        subtitle="Manage puzzles"
       />
-
-      {/* Tabs */}
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === 'manual' ? styles.active : ''}`}
-          onClick={() => {
-            setActiveTab('manual');
-            setFilters({ ...filters, page: 1 });
-          }}
-        >
-          Manual Puzzles
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'lichess' ? styles.active : ''}`}
-          onClick={() => {
-            setActiveTab('lichess');
-            setFilters({ ...filters, page: 1 });
-          }}
-        >
-          Lichess Puzzles
-        </button>
-      </div>
 
       {/* Actions Bar */}
       <div className={styles.actionsBar}>
         <div className={styles.leftActions}>
-          {activeTab === 'lichess' && (
-            <Button
-              icon={FaDownload}
-              onClick={handleImportFromLichess}
-              disabled={importing}
-            >
-              {importing ? 'Importing...' : 'Import from Lichess'}
-            </Button>
-          )}
-          {activeTab === 'manual' && (
-            <Button
-              icon={FaPlus}
-              onClick={() => window.location.href = '/admin/puzzles/create'}
-            >
-              Create Manual Puzzle
-            </Button>
-          )}
+          <Button
+            icon={FaPlus}
+            onClick={() => window.location.href = '/admin/puzzles/create'}
+          >
+            Create New Puzzle
+          </Button>
         </div>
-        
+
         <div className={styles.rightActions}>
           {selectedPuzzles.length > 0 && (
             <Button
@@ -170,7 +110,7 @@ function PuzzleLibrary() {
           <FaSearch className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Search by title or ID..."
+            placeholder="Search by title..."
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
             className={styles.searchInput}
@@ -190,24 +130,15 @@ function PuzzleLibrary() {
           <option value="Strategy">Strategy</option>
         </select>
 
-        {activeTab === 'lichess' && (
-          <>
-            <input
-              type="number"
-              placeholder="Min Rating"
-              value={filters.minRating}
-              onChange={(e) => setFilters({ ...filters, minRating: e.target.value, page: 1 })}
-              className={styles.ratingInput}
-            />
-            <input
-              type="number"
-              placeholder="Max Rating"
-              value={filters.maxRating}
-              onChange={(e) => setFilters({ ...filters, maxRating: e.target.value, page: 1 })}
-              className={styles.ratingInput}
-            />
-          </>
-        )}
+        <select
+          value={filters.type}
+          onChange={(e) => setFilters({ ...filters, type: e.target.value, page: 1 })}
+          className={styles.filterSelect}
+        >
+          <option value="">All Types</option>
+          <option value="normal">Normal</option>
+          <option value="kids">Kids</option>
+        </select>
       </div>
 
       {/* Puzzles Table */}
@@ -218,11 +149,6 @@ function PuzzleLibrary() {
           <div className={styles.empty}>
             <FaBook />
             <p>No puzzles found</p>
-            {activeTab === 'lichess' && (
-              <Button icon={FaDownload} onClick={handleImportFromLichess}>
-                Import from Lichess
-              </Button>
-            )}
           </div>
         ) : (
           <table className={styles.table}>
@@ -243,10 +169,9 @@ function PuzzleLibrary() {
                 </th>
                 <th>Preview</th>
                 <th>Title</th>
+                <th>Type</th>
                 <th>Category</th>
                 <th>Difficulty</th>
-                {activeTab === 'lichess' && <th>Rating</th>}
-                <th>Source</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -264,17 +189,21 @@ function PuzzleLibrary() {
                     <div className={styles.preview}>
                       <div className={styles.miniBoard}>
                         {/* Simplified board preview */}
-                        <span>♔</span>
+                        <span>
+                          {puzzle.type === 'kids' ? (puzzle.kidsConfig?.piece?.toUpperCase() || '♚') : '♔'}
+                        </span>
                       </div>
                     </div>
                   </td>
                   <td>
                     <div className={styles.titleCell}>
                       <strong>{puzzle.title}</strong>
-                      {puzzle.lichessId && (
-                        <span className={styles.lichessId}>ID: {puzzle.lichessId}</span>
-                      )}
                     </div>
+                  </td>
+                  <td>
+                    <span className={`${styles.sourceBadge} ${styles[puzzle.type || 'normal']}`}>
+                      {puzzle.type === 'kids' ? 'Kids' : 'Normal'}
+                    </span>
                   </td>
                   <td>
                     <span className={styles.categoryBadge}>
@@ -282,26 +211,11 @@ function PuzzleLibrary() {
                     </span>
                   </td>
                   <td>
-                    <span 
+                    <span
                       className={styles.difficultyBadge}
                       style={{ backgroundColor: getDifficultyColor(puzzle.difficulty) }}
                     >
                       {puzzle.difficulty}
-                    </span>
-                  </td>
-                  {activeTab === 'lichess' && (
-                    <td>
-                      <span 
-                        className={styles.ratingBadge}
-                        style={{ color: getRatingColor(puzzle.rating) }}
-                      >
-                        {puzzle.rating || 'N/A'}
-                      </span>
-                    </td>
-                  )}
-                  <td>
-                    <span className={`${styles.sourceBadge} ${styles[puzzle.source]}`}>
-                      {puzzle.source}
                     </span>
                   </td>
                   <td>

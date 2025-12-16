@@ -32,8 +32,8 @@ function Dashboard() {
       const response = await competitionAPI.getAll();
       if (response.success && Array.isArray(response.data)) {
         const formattedCompetitions = response.data.map((comp) => {
-          const startDate = new Date(comp.startDate);
-          const endDate = new Date(comp.endDate);
+          const startDate = new Date(comp.startTime);
+          const endDate = new Date(comp.endTime);
           const now = new Date();
 
           let status = "Upcoming";
@@ -54,9 +54,9 @@ function Dashboard() {
             id: comp._id,
             _id: comp._id,
             title: comp.title || comp.name || "Untitled Competition",
-            date: formatDateRange(comp.startDate, comp.endDate),
-            startDate: comp.startDate,
-            endDate: comp.endDate,
+            date: formatDateRange(comp.startTime, comp.endTime),
+            startDate: comp.startTime,
+            endDate: comp.endTime,
             participants: comp.participants?.length || comp.maxPlayers || 0,
             maxPlayers: comp.maxPlayers || 100,
             prize: comp.prize || "TBA",

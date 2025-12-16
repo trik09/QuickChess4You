@@ -14,7 +14,7 @@
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 2px solid #f5f0dc;
+  border: 2px solid #ffd9d9;
 }
 
 .formGroup {
@@ -85,7 +85,7 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 20px;
-  border: 2px solid #f5f0dc;
+  border: 2px solid #ffd9d9;
 }
 
 .previewHeader {
@@ -105,7 +105,7 @@
 
 .previewBadge {
   padding: 5px 12px;
-  background: #f5f0dc;
+  background: #ffd9d9;
   color: #8b7332;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -115,7 +115,7 @@
 .boardContainer {
   margin-bottom: 25px;
   padding: 15px;
-  background: linear-gradient(135deg, #faf8f3 0%, #f5f0dc 100%);
+  background: linear-gradient(135deg, #faf8f3 0%, #ffd9d9 100%);
   border-radius: 12px;
 }
 
