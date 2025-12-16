@@ -21,7 +21,6 @@ function CreateCompetition() {
   const [formData, setFormData] = useState({
     name: "",
     startTime: "",
-    endTime: "",
     duration: "",
     maxPlayers: "",
     description: "",
@@ -115,8 +114,7 @@ function CreateCompetition() {
         name: formData.name,
         description: formData.description,
         startTime: formData.startTime,
-        endTime: formData.endTime,
-        duration: parseInt(formData.duration) || 2,
+        duration: parseInt(formData.duration) || 120,
         maxParticipants: parseInt(formData.maxPlayers) || 100,
         puzzles: selectedPuzzles.map((p) => p._id),
       };
@@ -180,25 +178,12 @@ function CreateCompetition() {
 
             <div className={styles.formGroup}>
               <label>
-                <FaClock /> End Date & Time
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.endTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, endTime: e.target.value })
-                }
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>
-                <FaClock /> Duration (hours)
+                <FaClock /> Duration (minutes)
               </label>
               <input
                 type="number"
-                placeholder="2"
+                placeholder="120"
+                min="1"
                 value={formData.duration}
                 onChange={(e) =>
                   setFormData({ ...formData, duration: e.target.value })
@@ -214,6 +199,7 @@ function CreateCompetition() {
               <input
                 type="number"
                 placeholder="100"
+                min="1"
                 value={formData.maxPlayers}
                 onChange={(e) =>
                   setFormData({ ...formData, maxPlayers: e.target.value })

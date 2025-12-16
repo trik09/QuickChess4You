@@ -489,6 +489,98 @@
   border-top: 2px solid #f0f0f0;
 }
 
+/* View Modal with Table */
+.viewModal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.detailsTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+}
+
+.detailsTable tbody tr {
+  transition: all 0.2s ease;
+}
+
+.detailsTable tbody tr:hover {
+  background: #fafaf9;
+}
+
+.labelCell {
+  width: 40%;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #f5f0dc 0%, #faf8f3 100%);
+  border-bottom: 1px solid #e8e6df;
+  font-weight: 600;
+  color: #2d2416;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.labelCell strong {
+  color: #1a1a2e;
+  font-size: 0.95rem;
+}
+
+.valueCell {
+  width: 60%;
+  padding: 18px 20px;
+  background: white;
+  border-bottom: 1px solid #e8e6df;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.detailsTable tbody tr:first-child .labelCell {
+  border-top-left-radius: 8px;
+}
+
+.detailsTable tbody tr:first-child .valueCell {
+  border-top-right-radius: 8px;
+}
+
+.detailsTable tbody tr:last-child .labelCell {
+  border-bottom-left-radius: 8px;
+  border-bottom: none;
+}
+
+.detailsTable tbody tr:last-child .valueCell {
+  border-bottom-right-radius: 8px;
+  border-bottom: none;
+}
+
+.cellIcon {
+  font-size: 1.1rem;
+  color: #d2b561;
+  min-width: 20px;
+}
+
+.capacityInfo {
+  margin-left: 10px;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 25px;
+  border-top: 2px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 16px 16px;
+}
+
 @media (max-width: 768px) {
   .puzzleModal {
     max-height: 95vh;
@@ -515,5 +607,32 @@
     flex: 1;
     text-align: center;
     min-width: 80px;
+  }
+
+  .viewModal {
+    max-width: 100%;
+  }
+
+  .detailsTable {
+    font-size: 0.9rem;
+  }
+
+  .labelCell,
+  .valueCell {
+    padding: 14px 16px;
+  }
+
+  .labelCell strong {
+    font-size: 0.85rem;
+  }
+
+  .valueCell {
+    font-size: 0.85rem;
+  }
+
+  .capacityInfo {
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
   }
 }

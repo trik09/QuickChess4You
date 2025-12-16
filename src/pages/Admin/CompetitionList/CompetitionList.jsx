@@ -53,6 +53,11 @@ function CompetitionList() {
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // View and Edit Competition Modals
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCompetition, setSelectedCompetition] = useState(null);
+
   useEffect(() => {
     fetchCompetitions();
   }, []);
@@ -184,6 +189,16 @@ function CompetitionList() {
   const handlePreview = (puzzle) => {
     setSelectedPuzzle(puzzle);
     setShowPreview(true);
+  };
+
+  const handleView = (competition) => {
+    setSelectedCompetition(competition);
+    setShowViewModal(true);
+  };
+
+  const handleEdit = (competition) => {
+    setSelectedCompetition(competition);
+    setShowEditModal(true);
   };
 
   const handleDelete = (competition) => {
@@ -380,13 +395,13 @@ function CompetitionList() {
               />
               <IconButton
                 icon={FaEye}
-                to={`/admin/competitions/${comp.id}`}
+                onClick={() => handleView(comp)}
                 title="View Details"
                 variant="primary"
               />
               <IconButton
                 icon={FaEdit}
-                to={`/admin/competitions/edit/${comp.id}`}
+                onClick={() => handleEdit(comp)}
                 title="Edit"
                 variant="primary"
               />
@@ -582,6 +597,180 @@ function CompetitionList() {
               <Button variant="danger" icon={FaTrash} onClick={confirmDelete}>
                 Delete Competition
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Competition Modal */}
+      {showViewModal && selectedCompetition && (
+        <div
+          className={styles.previewOverlay}
+          onClick={() => setShowViewModal(false)}
+        >
+          <div
+            className={styles.viewModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h3>
+                <FaEye /> Competition Details
+              </h3>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowViewModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <table className={styles.detailsTable}>
+                <tbody>
+                  <tr>
+                    <td className={styles.labelCell}>
+                      <FaTrophy className={styles.cellIcon} />
+                      <strong>Competition Name</strong>
+                    </td>
+                    <td className={styles.valueCell}>
+                      {selectedCompetition.name}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={styles.labelCell}>
+                      <FaLayerGroup className={styles.cellIcon} />
+                      <strong>Status</strong>
+                    </td>
+                    <td className={styles.valueCell}>
+                      <Badge
+                        variant={
+                          selectedCompetition.status === "Live"
+                            ? "live"
+                            : selectedCompetition.status === "Upcoming"
+                            ? "warning"
+                            : "info"
+                        }
+                      >
+                        {selectedCompetition.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={styles.labelCell}>
+                      <FaClock className={styles.cellIcon} />
+                      <strong>Start Time</strong>
+                    </td>
+                    <td className={styles.valueCell}>
+                      {selectedCompetition.startTime}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={styles.labelCell}>
+                      <FaClock className={styles.cellIcon} />
+                      <strong>Duration</strong>
+                    </td>
+                    <td className={styles.valueCell}>
+                      {selectedCompetition.duration}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={styles.labelCell}>
+                      <FaUsers className={styles.cellIcon} />
+                      <strong>Players Registered</strong>
+                    </td>
+                    <td className={styles.valueCell}>
+                      {selectedCompetition.players} /{" "}
+                      {selectedCompetition.maxPlayers}
+                      <span className={styles.capacityInfo}>
+                        (
+                        {Math.round(
+                          (selectedCompetition.players /
+                            selectedCompetition.maxPlayers) *
+                            100
+                        )}
+                        % filled)
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className={styles.labelCell}>
+                      <FaPuzzlePiece className={styles.cellIcon} />
+                      <strong>Assigned Puzzles</strong>
+                    </td>
+                    <td className={styles.valueCell}>
+                      {selectedCompetition.puzzles?.length || 0} puzzle(s)
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className={styles.modalFooter}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowViewModal(false)}
+              >
+                Close
+              </Button>
+              <Button
+                variant="success"
+                icon={FaPuzzlePiece}
+                onClick={() => {
+                  setShowViewModal(false);
+                  handleViewPuzzles(selectedCompetition);
+                }}
+              >
+                View Puzzles
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Competition Modal */}
+      {showEditModal && selectedCompetition && (
+        <div
+          className={styles.previewOverlay}
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            className={styles.confirmModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h3>
+                <FaEdit /> Edit Competition
+              </h3>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowEditModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p>Edit functionality will be implemented here.</p>
+              <p>
+                You can navigate to the edit page or implement inline editing.
+              </p>
+              <div className={styles.modalFooter}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    navigate(
+                      `/admin/competitions/edit/${
+                        selectedCompetition._id || selectedCompetition.id
+                      }`
+                    )
+                  }
+                >
+                  Go to Edit Page
+                </Button>
+              </div>
             </div>
           </div>
         </div>
