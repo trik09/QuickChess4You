@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaChess, FaArrowRight, FaLightbulb, FaCheckCircle, FaTimesCircle, FaRedo } from 'react-icons/fa';
+import { FaChess, FaArrowRight, FaLightbulb, FaCheckCircle, FaTimesCircle, FaRedo, FaStar } from 'react-icons/fa';
 import ChessBoard from '../../components/ChessBoard/ChessBoard';
 import { puzzleAPI } from '../../services/api';
 import styles from './CasualPuzzlePage.module.css';
@@ -11,20 +11,21 @@ function CasualPuzzlePage() {
   const [solvedCount, setSolvedCount] = useState(0);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong' | null
   const [error, setError] = useState(null);
+  const [activeType, setActiveType] = useState('normal'); // 'normal' | 'kids'
 
   useEffect(() => {
     fetchNextPuzzle();
-  }, []);
+  }, [activeType]);
 
   const fetchNextPuzzle = async () => {
     setIsLoading(true);
     setError(null);
     setShowHint(false);
     setFeedback(null);
-    
+
     try {
-      // Fetch puzzle from backend (which proxies Lichess API)
-      const puzzle = await puzzleAPI.getRandomPuzzle();
+      // Fetch puzzle from backend with type filter
+      const puzzle = await puzzleAPI.getRandomPuzzle(activeType);
       setCurrentPuzzle(puzzle);
     } catch (error) {
       console.error('Failed to fetch puzzle:', error);
@@ -37,7 +38,7 @@ function CasualPuzzlePage() {
   const handlePuzzleSolved = () => {
     setFeedback('correct');
     setSolvedCount(prev => prev + 1);
-    
+
     // Auto-advance after 2 seconds
     setTimeout(() => {
       fetchNextPuzzle();
@@ -68,7 +69,7 @@ function CasualPuzzlePage() {
     return (
       <div className={styles.loading}>
         <FaChess className={styles.loadingIcon} />
-        <p>Loading puzzle from Lichess...</p>
+        <p>Loading puzzle...</p>
       </div>
     );
   }
@@ -111,85 +112,98 @@ function CasualPuzzlePage() {
         </div>
       </div>
 
+      {/* Mode Toggle */}
+      <div className={styles.modeToggleSection}>
+        <div className={styles.modeToggle}>
+          <button
+            className={`${styles.modeBtn} ${activeType === 'normal' ? styles.active : ''}`}
+            onClick={() => setActiveType('normal')}
+          >
+            Normal Puzzles
+          </button>
+          <button
+            className={`${styles.modeBtn} ${activeType === 'kids' ? styles.active : ''}`}
+            onClick={() => setActiveType('kids')}
+          >
+            Kids Puzzles 🍕
+          </button>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className={styles.content}>
         {/* Left Side - Puzzle Info */}
         <div className={styles.puzzleInfo}>
           <div className={styles.puzzleHeader}>
             <h2>{currentPuzzle?.title || 'Puzzle'}</h2>
-            <div className={styles.badges}>
-              <span className={`${styles.badge} ${styles[currentPuzzle?.difficulty]}`}>
-                {currentPuzzle?.difficulty}
+            <span className={`${styles.badge} ${styles[currentPuzzle?.difficulty]}`}>
+              {currentPuzzle?.difficulty}
+            </span>
+            {currentPuzzle?.type === 'kids' && (
+              <span className={styles.categoryBadge} style={{ background: '#FFD700', color: '#000' }}>
+                Kids 🍕
               </span>
-              {currentPuzzle?.themes && currentPuzzle.themes.length > 0 && (
-                <span className={styles.categoryBadge}>
-                  {currentPuzzle.themes[0]}
-                </span>
-              )}
-              <span className={styles.lichessBadge}>
-                ♞ Lichess
+            )}
+            {currentPuzzle?.themes && currentPuzzle.themes.length > 0 && (
+              <span className={styles.categoryBadge}>
+                {currentPuzzle.themes[0]}
               </span>
-            </div>
-          </div>
-
-          {currentPuzzle?.description && (
-            <div className={styles.description}>
-              <p>{currentPuzzle.description}</p>
-            </div>
-          )}
-
-          {/* Hint Section */}
-          <div className={styles.hintSection}>
-            <button
-              className={styles.hintBtn}
-              onClick={() => setShowHint(!showHint)}
-            >
-              <FaLightbulb />
-              {showHint ? 'Hide Hint' : 'Show Hint'}
-            </button>
-            {showHint && currentPuzzle?.description && (
-              <div className={styles.hint}>
-                <p>{currentPuzzle.description}</p>
-              </div>
             )}
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className={styles.actions}>
-            <button className={styles.retryBtn} onClick={handleRetry}>
-              <FaRedo /> Retry
-            </button>
-            
-            <button className={styles.skipBtn} onClick={handleSkip}>
-              <FaArrowRight /> Next Puzzle
-            </button>
+        {currentPuzzle?.description && (
+          <div className={styles.description}>
+            <p>{currentPuzzle.description}</p>
           </div>
+        )}
 
-          {/* Puzzle Info */}
-          {currentPuzzle && (
-            <div className={styles.puzzleStats}>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Puzzle ID:</span>
-                <span className={styles.statText}>{currentPuzzle.id}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Played:</span>
-                <span className={styles.statText}>{currentPuzzle.plays.toLocaleString()} times</span>
-              </div>
-              {currentPuzzle.themes && currentPuzzle.themes.length > 0 && (
-                <div className={styles.statRow}>
-                  <span className={styles.statLabel}>Themes:</span>
-                  <div className={styles.themeTags}>
-                    {currentPuzzle.themes.slice(0, 3).map((theme, idx) => (
-                      <span key={idx} className={styles.themeTag}>{theme}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+        {/* Hint Section */}
+        <div className={styles.hintSection}>
+          <button
+            className={styles.hintBtn}
+            onClick={() => setShowHint(!showHint)}
+          >
+            <FaLightbulb />
+            {showHint ? 'Hide Hint' : 'Show Hint'}
+          </button>
+          {showHint && currentPuzzle?.description && (
+            <div className={styles.hint}>
+              <p>{currentPuzzle.description}</p>
             </div>
           )}
         </div>
 
+        {/* Actions */}
+        <div className={styles.actions}>
+          <button className={styles.retryBtn} onClick={handleRetry}>
+            <FaRedo /> Retry
+          </button>
+
+          <button className={styles.skipBtn} onClick={handleSkip}>
+            <FaArrowRight /> Next Puzzle
+          </button>
+        </div>
+
+        {/* Puzzle Info */}
+        {currentPuzzle && currentPuzzle.type !== 'kids' && (
+          <div className={styles.puzzleStats}>
+            <div className={styles.statRow}>
+              <span className={styles.statLabel}>Puzzle ID:</span>
+              <span className={styles.statText}>{currentPuzzle.id || currentPuzzle._id?.substring(0, 6)}</span>
+            </div>
+            {currentPuzzle.themes && currentPuzzle.themes.length > 0 && (
+              <div className={styles.statRow}>
+                <span className={styles.statLabel}>Themes:</span>
+                <div className={styles.themeTags}>
+                  {currentPuzzle.themes.slice(0, 3).map((theme, idx) => (
+                    <span key={idx} className={styles.themeTag}>{theme}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {/* Right Side - Chess Board */}
         <div className={styles.boardSection}>
           {feedback && (
@@ -205,11 +219,13 @@ function CasualPuzzlePage() {
               )}
             </div>
           )}
-          
+
           {currentPuzzle && (
             <ChessBoard
               fen={currentPuzzle.fen}
               solution={currentPuzzle.solutionMoves}
+              puzzleType={currentPuzzle.type}
+              kidsConfig={currentPuzzle.kidsConfig}
               onPuzzleSolved={handlePuzzleSolved}
               onWrongMove={handleWrongMove}
             />

@@ -42,56 +42,25 @@ function PuzzlePage() {
     let isMounted = true;
 
     const fetchPuzzles = async () => {
-      setIsLoading(true);
-      setFetchError("");
-
       try {
-        let puzzlesData = [];
+        const data = await puzzleAPI.getAll();
+        console.log(data.data);
 
-        // If we have competition-specific puzzles from navigation state
-        if (
-          competitionId &&
-          competitionPuzzles &&
-          competitionPuzzles.length > 0
-        ) {
-          // Use puzzles passed from the competition
-          puzzlesData = competitionPuzzles;
-        } else if (competitionId) {
-          // Fetch competition details to get its puzzles
-          try {
-            const response = await competitionAPI.getById(competitionId);
-            if (response.success && response.data && response.data.puzzles) {
-              puzzlesData = response.data.puzzles;
-            }
-          } catch (err) {
-            console.error("Failed to fetch competition puzzles:", err);
-          }
+        if (!Array.isArray(data)) {
+          throw new Error('Unexpected puzzle response');
         }
 
-        // If no competition puzzles, fall back to all puzzles
-        if (puzzlesData.length === 0) {
-          const data = await puzzleAPI.getAll();
-          if (Array.isArray(data)) {
-            puzzlesData = data;
-          }
-        }
-
-        // Normalize puzzle data
-        const normalized = puzzlesData
-          .filter(
-            (p) =>
-              p?.fen &&
-              Array.isArray(p?.solutionMoves) &&
-              p.solutionMoves.length
-          )
+        const normalized = data
+          .filter((p) => p?.fen && (
+            (Array.isArray(p?.solutionMoves) && p.solutionMoves.length) ||
+            (p?.type === 'kids' && p?.kidsConfig)
+          ))
           .map((puzzle, index) => ({
             id: index + 1,
             dbId: puzzle._id,
-            type:
-              puzzle.title ||
-              (puzzle.difficulty
-                ? `${puzzle.difficulty} puzzle`
-                : `Puzzle ${index + 1}`),
+            type: puzzle?.type === 'kids' ? 'Kids Puzzle 🍕' : (puzzle.title || `${puzzle.difficulty || 'Normal'} Puzzle`),
+            puzzleType: puzzle.type || 'normal', // Pass the raw type
+            kidsConfig: puzzle.kidsConfig, // Pass config
             fen: puzzle.fen,
             solution: puzzle.solutionMoves,
             description: puzzle.description || "Solve the puzzle.",
@@ -264,47 +233,27 @@ function PuzzlePage() {
 
         {/* CENTER PANEL - Chessboard */}
         <div className={styles.centerPanel}>
-          {isLoading ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner}></div>
-              <p>Loading puzzles...</p>
+          {puzzle && (
+            <div className={styles.puzzleInfo}>
+              <h2>{puzzle.type}</h2>
+              <p>{puzzle.description}</p>
+              {(isLoading || fetchError) && (
+                <p className={styles.statusMessage}>
+                  {isLoading ? 'Loading puzzles…' : fetchError}
+                </p>
+              )}
             </div>
-          ) : fetchError ? (
-            <div className={styles.errorState}>
-              <p>{fetchError}</p>
-              <button
-                onClick={handleBackToDashboard}
-                className={styles.retryBtn}
-              >
-                Back to Dashboard
-              </button>
-            </div>
-          ) : puzzle ? (
-            <>
-              <div className={styles.puzzleInfo}>
-                <h2>{puzzle.type}</h2>
-                <p>{puzzle.description}</p>
-              </div>
-              <ChessBoard
-                key={`${
-                  puzzle.dbId || puzzle.id || "puzzle"
-                }-${currentPuzzle}-${puzzle.fen}`}
-                fen={puzzle.fen}
-                solution={puzzle.solution || []}
-                onPuzzleSolved={handlePuzzleSolved}
-                onWrongMove={handleWrongMove}
-              />
-            </>
-          ) : (
-            <div className={styles.errorState}>
-              <p>No puzzles available.</p>
-              <button
-                onClick={handleBackToDashboard}
-                className={styles.retryBtn}
-              >
-                Back to Dashboard
-              </button>
-            </div>
+          )}
+          {puzzle && (
+            <ChessBoard
+              key={`${puzzle.dbId || puzzle.id || 'puzzle'}-${currentPuzzle}-${puzzle.fen}`}
+              fen={puzzle.fen}
+              solution={puzzle.solution || []}
+              puzzleType={puzzle.puzzleType}
+              kidsConfig={puzzle.kidsConfig}
+              onPuzzleSolved={handlePuzzleSolved}
+              onWrongMove={handleWrongMove}
+            />
           )}
         </div>
 
