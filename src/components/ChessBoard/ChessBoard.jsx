@@ -131,6 +131,18 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   const [capturedTargets, setCapturedTargets] = useState([]); // Array of captured squares
   const [kidsTargets, setKidsTargets] = useState([]); // Initial targets from config
 
+  // Custom Drag State
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedPiece, setDraggedPiece] = useState(null);
+  const [dragOverSquare, setDragOverSquare] = useState(null);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [draggedPieceImage, setDraggedPieceImage] = useState(null);
+  const boardRef = useRef(null);
+  const mouseHandlersRef = useRef({});
+  const dragStateRef = useRef({ draggedPiece: null, possibleMoves: [] });
+  const dragTimeoutRef = useRef(null);
+  const isMouseDownRef = useRef(false);
+
   // Re-initialize when FEN changes
   useEffect(() => {
     const newGame = new Chess(fen);
@@ -184,6 +196,21 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
       }
     }
   }, [fen, solution, puzzleType, kidsConfig]);
+
+  // Cleanup effect for mouse event listeners
+  useEffect(() => {
+    return () => {
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+      if (mouseHandlersRef.current.handleMouseMove) {
+        document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
+      }
+      if (mouseHandlersRef.current.handleMouseUp) {
+        document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
+      }
+    };
+  }, []);
 
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -345,7 +372,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   };
 
   const handleSquareClick = (square) => {
-    if (feedback === 'solved') return;
+    if (feedback === 'solved' || isDragging) return;
 
     // Move Logic
     if (selectedSquare) {
@@ -382,27 +409,141 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     }
   };
 
-  const handleDragStart = (e, square) => {
-    e.dataTransfer.setData('text/plain', square);
-    e.dataTransfer.effectAllowed = 'move';
-    setSelectedSquare(square);
+  // Custom Mouse Drag Handlers using useRef to avoid circular dependency
+  useEffect(() => {
+    mouseHandlersRef.current.handleMouseMove = (e) => {
+      if (!boardRef.current) return;
+
+      const rect = boardRef.current.getBoundingClientRect();
+      setDragPosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+
+      // Determine which square we're over
+      const squareSize = rect.width / 8;
+      const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
+      const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+      
+      if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
+        const files = userColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+        const ranks = userColor === 'w' ? ['8', '7', '6', '5', '4', '3', '2', '1'] : ['1', '2', '3', '4', '5', '6', '7', '8'];
+        const targetSquare = files[fileIndex] + ranks[rankIndex];
+        
+        setPossibleMoves(prevMoves => {
+          if (prevMoves.includes(targetSquare)) {
+            setDragOverSquare(targetSquare);
+          } else {
+            setDragOverSquare(null);
+          }
+          return prevMoves;
+        });
+      } else {
+        setDragOverSquare(null);
+      }
+    };
+
+    mouseHandlersRef.current.handleMouseUp = (e) => {
+      // Clear the mouse down flag
+      isMouseDownRef.current = false;
+      
+      // Remove global event listeners
+      document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
+      document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
+
+      // Get current drag state from ref
+      const currentDraggedPiece = dragStateRef.current.draggedPiece;
+      const currentPossibleMoves = dragStateRef.current.possibleMoves;
+
+      // Determine drop target
+      let targetSquare = null;
+      if (boardRef.current) {
+        const rect = boardRef.current.getBoundingClientRect();
+        const squareSize = rect.width / 8;
+        const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
+        const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+        
+        if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
+          const files = userColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+          const ranks = userColor === 'w' ? ['8', '7', '6', '5', '4', '3', '2', '1'] : ['1', '2', '3', '4', '5', '6', '7', '8'];
+          targetSquare = files[fileIndex] + ranks[rankIndex];
+        }
+      }
+
+      // Reset drag state first
+      setIsDragging(false);
+      setDraggedPiece(null);
+      setDragOverSquare(null);
+      setDraggedPieceImage(null);
+      
+      // Clear ref
+      dragStateRef.current = { draggedPiece: null, possibleMoves: [] };
+
+      // Then handle the move if valid
+      if (currentDraggedPiece && targetSquare && targetSquare !== currentDraggedPiece && currentPossibleMoves.includes(targetSquare)) {
+        handleUserMove(currentDraggedPiece, targetSquare);
+        // Clear selection after successful drag move
+        setSelectedSquare(null);
+        setPossibleMoves([]);
+      }
+    };
+  }, [userColor, handleUserMove]);
+
+  const startDrag = (square, e) => {
+    const piece = getPiece(square);
     const moves = game.moves({ square, verbose: true }) || [];
-    setPossibleMoves(moves.map((m) => m.to));
+    const movesToSquares = moves.map((m) => m.to);
+    
+    // Update ref with current drag state
+    dragStateRef.current = {
+      draggedPiece: square,
+      possibleMoves: movesToSquares
+    };
+    
+    // Start drag
+    setIsDragging(true);
+    setDraggedPiece(square);
+    setDraggedPieceImage(pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]);
+    setPossibleMoves(movesToSquares);
+
+    // Get mouse position relative to board
+    const rect = boardRef.current.getBoundingClientRect();
+    setDragPosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+
+    // Add global mouse event listeners
+    document.addEventListener('mousemove', mouseHandlersRef.current.handleMouseMove, { passive: false });
+    document.addEventListener('mouseup', mouseHandlersRef.current.handleMouseUp, { passive: false });
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
+  const handleMouseDown = (e, square) => {
+    if (feedback === 'solved') return;
 
-  const handleDrop = (e, targetSquare) => {
-    e.preventDefault();
-    const sourceSquare = e.dataTransfer.getData('text/plain');
-    if (sourceSquare && sourceSquare !== targetSquare) {
-      handleUserMove(sourceSquare, targetSquare);
-    }
-    setSelectedSquare(null);
-    setPossibleMoves([]);
+    const piece = getPiece(square);
+    if (!piece || piece.color !== game.turn()) return;
+
+    // Only handle left mouse button
+    if (e.button !== 0) return;
+
+    isMouseDownRef.current = true;
+
+    // Start drag after a short delay to allow for clicks
+    dragTimeoutRef.current = setTimeout(() => {
+      if (isMouseDownRef.current) {
+        startDrag(square, e);
+      }
+    }, 150); // 150ms delay to distinguish click from drag
+
+    // Add temporary mouseup listener to cancel drag if mouse is released quickly
+    const quickMouseUp = () => {
+      clearTimeout(dragTimeoutRef.current);
+      isMouseDownRef.current = false;
+      document.removeEventListener('mouseup', quickMouseUp);
+    };
+
+    document.addEventListener('mouseup', quickMouseUp, { once: true });
   };
 
   const isLightSquare = (fileIndex, rankIndex) => (fileIndex + rankIndex) % 2 === 0;
@@ -419,7 +560,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
           {feedback === 'solved' && '🎉 Puzzle Solved!'}
         </div>
       )}
-      <div className={styles.board}>
+      <div className={styles.board} ref={boardRef}>
         {(userColor === 'w' ? ranks : [...ranks].reverse()).map((rank, rankIndex) => (
           <div key={rank} className={styles.row}>
             {(userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
@@ -455,18 +596,20 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
               }
 
               return (
-                <div
-                  key={square}
-                  className={`
-                    ${styles.square}
-                    ${isSelected(square) ? styles.selected : ''}
-                    ${isPossibleMove(square) ? styles.possibleMove : ''}
-                    ${isLastMove(square) ? styles.lastMove : ''}
-                  `}
+              <div
+  key={square}
+  className={`
+    ${styles.square}
+    ${isSelected(square) ? styles.selected : ''}
+    ${isPossibleMove(square) ? styles.possibleMove : ''}
+    ${isLastMove(square) ? styles.lastMove : ''}
+    ${dragOverSquare === square ? styles.dragOver : ''}
+    ${isDragging && draggedPiece === square ? styles.dragSource : ''}
+  `}
+
+
                   style={{ backgroundColor: squareColor }}
                   onClick={() => handleSquareClick(square)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, square)}
                 >
                   {/* Render Kids Content OR Standard Piece */}
                   {kidsContent ? kidsContent : (
@@ -474,12 +617,14 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
                       <img
                         src={pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]}
                         alt={`${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`}
-                        className={styles.piece}
-                        draggable={game.turn() === piece.color && feedback !== 'solved'}
-                        onDragStart={(e) => handleDragStart(e, square)}
+                        className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
+                        draggable={false}
+                        onMouseDown={(e) => handleMouseDown(e, square)}
+                        style={{ cursor: game.turn() === piece.color && feedback !== 'solved' ? 'grab' : 'default' }}
                       />
                     )
                   )}
+
 
                   {fileIndex === 0 && (
                     <div className={styles.rankLabel}>{rank}</div>
@@ -493,6 +638,20 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
           </div>
         ))}
       </div>
+      
+      {/* Floating dragged piece */}
+      {isDragging && draggedPieceImage && (
+        <img
+          src={draggedPieceImage}
+          alt="Dragged piece"
+          className={styles.floatingPiece}
+          style={{
+            left: dragPosition.x - 35, // Center the piece on cursor
+            top: dragPosition.y - 35,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
     </div>
   );
 }

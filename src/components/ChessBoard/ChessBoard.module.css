@@ -72,7 +72,7 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 /* Square colors are now applied via inline styles from theme context */
@@ -89,11 +89,12 @@
 .possibleMove::after {
   content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
-  background-color: rgba(139, 111, 71, 0.4);
+  width: 18px;
+  height: 18px;
+  background-color: rgba(139, 111, 71, 0.3);
   border-radius: 50%;
-  border: 2px solid rgba(139, 111, 71, 0.6);
+  border: 2px solid rgba(139, 111, 71, 0.5);
+  transition: all 0.15s ease;
 }
 
 .lastMove {
@@ -115,10 +116,41 @@
   width: 70%;
   height: 70%;
   user-select: none;
-  pointer-events: none;
   z-index: 2;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transition: transform 0.1s ease;
+  transition: transform 0.15s ease;
+  cursor: grab;
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+.piece:hover {
+  transform: scale(1.02);
+}
+
+/* Ensure smooth dragging */
+.boardContainer {
+  user-select: none;
+}
+
+.board {
+  user-select: none;
+}
+
+
+
+
+.square.dragOver {
+  background-color: rgba(186, 202, 68, 0.3) !important;
+  box-shadow: inset 0 0 0 2px rgba(130, 151, 105, 0.5);
+  transition: all 0.1s ease;
+}
+
+.possibleMove:hover::after {
+  transform: scale(1.1);
+  background-color: rgba(139, 111, 71, 0.5);
 }
 
 .rankLabel {
@@ -233,3 +265,49 @@
 }
 
 
+/* Square where piece is being dragged from */
+.dragSource {
+  position: relative;
+}
+
+.dragSource::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(186, 202, 68, 0.3);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* The piece that remains on the source square should have reduced opacity */
+.dragSourcePiece {
+  opacity: 0.3 !important;
+  cursor: grabbing !important;
+}
+
+/* Floating piece that follows the cursor */
+.floatingPiece {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  z-index: 1000;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+  opacity: 1 !important; /* Full opacity for the dragging piece */
+  transition: none; /* No transition for smooth following */
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .floatingPiece {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 480px) {
+  .floatingPiece {
+    width: 42px;
+    height: 42px;
+  }
+}
