@@ -30,7 +30,9 @@ function Dashboard() {
 
     try {
       const response = await competitionAPI.getAll();
+      console.log("Raw API Response:", response);
       if (response.success && Array.isArray(response.data)) {
+        console.log("First competition from API:", response.data[0]);
         const formattedCompetitions = response.data.map((comp) => {
           const startDate = new Date(comp.startTime);
           const endDate = new Date(comp.endTime);
@@ -50,6 +52,11 @@ function Dashboard() {
             canParticipate = false;
           }
 
+          console.log(
+            `Competition "${comp.name}" - Duration from backend:`,
+            comp.duration
+          );
+
           return {
             id: comp._id,
             _id: comp._id,
@@ -63,6 +70,7 @@ function Dashboard() {
             status,
             canParticipate,
             puzzles: comp.puzzles || [],
+            duration: comp.duration, // Competition duration in minutes
             description: comp.description || "",
           };
         });
@@ -124,11 +132,13 @@ function Dashboard() {
 
   const handleParticipate = (competition) => {
     if (!competition.canParticipate) return;
-    navigate(`/puzzle`, {
+    console.log("Navigating with competition duration:", competition.duration);
+    navigate(`/competition/${competition._id}/puzzle`, {
       state: {
         competitionId: competition._id,
         competitionTitle: competition.title,
         puzzles: competition.puzzles,
+        time: competition.duration,
       },
     });
   };
@@ -149,7 +159,9 @@ function Dashboard() {
       <div className={styles.content}>
         <div className={styles.header}>
           <h1>Competitions</h1>
-          <p>Join exciting chess competitions and compete with players worldwide</p>
+          <p>
+            Join exciting chess competitions and compete with players worldwide
+          </p>
         </div>
 
         {loading ? (
@@ -172,69 +184,73 @@ function Dashboard() {
           </div>
         ) : (
           <div className={styles.tournamentGrid}>
-            {competitions.map((competition) => (
-              <div key={competition.id} className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <span
-                    className={`${styles.status} ${getStatusClass(
-                      competition.status
-                    )}`}
-                  >
-                    {competition.status}
-                  </span>
-                </div>
-
-                <h3 className={styles.cardTitle}>{competition.title}</h3>
-
-                <div className={styles.cardInfo}>
-                  <div className={styles.infoItem}>
-                    <span className={styles.icon}>📅</span>
-                    <span>{competition.date}</span>
-                  </div>
-
-                  <div className={styles.infoItem}>
-                    <span className={styles.icon}>👥</span>
-                    <span>
-                      {competition.participants}/{competition.maxPlayers} Players
+            {competitions
+              .filter((competition) => competition.status !== "Completed")
+              .map((competition) => (
+                <div key={competition.id} className={styles.card}>
+                  <div className={styles.cardHeader}>
+                    <span
+                      className={`${styles.status} ${getStatusClass(
+                        competition.status
+                      )}`}
+                    >
+                      {competition.status}
                     </span>
                   </div>
 
-                  {competition.prize !== "TBA" && (
-                    <div className={styles.infoItem}>
-                      <span className={styles.icon}>🏆</span>
-                      <span>{competition.prize}</span>
-                    </div>
-                  )}
+                  <h3 className={styles.cardTitle}>{competition.title}</h3>
 
-                  <div className={styles.infoItem}>
-                    <span className={styles.icon}>🧩</span>
-                    <span>{competition.puzzles?.length || 0} Puzzles</span>
+                  <div className={styles.cardInfo}>
+                    <div className={styles.infoItem}>
+                      <span className={styles.icon}>📅</span>
+                      <span>{competition.date}</span>
+                    </div>
+
+                    <div className={styles.infoItem}>
+                      <span className={styles.icon}>👥</span>
+                      <span>
+                        {competition.participants}/{competition.maxPlayers}{" "}
+                        Players
+                      </span>
+                    </div>
+
+                    {competition.prize !== "TBA" && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.icon}>🏆</span>
+                        <span>{competition.prize}</span>
+                      </div>
+                    )}
+
+                    <div className={styles.infoItem}>
+                      <span className={styles.icon}>🧩</span>
+                      <span>{competition.puzzles?.length || 0} Puzzles</span>
+                    </div>
+
+                    {/* 🔥 LIVE COUNTDOWN */}
+                    {competition.status === "Upcoming" &&
+                      competition.startDate && (
+                        <div className={styles.timeRemaining}>
+                          <span className={styles.icon}>⏰</span>
+                          <span>{getTimeRemaining(competition.startDate)}</span>
+                        </div>
+                      )}
                   </div>
 
-                  {/* 🔥 LIVE COUNTDOWN */}
-                  {competition.status === "Upcoming" && competition.startDate && (
-                    <div className={styles.timeRemaining}>
-                      <span className={styles.icon}>⏰</span>
-                      <span>{getTimeRemaining(competition.startDate)}</span>
-                    </div>
-                  )}
+                  <button
+                    className={`${styles.participateBtn} ${
+                      !competition.canParticipate ? styles.disabledBtn : ""
+                    }`}
+                    onClick={() => handleParticipate(competition)}
+                    disabled={!competition.canParticipate}
+                  >
+                    {competition.status === "Upcoming"
+                      ? "Coming Soon"
+                      : competition.status === "Completed"
+                      ? "View Results"
+                      : "Participate"}
+                  </button>
                 </div>
-
-                <button
-                  className={`${styles.participateBtn} ${
-                    !competition.canParticipate ? styles.disabledBtn : ""
-                  }`}
-                  onClick={() => handleParticipate(competition)}
-                  disabled={!competition.canParticipate}
-                >
-                  {competition.status === "Upcoming"
-                    ? "Coming Soon"
-                    : competition.status === "Completed"
-                    ? "View Results"
-                    : "Participate"}
-                </button>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>

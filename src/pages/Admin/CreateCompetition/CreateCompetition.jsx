@@ -120,6 +120,7 @@ function CreateCompetition() {
       };
 
       await competitionAPI.createCompetition(competitionData);
+      
       console.log(competitionData);
       toast.success("Competition created successfully!");
 
