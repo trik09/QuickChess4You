@@ -131,6 +131,7 @@ function CreateCompetition() {
     try {
       const competitionData = {
         ...formData,
+        startTime: new Date(formData.startTime).toISOString(),
         duration: parseInt(formData.duration),
         maxParticipants: parseInt(formData.maxParticipants) || 0,
         puzzles: selectedPuzzles.map((p) => p._id),
