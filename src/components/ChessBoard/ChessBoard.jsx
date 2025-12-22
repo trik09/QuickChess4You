@@ -110,9 +110,12 @@ const playSound = (type) => {
 }
 
 
-function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleType = 'normal', kidsConfig = null }) {
+function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleType = 'normal', kidsConfig = null, interactive = true }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
+
+  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
   const pieceImages = pieceSet === 'modern' ? pieceImageSets.set2 : pieceSet === 'elegant' ? pieceImageSets.set3 : pieceImageSets.set1;
 
@@ -200,22 +203,109 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   // Cleanup effect for mouse event listeners
   useEffect(() => {
     return () => {
-      if (dragTimeoutRef.current) {
-        clearTimeout(dragTimeoutRef.current);
-      }
-      if (mouseHandlersRef.current.handleMouseMove) {
-        document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
-      }
-      if (mouseHandlersRef.current.handleMouseUp) {
-        document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
-      }
+      // Clean up body listeners if they exist
+      document.removeEventListener('mousemove', mouseHandlersRef.current.move);
+      document.removeEventListener('mouseup', mouseHandlersRef.current.up);
+      if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
     };
   }, []);
 
-  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-  const getSquare = (file, rank) => file + rank;
-  const getPiece = (square) => game.get(square);
+  // Board scaling logic
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    // Only scale if a specific width prop is likely controlling the container
+    // or if we simply want it to fit.
+    const updateScale = () => {
+      if (containerRef.current) {
+        const parentWidth = containerRef.current.parentElement?.offsetWidth || containerRef.current.offsetWidth;
+        // Base width of the board is roughly 8 * 70px + borders/padding ~ 600px.
+        // Let's assume the "natural" size is around 600px wide.
+        const naturalWidth = 600;
+
+        // If parent is smaller than natural width, scale down.
+        // If parent is larger, we can keep it 1 or scale up? Let's cap at 1 for crispness unless needed.
+        if (parentWidth && parentWidth < naturalWidth) {
+          setScale(parentWidth / naturalWidth);
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    updateScale();
+    const resizeObserver = new ResizeObserver(updateScale);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current.parentElement || document.body);
+    }
+    window.addEventListener('resize', updateScale);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateScale);
+    };
+  }, []);
+
+
+  const getFileRank = (row, col) => {
+    return `${files[col]}${ranks[row]}`;
+  };
+
+  const getSquare = (file, rank) => {
+    return `${file}${rank}`;
+  };
+
+  const getPiece = (square) => {
+    return game.get(square);
+  };
+
+  const getPieceImage = (piece) => {
+    if (!piece) return null;
+    return pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type];
+  };
+
+  const getSquareStyle = (row, col) => {
+    const isDark = (row + col) % 2 === 1;
+    // const backgroundColor = isDark ? '#B58863' : '#F0D9B5'; // Default
+    const backgroundColor = isDark ? (currentBoardColors?.dark || '#B58863') : (currentBoardColors?.light || '#F0D9B5');
+
+    const isSelected = selectedSquare && selectedSquare.row === row && selectedSquare.col === col;
+    const isLastMove = lastMove && (
+      (lastMove.from.row === row && lastMove.from.col === col) ||
+      (lastMove.to.row === row && lastMove.to.col === col)
+    );
+    const isPossibleMove = possibleMoves.some(m => m.row === row && m.col === col);
+    const inCheck = game.inCheck() && game.turn() === game.get(getFileRank(row, col))?.color && game.get(getFileRank(row, col))?.type === 'k';
+    const isDragOver = dragOverSquare && dragOverSquare.row === row && dragOverSquare.col === col;
+
+    // Kids Mode
+    const squareSan = getFileRank(row, col);
+    const isCapturedTarget = capturedTargets.includes(squareSan);
+    const isTarget = kidsTargets.some(t => t.square === squareSan) && !isCapturedTarget;
+
+    const style = {
+      backgroundColor: isSelected ? 'rgba(255, 255, 0, 0.5)' : backgroundColor,
+      ...((isSelected || isLastMove) && {
+        boxShadow: `inset 0 0 0 0px ${isDark ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.1)'}` // subtle highlight
+      })
+    };
+
+    // Highlight last move
+    if (isLastMove) {
+      style.backgroundColor = isDark ? '#aaa23a' : '#cdcw68'; // simplistic highlight override
+      // Better merge:
+      // style.backgroundColor = isDark ? '#baca44' : '#f6f669'; 
+      // Actually using CSS class is better, but here we do inline for dynamic colors + overrides
+    }
+
+    // In Check (King red)
+    if (inCheck) {
+      style.background = `radial-gradient(circle at center, #ff4d4d 0%, ${backgroundColor} 70%)`;
+    }
+
+    return style;
+  };
 
   const resetToInitial = (delay = 600) => {
     setFeedback('wrong');
@@ -409,6 +499,12 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     }
   };
 
+  // Keep a ref to the latest handleUserMove to avoid stale closures in event handlers
+  const handleUserMoveRef = useRef(handleUserMove);
+  useEffect(() => {
+    handleUserMoveRef.current = handleUserMove;
+  });
+
   // Custom Mouse Drag Handlers using useRef to avoid circular dependency
   useEffect(() => {
     mouseHandlersRef.current.handleMouseMove = (e) => {
@@ -424,12 +520,12 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
       const squareSize = rect.width / 8;
       const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
       const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
-      
+
       if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
-        const files = userColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-        const ranks = userColor === 'w' ? ['8', '7', '6', '5', '4', '3', '2', '1'] : ['1', '2', '3', '4', '5', '6', '7', '8'];
-        const targetSquare = files[fileIndex] + ranks[rankIndex];
-        
+        const currentFiles = userColor === 'w' ? files : [...files].reverse();
+        const currentRanks = userColor === 'w' ? ranks : [...ranks].reverse();
+        const targetSquare = getSquare(currentFiles[fileIndex], currentRanks[rankIndex]);
+
         setPossibleMoves(prevMoves => {
           if (prevMoves.includes(targetSquare)) {
             setDragOverSquare(targetSquare);
@@ -446,7 +542,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     mouseHandlersRef.current.handleMouseUp = (e) => {
       // Clear the mouse down flag
       isMouseDownRef.current = false;
-      
+
       // Remove global event listeners
       document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
       document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
@@ -462,11 +558,11 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
         const squareSize = rect.width / 8;
         const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
         const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
-        
+
         if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
-          const files = userColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-          const ranks = userColor === 'w' ? ['8', '7', '6', '5', '4', '3', '2', '1'] : ['1', '2', '3', '4', '5', '6', '7', '8'];
-          targetSquare = files[fileIndex] + ranks[rankIndex];
+          const currentFiles = userColor === 'w' ? files : [...files].reverse();
+          const currentRanks = userColor === 'w' ? ranks : [...ranks].reverse();
+          targetSquare = getSquare(currentFiles[fileIndex], currentRanks[rankIndex]);
         }
       }
 
@@ -475,31 +571,38 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
       setDraggedPiece(null);
       setDragOverSquare(null);
       setDraggedPieceImage(null);
-      
+
       // Clear ref
       dragStateRef.current = { draggedPiece: null, possibleMoves: [] };
 
-      // Then handle the move if valid
+      // Then handle the move if valid - USE REF TO GET LATEST FUNCTION
       if (currentDraggedPiece && targetSquare && targetSquare !== currentDraggedPiece && currentPossibleMoves.includes(targetSquare)) {
-        handleUserMove(currentDraggedPiece, targetSquare);
+        if (handleUserMoveRef.current) {
+          handleUserMoveRef.current(currentDraggedPiece, targetSquare);
+        }
         // Clear selection after successful drag move
         setSelectedSquare(null);
         setPossibleMoves([]);
       }
     };
-  }, [userColor, handleUserMove]);
+  }, [userColor]); // removed handleUserMove from dependency since we use ref
+
+
 
   const startDrag = (square, e) => {
+    // Check interactivity
+    if (typeof interactive !== 'undefined' && !interactive) return;
+
     const piece = getPiece(square);
     const moves = game.moves({ square, verbose: true }) || [];
     const movesToSquares = moves.map((m) => m.to);
-    
+
     // Update ref with current drag state
     dragStateRef.current = {
       draggedPiece: square,
       possibleMoves: movesToSquares
     };
-    
+
     // Start drag
     setIsDragging(true);
     setDraggedPiece(square);
@@ -519,6 +622,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   };
 
   const handleMouseDown = (e, square) => {
+    if (typeof interactive !== 'undefined' && !interactive) return;
     if (feedback === 'solved') return;
 
     const piece = getPiece(square);
@@ -552,53 +656,75 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   const isLastMove = (square) => lastMove && (lastMove.from === square || lastMove.to === square);
 
   return (
-    <div className={styles.boardContainer}>
-      {feedback && (
-        <div className={`${styles.feedback} ${styles[feedback]}`}>
-          {feedback === 'correct' && (puzzleType === 'kids' ? 'Yummy! 😋' : '✓ Correct!')}
-          {feedback === 'wrong' && '✗ Wrong Move!'}
-          {feedback === 'solved' && '🎉 Puzzle Solved!'}
-        </div>
-      )}
-      <div className={styles.board} ref={boardRef}>
-        {(userColor === 'w' ? ranks : [...ranks].reverse()).map((rank, rankIndex) => (
-          <div key={rank} className={styles.row}>
-            {(userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
-              const square = getSquare(file, rank);
-              const piece = getPiece(square);
-              const isLight = isLightSquare(fileIndex, rankIndex);
-              const squareColor = isLight ? currentBoardColors.light : currentBoardColors.dark;
+    <div
+      ref={containerRef}
+      className={styles.boardContainer}
+      style={{
+        // Maintain aspect ratio space when scaled
+        // Natural height ~600. If scaled 0.5, needs 300 height.
+        width: scale < 1 ? '100%' : 'auto',
+        height: scale < 1 ? `${610 * scale}px` : 'auto',
+        padding: scale < 1 ? '0' : '24px', // Reduce padding when small
+        overflow: 'hidden',
+        border: scale < 1 ? 'none' : undefined, // Remove border for previews if desired
+        boxShadow: scale < 1 ? 'none' : undefined
+      }}
+    >
+      <div style={{
+        transform: `scale(${scale})`,
+        transformOrigin: 'top center',
+        width: '610px', // Force natural width context
+        // height: '610px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
+        {feedback && (
+          <div className={`${styles.feedback} ${styles[feedback]}`}>
+            {feedback === 'correct' && (puzzleType === 'kids' ? 'Yummy! 😋' : '✓ Correct!')}
+            {feedback === 'wrong' && '✗ Wrong Move!'}
+            {feedback === 'solved' && '🎉 Puzzle Solved!'}
+          </div>
+        )}
+        <div className={styles.board} ref={boardRef}>
+          {(userColor === 'w' ? ranks : [...ranks].reverse()).map((rank, rankIndex) => (
+            <div key={rank} className={styles.row}>
+              {(userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
+                const square = getSquare(file, rank);
+                const piece = getPiece(square);
+                const isLight = isLightSquare(fileIndex, rankIndex);
+                const squareColor = isLight ? currentBoardColors.light : currentBoardColors.dark;
 
-              // Check for Kids Target -> Override rendering
-              // If square is in kidsTargets AND NOT captured
-              let kidsContent = null;
-              if (puzzleType === 'kids') {
-                const target = kidsTargets.find(t => t.square === square);
-                if (target && !capturedTargets.includes(square)) {
-                  // It might have a piece on it (e.g. enemy pawn from FEN), but we render Pizza/Chocolate
-                  kidsContent = (
-                    <div
-                      className={styles.piece}
-                      style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      {target.item === 'pizza' ? '🍕' : '🍫'}
-                    </div>
-                  );
+                // Check for Kids Target -> Override rendering
+                // If square is in kidsTargets AND NOT captured
+                let kidsContent = null;
+                if (puzzleType === 'kids') {
+                  const target = kidsTargets.find(t => t.square === square);
+                  if (target && !capturedTargets.includes(square)) {
+                    // It might have a piece on it (e.g. enemy pawn from FEN), but we render Pizza/Chocolate
+                    kidsContent = (
+                      <div
+                        className={styles.piece}
+                        style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {target.item === 'pizza' ? '🍕' : '🍫'}
+                      </div>
+                    );
+                  }
                 }
-              }
 
-              // Hide Kings in Kids Mode if not covered by kidsContent
-              if (puzzleType === 'kids' && !kidsContent && piece && piece.type === 'k') {
-                // Do not render anything for kings
-              } else if (puzzleType === 'kids' && !kidsContent && piece) {
-                // Explicitly render pieces for Kids mode if not king/target (e.g. the main piece)
-                kidsContent = <img src={pieceImages[piece.color + piece.type]} alt="" className={styles.piece} />;
-              }
+                // Hide Kings in Kids Mode if not covered by kidsContent
+                if (puzzleType === 'kids' && !kidsContent && piece && piece.type === 'k') {
+                  // Do not render anything for kings
+                } else if (puzzleType === 'kids' && !kidsContent && piece) {
+                  // Explicitly render pieces for Kids mode if not king/target (e.g. the main piece)
+                  kidsContent = <img src={pieceImages[piece.color + piece.type]} alt="" className={styles.piece} />;
+                }
 
-              return (
-              <div
-  key={square}
-  className={`
+                return (
+                  <div
+                    key={square}
+                    className={`
     ${styles.square}
     ${isSelected(square) ? styles.selected : ''}
     ${isPossibleMove(square) ? styles.possibleMove : ''}
@@ -608,50 +734,61 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   `}
 
 
-                  style={{ backgroundColor: squareColor }}
-                  onClick={() => handleSquareClick(square)}
-                >
-                  {/* Render Kids Content OR Standard Piece */}
-                  {kidsContent ? kidsContent : (
-                    piece && (
-                      <img
-                        src={pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]}
-                        alt={`${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`}
-                        className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
-                        draggable={false}
-                        onMouseDown={(e) => handleMouseDown(e, square)}
-                        style={{ cursor: game.turn() === piece.color && feedback !== 'solved' ? 'grab' : 'default' }}
-                      />
-                    )
-                  )}
+                    style={{ backgroundColor: squareColor }}
+                    onClick={() => handleSquareClick(square)}
+                  >
+                    {/* Render Kids Content OR Standard Piece */}
+                    {kidsContent ? kidsContent : (
+                      piece && (
+                        <img
+                          src={pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]}
+                          alt={`${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`}
+                          className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
+                          draggable={false}
+                          onMouseDown={(e) => handleMouseDown(e, square)}
+                          style={{ cursor: game.turn() === piece.color && feedback !== 'solved' ? 'grab' : 'default' }}
+                        />
+                      )
+                    )}
 
 
-                  {fileIndex === 0 && (
-                    <div className={styles.rankLabel}>{rank}</div>
-                  )}
-                  {rankIndex === 7 && (
-                    <div className={styles.fileLabel}>{file}</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                    {fileIndex === 0 && (
+                      <div
+                        className={styles.rankLabel}
+                        style={{ color: isLight ? (currentBoardColors?.dark || '#B58863') : (currentBoardColors?.light || '#F0D9B5') }}
+                      >
+                        {rank}
+                      </div>
+                    )}
+                    {rankIndex === 7 && (
+                      <div
+                        className={styles.fileLabel}
+                        style={{ color: isLight ? (currentBoardColors?.dark || '#B58863') : (currentBoardColors?.light || '#F0D9B5') }}
+                      >
+                        {file}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Floating dragged piece */}
+        {isDragging && draggedPieceImage && (
+          <img
+            src={draggedPieceImage}
+            alt="Dragged piece"
+            className={styles.floatingPiece}
+            style={{
+              left: dragPosition.x - 35, // Center the piece on cursor
+              top: dragPosition.y - 35,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
       </div>
-      
-      {/* Floating dragged piece */}
-      {isDragging && draggedPieceImage && (
-        <img
-          src={draggedPieceImage}
-          alt="Dragged piece"
-          className={styles.floatingPiece}
-          style={{
-            left: dragPosition.x - 35, // Center the piece on cursor
-            top: dragPosition.y - 35,
-            pointerEvents: 'none'
-          }}
-        />
-      )}
     </div>
   );
 }

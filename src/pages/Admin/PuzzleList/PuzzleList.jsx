@@ -3,6 +3,7 @@ import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup } from 'react-i
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, SearchBar, FilterSelect, Button, DataTable, Badge, IconButton } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
+import ChessBoard from '../../../components/ChessBoard/ChessBoard';
 import styles from './PuzzleList.module.css';
 
 function PuzzleList() {
@@ -57,10 +58,17 @@ function PuzzleList() {
 
         if (!isMounted) return;
 
-        const normalized = data.map((puzzle, index) => ({
+        // Sort by createdAt (oldest to newest) to maintain order consistency
+        const sortedData = [...data].sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.updatedAt || 0);
+          const dateB = new Date(b.createdAt || b.updatedAt || 0);
+          return dateA - dateB;
+        });
+
+        const normalized = sortedData.map((puzzle, index) => ({
           ...puzzle,
-          // fallback values to keep table stable
-          id: index + 1,
+          // Generate 6-digit ID based on index
+          id: (index + 1).toString().padStart(6, '0'),
           title: puzzle.title || `Puzzle #${index + 1}`,
           difficulty: puzzle.difficulty || 'Unknown',
           category: puzzle.category || 'General',
@@ -229,13 +237,19 @@ function PuzzleList() {
             </div>
             <div className={styles.modalBody}>
               <div className={styles.chessboardPreview}>
-                <p>Chessboard Preview (FEN: {selectedPuzzle.fen})</p>
-                <div className={styles.boardPlaceholder}><FaChess /> Board Preview</div>
+                <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+                  <ChessBoard
+                    fen={selectedPuzzle.fen}
+                    interactive={false}
+                    puzzleType={selectedPuzzle.puzzleType || 'normal'}
+                    kidsConfig={selectedPuzzle.kidsConfig}
+                  />
+                </div>
               </div>
               <div className={styles.puzzleDetails}>
                 <p><strong>Difficulty:</strong> {selectedPuzzle.difficulty}</p>
                 <p><strong>Category:</strong> {selectedPuzzle.category}</p>
-                <p><strong>Created:</strong> {selectedPuzzle.created}</p>
+                <p><strong>Created:</strong> {selectedPuzzle.createdAt ? new Date(selectedPuzzle.createdAt).toLocaleString() : '—'}</p>
               </div>
             </div>
           </div>

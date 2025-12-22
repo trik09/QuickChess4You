@@ -14,6 +14,7 @@ import {
   FaSearch,
   FaFilter,
   FaLayerGroup,
+  FaLock,
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -96,6 +97,7 @@ function CompetitionList() {
           players: comp.participants?.length || 0,
           maxPlayers: comp.maxPlayers || 100,
           puzzles: comp.puzzles || [],
+          accessCode: comp.accessCode,
         }));
         // console.log("✅ Mapped competitions:", mappedCompetitions);
         setCompetitions(mappedCompetitions);
@@ -231,11 +233,11 @@ function CompetitionList() {
     const matchesCategory =
       puzzleFilterCategory === "all" ||
       (puzzle.category || "").toLowerCase() ===
-        puzzleFilterCategory.toLowerCase();
+      puzzleFilterCategory.toLowerCase();
     const matchesDifficulty =
       puzzleFilterDifficulty === "all" ||
       (puzzle.difficulty || "").toLowerCase() ===
-        puzzleFilterDifficulty.toLowerCase();
+      puzzleFilterDifficulty.toLowerCase();
 
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
@@ -320,6 +322,13 @@ function CompetitionList() {
       ),
     },
     {
+      key: "accessCode",
+      label: "Passcode",
+      render: (code) => (
+        code ? <Badge variant="secondary"><FaLock style={{ fontSize: '10px', marginRight: '4px' }} /> {code}</Badge> : <span style={{ color: '#ccc' }}>Public</span>
+      ),
+    },
+    {
       key: "players",
       label: "Players",
       render: (players, row) => (
@@ -338,7 +347,10 @@ function CompetitionList() {
         title="Competition Management"
         subtitle="Manage all competitions and tournaments"
         action={
-          <Button to="/admin/competitions/create" icon={FaPlus}>
+          <Button
+            onClick={() => navigate("/admin/competitions/create")}
+            icon={FaPlus}
+          >
             Create Competition
           </Button>
         }
@@ -346,33 +358,29 @@ function CompetitionList() {
 
       <div className={styles.tabs}>
         <button
-          className={`${styles.tab} ${
-            activeTab === "all" ? styles.active : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "all" ? styles.active : ""
+            }`}
           onClick={() => setActiveTab("all")}
         >
           All
         </button>
         <button
-          className={`${styles.tab} ${
-            activeTab === "upcoming" ? styles.active : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "upcoming" ? styles.active : ""
+            }`}
           onClick={() => setActiveTab("upcoming")}
         >
           Upcoming
         </button>
         <button
-          className={`${styles.tab} ${
-            activeTab === "live" ? styles.active : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "live" ? styles.active : ""
+            }`}
           onClick={() => setActiveTab("live")}
         >
           Live
         </button>
         <button
-          className={`${styles.tab} ${
-            activeTab === "completed" ? styles.active : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "completed" ? styles.active : ""
+            }`}
           onClick={() => setActiveTab("completed")}
         >
           Completed
@@ -401,7 +409,7 @@ function CompetitionList() {
               />
               <IconButton
                 icon={FaEdit}
-                onClick={() => handleEdit(comp)}
+                to={`/admin/competitions/edit/${comp._id || comp.id}`}
                 title="Edit"
                 variant="primary"
               />
@@ -624,84 +632,78 @@ function CompetitionList() {
               </button>
             </div>
             <div className={styles.modalBody}>
-              <table className={styles.detailsTable}>
-                <tbody>
-                  <tr>
-                    <td className={styles.labelCell}>
-                      <FaTrophy className={styles.cellIcon} />
-                      <strong>Competition Name</strong>
-                    </td>
-                    <td className={styles.valueCell}>
-                      {selectedCompetition.name}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className={styles.labelCell}>
-                      <FaLayerGroup className={styles.cellIcon} />
-                      <strong>Status</strong>
-                    </td>
-                    <td className={styles.valueCell}>
-                      <Badge
-                        variant={
-                          selectedCompetition.status === "Live"
-                            ? "live"
-                            : selectedCompetition.status === "Upcoming"
+              <div className={styles.viewDetailsGrid}>
+                {/* Name */}
+                <div className={`${styles.detailCard} ${styles.fullWidth}`}>
+                  <div className={styles.detailLabel}>
+                    <FaTrophy /> Competition Name
+                  </div>
+                  <div className={styles.detailValue}>{selectedCompetition.name}</div>
+                </div>
+
+                {/* Status */}
+                <div className={styles.detailCard}>
+                  <div className={styles.detailLabel}>
+                    <FaLayerGroup /> Status
+                  </div>
+                  <div className={styles.detailValue}>
+                    <Badge
+                      variant={
+                        selectedCompetition.status === "Live"
+                          ? "live"
+                          : selectedCompetition.status === "Upcoming"
                             ? "warning"
                             : "info"
-                        }
-                      >
-                        {selectedCompetition.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className={styles.labelCell}>
-                      <FaClock className={styles.cellIcon} />
-                      <strong>Start Time</strong>
-                    </td>
-                    <td className={styles.valueCell}>
-                      {selectedCompetition.startTime}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className={styles.labelCell}>
-                      <FaClock className={styles.cellIcon} />
-                      <strong>Duration</strong>
-                    </td>
-                    <td className={styles.valueCell}>
-                      {selectedCompetition.duration}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className={styles.labelCell}>
-                      <FaUsers className={styles.cellIcon} />
-                      <strong>Players Registered</strong>
-                    </td>
-                    <td className={styles.valueCell}>
-                      {selectedCompetition.players} /{" "}
-                      {selectedCompetition.maxPlayers}
-                      <span className={styles.capacityInfo}>
-                        (
-                        {Math.round(
-                          (selectedCompetition.players /
-                            selectedCompetition.maxPlayers) *
-                            100
-                        )}
-                        % filled)
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className={styles.labelCell}>
-                      <FaPuzzlePiece className={styles.cellIcon} />
-                      <strong>Assigned Puzzles</strong>
-                    </td>
-                    <td className={styles.valueCell}>
-                      {selectedCompetition.puzzles?.length || 0} puzzle(s)
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      }
+                    >
+                      {selectedCompetition.status}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Players */}
+                <div className={styles.detailCard}>
+                  <div className={styles.detailLabel}>
+                    <FaUsers /> Participation
+                  </div>
+                  <div className={styles.detailValue}>
+                    {selectedCompetition.players} / {selectedCompetition.maxPlayers}
+                    <span style={{ fontSize: '14px', color: '#868e96', marginLeft: '6px', fontWeight: '400' }}>
+                      ({Math.round((selectedCompetition.players / selectedCompetition.maxPlayers) * 100)}%)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Start Time */}
+                <div className={styles.detailCard}>
+                  <div className={styles.detailLabel}>
+                    <FaClock /> Start Time
+                  </div>
+                  <div className={styles.detailValue}>
+                    {selectedCompetition.startTime}
+                  </div>
+                </div>
+
+                {/* Duration */}
+                <div className={styles.detailCard}>
+                  <div className={styles.detailLabel}>
+                    <FaClock /> Duration
+                  </div>
+                  <div className={styles.detailValue}>
+                    {selectedCompetition.duration}
+                  </div>
+                </div>
+
+                {/* Puzzles Count */}
+                <div className={`${styles.detailCard} ${styles.fullWidth}`}>
+                  <div className={styles.detailLabel}>
+                    <FaPuzzlePiece /> Content
+                  </div>
+                  <div className={styles.detailValue}>
+                    {selectedCompetition.puzzles?.length || 0} Puzzles Assigned
+                  </div>
+                </div>
+              </div>
             </div>
             <div className={styles.modalFooter}>
               <Button
@@ -762,8 +764,7 @@ function CompetitionList() {
                   variant="primary"
                   onClick={() =>
                     navigate(
-                      `/admin/competitions/edit/${
-                        selectedCompetition._id || selectedCompetition.id
+                      `/admin/competitions/edit/${selectedCompetition._id || selectedCompetition.id
                       }`
                     )
                   }

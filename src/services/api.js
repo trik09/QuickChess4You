@@ -356,6 +356,18 @@ export const competitionAPI = {
     );
   },
 
+  // Get competitions with filters (alias for getAll)
+  getCompetitions: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(
+      `/competition/?${queryParams}`,
+      {
+        method: "GET",
+      },
+      null
+    );
+  },
+
   // Get competition by ID
   getById: async (id) => {
     return apiRequest(`/competition/${id}`, {
@@ -446,6 +458,19 @@ export const competitionAPI = {
       {
         method: "POST",
         body: JSON.stringify({ puzzles: puzzleIds }),
+      },
+      adminToken
+    );
+  },
+
+  // Get puzzles for competition creation with advanced filtering
+  getPuzzlesForCompetition: async (filters = {}) => {
+    const adminToken = localStorage.getItem("atoken");
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(
+      `/competition/puzzles/for-competition?${queryParams}`,
+      {
+        method: "GET",
       },
       adminToken
     );

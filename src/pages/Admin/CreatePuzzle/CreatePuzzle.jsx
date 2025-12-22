@@ -458,6 +458,26 @@ function CreatePuzzle() {
                   onDrop={(e) => handleBoardDrop(e, squareName)}
                 >
                   {content}
+
+                  {/* Rank Label (Left side) */}
+                  {c === 0 && (
+                    <div
+                      className={styles.rankLabel}
+                      style={{ color: isLight ? '#b58863' : '#f0d9b5' }}
+                    >
+                      {8 - r}
+                    </div>
+                  )}
+
+                  {/* File Label (Bottom side) */}
+                  {r === 7 && (
+                    <div
+                      className={styles.fileLabel}
+                      style={{ color: isLight ? '#b58863' : '#f0d9b5' }}
+                    >
+                      {String.fromCharCode(97 + c)}
+                    </div>
+                  )}
                 </div>
               );
             })}

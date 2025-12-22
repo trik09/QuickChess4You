@@ -32,9 +32,7 @@ function CategoryList() {
       setFilteredCategories(categories);
     } else {
       const filtered = categories.filter(cat =>
-        cat.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cat.description.toLowerCase().includes(searchTerm.toLowerCase())
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredCategories(filtered);
     }
@@ -203,7 +201,7 @@ function CategoryList() {
                   </button>
                   <button
                     className={`${styles.iconBtn} ${styles.deleteBtn}`}
-                    onClick={(e) => handleDelete(category._id, category.title, e)}
+                    onClick={(e) => handleDelete(category._id, category.name, e)}
                     title="Delete"
                   >
                     <FaTrash />
@@ -212,8 +210,7 @@ function CategoryList() {
               </div>
 
               <div className={styles.cardBody}>
-                <h3 className={styles.cardTitle}>{category.title}</h3>
-                <p className={styles.cardDesc}>{category.description}</p>
+                <h3 className={styles.cardTitle}>{category.name}</h3>
               </div>
 
               <div className={styles.cardFooter}>
@@ -246,37 +243,13 @@ function CategoryList() {
 
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGroup}>
-                <label>Category Name (Unique ID) *</label>
+                <label>Category Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., tactics"
-                  disabled={editingCategory !== null}
-                />
-                <small>Used internally. Cannot be changed after creation.</small>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Display Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., Tactical Puzzles"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Description *</label>
-                <textarea
-                  required
-                  rows="3"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe this category..."
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value, title: e.target.value })}
+                  placeholder="e.g., Tactics"
                 />
               </div>
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { FaBook, FaPlus, FaTrophy, FaSearch } from 'react-icons/fa';
+import { FaBook, FaPlus, FaTrophy, FaSearch, FaCheck } from 'react-icons/fa';
 import { PageHeader, Button } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
 import toast, { Toaster } from 'react-hot-toast';
+import ChessBoard from '../../../components/ChessBoard/ChessBoard';
 import styles from './PuzzleLibrary.module.css';
 
 function PuzzleLibrary() {
@@ -77,7 +78,7 @@ function PuzzleLibrary() {
       <PageHeader
         icon={FaBook}
         title="Puzzle Library"
-        subtitle="Manage puzzles"
+        subtitle="Manage and select puzzles"
       />
 
       {/* Actions Bar */}
@@ -141,110 +142,97 @@ function PuzzleLibrary() {
         </select>
       </div>
 
-      {/* Puzzles Table */}
-      <div className={styles.tableContainer}>
-        {loading ? (
-          <div className={styles.loading}>Loading puzzles...</div>
-        ) : puzzles.length === 0 ? (
-          <div className={styles.empty}>
-            <FaBook />
-            <p>No puzzles found</p>
-          </div>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>
+      {/* Puzzles Grid */}
+      {loading ? (
+        <div className={styles.loading}>Loading puzzles...</div>
+      ) : puzzles.length === 0 ? (
+        <div className={styles.empty}>
+          <FaBook />
+          <p>No puzzles found</p>
+        </div>
+      ) : (
+        <div className={styles.puzzleGrid}>
+          {puzzles.map((puzzle) => {
+            const isSelected = selectedPuzzles.includes(puzzle._id);
+            return (
+              <div
+                key={puzzle._id}
+                className={`${styles.puzzleCard} ${isSelected ? styles.selected : ''}`}
+                onClick={() => handleSelectPuzzle(puzzle._id)}
+              >
+                {/* Selection Overlay */}
+                <div className={styles.cardSelectionOverlay} onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedPuzzles(puzzles.map(p => p._id));
-                      } else {
-                        setSelectedPuzzles([]);
-                      }
-                    }}
-                    checked={selectedPuzzles.length === puzzles.length && puzzles.length > 0}
+                    className={styles.checkbox}
+                    checked={isSelected}
+                    onChange={() => handleSelectPuzzle(puzzle._id)}
                   />
-                </th>
-                <th>Preview</th>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Difficulty</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {puzzles.map((puzzle) => (
-                <tr key={puzzle._id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedPuzzles.includes(puzzle._id)}
-                      onChange={() => handleSelectPuzzle(puzzle._id)}
-                    />
-                  </td>
-                  <td>
-                    <div className={styles.preview}>
-                      <div className={styles.miniBoard}>
-                        {/* Simplified board preview */}
-                        <span>
-                          {puzzle.type === 'kids' ? (puzzle.kidsConfig?.piece?.toUpperCase() || '♚') : '♔'}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className={styles.titleCell}>
-                      <strong>{puzzle.title}</strong>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`${styles.sourceBadge} ${styles[puzzle.type || 'normal']}`}>
-                      {puzzle.type === 'kids' ? 'Kids' : 'Normal'}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={styles.categoryBadge}>
+                </div>
+
+                {/* Board Preview */}
+                <div className={styles.boardPreview}>
+                  <ChessBoard
+                    fen={puzzle.fen}
+                    interactive={false}
+                    puzzleType={puzzle.type || 'normal'}
+                    kidsConfig={puzzle.kidsConfig}
+                    width="100%" // Ensure it takes full container
+                  />
+                </div>
+
+                {/* Content */}
+                <div className={styles.cardContent}>
+                  <div className={styles.cardHeader}>
+                    <h3 className={styles.puzzleTitle} title={puzzle.title}>
+                      {puzzle.title}
+                    </h3>
+                  </div>
+
+                  <div className={styles.cardMeta}>
+                    <span className={`${styles.badge} ${styles.category}`}>
                       {puzzle.category || 'Tactics'}
                     </span>
-                  </td>
-                  <td>
+                    <span className={`${styles.badge} ${styles.type}`}>
+                      {puzzle.type === 'kids' ? 'Kids' : 'Normal'}
+                    </span>
                     <span
-                      className={styles.difficultyBadge}
+                      className={`${styles.badge} ${styles.difficulty}`}
                       style={{ backgroundColor: getDifficultyColor(puzzle.difficulty) }}
                     >
                       {puzzle.difficulty}
                     </span>
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button
-                        className={styles.actionBtn}
-                        onClick={() => window.location.href = `/admin/puzzles/edit/${puzzle._id}`}
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className={`${styles.actionBtn} ${styles.addBtn}`}
-                        onClick={() => {
-                          handleSelectPuzzle(puzzle._id);
-                          toast.success('Puzzle selected for competition');
-                        }}
-                        title="Add to Competition"
-                      >
-                        <FaTrophy />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  </div>
+
+                  <div className={styles.cardFooter}>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/admin/puzzles/edit/${puzzle._id}`;
+                      }}
+                      title="Edit"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      className={`${styles.actionBtn} ${styles.addBtn}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectPuzzle(puzzle._id);
+                        toast.success('Puzzle selected');
+                      }}
+                      title={isSelected ? "Unselect" : "Select"}
+                    >
+                      {isSelected ? <FaCheck /> : <FaPlus />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Pagination */}
       {pagination.pages > 1 && (
@@ -254,7 +242,7 @@ function PuzzleLibrary() {
             onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
             className={styles.pageBtn}
           >
-            Previous
+            ← Previous
           </button>
           <span className={styles.pageInfo}>
             Page {pagination.page} of {pagination.pages}
@@ -264,7 +252,7 @@ function PuzzleLibrary() {
             onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
             className={styles.pageBtn}
           >
-            Next
+            Next →
           </button>
         </div>
       )}

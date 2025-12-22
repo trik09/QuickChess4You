@@ -24,6 +24,7 @@ import CreatePuzzle from "./pages/Admin/CreatePuzzle/CreatePuzzle";
 import EditPuzzle from "./pages/Admin/EditPuzzle/EditPuzzle";
 import CompetitionList from "./pages/Admin/CompetitionList/CompetitionList";
 import CreateCompetition from "./pages/Admin/CreateCompetition/CreateCompetition";
+import EditCompetition from "./pages/Admin/EditCompetition/EditCompetition";
 import CompetitionHistory from "./pages/Admin/CompetitionHistory/CompetitionHistory";
 import LiveTournament from "./pages/Admin/LiveTournament/LiveTournament";
 import StudentList from "./pages/Admin/StudentList/StudentList";
@@ -32,6 +33,8 @@ import Leaderboard from "./pages/Admin/Leaderboard/Leaderboard";
 import Reports from "./pages/Admin/Reports/Reports";
 import SystemMonitor from "./pages/Admin/SystemMonitor/SystemMonitor";
 import AdminSettings from "./pages/Admin/Settings/Settings";
+import Competitions from "./pages/Competitions/Competitions";
+
 
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import AdminProtectedRoute from "./components/ProtectedRoute/AdminProtectedRoute";
@@ -53,6 +56,8 @@ function App() {
               <Route path="/coaching" element={<Coaching />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/competitions" element={<Competitions />} />
+
               <Route
                 path="/dashboard"
                 element={
@@ -72,7 +77,7 @@ function App() {
                   </UserProtectedRoute>
                 }
               />
-              
+
               {/* Tournament/Competition Puzzles - With Timer */}
               <Route
                 path="/puzzle"
@@ -123,6 +128,7 @@ function App() {
               <Route path="puzzles/edit/:id" element={<EditPuzzle />} />
               <Route path="competitions" element={<CompetitionList />} />
               <Route path="competitions/create" element={<CreateCompetition />} />
+              <Route path="competitions/edit/:id" element={<EditCompetition />} />
               <Route path="competitions/live" element={<LiveTournament />} />
               <Route path="competitions/history" element={<CompetitionHistory />} />
               <Route path="students" element={<StudentList />} />

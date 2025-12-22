@@ -44,7 +44,7 @@ function AdminLayout() {
       icon: FaTrophy,
       submenu: [
         { path: '/admin/competitions', icon: FaList, label: 'All Competitions' },
-        { path: '/admin/competitions/create', icon: FaPlus, label: 'Create Competition' },
+        // { path: '/admin/competitions/create', icon: FaPlus, label: 'Create Competition' },
         { path: '/admin/competitions/live', icon: FaCircle, label: 'Live Tournaments' },
         { path: '/admin/competitions/history', icon: FaHistory, label: 'History' },
       ]

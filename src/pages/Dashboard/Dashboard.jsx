@@ -7,6 +7,13 @@ import styles from "./Dashboard.module.css";
 function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Access Code Modal State
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [selectedCompForCode, setSelectedCompForCode] = useState(null);
+  const [accessCodeInput, setAccessCodeInput] = useState("");
+  const [codeError, setCodeError] = useState("");
+
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,10 +22,34 @@ function Dashboard() {
     fetchCompetitions();
   }, []);
 
-  // 🔥 Update UI every second for live countdown
+  // 🔥 Update UI every second for live countdown and status update
   useEffect(() => {
     const timer = setInterval(() => {
-      setCompetitions((prev) => [...prev]); // forces UI re-render
+      setCompetitions((prevCompetitions) => {
+        const now = new Date();
+        return prevCompetitions.map((comp) => {
+          const startDate = new Date(comp.startDate);
+          const endDate = new Date(comp.endDate);
+          let status = "Upcoming";
+          let canParticipate = false;
+
+          if (now < startDate) {
+            status = "Upcoming";
+            canParticipate = false;
+          } else if (now >= startDate && now <= endDate) {
+            status = "Live";
+            canParticipate = true;
+          } else {
+            status = "Completed";
+            canParticipate = false;
+          }
+
+          if (comp.status !== status || comp.canParticipate !== canParticipate) {
+            return { ...comp, status, canParticipate };
+          }
+          return comp;
+        });
+      });
     }, 1000);
 
     return () => clearInterval(timer);
@@ -30,9 +61,7 @@ function Dashboard() {
 
     try {
       const response = await competitionAPI.getAll();
-      console.log("Raw API Response:", response);
       if (response.success && Array.isArray(response.data)) {
-        console.log("First competition from API:", response.data[0]);
         const formattedCompetitions = response.data.map((comp) => {
           const startDate = new Date(comp.startTime);
           const endDate = new Date(comp.endTime);
@@ -52,11 +81,6 @@ function Dashboard() {
             canParticipate = false;
           }
 
-          console.log(
-            `Competition "${comp.name}" - Duration from backend:`,
-            comp.duration
-          );
-
           return {
             id: comp._id,
             _id: comp._id,
@@ -70,8 +94,9 @@ function Dashboard() {
             status,
             canParticipate,
             puzzles: comp.puzzles || [],
-            duration: comp.duration, // Competition duration in minutes
+            duration: comp.duration,
             description: comp.description || "",
+            accessCode: comp.accessCode, // Include access code
           };
         });
 
@@ -132,7 +157,20 @@ function Dashboard() {
 
   const handleParticipate = (competition) => {
     if (!competition.canParticipate) return;
-    console.log("Navigating with competition duration:", competition.duration);
+
+    // Check for Access Code
+    if (competition.accessCode) {
+      setSelectedCompForCode(competition);
+      setAccessCodeInput("");
+      setCodeError("");
+      setShowCodeModal(true);
+      return;
+    }
+
+    proceedToCompetition(competition);
+  };
+
+  const proceedToCompetition = (competition) => {
     navigate(`/competition/${competition._id}/puzzle`, {
       state: {
         competitionId: competition._id,
@@ -141,6 +179,16 @@ function Dashboard() {
         time: competition.duration,
       },
     });
+  };
+
+  const handleCodeSubmit = (e) => {
+    e.preventDefault();
+    if (accessCodeInput === selectedCompForCode.accessCode) {
+      setShowCodeModal(false);
+      proceedToCompetition(selectedCompForCode);
+    } else {
+      setCodeError("Incorrect access code. Please try again.");
+    }
   };
 
   const getStatusClass = (status) => {
@@ -163,6 +211,31 @@ function Dashboard() {
             Join exciting chess competitions and compete with players worldwide
           </p>
         </div>
+
+        {/* Modal for Access Code */}
+        {showCodeModal && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <h3>Enter Access Code</h3>
+              <p>This competition is password protected.</p>
+              <form onSubmit={handleCodeSubmit}>
+                <input
+                  type="text"
+                  placeholder="Enter Code"
+                  value={accessCodeInput}
+                  onChange={(e) => setAccessCodeInput(e.target.value)}
+                  className={styles.codeInput}
+                  autoFocus
+                />
+                {codeError && <p className={styles.errorMsg}>{codeError}</p>}
+                <div className={styles.modalActions}>
+                  <button type="button" onClick={() => setShowCodeModal(false)} className={styles.cancelBtn}>Cancel</button>
+                  <button type="submit" className={styles.submitBtn}>Join</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className={styles.loadingState}>
@@ -237,17 +310,16 @@ function Dashboard() {
                   </div>
 
                   <button
-                    className={`${styles.participateBtn} ${
-                      !competition.canParticipate ? styles.disabledBtn : ""
-                    }`}
+                    className={`${styles.participateBtn} ${!competition.canParticipate ? styles.disabledBtn : ""
+                      }`}
                     onClick={() => handleParticipate(competition)}
                     disabled={!competition.canParticipate}
                   >
                     {competition.status === "Upcoming"
                       ? "Coming Soon"
                       : competition.status === "Completed"
-                      ? "View Results"
-                      : "Participate"}
+                        ? "View Results"
+                        : "Participate"}
                   </button>
                 </div>
               ))}
