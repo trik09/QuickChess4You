@@ -27,6 +27,7 @@ import CreateCompetition from "./pages/Admin/CreateCompetition/CreateCompetition
 import EditCompetition from "./pages/Admin/EditCompetition/EditCompetition";
 import CompetitionHistory from "./pages/Admin/CompetitionHistory/CompetitionHistory";
 import LiveTournament from "./pages/Admin/LiveTournament/LiveTournament";
+import CompetitionParticipants from "./pages/Admin/CompetitionParticipants/CompetitionParticipants";
 import StudentList from "./pages/Admin/StudentList/StudentList";
 import AdminManagement from "./pages/Admin/AdminManagement/AdminManagement";
 import Leaderboard from "./pages/Admin/Leaderboard/Leaderboard";
@@ -129,6 +130,10 @@ function App() {
               <Route path="competitions" element={<CompetitionList />} />
               <Route path="competitions/create" element={<CreateCompetition />} />
               <Route path="competitions/edit/:id" element={<EditCompetition />} />
+              <Route
+                path="competitions/:id/participants"
+                element={<CompetitionParticipants />}
+              />
               <Route path="competitions/live" element={<LiveTournament />} />
               <Route path="competitions/history" element={<CompetitionHistory />} />
               <Route path="students" element={<StudentList />} />

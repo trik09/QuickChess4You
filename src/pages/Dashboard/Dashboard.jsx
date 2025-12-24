@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import { competitionAPI } from "../../services/api";
 import styles from "./Dashboard.module.css";
+import { useAuth } from "../../contexts/AuthContext";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { isUserAuthenticated } = useAuth();
 
   // Access Code Modal State
   const [showCodeModal, setShowCodeModal] = useState(false);
@@ -17,10 +17,6 @@ function Dashboard() {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    fetchCompetitions();
-  }, []);
 
   // 🔥 Update UI every second for live countdown and status update
   useEffect(() => {
@@ -55,7 +51,7 @@ function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchCompetitions = async () => {
+  const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -111,7 +107,11 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCompetitions();
+  }, [fetchCompetitions]);
 
   // Format date range
   const formatDateRange = (startDate, endDate) => {
@@ -154,8 +154,41 @@ function Dashboard() {
 
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   };
+  
+
+  const joinAndProceed = async (competition) => {
+    try {
+      
+      await competitionAPI.joinCompetition(competition._id);
+    } catch (err) {
+      const message = err?.response?.data?.message || err.message || "Failed to join competition";
+      // Allow navigation if backend says already joined; otherwise block
+      if (!message.toLowerCase().includes("already")) {
+        setError(message);
+        return;
+      }
+    }
+
+    // Refresh counts so UI reflects the new participant
+    fetchCompetitions();
+
+    navigate(`/competition/${competition._id}/puzzle`, {
+      state: {
+        competitionId: competition._id,
+        competitionTitle: competition.title,
+        puzzles: competition.puzzles,
+        time: competition.duration,
+      },
+    });
+  };
 
   const handleParticipate = (competition) => {
+    // If user is not logged in, prevent participation and open the login modal
+    if (!isUserAuthenticated) {
+      navigate("/", { state: { openLogin: true } });
+      return;
+    }
+
     if (!competition.canParticipate) return;
 
     // Check for Access Code
@@ -167,25 +200,14 @@ function Dashboard() {
       return;
     }
 
-    proceedToCompetition(competition);
+    joinAndProceed(competition);
   };
 
-  const proceedToCompetition = (competition) => {
-    navigate(`/competition/${competition._id}/puzzle`, {
-      state: {
-        competitionId: competition._id,
-        competitionTitle: competition.title,
-        puzzles: competition.puzzles,
-        time: competition.duration,
-      },
-    });
-  };
-
-  const handleCodeSubmit = (e) => {
+  const handleCodeSubmit = async (e) => {
     e.preventDefault();
     if (accessCodeInput === selectedCompForCode.accessCode) {
       setShowCodeModal(false);
-      proceedToCompetition(selectedCompForCode);
+      await joinAndProceed(selectedCompForCode);
     } else {
       setCodeError("Incorrect access code. Please try again.");
     }

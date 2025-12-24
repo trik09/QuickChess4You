@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     FaTrophy,
     FaChessBoard,
@@ -25,6 +25,18 @@ const MainLayout = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const { user, isAuthenticated, logout } = useAuth(); // Assuming logout is available in AuthContext
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Open login modal when a route explicitly asks for it (e.g. from Dashboard)
+    useEffect(() => {
+        if (location.state?.openLogin) {
+            setIsLoginModalOpen(true);
+
+            // Clear the state so modal doesn't keep auto-opening on refresh/back
+            navigate(location.pathname, { replace: true });
+        }
+    }, [location, navigate]);
 
     // Navigation items - "Home" is now implied by the Logo
     const navItems = [

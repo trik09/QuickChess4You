@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaTrophy,
@@ -26,7 +26,7 @@ import {
   SearchBar,
   FilterSelect,
 } from "../../../components/Admin";
-import { competitionAPI, adminAPI } from "../../../services/api";
+import { competitionAPI } from "../../../services/api";
 import styles from "./CompetitionList.module.css";
 
 function CompetitionList() {
@@ -41,7 +41,6 @@ function CompetitionList() {
     []
   );
   const [selectedCompetitionName, setSelectedCompetitionName] = useState("");
-  const [selectedCompetitionId, setSelectedCompetitionId] = useState(null);
   const [loadingPuzzles, setLoadingPuzzles] = useState(false);
 
   // Puzzle filters
@@ -59,9 +58,6 @@ function CompetitionList() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState(null);
 
-  useEffect(() => {
-    fetchCompetitions();
-  }, []);
   const formatDuration = (minutes) => {
     if (!minutes && minutes !== 0) return "N/A";
 
@@ -73,7 +69,7 @@ function CompetitionList() {
     return `${hours} hrs`;
   };
 
-  const fetchCompetitions = async () => {
+  const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     try {
       // console.log("🔍 Fetching competitions...");
@@ -106,9 +102,7 @@ function CompetitionList() {
         // console.warn("Response:", response);
       }
     } catch (error) {
-      // console.error("❌ Failed to fetch competitions:", error);
-      // console.error("Error message:", error.message);
-      // console.error("Error stack:", error.stack);
+      console.error("❌ Failed to fetch competitions:", error);
       setCompetitions([
         {
           id: 1,
@@ -134,7 +128,11 @@ function CompetitionList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCompetitions();
+  }, [fetchCompetitions]);
 
   const getCompetitionStatus = (competition) => {
     const now = new Date();
@@ -148,7 +146,6 @@ function CompetitionList() {
 
   const handleViewPuzzles = async (competition) => {
     setSelectedCompetitionName(competition.name);
-    setSelectedCompetitionId(competition._id || competition.id);
     setShowPuzzlesModal(true);
     setLoadingPuzzles(true);
     setPuzzleSearchTerm("");
@@ -196,11 +193,6 @@ function CompetitionList() {
   const handleView = (competition) => {
     setSelectedCompetition(competition);
     setShowViewModal(true);
-  };
-
-  const handleEdit = (competition) => {
-    setSelectedCompetition(competition);
-    setShowEditModal(true);
   };
 
   const handleDelete = (competition) => {
@@ -337,6 +329,22 @@ function CompetitionList() {
         </span>
       ),
     },
+    {
+      key: "participantsLink",
+      label: "Participants",
+      render: (_, row) => (
+        <Button
+          size="small"
+          variant="secondary"
+          icon={FaUsers}
+          onClick={() =>
+            navigate(`/admin/competitions/${row._id || row.id}/participants`)
+          }
+        >
+          View ({row.players})
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -395,12 +403,12 @@ function CompetitionList() {
           data={filteredCompetitions}
           actions={(comp) => (
             <>
-              <IconButton
+              {/* <IconButton
                 icon={FaPuzzlePiece}
                 onClick={() => handleViewPuzzles(comp)}
                 title="View Puzzles"
                 variant="success"
-              />
+              /> */}
               <IconButton
                 icon={FaEye}
                 onClick={() => handleView(comp)}
