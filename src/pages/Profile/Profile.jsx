@@ -1,30 +1,109 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { authAPI } from '../../services/api';
 import styles from './Profile.module.css';
 
-function Profile() {
-  const [activeTab, setActiveTab] = useState('overview');
+// Helper function to construct avatar URL
+const getAvatarUrl = (avatarPath) => {
+  if (!avatarPath) return null;
+  if (avatarPath.startsWith('http')) return avatarPath;
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+  const baseUrl = apiBaseUrl.replace('/api', '');
+  return `${baseUrl}/${avatarPath}`;
+};
 
-  // Static user data for demo
-  const userData = {
-    name: 'Chess Master',
-    username: '@chessmaster',
-    email: 'player@quickchess.com',
-    joinDate: 'January 2025',
+function Profile() {
+  const navigate = useNavigate();
+  const { user: contextUser, userLogin } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fallback user data from context or localStorage
+  const fallbackUserData = contextUser || JSON.parse(localStorage.getItem('user')) || {
+    name: '',
+    username: '',
+    email: '',
     avatar: null,
-    rating: 1850,
-    rank: 'Expert',
-    country: 'India'
+    rating: 1200,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    createdAt: new Date()
   };
 
+  // State for real-time user data
+  const [userData, setUserData] = useState(fallbackUserData);
+
+  // Fetch real-time user data from database
+  const fetchUserData = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      const response = await authAPI.getCurrentUser();
+      
+      if (response.user) {
+        setUserData(response.user);
+        // Update context and localStorage with fresh data
+        userLogin(response.user, token);
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+      setError('Failed to load user data. Showing cached data.');
+      // Use fallback data if API call fails
+      setUserData(fallbackUserData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch data on mount
+    fetchUserData();
+
+    // Refresh data when window comes into focus (e.g., after editing profile)
+    const handleFocus = () => {
+      fetchUserData();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
+
+  // Get statistics from userData or use defaults
   const stats = {
-    puzzlesSolved: 245,
-    accuracy: 87,
-    currentStreak: 12,
-    bestStreak: 28,
-    totalGames: 156,
-    wins: 98,
-    draws: 32,
-    losses: 26
+    puzzlesSolved: userData.statistics?.puzzlesSolved || 0,
+    accuracy: 87, // TODO: Calculate from puzzle history
+    currentStreak: 12, // TODO: Calculate from puzzle history
+    bestStreak: 28, // TODO: Calculate from puzzle history
+    totalGames: (userData.wins || 0) + (userData.losses || 0) + (userData.draws || 0),
+    wins: userData.wins || 0,
+    draws: userData.draws || 0,
+    losses: userData.losses || 0,
+    competitionsParticipated: userData.statistics?.competitionsParticipated || 0
+  };
+
+  // Format join date
+  const joinDate = userData.createdAt 
+    ? new Date(userData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    : 'N/A';
+
+  // Get rank based on rating
+  const getRank = (rating) => {
+    if (rating >= 2000) return 'Master';
+    if (rating >= 1800) return 'Expert';
+    if (rating >= 1600) return 'Advanced';
+    if (rating >= 1400) return 'Intermediate';
+    return 'Beginner';
   };
 
   const recentActivity = [
@@ -38,42 +117,75 @@ function Profile() {
     { icon: '🏆', title: 'First Win', description: 'Won your first tournament' },
     { icon: '🎯', title: '100 Puzzles', description: 'Solved 100 puzzles' },
     { icon: '🔥', title: '7 Day Streak', description: 'Maintained 7 day streak' },
-    { icon: '⭐', title: 'Expert', description: 'Reached Expert rating' }
+    { icon: '⭐', title: getRank(userData.rating || 1200), description: `Reached ${getRank(userData.rating || 1200)} rating` }
   ];
+
+  // Navigate to edit page
+  const handleEditProfile = () => {
+    navigate('/profile/edit');
+  };
+
+  // Handle avatar click to view full size
+  const handleAvatarClick = () => {
+    if (getAvatarUrl(userData.avatar)) {
+      setShowAvatarModal(true);
+    }
+  };
+
+  // Close avatar modal
+  const handleCloseAvatarModal = () => {
+    setShowAvatarModal(false);
+  };
 
   return (
     <div className={styles.container}>
       {/* Navbar Removed */}
 
-
       <div className={styles.content}>
+        {loading && (
+          <div className={styles.loadingMessage}>
+            Loading profile data...
+          </div>
+        )}
+        {error && (
+          <div className={styles.errorMessage}>
+            {error}
+          </div>
+        )}
         {/* Profile Header */}
         <div className={styles.profileHeader}>
           <div className={styles.headerContent}>
             <div className={styles.avatarSection}>
-              <div className={styles.avatar}>
-                {userData.avatar ? (
-                  <img src={userData.avatar} alt={userData.name} />
+              <div 
+                className={`${styles.avatar} ${getAvatarUrl(userData.avatar) ? styles.avatarClickable : ''}`}
+                onClick={handleAvatarClick}
+              >
+                {getAvatarUrl(userData.avatar) ? (
+                  <img src={getAvatarUrl(userData.avatar) } 
+                    alt={userData.name || 'User'} />
                 ) : (
-                  <span className={styles.avatarPlaceholder}>
-                    {userData.name.charAt(0)}
+                  <span className={styles.avatarPlaceholder} >
+                    {(userData.name || 'U').charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
-              <button className={styles.editAvatarBtn}>📷</button>
+              {getAvatarUrl(userData.avatar) && (
+                <span className={styles.viewImageHint}>Click to view</span>
+              )}
             </div>
 
             <div className={styles.userInfo}>
-              <h1 className={styles.userName}>{userData.name}</h1>
-              <p className={styles.username}>{userData.username}</p>
+              <h1 className={styles.userName}>{userData.name || 'User'}</h1>
+              <p className={styles.username}>@{userData.username || 'username'}</p>
               <div className={styles.badges}>
-                <span className={styles.badge}>{userData.rank}</span>
-                <span className={styles.badge}>⭐ {userData.rating}</span>
-                <span className={styles.badge}>🌍 {userData.country}</span>
+                <span className={styles.badge}>{getRank(userData.rating || 1200)}</span>
+                <span className={styles.badge}>⭐ {userData.rating || 1200}</span>
               </div>
             </div>
 
-            <button className={styles.editProfileBtn}>Edit Profile</button>
+            <button className={styles.editProfileBtn} onClick={handleEditProfile}>
+              Edit Profile
+            </button>
           </div>
         </div>
 
@@ -85,6 +197,11 @@ function Profile() {
             <div className={styles.statLabel}>Puzzles Solved</div>
           </div>
           <div className={styles.statCard}>
+            <div className={styles.statIcon}>🏆</div>
+            <div className={styles.statValue}>{stats.competitionsParticipated}</div>
+            <div className={styles.statLabel}>Competitions</div>
+          </div>
+          <div className={styles.statCard}>
             <div className={styles.statIcon}>📊</div>
             <div className={styles.statValue}>{stats.accuracy}%</div>
             <div className={styles.statLabel}>Accuracy</div>
@@ -93,11 +210,6 @@ function Profile() {
             <div className={styles.statIcon}>🔥</div>
             <div className={styles.statValue}>{stats.currentStreak}</div>
             <div className={styles.statLabel}>Current Streak</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🏆</div>
-            <div className={styles.statValue}>{stats.wins}</div>
-            <div className={styles.statLabel}>Wins</div>
           </div>
         </div>
 
@@ -164,11 +276,11 @@ function Profile() {
                   </div>
                   <div className={styles.infoItem}>
                     <span>Member Since</span>
-                    <strong>{userData.joinDate}</strong>
+                    <strong>{joinDate}</strong>
                   </div>
                   <div className={styles.infoItem}>
                     <span>Rating</span>
-                    <strong>{userData.rating}</strong>
+                    <strong>{userData.rating || 1200}</strong>
                   </div>
                   <div className={styles.infoItem}>
                     <span>Best Streak</span>
@@ -217,22 +329,49 @@ function Profile() {
               <div className={styles.settingsForm}>
                 <div className={styles.formGroup}>
                   <label>Display Name</label>
-                  <input type="text" defaultValue={userData.name} />
+                  <input type="text" value={userData.name || ''} disabled />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Username</label>
+                  <input type="text" value={userData.username || ''} disabled />
                 </div>
                 <div className={styles.formGroup}>
                   <label>Email</label>
-                  <input type="email" defaultValue={userData.email} />
+                  <input type="email" value={userData.email || ''} disabled />
                 </div>
-                <div className={styles.formGroup}>
-                  <label>Country</label>
-                  <input type="text" defaultValue={userData.country} />
-                </div>
-                <button className={styles.saveBtn}>Save Changes</button>
+                <button className={styles.saveBtn} onClick={handleEditProfile}>
+                  Edit Profile
+                </button>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Avatar Image Viewer Modal */}
+      {showAvatarModal && getAvatarUrl(userData.avatar) && (
+        <div className={styles.avatarModalOverlay} onClick={handleCloseAvatarModal}>
+          <div className={styles.avatarModalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.avatarModalHeader}>
+              {/* <h3>{userData.name || 'User'}'s Profile Picture</h3> */}
+              <button 
+                className={styles.avatarModalClose}
+                onClick={handleCloseAvatarModal}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.avatarModalBody}>
+              <img 
+                src={getAvatarUrl(userData.avatar)} 
+                alt={userData.name || 'User'} 
+                className={styles.avatarModalImage}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

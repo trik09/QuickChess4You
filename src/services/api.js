@@ -116,6 +116,40 @@ export const authAPI = {
       token
     );
   },
+
+  // Get current user data
+  getCurrentUser: async () => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      "/user/me",
+      {
+        method: "GET",
+      },
+      userToken
+    );
+  },
+
+  // Update user profile (name, username, avatar)
+  updateUser: async (userData, avatarFile) => {
+    const userToken = localStorage.getItem("token");
+    const formData = new FormData();
+    
+    if (userData.name) formData.append('name', userData.name);
+    if (userData.username) formData.append('username', userData.username);
+    
+    if (avatarFile) {
+      formData.append("avatar", avatarFile);
+    }
+
+    return apiRequest(
+      "/user/update",
+      {
+        method: "PUT",
+        body: formData,
+      },
+      userToken
+    );
+  },
 };
 
 /**

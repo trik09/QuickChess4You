@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import CasualPuzzlePage from "./pages/PuzzlePage/CasualPuzzlePage"; // Sidebar puzzles - no timer
 import PuzzlePage from "./pages/PuzzlePage/PuzzlePage"; // Tournament puzzles - with timer
 import Profile from "./pages/Profile/Profile";
+import EditProfile from "./pages/Profile/EditProfile";
 import UserSettings from "./pages/Settings/Settings";
 import About from "./pages/About/About";
 import Courses from "./pages/Courses/Courses";
@@ -68,6 +69,14 @@ function App() {
                 }
               />
               <Route path="/profile" element={<Profile />} />
+              <Route
+                path="/profile/edit"
+                element={
+                  <UserProtectedRoute>
+                    <EditProfile />
+                  </UserProtectedRoute>
+                }
+              />
               <Route path="/settings" element={<UserSettings />} />
               {/* Casual Puzzles - No Timer (Sidebar Link) */}
               <Route
