@@ -1,0 +1,529 @@
+.live-competition-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.live-competition-loading,
+.live-competition-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Participation Screen */
+.participation-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.competition-info {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.competition-info h1 {
+  color: #333;
+  margin-bottom: 16px;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.competition-description {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.competition-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-item .label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item .value {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 700;
+}
+
+.participation-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.participate-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.participate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.participate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.back-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+/* Main Competition Interface */
+.competition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.header-left h1 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.connection-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.indicator {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.indicator.connected {
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.indicator.disconnected {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.toggle-leaderboard-btn,
+.leave-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.toggle-leaderboard-btn {
+  background: #007bff;
+  color: white;
+}
+
+.toggle-leaderboard-btn:hover {
+  background: #0056b3;
+}
+
+.leave-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.leave-btn:hover {
+  background: #c82333;
+}
+
+/* Error and Status Banners */
+.error-banner,
+.competition-ended-banner {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.error-banner {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.competition-ended-banner {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+/* Competition Content Layout */
+.competition-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.right-panel {
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+/* Participant Stats */
+.participant-stats {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.participant-stats h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Puzzles Section */
+.puzzles-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.puzzles-section h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.puzzles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.puzzle-card {
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+
+.puzzle-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #007bff;
+}
+
+.puzzle-card.solved {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border-color: #28a745;
+}
+
+.puzzle-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.puzzle-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.puzzle-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 8px;
+}
+
+.puzzle-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.puzzle-difficulty {
+  font-size: 0.875rem;
+  color: #666;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+
+.solved-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #28a745;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+/* Puzzle Solving Interface */
+.puzzle-solving-interface {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.puzzle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.puzzle-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.puzzle-info {
+  display: flex;
+  gap: 12px;
+}
+
+.difficulty,
+.category {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.puzzle-content {
+  padding: 40px;
+}
+
+.chess-board-placeholder {
+  text-align: center;
+  padding: 60px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.temp-solution-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.correct-solution-btn,
+.wrong-solution-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.correct-solution-btn {
+  background: #28a745;
+  color: white;
+}
+
+.correct-solution-btn:hover {
+  background: #218838;
+}
+
+.wrong-solution-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.wrong-solution-btn:hover {
+  background: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .competition-content {
+    grid-template-columns: 1fr;
+  }
+
+  .right-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .live-competition-page {
+    padding: 12px;
+  }
+
+  .competition-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .competition-info {
+    padding: 24px;
+  }
+
+  .competition-info h1 {
+    font-size: 2rem;
+  }
+
+  .participation-actions {
+    flex-direction: column;
+  }
+
+  .puzzles-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .puzzles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .competition-details {
+    grid-template-columns: 1fr;
+  }
+}

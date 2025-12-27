@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaClock, FaTrophy, FaLightbulb, FaUndo, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaClock, FaUndo, FaCheckCircle } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
 import { puzzleAPI, competitionAPI } from "../../services/api";
+import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
+import CompetitionLeaderboard from "../../components/CompetitionLeaderboard/CompetitionLeaderboard";
 import styles from "./PuzzlePage.module.css";
 
 function PuzzlePage() {
   const { id: paramCompetitionId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -20,6 +21,7 @@ function PuzzlePage() {
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [solving, setSolving] = useState(false);
+  const [isLiveCompetition, setIsLiveCompetition] = useState(false);
 
   const [puzzleStatuses, setPuzzleStatuses] = useState({}); // { [puzzleId]: 'success' | 'failed' }
 
@@ -70,6 +72,22 @@ function PuzzlePage() {
         const comp = response.data;
         setCompetitionData(comp);
 
+        // Check if this is a live competition (status is 'live')
+        const isLive = comp.status === 'live';
+        setIsLiveCompetition(isLive);
+
+        // If it's a live competition, ensure user is registered as participant
+        if (isLive) {
+          try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            await liveCompetitionAPI.participate(paramCompetitionId, user.username || user.name);
+            console.log('Successfully registered for live competition');
+          } catch (error) {
+            console.log('Participation registration failed (might already be registered):', error.message);
+            // This is expected if user is already participating
+          }
+        }
+
         // Check if competition is active
         const now = new Date();
         const start = new Date(comp.startTime);
@@ -77,13 +95,13 @@ function PuzzlePage() {
 
         if (now < start) {
           toast.error("Competition has not started yet!");
-          navigate('/competitions');
+          navigate('/profile');
           return;
         }
 
         if (now > end) {
           toast.error("Competition has ended!");
-          navigate(`/admin/leaderboard`); // Or competition summary
+          navigate(`/profile`); // Redirect to competitions list instead of admin
           return;
         }
 
@@ -194,7 +212,7 @@ function PuzzlePage() {
     // Wait a bit then redirect
     setTimeout(() => {
       if (paramCompetitionId) {
-        navigate(`/admin/competitions`); // Should probably go to a results page
+        navigate(`/`); // Redirect to competitions list instead of admin
       } else {
         navigate('/dashboard');
       }
@@ -217,34 +235,72 @@ function PuzzlePage() {
     // Calculate time taken for this puzzle (simple approximation)
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
 
-    // Optimistic Update
-    setSolvedCount(prev => prev + 1);
-    setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
-    toast.success("Correct! +10 pts");
-
-    // Submit to Backend if Competition
+    // Submit to Backend first (no optimistic update)
     if (competitionData) {
       try {
         setSolving(true);
-        const res = await competitionAPI.submitSolution(
-          competitionData._id,
-          currentPuzzle.id,
-          currentPuzzle.solution,  // Sending expected moves as "moves" for mock validation if needed, or actual moves tracking
-          timeTaken
-        );
+        
+        console.log('Submitting solution:', {
+          puzzle: currentPuzzle.title,
+          solution: currentPuzzle.solution,
+          solutionType: typeof currentPuzzle.solution,
+          isArray: Array.isArray(currentPuzzle.solution)
+        });
+        
+        if (isLiveCompetition) {
+          // Submit to live competition system
+          const res = await liveCompetitionAPI.submitSolution(
+            competitionData._id,
+            currentPuzzle.id,
+            currentPuzzle.solution,
+            timeTaken
+          );
+          
+          if (res && res.success && res.scoreEarned) {
+            // Only update UI after successful backend response
+            setSolvedCount(prev => prev + 1);
+            setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
+            setScore(prev => prev + res.scoreEarned);
+            toast.success(`Correct! +${res.scoreEarned} points! Leaderboard updated!`);
+          } else {
+            toast.error(res?.message || "Solution validation failed");
+            return; // Don't proceed to next puzzle
+          }
+        } else {
+          // Submit to regular competition system
+          const res = await competitionAPI.submitSolution(
+            competitionData._id,
+            currentPuzzle.id,
+            currentPuzzle.solution,
+            timeTaken
+          );
 
-        if (res.points) {
-          setScore(prev => prev + res.points);
+          if (res.points) {
+            // Only update UI after successful backend response
+            setSolvedCount(prev => prev + 1);
+            setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
+            setScore(prev => prev + res.points);
+            toast.success(`Correct! +${res.points} points!`);
+          } else {
+            toast.error("Solution validation failed");
+            return; // Don't proceed to next puzzle
+          }
         }
       } catch (error) {
         console.error("Submission failed:", error);
-        // Don't block user flow, maybe retry in bg
+        toast.error(`Submission failed: ${error.message}`);
+        return; // Don't proceed to next puzzle
       } finally {
         setSolving(false);
       }
+    } else {
+      // No competition, just mark as solved locally
+      setSolvedCount(prev => prev + 1);
+      setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
+      toast.success("Correct! +10 pts");
     }
 
-    // Move to next puzzle
+    // Move to next puzzle only after successful submission
     setStartTime(Date.now()); // Reset puzzle timer
     setTimeout(() => {
       if (currentPuzzleIndex < puzzles.length - 1) {
@@ -253,7 +309,7 @@ function PuzzlePage() {
         toast.success("All puzzles completed!");
         // End flow
         if (competitionData) {
-          navigate('/admin/competitions'); // Or results
+          navigate('/dashboard'); // Redirect to competitions list instead of admin
         }
       }
     }, 1000);
@@ -299,6 +355,13 @@ function PuzzlePage() {
           <div className={styles.puzzleProgress}>
             Puzzle {currentPuzzleIndex + 1} / {puzzles.length}
           </div>
+          {isLiveCompetition && (
+            <div className={styles.liveIndicator}>
+              <span className={styles.liveStatus}>
+                🟢 LIVE COMPETITION
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
@@ -378,6 +441,17 @@ function PuzzlePage() {
 
         {/* Right Panel - Navigation & Controls */}
         <div className={styles.rightPanel}>
+          {/* Show Competition Leaderboard if it's a competition */}
+          {competitionData && (
+            <div className={styles.leaderboardSection}>
+              <CompetitionLeaderboard 
+                competitionId={competitionData._id} 
+                isLive={isLiveCompetition}
+              />
+            </div>
+          )}
+
+          {/* Regular Navigation Controls */}
           <div className={styles.controlCard}>
             <div className={styles.controlHeader}>Puzzle Navigation</div>
 

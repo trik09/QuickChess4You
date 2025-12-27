@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from './contexts/ThemeContext';
+import { LiveCompetitionProvider } from './contexts/LiveCompetitionContext';
 import Home from "./pages/Home/Home";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import CasualPuzzlePage from "./pages/PuzzlePage/CasualPuzzlePage"; // Sidebar puzzles - no timer
@@ -12,6 +13,7 @@ import Courses from "./pages/Courses/Courses";
 import Coaching from "./pages/Coaching/Coaching";
 import Pricing from "./pages/Pricing/Pricing";
 import Contact from "./pages/Contact/Contact";
+import LiveCompetitionPage from "./pages/LiveCompetition/LiveCompetitionPage";
 
 import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
@@ -35,7 +37,7 @@ import Leaderboard from "./pages/Admin/Leaderboard/Leaderboard";
 import Reports from "./pages/Admin/Reports/Reports";
 import SystemMonitor from "./pages/Admin/SystemMonitor/SystemMonitor";
 import AdminSettings from "./pages/Admin/Settings/Settings";
-import Competitions from "./pages/Competitions/Competitions";
+//import Competitions from "./pages/Competitions/Competitions";
 
 
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
@@ -47,8 +49,9 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <Router>
-          <Routes>
+        <LiveCompetitionProvider>
+          <Router>
+            <Routes>
 
             {/* User Layout w/ Sidebar & Bottom Nav */}
             <Route element={<MainLayout />}>
@@ -58,7 +61,17 @@ function App() {
               <Route path="/coaching" element={<Coaching />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/competitions" element={<Competitions />} />
+{/* <Route path="/competitions" element={<Competitions />} /> */}
+              
+              {/* Live Competition Route */}
+              <Route
+                path="/live-competition/:id"
+                element={
+                  <UserProtectedRoute>
+                    <LiveCompetitionPage />
+                  </UserProtectedRoute>
+                }
+              />
 
               <Route
                 path="/dashboard"
@@ -155,6 +168,7 @@ function App() {
 
           </Routes>
         </Router>
+        </LiveCompetitionProvider>
       </ThemeProvider>
     </AuthProvider>
   );

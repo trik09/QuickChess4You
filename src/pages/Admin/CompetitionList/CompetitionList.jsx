@@ -27,6 +27,7 @@ import {
   FilterSelect,
 } from "../../../components/Admin";
 import { competitionAPI } from "../../../services/api";
+import { liveCompetitionAPI } from "../../../services/liveCompetitionAPI";
 import styles from "./CompetitionList.module.css";
 
 function CompetitionList() {
@@ -197,6 +198,21 @@ function CompetitionList() {
 
   const handleDelete = (competition) => {
     setDeleteConfirm(competition);
+  };
+
+  const handleStartLiveCompetition = async (competition) => {
+    try {
+      const result = await liveCompetitionAPI.startCompetition(competition._id);
+      
+      if (result.success) {
+        toast.success(`${competition.name} started as live competition!`);
+        // Refresh the competitions list
+        fetchCompetitions();
+      }
+    } catch (error) {
+      console.error('Failed to start live competition:', error);
+      toast.error(error.message || 'Failed to start live competition');
+    }
   };
 
   const confirmDelete = async () => {
@@ -403,6 +419,16 @@ function CompetitionList() {
           data={filteredCompetitions}
           actions={(comp) => (
             <>
+              {/* Start Live Competition Button - only for upcoming competitions */}
+              {comp.status === 'upcoming' && (
+                <IconButton
+                  icon={FaTrophy}
+                  onClick={() => handleStartLiveCompetition(comp)}
+                  title="Start Live Competition"
+                  variant="success"
+                />
+              )}
+              
               {/* <IconButton
                 icon={FaPuzzlePiece}
                 onClick={() => handleViewPuzzles(comp)}

@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import styles from "./Competitions.module.css";
 import { competitionAPI } from "../../services/api";
+import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -67,13 +68,8 @@ function Competitions() {
     };
 
     const handlePlay = (competitionId) => {
-        const competition = liveCompetitions.find(c => c._id === competitionId);
-        navigate(`/competition/${competitionId}/puzzle`, {
-            state: {
-                competitionId,
-                competitionTitle: competition?.name || 'Competition'
-            }
-        });
+        // Navigate to live competition page instead of regular puzzle page
+        navigate(`/live-competition/${competitionId}`);
     };
 
     const isJoined = (competition) => {
@@ -130,7 +126,7 @@ function Competitions() {
                                 className={styles.playBtn}
                                 onClick={() => handlePlay(competition._id)}
                             >
-                                <FaGamepad /> Play Now
+                                <FaGamepad /> Join Live Competition
                             </button>
                         ) : (
                             <button className={styles.disabledBtn} disabled>
