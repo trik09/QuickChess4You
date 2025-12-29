@@ -36,6 +36,10 @@ function PuzzlePage() {
   const [solvedPuzzles, setSolvedPuzzles] = useState([]); // Array of solved puzzle IDs
   const [startTime, setStartTime] = useState(Date.now());
 
+  // Submission Modal State
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   // Refs for tracking without re-renders
   const timerRef = useRef(null);
   const isLoadedRef = useRef(false);
@@ -337,6 +341,41 @@ function PuzzlePage() {
     toast.error("Incorrect move, try again!");
   };
 
+  // Handle early submission
+  const handleSubmitCompetition = async () => {
+    if (!competitionData || !isLiveCompetition) return;
+
+    try {
+      setSubmitting(true);
+      
+      const response = await liveCompetitionAPI.submitCompetition(competitionData._id);
+      
+      if (response.success) {
+        toast.success('Competition submitted successfully!');
+        setShowSubmitModal(false);
+        
+        // Clear local storage
+        const stateKey = `puzzleState_${paramCompetitionId}`;
+        localStorage.removeItem(stateKey);
+        
+        // Navigate to leaderboard
+        navigate(`/leaderboard/${competitionData._id}`);
+      } else {
+        toast.error(response.message || 'Submission failed');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error(error.message || 'Failed to submit competition');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Check if there are unsolved puzzles
+  const getUnsolvedCount = () => {
+    return puzzles.length - solvedCount;
+  };
+
   const currentPuzzle = puzzles[currentPuzzleIndex];
 
   if (loading) {
@@ -412,12 +451,31 @@ function PuzzlePage() {
                 Compete Mode
               </div>
             </div>
+
+            {/* Submit Competition Button - Only for Live Competitions */}
+            {isLiveCompetition && (
+              <div className={styles.statCard} style={{ textAlign: 'center' }}>
+                <button 
+                  className={`${styles.actionBtn} ${styles.btnSubmit}`} 
+                  onClick={() => setShowSubmitModal(true)}
+                  disabled={submitting}
+                  style={{ width: '100%', fontSize: '1rem', padding: '12px' }}
+                >
+                   Submit 
+                </button>
+               
+              </div>
+            )}
           </div>
+
+          
         ) : (
           <div className={styles.leftPanel} style={{ visibility: 'hidden', pointerEvents: 'none' }}>
             {/* Placeholder to keep layout consistent if needed, or we can remove it */}
           </div>
         )}
+
+        
 
         {/* Center Panel - Board */}
         <div className={styles.boardArea}>
@@ -466,14 +524,7 @@ function PuzzlePage() {
         {/* Right Panel - Navigation & Controls */}
         <div className={styles.rightPanel}>
           {/* Show Competition Leaderboard only if it's a competition */}
-          {competitionData && (
-            <div className={styles.leaderboardSection}>
-              <CompetitionLeaderboard
-                competitionId={competitionData._id}
-                isLive={isLiveCompetition}
-              />
-            </div>
-          )}
+          
 
           {/* Regular Navigation Controls */}
           <div className={styles.controlCard}>
@@ -539,6 +590,9 @@ function PuzzlePage() {
                 <FaUndo /> Reset Board
               </button>
 
+              {/* Submit Competition Button - Only for Live Competitions */}
+              
+
               <button className={styles.actionBtn} style={{ marginTop: '10px', fontSize: '0.8rem' }} onClick={() => navigate('/dashboard')}>
                 Exit Session
               </button>
@@ -547,6 +601,59 @@ function PuzzlePage() {
         </div>
 
       </div>
+
+      {/* Submission Confirmation Modal */}
+      {showSubmitModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Submit Competition?</h3>
+            
+            {/* <div className={styles.modalStats}>
+              <div className={styles.modalStat}>
+                <span className={styles.modalStatLabel}>Puzzles Solved:</span>
+                <span className={styles.modalStatValue}>{solvedCount} / {puzzles.length}</span>
+              </div>
+              <div className={styles.modalStat}>
+                <span className={styles.modalStatLabel}>Current Score:</span>
+                <span className={styles.modalStatValue}>{Math.round(score)} points</span>
+              </div>
+              <div className={styles.modalStat}>
+                <span className={styles.modalStatLabel}>Time Remaining:</span>
+                <span className={styles.modalStatValue}>{formatTime(timeLeft)}</span>
+              </div>
+            </div> */}
+
+            {getUnsolvedCount() > 0 && (
+              <div className={styles.modalWarning}>
+                ⚠️ You still have {getUnsolvedCount()} unsolved puzzle{getUnsolvedCount() > 1 ? 's' : ''}. 
+                Are you sure you want to submit now?
+              </div>
+            )}
+
+            <p className={styles.modalText}>
+              Once you submit, you cannot make any more changes to your answers. 
+              Your final score will be calculated and you'll be taken to the leaderboard.
+            </p>
+
+            <div className={styles.modalActions}>
+              <button 
+                className={styles.modalCancel} 
+                onClick={() => setShowSubmitModal(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.modalSubmit} 
+                onClick={handleSubmitCompetition}
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit Competition'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

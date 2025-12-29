@@ -29,6 +29,7 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+      console.log(response.data);
 
     // Handle non-JSON responses
     let data;
@@ -453,12 +454,18 @@ export const competitionAPI = {
   },
 
   // Join competition (user)
-  joinCompetition: async (id) => {
+  joinCompetition: async (id, accessCode = null) => {
     const userToken = localStorage.getItem("token");
+    const body = {};
+    if (accessCode) {
+      body.accessCode = accessCode;
+    }
+    
     return apiRequest(
       `/competition/${id}/join`,
       {
         method: "POST",
+        body: JSON.stringify(body),
       },
       userToken
     );

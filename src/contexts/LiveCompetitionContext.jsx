@@ -102,6 +102,14 @@ export const LiveCompetitionProvider = ({ children }) => {
       });
     });
 
+    // Participant submitted
+    socketService.on('participantSubmitted', (data) => {
+      toast(`${data.username} submitted their solution!`, {
+        icon: '🏁',
+        duration: 3000
+      });
+    });
+
     // Error handling
     socketService.on('error', (error) => {
       console.error('Socket error:', error);

@@ -58,6 +58,18 @@ export const liveCompetitionAPI = {
     );
   },
 
+  // Submit entire competition (early submission)
+  submitCompetition: async (competitionId) => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      `/live-competition/${competitionId}/submit`,
+      {
+        method: "POST",
+      },
+      userToken
+    );
+  },
+
   // Submit puzzle solution with Socket.IO notification
   submitSolution: async (competitionId, puzzleId, solution, timeSpent) => {
     const userToken = localStorage.getItem("token");

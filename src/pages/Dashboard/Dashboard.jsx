@@ -156,10 +156,9 @@ function Dashboard() {
   };
   
 
-  const joinAndProceed = async (competition) => {
+  const joinAndProceed = async (competition, accessCode = null) => {
     try {
-      
-      await competitionAPI.joinCompetition(competition._id);
+      await competitionAPI.joinCompetition(competition._id, accessCode);
     } catch (err) {
       const message = err?.response?.data?.message || err.message || "Failed to join competition";
       // Allow navigation if backend says already joined; otherwise block
@@ -189,6 +188,12 @@ function Dashboard() {
       return;
     }
 
+    // If competition is completed, navigate to leaderboard
+    if (competition.status === "Completed") {
+      navigate(`/leaderboard/${competition._id}`);
+      return;
+    }
+
     if (!competition.canParticipate) return;
 
     // Check for Access Code
@@ -207,7 +212,7 @@ function Dashboard() {
     e.preventDefault();
     if (accessCodeInput === selectedCompForCode.accessCode) {
       setShowCodeModal(false);
-      await joinAndProceed(selectedCompForCode);
+      await joinAndProceed(selectedCompForCode, accessCodeInput);
     } else {
       setCodeError("Incorrect access code. Please try again.");
     }
@@ -280,7 +285,6 @@ function Dashboard() {
         ) : (
           <div className={styles.tournamentGrid}>
             {competitions
-              .filter((competition) => competition.status !== "Completed")
               .map((competition) => (
                 <div key={competition.id} className={styles.card}>
                   <div className={styles.cardHeader}>

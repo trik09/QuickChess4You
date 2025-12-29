@@ -5,6 +5,7 @@ import Home from "./pages/Home/Home";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import CasualPuzzlePage from "./pages/PuzzlePage/CasualPuzzlePage"; // Sidebar puzzles - no timer
 import PuzzlePage from "./pages/PuzzlePage/PuzzlePage"; // Tournament puzzles - with timer
+import CompetitionLeaderboard from "./pages/Leaderboard/Leaderboard"; // Competition leaderboard
 import Profile from "./pages/Profile/Profile";
 import EditProfile from "./pages/Profile/EditProfile";
 import UserSettings from "./pages/Settings/Settings";
@@ -33,7 +34,7 @@ import LiveTournament from "./pages/Admin/LiveTournament/LiveTournament";
 import CompetitionParticipants from "./pages/Admin/CompetitionParticipants/CompetitionParticipants";
 import StudentList from "./pages/Admin/StudentList/StudentList";
 import AdminManagement from "./pages/Admin/AdminManagement/AdminManagement";
-import Leaderboard from "./pages/Admin/Leaderboard/Leaderboard";
+import AdminLeaderboard from "./pages/Admin/Leaderboard/Leaderboard";
 import Reports from "./pages/Admin/Reports/Reports";
 import SystemMonitor from "./pages/Admin/SystemMonitor/SystemMonitor";
 import AdminSettings from "./pages/Admin/Settings/Settings";
@@ -126,6 +127,16 @@ function App() {
                   </UserProtectedRoute>
                 }
               />
+
+              {/* Competition Leaderboard */}
+              <Route
+                path="/leaderboard/:competitionId"
+                element={
+                  <UserProtectedRoute>
+                    <CompetitionLeaderboard />
+                  </UserProtectedRoute>
+                }
+              />
             </Route>
 
             {/* Admin login */}
@@ -160,7 +171,7 @@ function App() {
               <Route path="competitions/history" element={<CompetitionHistory />} />
               <Route path="students" element={<StudentList />} />
               <Route path="admins" element={<AdminManagement />} />
-              <Route path="leaderboard" element={<Leaderboard />} />
+              <Route path="leaderboard" element={<AdminLeaderboard />} />
               <Route path="reports" element={<Reports />} />
               <Route path="monitoring" element={<SystemMonitor />} />
               <Route path="settings" element={<AdminSettings />} />
