@@ -14,10 +14,13 @@ import {
     FaInfoCircle,
     FaSignInAlt,
     FaUserPlus,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaSun,
+    FaMoon
 } from 'react-icons/fa';
 import LoginModal from '../../components/LoginModal/LoginModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import styles from './MainLayout.module.css';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 
@@ -25,6 +28,7 @@ const MainLayout = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const { user, isAuthenticated, logout } = useAuth(); // Assuming logout is available in AuthContext
+    const { darkMode, toggleTheme } = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -114,6 +118,18 @@ const MainLayout = () => {
 
                 {/* Footer Section: User Profile or Login */}
                 <div className={styles.sidebarFooter}>
+                    {/* Theme Toggle in Footer */}
+                    <button
+                        className={styles.themeToggleBtn}
+                        onClick={toggleTheme}
+                        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                    >
+                        {darkMode ? <FaSun /> : <FaMoon />}
+                        {!isSidebarCollapsed && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+                    </button>
+
+                    <div className={styles.separator} style={{ margin: '10px 0' }} />
+
                     {isAuthenticated ? (
                         <div className={styles.userProfile}>
                             <div className={styles.avatar}>

@@ -26,6 +26,7 @@ import {
   SearchBar,
   FilterSelect,
 } from "../../../components/Admin";
+import CompetitionLeaderboard from "../../../components/CompetitionLeaderboard/CompetitionLeaderboard";
 import { competitionAPI } from "../../../services/api";
 import { liveCompetitionAPI } from "../../../services/liveCompetitionAPI";
 import styles from "./CompetitionList.module.css";
@@ -57,6 +58,7 @@ function CompetitionList() {
   // View and Edit Competition Modals
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false); // New state for Result Modal
   const [selectedCompetition, setSelectedCompetition] = useState(null);
 
   const formatDuration = (minutes) => {
@@ -200,10 +202,15 @@ function CompetitionList() {
     setDeleteConfirm(competition);
   };
 
+  const handleShowResult = (competition) => {
+    setSelectedCompetition(competition);
+    setShowResultModal(true);
+  };
+
   const handleStartLiveCompetition = async (competition) => {
     try {
       const result = await liveCompetitionAPI.startCompetition(competition._id);
-      
+
       if (result.success) {
         toast.success(`${competition.name} started as live competition!`);
         // Refresh the competitions list
@@ -428,7 +435,7 @@ function CompetitionList() {
                   variant="success"
                 />
               )}
-              
+
               {/* <IconButton
                 icon={FaPuzzlePiece}
                 onClick={() => handleViewPuzzles(comp)}
@@ -453,6 +460,19 @@ function CompetitionList() {
                 title="Delete"
                 variant="danger"
               />
+
+              {/* Show Result Button for Completed Competitions */}
+              {comp.status === 'Completed' && (
+                <Button
+                  size="small"
+                  variant="secondary"
+                  icon={FaTrophy}
+                  onClick={() => handleShowResult(comp)}
+                  style={{ marginLeft: '5px' }}
+                >
+                  Result
+                </Button>
+              )}
             </>
           )}
           emptyMessage="No competitions found"
@@ -639,6 +659,47 @@ function CompetitionList() {
               <Button variant="danger" icon={FaTrash} onClick={confirmDelete}>
                 Delete Competition
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result/Leaderboard Modal */}
+      {showResultModal && selectedCompetition && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowResultModal(false)}
+        >
+          <div
+            className={styles.puzzleModal} // Reusing puzzle modal style for consistency
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '800px' }}
+          >
+            <div className={styles.modalHeader}>
+              <h3>
+                <FaTrophy /> Results for "{selectedCompetition.name}"
+              </h3>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setShowResultModal(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className={styles.modalBody} style={{ padding: '20px' }}>
+              <CompetitionLeaderboard
+                competitionId={selectedCompetition._id || selectedCompetition.id}
+                isLive={false} // It's a result view, not live updates
+                theme="light"
+              />
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.closeModalBtn}
+                onClick={() => setShowResultModal(false)}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

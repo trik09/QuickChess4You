@@ -127,9 +127,8 @@
   cursor: grabbing;
 }
 
-.piece:hover {
-  transform: scale(1.02);
-}
+/* removed hover scale */
+
 
 /* Ensure smooth dragging */
 .boardContainer {
@@ -176,92 +175,8 @@
   line-height: 1;
 }
 
-@media (max-width: 768px) {
-  .boardContainer {
-    padding: 18px;
-  }
+/* Media queries removed for board sizing - relying on JS transform scale */
 
-  .board {
-    border-width: 3px;
-  }
-
-  .square {
-    width: 52px;
-    height: 52px;
-  }
-
-  .piece {
-    width: 75%;
-    height: 75%;
-  }
-
-  .rankLabel,
-  .fileLabel {
-    font-size: 9px;
-  }
-
-  .possibleMove::after {
-    width: 16px;
-    height: 16px;
-  }
-
-  .feedback {
-    top: -45px;
-    padding: 10px 24px;
-    font-size: 15px;
-  }
-
-  .solved {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .boardContainer {
-    padding: 12px;
-  }
-
-  .board {
-    border-width: 2px;
-  }
-
-  .square {
-    width: 42px;
-    height: 42px;
-  }
-
-  .piece {
-    width: 70%;
-    height: 70%;
-  }
-
-  .rankLabel,
-  .fileLabel {
-    font-size: 8px;
-    top: 2px;
-    left: 3px;
-  }
-
-  .fileLabel {
-    bottom: 2px;
-    right: 3px;
-  }
-
-  .possibleMove::after {
-    width: 14px;
-    height: 14px;
-  }
-
-  .feedback {
-    top: -40px;
-    padding: 8px 18px;
-    font-size: 14px;
-  }
-
-  .solved {
-    font-size: 15px;
-  }
-}
 
 
 /* Square where piece is being dragged from */
@@ -287,8 +202,8 @@
 /* Floating piece that follows the cursor */
 .floatingPiece {
   position: absolute;
-  width: 70px;
-  height: 70px;
+  width: 49px;
+  height: 49px;
   z-index: 1000;
   pointer-events: none;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
@@ -299,16 +214,5 @@
   user-select: none;
 }
 
-@media (max-width: 768px) {
-  .floatingPiece {
-    width: 52px;
-    height: 52px;
-  }
-}
-
-@media (max-width: 480px) {
-  .floatingPiece {
-    width: 42px;
-    height: 42px;
-  }
-}
+/* Media queries removed to rely on JS scaling for responsiveness */
+/* This ensures the logical coordinate system matches the visual sizing */

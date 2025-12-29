@@ -30,16 +30,21 @@ export const LiveCompetitionProvider = ({ children }) => {
       setIsLoading(true);
       setError(null);
 
-      // Step 1: Validate participation via REST API
+      // RESET STATE: Clear any previous competition data to prevent "ghost" racers
+      setCompetition(null);
+      setLeaderboard([]);
+      setPuzzles([]);
+      setParticipant(null);
+      setCompetitionEnded(false);
       const response = await liveCompetitionAPI.participate(competitionId, username);
-      
+
       if (!response.success) {
         throw new Error(response.error || 'Failed to participate');
       }
 
       // Step 2: Connect to Socket.IO after REST success
       const socket = socketService.connect(response);
-      
+
       // Set competition data
       setCompetition(response.competition);
       setIsConnected(true);
@@ -51,7 +56,7 @@ export const LiveCompetitionProvider = ({ children }) => {
       await loadCompetitionPuzzles(competitionId);
 
       toast.success(`Successfully joined ${response.competition.name}!`);
-      
+
       return response;
 
     } catch (error) {
@@ -70,7 +75,7 @@ export const LiveCompetitionProvider = ({ children }) => {
     socketService.on('leaderboardUpdate', (newLeaderboard) => {
       setLeaderboard(newLeaderboard);
       setLastUpdate(new Date());
-      
+
       // Show brief notification for leaderboard updates
       if (newLeaderboard.length > 0) {
         toast.success('Leaderboard updated!', { duration: 2000 });
@@ -82,7 +87,7 @@ export const LiveCompetitionProvider = ({ children }) => {
       setCompetitionEnded(true);
       setLeaderboard(finalResults.finalLeaderboard);
       toast.success(finalResults.message, { duration: 5000 });
-      
+
       // Disconnect socket after competition ends
       setTimeout(() => {
         disconnectFromCompetition();
@@ -91,9 +96,9 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     // Participant joined
     socketService.on('participantJoined', (data) => {
-      toast(`${data.username} joined the competition!`, { 
+      toast(`${data.username} joined the competition!`, {
         icon: '👋',
-        duration: 3000 
+        duration: 3000
       });
     });
 
@@ -109,7 +114,7 @@ export const LiveCompetitionProvider = ({ children }) => {
   const loadCompetitionPuzzles = async (competitionId) => {
     try {
       const response = await liveCompetitionAPI.getPuzzles(competitionId);
-      
+
       if (response.success) {
         setPuzzles(response.puzzles);
         setParticipant(response.participant);
@@ -141,17 +146,17 @@ export const LiveCompetitionProvider = ({ children }) => {
         }));
 
         // Update puzzle status
-        setPuzzles(prev => prev.map(puzzle => 
-          puzzle._id === puzzleId 
-            ? { 
-                ...puzzle, 
-                isSolved: true, 
-                solvedData: {
-                  scoreEarned: response.scoreEarned,
-                  timeSpent,
-                  solvedAt: new Date()
-                }
+        setPuzzles(prev => prev.map(puzzle =>
+          puzzle._id === puzzleId
+            ? {
+              ...puzzle,
+              isSolved: true,
+              solvedData: {
+                scoreEarned: response.scoreEarned,
+                timeSpent,
+                solvedAt: new Date()
               }
+            }
             : puzzle
         ));
 
@@ -182,7 +187,7 @@ export const LiveCompetitionProvider = ({ children }) => {
       if (!competition) return;
 
       const response = await liveCompetitionAPI.getLeaderboard(competition.id);
-      
+
       if (response.success) {
         setLeaderboard(response.leaderboard);
         setLastUpdate(new Date());
@@ -208,7 +213,7 @@ export const LiveCompetitionProvider = ({ children }) => {
   // Get current user's rank
   const getCurrentUserRank = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userEntry = leaderboard.find(entry => 
+    const userEntry = leaderboard.find(entry =>
       entry.userId === user.id || entry.username === user.username
     );
     return userEntry ? userEntry.rank : null;
@@ -227,21 +232,21 @@ export const LiveCompetitionProvider = ({ children }) => {
   // Check if competition is active
   const isCompetitionActive = () => {
     if (!competition) return false;
-    
+
     const now = new Date();
     const startTime = new Date(competition.startTime);
     const endTime = new Date(competition.endTime);
-    
+
     return now >= startTime && now <= endTime && !competitionEnded;
   };
 
   // Get time remaining
   const getTimeRemaining = () => {
     if (!competition) return 0;
-    
+
     const now = new Date();
     const endTime = new Date(competition.endTime);
-    
+
     return Math.max(0, endTime.getTime() - now.getTime());
   };
 

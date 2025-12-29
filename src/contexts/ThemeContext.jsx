@@ -27,6 +27,23 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem('pieceSet', pieceSet);
   }, [pieceSet]);
 
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check local storage or system preference
+    const stored = localStorage.getItem('appTheme');
+    if (stored) return stored === 'dark';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    const themeName = darkMode ? 'dark' : 'light';
+    localStorage.setItem('appTheme', themeName);
+    document.documentElement.setAttribute('data-theme', themeName);
+  }, [darkMode]);
+
+  const toggleLoginTheme = () => {
+    setDarkMode(prev => !prev);
+  }
+
   const boardThemes = {
     classic: {
       name: 'Classic',
@@ -82,7 +99,9 @@ export const ThemeProvider = ({ children }) => {
     setPieceSet,
     boardThemes,
     pieceSets,
-    currentBoardColors: boardThemes[boardTheme]
+    currentBoardColors: boardThemes[boardTheme],
+    darkMode,
+    toggleTheme: toggleLoginTheme
   };
 
   return (

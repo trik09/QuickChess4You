@@ -35,6 +35,7 @@
 .heroSubtitle {
   font-size: 1.25rem;
   color: var(--text-secondary);
+  /* Keep as is, checks out */
   margin-bottom: 2rem;
 }
 
@@ -118,6 +119,7 @@
 .featureTitle {
   font-size: 1.5rem;
   margin-bottom: 0.75rem;
+  color: var(--text-heading);
 }
 
 .featureDesc {

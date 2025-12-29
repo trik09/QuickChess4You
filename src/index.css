@@ -5,56 +5,17 @@
   box-sizing: border-box;
 }
 
+/* Shared Variables (Layout, Shadows, etc.) */
 :root {
-  /* =========================================
-     DARK THEME PALETTE (Lichess Style)
-     ========================================= */
-
-  /* Primary Brand Colors */
   --primary: #b58863;
-  /* Chess Board Brown */
   --primary-hover: #a07552;
   --primary-light: #d4a574;
-  --secondary: #363431;
-  /* Dark Grey Accent */
 
-  /* Backgrounds */
-  --bg-light: #161512;
-  /* Main App Background (Very Dark) */
-  --bg-white: #262421;
-  /* Card/Container Background (Dark Grey) */
-  --bg-secondary: #302e2c;
-  /* Input/Secondary Background */
-  --bg-hover: #3e3c39;
-
-  /* Text Colors */
-  --text-primary: #bababa;
-  /* Main Text (Light Grey) */
-  --text-secondary: #ffffff;
-  /* Secondary Text */
-  --text-muted: #ffffff;
-  --text-inverse: #161512;
-  /* Text on light backgrounds */
-
-  /* Accents & Status */
-  --accent-color: #b58863;
   --success: #629924;
-  /* Lichess Green */
   --error: #cc3333;
   --warning: #bf811d;
   --info: #3692e7;
 
-  /* Borders & Dividers */
-  --border-color: #404040;
-  --border-light: #303030;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(181, 136, 99, 0.1);
-
-  /* Layout */
   --sidebar-width: 240px;
   --top-header-height: 60px;
   --bottom-nav-height: 60px;
@@ -63,9 +24,64 @@
   --radius-lg: 8px;
   --radius-full: 9999px;
 
-  /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
+
+  /* Default Dark Theme Variables */
+  --bg-light: #161512;
+  --bg-white: #262421;
+  --bg-secondary: #302e2c;
+  --bg-hover: #3e3c39;
+
+  --text-primary: #bababa;
+  --text-secondary: #ffffff;
+  --text-muted: #999999;
+  --text-inverse: #161512;
+  --text-heading: #e0e0e0;
+  /* New variable for headings */
+
+  --border-color: #404040;
+  --border-light: #303030;
+  --white-or-black-alpha: rgba(255, 255, 255, 0.05);
+  /* For glass panels/hovers */
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(181, 136, 99, 0.1);
+}
+
+/* Light Theme Overrides */
+[data-theme='light'] {
+  --bg-light: #f8f9fa;
+  /* Main App Background (Off-white) */
+  --bg-white: #ffffff;
+  /* Card/Container Background (Pure White) */
+  --bg-secondary: #e9ecef;
+  /* Input/Secondary Background (Light Grey) */
+  --bg-hover: #dee2e6;
+  /* Hover Background */
+
+  --text-primary: #495057;
+  /* Main Text (Dark Grey) */
+  --text-secondary: #212529;
+  /* Secondary Text (Almost Black) */
+  --text-muted: #6c757d;
+  /* Muted Text */
+  --text-inverse: #ffffff;
+  /* Text on dark backgrounds */
+  --text-heading: #212529;
+  /* Headings (Almost Black) */
+
+  --border-color: #dee2e6;
+  --border-light: #ced4da;
+  --white-or-black-alpha: rgba(0, 0, 0, 0.05);
+  /* For glass panels/hovers */
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px rgba(181, 136, 99, 0.15);
 }
 
 body {
@@ -131,7 +147,7 @@ h6 {
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: 0.5em;
-  color: #e0e0e0;
+  color: var(--text-heading);
   /* Brighter heading text */
 }
 

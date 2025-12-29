@@ -139,6 +139,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   const [draggedPiece, setDraggedPiece] = useState(null);
   const [dragOverSquare, setDragOverSquare] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // Offset from mouse to piece top-left in logical pixels
   const [draggedPieceImage, setDraggedPieceImage] = useState(null);
   const boardRef = useRef(null);
   const mouseHandlersRef = useRef({});
@@ -512,8 +513,8 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
 
       const rect = boardRef.current.getBoundingClientRect();
       setDragPosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        x: (e.clientX - rect.left) / scale,
+        y: (e.clientY - rect.top) / scale
       });
 
       // Determine which square we're over
@@ -585,7 +586,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
         setPossibleMoves([]);
       }
     };
-  }, [userColor]); // removed handleUserMove from dependency since we use ref
+  }, [userColor, scale]); // Include scale to ensure coordinate conversion is correct
 
 
 
@@ -611,10 +612,19 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
 
     // Get mouse position relative to board
     const rect = boardRef.current.getBoundingClientRect();
+    const logicalX = (e.clientX - rect.left) / scale;
+    const logicalY = (e.clientY - rect.top) / scale;
     setDragPosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: logicalX,
+      y: logicalY
     });
+
+    // Calculate offset from piece top-left
+    // Note: e.target is the image element
+    const pieceRect = e.target.getBoundingClientRect();
+    const offsetX = (e.clientX - pieceRect.left) / scale;
+    const offsetY = (e.clientY - pieceRect.top) / scale;
+    setDragOffset({ x: offsetX, y: offsetY });
 
     // Add global mouse event listeners
     document.addEventListener('mousemove', mouseHandlersRef.current.handleMouseMove, { passive: false });
@@ -672,7 +682,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     >
       <div style={{
         transform: `scale(${scale})`,
-        transformOrigin: 'top center',
+        // transformOrigin: 'top center',
         width: '610px', // Force natural width context
         // height: '610px',
         display: 'flex',
@@ -782,8 +792,8 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
             alt="Dragged piece"
             className={styles.floatingPiece}
             style={{
-              left: dragPosition.x - 35, // Center the piece on cursor
-              top: dragPosition.y - 35,
+              left: dragPosition.x - dragOffset.x,
+              top: dragPosition.y - dragOffset.y,
               pointerEvents: 'none'
             }}
           />

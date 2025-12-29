@@ -2,8 +2,7 @@
 .container {
     display: flex;
     min-height: 100vh;
-    background-color: var(--bg-dark, #161512);
-    /* Lichess-like dark bg fallback */
+    background-color: var(--bg-light);
     color: var(--text-primary);
     /* Removed padding-top since we no longer have a fixed top header */
 }
@@ -11,9 +10,8 @@
 /* Sidebar (Desktop) */
 .sidebar {
     width: var(--sidebar-width, 240px);
-    background: #262421;
-    /* Darker Lichess sidebar tone */
-    border-right: 1px solid #363431;
+    background: var(--bg-white);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -22,8 +20,8 @@
     height: 100vh;
     z-index: 50;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
-    color: #bababa;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-muted);
 }
 
 .sidebar.collapsed {
@@ -39,8 +37,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 1rem;
-    border-bottom: 1px solid #363431;
-    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--white-or-black-alpha);
 }
 
 .logoLink {
@@ -48,7 +46,7 @@
     align-items: center;
     gap: 0.75rem;
     text-decoration: none;
-    color: #e0e0e0;
+    color: var(--text-heading);
     overflow: hidden;
 }
 
@@ -70,7 +68,7 @@
 .toggleBtn {
     background: transparent;
     border: none;
-    color: #bababa;
+    color: var(--text-muted);
     cursor: pointer;
     font-size: 1rem;
     display: flex;
@@ -82,8 +80,8 @@
 }
 
 .toggleBtn:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    background: var(--bg-hover);
 }
 
 
@@ -116,7 +114,8 @@
 
 .separator {
     height: 1px;
-    background: #363431;
+    height: 1px;
+    background: var(--border-light);
     margin: 0.5rem 1rem;
 }
 
@@ -124,7 +123,8 @@
     display: flex;
     align-items: center;
     padding: 0.75rem 1.25rem;
-    color: #bababa;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-muted);
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s;
@@ -132,15 +132,15 @@
 }
 
 .navItem:hover {
-    background: rgba(255, 255, 255, 0.04);
-    color: #e0e0e0;
+    background: var(--white-or-black-alpha);
+    color: var(--text-primary);
 }
 
 .navItem.active {
     background: rgba(181, 136, 99, 0.1);
     /* Low opacity accent */
-    border-left-color: #b58863;
-    color: #b58863;
+    border-left-color: var(--primary);
+    color: var(--primary);
 }
 
 .navIcon {
@@ -174,9 +174,39 @@
 /* Footer / Auth Section */
 .sidebarFooter {
     padding: 1rem;
-    border-top: 1px solid #363431;
-    background: rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--white-or-black-alpha);
 }
+
+.themeToggleBtn {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+.themeToggleBtn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.sidebar.collapsed .themeToggleBtn span {
+    display: none;
+}
+
 
 .userProfile {
     display: flex;
@@ -212,7 +242,7 @@
 
 .userName {
     font-weight: 600;
-    color: #e0e0e0;
+    color: var(--text-primary);
     font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
@@ -222,7 +252,7 @@
 .logoutBtn {
     background: transparent;
     border: none;
-    color: #999;
+    color: var(--text-muted);
     font-size: 0.8rem;
     cursor: pointer;
     display: flex;
@@ -255,13 +285,13 @@
 
 .loginBtn {
     background: transparent;
-    border: 1px solid #4a4a4a;
-    color: #bababa;
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
 }
 
 .loginBtn:hover {
-    border-color: #b58863;
-    color: #b58863;
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .signupBtn {
@@ -277,8 +307,8 @@
     width: 100%;
     height: 36px;
     background: transparent;
-    border: 1px solid #4a4a4a;
-    color: #b58863;
+    border: 1px solid var(--border-light);
+    color: var(--primary);
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -298,8 +328,7 @@
     padding: 2rem;
     width: calc(100% - 240px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: #161512;
-    /* Fallback Main bg */
+    background: var(--bg-light);
 }
 
 .mainContent.expanded {
@@ -343,8 +372,10 @@
         left: 0;
         width: 100%;
         height: 60px;
-        background: #262421;
-        border-top: 1px solid #363431;
+        width: 100%;
+        height: 60px;
+        background: var(--bg-white);
+        border-top: 1px solid var(--border-color);
         z-index: 100;
         justify-content: space-around;
         align-items: center;
@@ -355,7 +386,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #999;
+        color: var(--text-muted);
         text-decoration: none;
         font-size: 0.75rem;
         gap: 4px;
@@ -368,6 +399,6 @@
 
     .mobileNavItem.active,
     .mobileNavItem:hover {
-        color: #b58863;
+        color: var(--primary);
     }
 }

@@ -12,16 +12,23 @@ import {
 import styles from "./Competitions.module.css";
 import { competitionAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
+import CompetitionLeaderboard from "../../components/CompetitionLeaderboard/CompetitionLeaderboard"; // Import Leaderboard
 import { useAuth } from "../../contexts/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
+import { FaTimes } from 'react-icons/fa'; // Added FaTimes for modal close
 
 function Competitions() {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const [liveCompetitions, setLiveCompetitions] = useState([]);
     const [upcomingCompetitions, setUpcomingCompetitions] = useState([]);
+    const [completedCompetitions, setCompletedCompetitions] = useState([]); // State for completed competitions
     const [loading, setLoading] = useState(true);
     const [joiningId, setJoiningId] = useState(null);
+
+    // Result Modal State
+    const [showResultModal, setShowResultModal] = useState(false);
+    const [selectedCompetitionId, setSelectedCompetitionId] = useState(null);
 
     useEffect(() => {
         fetchCompetitions();
@@ -34,15 +41,23 @@ function Competitions() {
             const liveRes = await competitionAPI.getCompetitions({ status: 'live', limit: 50 });
             // Fetch upcoming
             const upcomingRes = await competitionAPI.getCompetitions({ status: 'upcoming', limit: 50 });
+            // Fetch completed
+            const completedRes = await competitionAPI.getCompetitions({ status: 'completed', limit: 50 });
 
             if (liveRes.success) setLiveCompetitions(liveRes.data);
             if (upcomingRes.success) setUpcomingCompetitions(upcomingRes.data);
+            if (completedRes.success) setCompletedCompetitions(completedRes.data);
         } catch (error) {
             console.error("Failed to load competitions:", error);
             toast.error("Failed to load competitions");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleViewResults = (competitionId) => {
+        setSelectedCompetitionId(competitionId);
+        setShowResultModal(true);
     };
 
     const handleJoin = async (competition) => {
@@ -86,19 +101,25 @@ function Competitions() {
         });
     };
 
-    const CompetitionCard = ({ competition, isLive }) => {
+    const CompetitionCard = ({ competition, status }) => {
         const joined = isJoined(competition);
         const isFull = competition.maxParticipants && competition.participants.length >= competition.maxParticipants;
+
+        // Determine badge based on status
+        let statusBadge;
+        if (status === 'live') {
+            statusBadge = <span className={styles.liveBadge}>LIVE</span>;
+        } else if (status === 'upcoming') {
+            statusBadge = <span className={styles.upcomingBadge}>UPCOMING</span>;
+        } else {
+            statusBadge = <span className={styles.completedBadge} style={{ background: '#6c757d', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>COMPLETED</span>;
+        }
 
         return (
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <h3>{competition.name}</h3>
-                    {isLive ? (
-                        <span className={styles.liveBadge}>LIVE</span>
-                    ) : (
-                        <span className={styles.upcomingBadge}>UPCOMING</span>
-                    )}
+                    {statusBadge}
                 </div>
 
                 <div className={styles.cardBody}>
@@ -120,8 +141,16 @@ function Competitions() {
                 </div>
 
                 <div className={styles.cardFooter}>
-                    {joined ? (
-                        isLive ? (
+                    {status === 'completed' ? (
+                        <button
+                            className={styles.joinBtn}
+                            onClick={() => handleViewResults(competition._id)}
+                            style={{ background: '#17a2b8' }}
+                        >
+                            <FaTrophy /> View Results
+                        </button>
+                    ) : joined ? (
+                        status === 'live' ? (
                             <button
                                 className={styles.playBtn}
                                 onClick={() => handlePlay(competition._id)}
@@ -164,6 +193,64 @@ function Competitions() {
         <div className={styles.container}>
             <Toaster position="top-right" />
 
+            {/* Leaderboard/Result Modal */}
+            {showResultModal && selectedCompetitionId && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '20px'
+                    }}
+                    onClick={() => setShowResultModal(false)}
+                >
+                    <div
+                        style={{
+                            backgroundColor: '#262421',
+                            borderRadius: '8px',
+                            width: '100%',
+                            maxWidth: '600px',
+                            maxHeight: '90vh',
+                            overflowY: 'auto',
+                            position: 'relative',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div style={{ padding: '15px 20px', borderBottom: '1px solid #404040', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ margin: 0, color: '#e5e5e5', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <FaTrophy style={{ color: '#ffc107' }} /> Competition Results
+                            </h3>
+                            <button
+                                onClick={() => setShowResultModal(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#999',
+                                    cursor: 'pointer',
+                                    fontSize: '1.2rem'
+                                }}
+                            >
+                                <FaTimes />
+                            </button>
+                        </div>
+                        <div style={{ padding: '20px' }}>
+                            <CompetitionLeaderboard
+                                competitionId={selectedCompetitionId}
+                                isLive={false}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className={styles.header}>
                 <h1><FaTrophy /> Chess Competitions</h1>
                 <p>Join live tournaments and compete with others!</p>
@@ -174,7 +261,7 @@ function Competitions() {
                     <h2 className={styles.sectionTitle}>🔴 Live Now</h2>
                     <div className={styles.grid}>
                         {liveCompetitions.map(comp => (
-                            <CompetitionCard key={comp._id} competition={comp} isLive={true} />
+                            <CompetitionCard key={comp._id} competition={comp} status="live" />
                         ))}
                     </div>
                 </div>
@@ -185,7 +272,7 @@ function Competitions() {
                 {upcomingCompetitions.length > 0 ? (
                     <div className={styles.grid}>
                         {upcomingCompetitions.map(comp => (
-                            <CompetitionCard key={comp._id} competition={comp} isLive={false} />
+                            <CompetitionCard key={comp._id} competition={comp} status="upcoming" />
                         ))}
                     </div>
                 ) : (
@@ -195,6 +282,17 @@ function Competitions() {
                     </div>
                 )}
             </div>
+
+            {completedCompetitions.length > 0 && (
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>🏆 Past Competitions</h2>
+                    <div className={styles.grid}>
+                        {completedCompetitions.map(comp => (
+                            <CompetitionCard key={comp._id} competition={comp} status="completed" />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

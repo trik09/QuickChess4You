@@ -5,7 +5,7 @@ import { competitionAPI } from '../../services/api';
 import LiveLeaderboard from '../../components/LiveCompetition/LiveLeaderboard';
 import CompetitionTimer from '../../components/LiveCompetition/CompetitionTimer';
 import toast from 'react-hot-toast';
-import './LiveCompetitionPage.css';
+import styles from './LiveCompetitionPage.module.css';
 
 const LiveCompetitionPage = () => {
   const { id } = useParams();
@@ -51,7 +51,7 @@ const LiveCompetitionPage = () => {
     try {
       setLoadingCompetition(true);
       const response = await competitionAPI.getById(id);
-      
+
       if (response.success) {
         setCompetitionData(response.data);
       }
@@ -88,13 +88,13 @@ const LiveCompetitionPage = () => {
 
     try {
       const timeSpent = Math.floor((Date.now() - puzzleStartTime) / 1000);
-      
+
       await submitSolution(selectedPuzzle._id, solution, timeSpent);
-      
+
       // Close puzzle view
       setSelectedPuzzle(null);
       setPuzzleStartTime(null);
-      
+
     } catch (error) {
       console.error('Solution submission failed:', error);
     }
@@ -107,8 +107,8 @@ const LiveCompetitionPage = () => {
 
   if (loadingCompetition) {
     return (
-      <div className="live-competition-loading">
-        <div className="loading-spinner"></div>
+      <div className={styles['live-competition-loading']}>
+        <div className={styles['loading-spinner']}></div>
         <p>Loading competition...</p>
       </div>
     );
@@ -116,7 +116,7 @@ const LiveCompetitionPage = () => {
 
   if (!competitionData) {
     return (
-      <div className="live-competition-error">
+      <div className={styles['live-competition-error']}>
         <h2>Competition not found</h2>
         <button onClick={() => navigate('/competitions')}>
           Back to Competitions
@@ -128,46 +128,46 @@ const LiveCompetitionPage = () => {
   // Show participation screen if not participated yet
   if (!hasParticipated && !competition) {
     return (
-      <div className="live-competition-page">
-        <div className="participation-screen">
-          <div className="competition-info">
+      <div className={styles['live-competition-page']}>
+        <div className={styles['participation-screen']}>
+          <div className={styles['competition-info']}>
             <h1>{competitionData.name}</h1>
-            <p className="competition-description">{competitionData.description}</p>
-            
-            <div className="competition-details">
-              <div className="detail-item">
-                <span className="label">Start Time:</span>
-                <span className="value">
+            <p className={styles['competition-description']}>{competitionData.description}</p>
+
+            <div className={styles['competition-details']}>
+              <div className={styles['detail-item']}>
+                <span className={styles.label}>Start Time:</span>
+                <span className={styles.value}>
                   {new Date(competitionData.startTime).toLocaleString()}
                 </span>
               </div>
-              <div className="detail-item">
-                <span className="label">End Time:</span>
-                <span className="value">
+              <div className={styles['detail-item']}>
+                <span className={styles.label}>End Time:</span>
+                <span className={styles.value}>
                   {new Date(competitionData.endTime).toLocaleString()}
                 </span>
               </div>
-              <div className="detail-item">
-                <span className="label">Duration:</span>
-                <span className="value">{competitionData.duration} minutes</span>
+              <div className={styles['detail-item']}>
+                <span className={styles.label}>Duration:</span>
+                <span className={styles.value}>{competitionData.duration} minutes</span>
               </div>
-              <div className="detail-item">
-                <span className="label">Puzzles:</span>
-                <span className="value">{competitionData.puzzles?.length || 0}</span>
+              <div className={styles['detail-item']}>
+                <span className={styles.label}>Puzzles:</span>
+                <span className={styles.value}>{competitionData.puzzles?.length || 0}</span>
               </div>
             </div>
 
-            <div className="participation-actions">
-              <button 
-                className="participate-btn"
+            <div className={styles['participation-actions']}>
+              <button
+                className={styles['participate-btn']}
                 onClick={handleParticipate}
                 disabled={isLoading}
               >
                 {isLoading ? 'Joining...' : '🚀 Participate Now'}
               </button>
-              
-              <button 
-                className="back-btn"
+
+              <button
+                className={styles['back-btn']}
                 onClick={() => navigate('/competitions')}
               >
                 Back to Competitions
@@ -182,37 +182,37 @@ const LiveCompetitionPage = () => {
   // Show puzzle solving interface if puzzle is selected
   if (selectedPuzzle) {
     return (
-      <div className="live-competition-page">
-        <div className="puzzle-solving-interface">
-          <div className="puzzle-header">
-            <button className="back-btn" onClick={handleBackToPuzzles}>
+      <div className={styles['live-competition-page']}>
+        <div className={styles['puzzle-solving-interface']}>
+          <div className={styles['puzzle-header']}>
+            <button className={styles['back-btn']} onClick={handleBackToPuzzles}>
               ← Back to Puzzles
             </button>
             <h2>{selectedPuzzle.title}</h2>
-            <div className="puzzle-info">
-              <span className="difficulty">{selectedPuzzle.difficulty}</span>
-              <span className="category">{selectedPuzzle.category}</span>
+            <div className={styles['puzzle-info']}>
+              <span className={styles.difficulty}>{selectedPuzzle.difficulty}</span>
+              <span className={styles.category}>{selectedPuzzle.category}</span>
             </div>
           </div>
 
-          <div className="puzzle-content">
+          <div className={styles['puzzle-content']}>
             {/* Chess board component would go here */}
-            <div className="chess-board-placeholder">
+            <div className={styles['chess-board-placeholder']}>
               <p>Chess Board Component</p>
               <p>FEN: {selectedPuzzle.fen}</p>
               <p>Solution: {JSON.stringify(selectedPuzzle.solutionMoves)}</p>
-              
+
               {/* Temporary solution buttons for testing */}
-              <div className="temp-solution-buttons">
-                <button 
+              <div className={styles['temp-solution-buttons']}>
+                <button
                   onClick={() => handleSolutionSubmit(selectedPuzzle.solutionMoves)}
-                  className="correct-solution-btn"
+                  className={styles['correct-solution-btn']}
                 >
                   Submit Correct Solution
                 </button>
-                <button 
+                <button
                   onClick={() => handleSolutionSubmit(['wrong', 'moves'])}
-                  className="wrong-solution-btn"
+                  className={styles['wrong-solution-btn']}
                 >
                   Submit Wrong Solution
                 </button>
@@ -226,26 +226,26 @@ const LiveCompetitionPage = () => {
 
   // Main competition interface
   return (
-    <div className="live-competition-page">
-      <div className="competition-header">
-        <div className="header-left">
+    <div className={styles['live-competition-page']}>
+      <div className={styles['competition-header']}>
+        <div className={styles['header-left']}>
           <h1>{competition?.name}</h1>
-          <div className="connection-indicator">
-            <span className={`indicator ${isConnected ? 'connected' : 'disconnected'}`}>
+          <div className={styles['connection-indicator']}>
+            <span className={`${styles.indicator} ${isConnected ? styles.connected : styles.disconnected}`}>
               {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
             </span>
           </div>
         </div>
-        
-        <div className="header-actions">
-          <button 
-            className="toggle-leaderboard-btn"
+
+        <div className={styles['header-actions']}>
+          <button
+            className={styles['toggle-leaderboard-btn']}
             onClick={() => setShowLeaderboard(!showLeaderboard)}
           >
             {showLeaderboard ? 'Hide' : 'Show'} Leaderboard
           </button>
-          <button 
-            className="leave-btn"
+          <button
+            className={styles['leave-btn']}
             onClick={() => {
               disconnectFromCompetition();
               navigate('/competitions');
@@ -257,61 +257,60 @@ const LiveCompetitionPage = () => {
       </div>
 
       {error && (
-        <div className="error-banner">
+        <div className={styles['error-banner']}>
           <span>⚠️ {error}</span>
         </div>
       )}
 
       {competitionEnded && (
-        <div className="competition-ended-banner">
+        <div className={styles['competition-ended-banner']}>
           <span>🏁 Competition has ended! Check the final results below.</span>
         </div>
       )}
 
-      <div className="competition-content">
-        <div className="left-panel">
+      <div className={styles['competition-content']}>
+        <div className={styles['left-panel']}>
           <CompetitionTimer />
-          
+
           {participant && (
-            <div className="participant-stats">
+            <div className={styles['participant-stats']}>
               <h3>Your Progress</h3>
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <span className="stat-value">{participant.score}</span>
-                  <span className="stat-label">Score</span>
+              <div className={styles['stats-grid']}>
+                <div className={styles['stat-item']}>
+                  <span className={styles['stat-value']}>{participant.score}</span>
+                  <span className={styles['stat-label']}>Score</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-value">
+                <div className={styles['stat-item']}>
+                  <span className={styles['stat-value']}>
                     {getSolvedPuzzlesCount()}/{getTotalPuzzlesCount()}
                   </span>
-                  <span className="stat-label">Puzzles</span>
+                  <span className={styles['stat-label']}>Puzzles</span>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-value">
+                <div className={styles['stat-item']}>
+                  <span className={styles['stat-value']}>
                     {Math.floor(participant.timeSpent / 60)}m
                   </span>
-                  <span className="stat-label">Time</span>
+                  <span className={styles['stat-label']}>Time</span>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="puzzles-section">
+          <div className={styles['puzzles-section']}>
             <h3>Competition Puzzles</h3>
-            <div className="puzzles-grid">
+            <div className={styles['puzzles-grid']}>
               {puzzles.map((puzzle, index) => (
-                <div 
+                <div
                   key={puzzle._id}
-                  className={`puzzle-card ${puzzle.isSolved ? 'solved' : ''} ${
-                    !isCompetitionActive() ? 'disabled' : ''
-                  }`}
+                  className={`${styles['puzzle-card']} ${puzzle.isSolved ? styles.solved : ''} ${!isCompetitionActive() ? styles.disabled : ''
+                    }`}
                   onClick={() => isCompetitionActive() && handlePuzzleSelect(puzzle)}
                 >
-                  <div className="puzzle-number">#{index + 1}</div>
-                  <div className="puzzle-title">{puzzle.title}</div>
-                  <div className="puzzle-difficulty">{puzzle.difficulty}</div>
+                  <div className={styles['puzzle-number']}>#{index + 1}</div>
+                  <div className={styles['puzzle-title']}>{puzzle.title}</div>
+                  <div className={styles['puzzle-difficulty']}>{puzzle.difficulty}</div>
                   {puzzle.isSolved && (
-                    <div className="solved-indicator">
+                    <div className={styles['solved-indicator']}>
                       ✅ +{puzzle.solvedData?.scoreEarned || 0} pts
                     </div>
                   )}
@@ -322,7 +321,7 @@ const LiveCompetitionPage = () => {
         </div>
 
         {showLeaderboard && (
-          <div className="right-panel">
+          <div className={styles['right-panel']}>
             <LiveLeaderboard />
           </div>
         )}

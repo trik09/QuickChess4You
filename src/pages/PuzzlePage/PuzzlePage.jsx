@@ -7,13 +7,17 @@ import ChessBoard from "../../components/ChessBoard/ChessBoard";
 import { puzzleAPI, competitionAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
 import CompetitionLeaderboard from "../../components/CompetitionLeaderboard/CompetitionLeaderboard";
+import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer"; // Import PuzzleRacer
 import styles from "./PuzzlePage.module.css";
 
 function PuzzlePage() {
   const { id: paramCompetitionId } = useParams();
   const navigate = useNavigate();
+  const navigator = useNavigate();
   const { user } = useAuth();
+  const { participateInCompetition, disconnectFromCompetition } = useLiveCompetition(); // Destructure disconnect
 
   // State
   const [competitionData, setCompetitionData] = useState(null);
@@ -29,6 +33,7 @@ function PuzzlePage() {
   const [timeLeft, setTimeLeft] = useState(0); // in seconds
   const [score, setScore] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0);
+  const [solvedPuzzles, setSolvedPuzzles] = useState([]); // Array of solved puzzle IDs
   const [startTime, setStartTime] = useState(Date.now());
 
   // Refs for tracking without re-renders
@@ -38,7 +43,13 @@ function PuzzlePage() {
   // 1. Initial Data Fetch & Restore
   useEffect(() => {
     loadPuzzleContext();
-    return () => clearInterval(timerRef.current);
+    return () => {
+      clearInterval(timerRef.current);
+      // Clean up live competition connection on unmount/change
+      if (paramCompetitionId) {
+        disconnectFromCompetition();
+      }
+    };
   }, [paramCompetitionId]);
 
   // Persist State
@@ -80,8 +91,9 @@ function PuzzlePage() {
         if (isLive) {
           try {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            await liveCompetitionAPI.participate(paramCompetitionId, user.username || user.name);
-            console.log('Successfully registered for live competition');
+            // Use Context method to ensure socket connection and leaderboard updates
+            await participateInCompetition(paramCompetitionId, user.username || user.name);
+            console.log('Successfully registered for live competition via Context');
           } catch (error) {
             console.log('Participation registration failed (might already be registered):', error.message);
             // This is expected if user is already participating
@@ -110,19 +122,21 @@ function PuzzlePage() {
         const savedState = localStorage.getItem(stateKey);
         let restoredIndex = 0;
 
+        // Calculate Time Remaining from Server (Source of Truth)
+        const msUntilEnd = end - now;
+        const secondsLeft = Math.floor(msUntilEnd / 1000);
+        setTimeLeft(secondsLeft);
+
         if (savedState) {
           const parsed = JSON.parse(savedState);
-          setTimeLeft(parsed.timeLeft);
+          // Do NOT restore timeLeft from local storage for competitions
+          // We trust the server's endTime calculation (secondsLeft) above.
+
           setScore(parsed.score);
           setSolvedCount(parsed.solvedCount);
           setPuzzleStatuses(parsed.puzzleStatuses || {});
           restoredIndex = parsed.currentPuzzleIndex || 0;
           setCurrentPuzzleIndex(restoredIndex);
-        } else {
-          // Calculate Time Remaining for User Default
-          const msUntilEnd = end - now;
-          const secondsLeft = Math.floor(msUntilEnd / 1000);
-          setTimeLeft(secondsLeft);
         }
 
         startTimer();
@@ -180,7 +194,7 @@ function PuzzlePage() {
         } else {
           setTimeLeft(300); // Default 5 mins for casual
         }
-        startTimer();
+        // startTimer(); // Disabled for unlimited casual play
       }
     } catch (error) {
       console.error("Error loading puzzles:", error);
@@ -239,14 +253,14 @@ function PuzzlePage() {
     if (competitionData) {
       try {
         setSolving(true);
-        
+
         console.log('Submitting solution:', {
           puzzle: currentPuzzle.title,
           solution: currentPuzzle.solution,
           solutionType: typeof currentPuzzle.solution,
           isArray: Array.isArray(currentPuzzle.solution)
         });
-        
+
         if (isLiveCompetition) {
           // Submit to live competition system
           const res = await liveCompetitionAPI.submitSolution(
@@ -255,7 +269,7 @@ function PuzzlePage() {
             currentPuzzle.solution,
             timeTaken
           );
-          
+
           if (res && res.success && res.scoreEarned) {
             // Only update UI after successful backend response
             setSolvedCount(prev => prev + 1);
@@ -368,40 +382,52 @@ function PuzzlePage() {
       {/* Main Content - 3 Column Layout */}
       <div className={styles.mainContent}>
 
-        {/* Left Panel - Stats */}
-        <div className={styles.leftPanel}>
-          <div className={styles.statCard}>
-            <div className={styles.timerDisplay}>
-              <FaClock className={styles.timerIcon} />
-              <div className={styles.statLabel}>Time Left</div>
-              <div className={styles.timerBadge}>
-                {formatTime(timeLeft)}
+        {/* Left Panel - Stats (Only in Competition) */}
+        {competitionData ? (
+          <div className={styles.leftPanel}>
+            <div className={styles.statCard}>
+              <div className={styles.timerDisplay}>
+                <FaClock className={styles.timerIcon} />
+                <div className={styles.statLabel}>Time Left</div>
+                <div className={styles.timerBadge}>
+                  {formatTime(timeLeft)}
+                </div>
+              </div>
+
+              <div className={styles.statsRow}>
+                <div className={styles.statItem}>
+                  <div className={styles.statLabel}>Score</div>
+                  <div className={`${styles.statValue} ${styles.highlight}`}>{Math.round(score)}</div>
+                </div>
+                <div className={styles.statItem}>
+                  <div className={styles.statLabel}>Solved</div>
+                  <div className={styles.statValue}>{solvedCount}</div>
+                </div>
               </div>
             </div>
 
-            <div className={styles.statsRow}>
-              <div className={styles.statItem}>
-                <div className={styles.statLabel}>Score</div>
-                <div className={`${styles.statValue} ${styles.highlight}`}>{Math.round(score)}</div>
-              </div>
-              <div className={styles.statItem}>
-                <div className={styles.statLabel}>Solved</div>
-                <div className={styles.statValue}>{solvedCount}</div>
+            <div className={styles.statCard} style={{ textAlign: 'center' }}>
+              <div className={styles.statLabel}>Current Status</div>
+              <div style={{ fontSize: '1.2rem', color: '#fff', marginTop: '10px' }}>
+                Compete Mode
               </div>
             </div>
           </div>
-
-          <div className={styles.statCard} style={{ textAlign: 'center' }}>
-            <div className={styles.statLabel}>Current Status</div>
-            <div style={{ fontSize: '1.2rem', color: '#fff', marginTop: '10px' }}>
-              {competitionData ? 'Compete Mode' : 'Practice Mode'}
-            </div>
+        ) : (
+          <div className={styles.leftPanel} style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+            {/* Placeholder to keep layout consistent if needed, or we can remove it */}
           </div>
-        </div>
+        )}
 
         {/* Center Panel - Board */}
         <div className={styles.boardArea}>
           <div className={styles.puzzleInfoBar}>
+            <div className={styles.topTitleArea}>
+              <h2 className={styles.puzzleTitle}>{currentPuzzle?.title || 'Chess Puzzle'}</h2>
+              {currentPuzzle?.description && (
+                <span className={styles.puzzleSubtitle}>{currentPuzzle.description}</span>
+              )}
+            </div>
             {currentPuzzle && (
               <div className={styles.puzzleToMove}>
                 <div className={`${styles.colorIndicator} ${currentPuzzle.fen.split(' ')[1] === 'w' ? styles.white : styles.black}`}></div>
@@ -429,23 +455,21 @@ function PuzzlePage() {
             )}
           </div>
 
-          <div className={styles.puzzleInstructions} style={{ marginTop: '20px' }}>
-            <h3>{currentPuzzle?.title || currentPuzzle?.type || 'Chess Puzzle'}</h3>
-            {currentPuzzle?.description && (
-              <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '5px' }}>
-                {currentPuzzle.description}
-              </p>
-            )}
-          </div>
+          {/* Car Race Visualization */}
+          {isLiveCompetition && (
+            <PuzzleRacer />
+          )}
+
+          {/* Moved Title/Description to Top, kept here only if needed for extra info */}
         </div>
 
         {/* Right Panel - Navigation & Controls */}
         <div className={styles.rightPanel}>
-          {/* Show Competition Leaderboard if it's a competition */}
+          {/* Show Competition Leaderboard only if it's a competition */}
           {competitionData && (
             <div className={styles.leaderboardSection}>
-              <CompetitionLeaderboard 
-                competitionId={competitionData._id} 
+              <CompetitionLeaderboard
+                competitionId={competitionData._id}
                 isLive={isLiveCompetition}
               />
             </div>
