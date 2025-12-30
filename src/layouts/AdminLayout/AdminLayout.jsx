@@ -123,35 +123,18 @@ function AdminLayout() {
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <Link to="/" className={styles.menuItem}>
-            <span className={styles.menuIcon}><FaHome /></span>
-            {!sidebarCollapsed && <span>Back to Site</span>}
-          </Link>
+          <button
+            className={styles.menuItem}
+            onClick={() => setShowLogoutConfirm(true)}
+            style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <span className={styles.menuIcon}><FaSignOutAlt /></span>
+            {!sidebarCollapsed && <span>Logout</span>}
+          </button>
         </div>
       </aside>
 
       <div className={styles.mainContent}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarLeft}>
-            <img src={logo} alt="QuickChess4You" className={styles.topbarLogo} />
-            <h1>QCFY</h1>
-          </div>
-          <div className={styles.topbarRight}>
-            <button className={styles.notificationBtn}><FaBell /></button>
-            <div className={styles.adminProfile}>
-              <span>{localStorage.getItem('adminUser') || 'Admin'}</span>
-              <div className={styles.avatar}><FaUser /></div>
-            </div>
-            <button
-              className={styles.logoutBtn}
-              onClick={() => setShowLogoutConfirm(true)}
-              title="Logout"
-            >
-              <FaSignOutAlt />
-            </button>
-          </div>
-        </header>
-
         <main className={styles.content}>
           <Outlet />
         </main>

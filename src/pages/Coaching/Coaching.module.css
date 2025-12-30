@@ -24,11 +24,15 @@
   color: var(--text-secondary);
 }
 
-.benefits, .coaches, .pricing {
+.benefits,
+.coaches,
+.pricing {
   margin-bottom: 4rem;
 }
 
-.benefits h2, .coaches h2, .pricing h2 {
+.benefits h2,
+.coaches h2,
+.pricing h2 {
   text-align: center;
   font-size: 2rem;
   color: var(--text-primary);
@@ -133,7 +137,8 @@
   color: var(--text-secondary);
 }
 
-.bookBtn, .selectBtn {
+.bookBtn,
+.selectBtn {
   width: 100%;
   padding: 0.875rem;
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
@@ -146,7 +151,8 @@
   box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
 }
 
-.bookBtn:hover, .selectBtn:hover {
+.bookBtn:hover,
+.selectBtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(181, 136, 99, 0.4);
 }
@@ -238,7 +244,48 @@
     font-size: 2rem;
   }
 
-  .benefitsGrid, .coachesGrid, .pricingGrid {
+  .benefitsGrid,
+  .coachesGrid,
+  .pricingGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.comingSoon {
+  background: var(--bg-white);
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.comingSoon h3 {
+  font-size: 1.8rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.comingSoon p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.whatsappBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.9rem 1.6rem;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.whatsappBtn:hover {
+  background: #1ebe5d;
 }

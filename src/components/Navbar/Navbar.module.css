@@ -18,10 +18,10 @@
   right: 0;
   height: 70px;
   background: var(--bg-color);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
-  z-index: 3000; 
+  z-index: 3000;
 }
 
 .container {
@@ -45,7 +45,7 @@
 }
 
 .logoImg {
-  height: 46px;
+  height: 80px;
   width: auto;
 }
 
@@ -127,7 +127,7 @@
   color: white;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .signupBtn:hover {
@@ -209,7 +209,7 @@
   cursor: pointer;
   border: none;
   background: transparent;
-  z-index: 4000; 
+  z-index: 4000;
 }
 
 .hamburger span {
@@ -221,13 +221,15 @@
 }
 
 .hamburger.open span:nth-child(1) {
- transform: rotate(45deg) translateY(14px);
+  transform: rotate(45deg) translateY(14px);
 }
+
 .hamburger.open span:nth-child(2) {
   opacity: 0;
 }
+
 .hamburger.open span:nth-child(3) {
- transform: rotate(-45deg) translateY(-14px);
+  transform: rotate(-45deg) translateY(-14px);
 }
 
 /* ===========================
@@ -248,7 +250,7 @@
     background: var(--bg-color);
     flex-direction: column;
     padding: 100px 26px 30px;
-    box-shadow: -2px 0 16px rgba(0,0,0,0.18);
+    box-shadow: -2px 0 16px rgba(0, 0, 0, 0.18);
     transition: 0.35s ease-in-out;
     z-index: 3500;
   }
@@ -307,7 +309,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   opacity: 0;
   visibility: hidden;
   transition: var(--transition);

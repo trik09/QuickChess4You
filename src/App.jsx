@@ -15,6 +15,8 @@ import Coaching from "./pages/Coaching/Coaching";
 import Pricing from "./pages/Pricing/Pricing";
 import Contact from "./pages/Contact/Contact";
 import LiveCompetitionPage from "./pages/LiveCompetition/LiveCompetitionPage";
+import TournamentLobby from "./pages/TournamentLobby/TournamentLobby";
+import TournamentPlay from "./pages/TournamentPlay/TournamentPlay";
 
 import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
@@ -54,131 +56,140 @@ function App() {
           <Router>
             <Routes>
 
-            {/* User Layout w/ Sidebar & Bottom Nav */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/coaching" element={<Coaching />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/contact" element={<Contact />} />
-{/* <Route path="/competitions" element={<Competitions />} /> */}
-              
-              {/* Live Competition Route */}
-              <Route
-                path="/live-competition/:id"
-                element={
-                  <UserProtectedRoute>
-                    <LiveCompetitionPage />
-                  </UserProtectedRoute>
-                }
-              />
+              {/* User Layout w/ Sidebar & Bottom Nav */}
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/coaching" element={<Coaching />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/contact" element={<Contact />} />
+                {/* <Route path="/competitions" element={<Competitions />} /> */}
 
-              <Route
-                path="/dashboard"
-                element={
-                  <UserProtectedRoute>
-                    <Dashboard />
-                  </UserProtectedRoute>
-                }
-              />
-              <Route path="/profile" element={<Profile />} />
-              <Route
-                path="/profile/edit"
-                element={
-                  <UserProtectedRoute>
-                    <EditProfile />
-                  </UserProtectedRoute>
-                }
-              />
-              <Route path="/settings" element={<UserSettings />} />
-              {/* Casual Puzzles - No Timer (Sidebar Link) */}
-              <Route
-                path="/puzzles"
-                element={
-                  <UserProtectedRoute>
-                    <CasualPuzzlePage />
-                  </UserProtectedRoute>
-                }
-              />
+                {/* Live Competition Route */}
+                <Route
+                  path="/live-competition/:id"
+                  element={
+                    <UserProtectedRoute>
+                      <LiveCompetitionPage />
+                    </UserProtectedRoute>
+                  }
+                />
 
-              {/* Tournament/Competition Puzzles - With Timer */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <UserProtectedRoute>
+                      <Dashboard />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route path="/profile" element={<Profile />} />
+                <Route
+                  path="/profile/edit"
+                  element={
+                    <UserProtectedRoute>
+                      <EditProfile />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route path="/settings" element={<UserSettings />} />
+                {/* Casual Puzzles - No Timer (Sidebar Link) */}
+                <Route
+                  path="/puzzles"
+                  element={
+                    <UserProtectedRoute>
+                      <CasualPuzzlePage />
+                    </UserProtectedRoute>
+                  }
+                />
+
+                {/* Tournament/Competition Puzzles - With Timer */}
+                <Route
+                  path="/puzzle"
+                  element={
+                    <UserProtectedRoute>
+                      <PuzzlePage />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/competition/:id/lobby"
+                  element={
+                    <UserProtectedRoute>
+                      <TournamentLobby />
+                    </UserProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/competition/:id/play"
+                  element={
+                    <UserProtectedRoute>
+                      <TournamentPlay />
+                    </UserProtectedRoute>
+                  }
+                />
+                {/* Legacy Route - keeping for safety but likely unused now */}
+                <Route
+                  path="/competition/:id/puzzle"
+                  element={
+                    <UserProtectedRoute>
+                      <PuzzlePage />
+                    </UserProtectedRoute>
+                  }
+                />
+
+                {/* Competition Leaderboard */}
+                <Route
+                  path="/leaderboard/:competitionId"
+                  element={
+                    <UserProtectedRoute>
+                      <CompetitionLeaderboard />
+                    </UserProtectedRoute>
+                  }
+                />
+              </Route>
+
+              {/* Admin login */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+
+              {/* Automatic admin redirect */}
+              <Route path="/admin" element={<AdminRedirect />} />
+
+              {/* Admin protected pages */}
               <Route
-                path="/puzzle"
+                path="/admin"
                 element={
-                  <UserProtectedRoute>
-                    <PuzzlePage />
-                  </UserProtectedRoute>
+                  <AdminProtectedRoute>
+                    <AdminLayout />
+                  </AdminProtectedRoute>
                 }
-              />
-              <Route
-                path="/competition/:id/puzzle"
-                element={
-                  <UserProtectedRoute>
-                    <PuzzlePage />
-                  </UserProtectedRoute>
-                }
-              />
-              <Route
-                path="/tournament/:id/puzzle"
-                element={
-                  <UserProtectedRoute>
-                    <PuzzlePage />
-                  </UserProtectedRoute>
-                }
-              />
+              >
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="categories" element={<CategoryList />} />
+                <Route path="puzzles" element={<PuzzleList />} />
+                <Route path="puzzle-library" element={<PuzzleLibrary />} />
+                <Route path="puzzles/create" element={<CreatePuzzle />} />
+                <Route path="puzzles/edit/:id" element={<EditPuzzle />} />
+                <Route path="competitions" element={<CompetitionList />} />
+                <Route path="competitions/create" element={<CreateCompetition />} />
+                <Route path="competitions/edit/:id" element={<EditCompetition />} />
+                <Route
+                  path="competitions/:id/participants"
+                  element={<CompetitionParticipants />}
+                />
+                <Route path="competitions/live" element={<LiveTournament />} />
+                <Route path="competitions/history" element={<CompetitionHistory />} />
+                <Route path="students" element={<StudentList />} />
+                <Route path="admins" element={<AdminManagement />} />
+                <Route path="leaderboard" element={<AdminLeaderboard />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="monitoring" element={<SystemMonitor />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
 
-              {/* Competition Leaderboard */}
-              <Route
-                path="/leaderboard/:competitionId"
-                element={
-                  <UserProtectedRoute>
-                    <CompetitionLeaderboard />
-                  </UserProtectedRoute>
-                }
-              />
-            </Route>
-
-            {/* Admin login */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-
-            {/* Automatic admin redirect */}
-            <Route path="/admin" element={<AdminRedirect />} />
-
-            {/* Admin protected pages */}
-            <Route
-              path="/admin"
-              element={
-                <AdminProtectedRoute>
-                  <AdminLayout />
-                </AdminProtectedRoute>
-              }
-            >
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="categories" element={<CategoryList />} />
-              <Route path="puzzles" element={<PuzzleList />} />
-              <Route path="puzzle-library" element={<PuzzleLibrary />} />
-              <Route path="puzzles/create" element={<CreatePuzzle />} />
-              <Route path="puzzles/edit/:id" element={<EditPuzzle />} />
-              <Route path="competitions" element={<CompetitionList />} />
-              <Route path="competitions/create" element={<CreateCompetition />} />
-              <Route path="competitions/edit/:id" element={<EditCompetition />} />
-              <Route
-                path="competitions/:id/participants"
-                element={<CompetitionParticipants />}
-              />
-              <Route path="competitions/live" element={<LiveTournament />} />
-              <Route path="competitions/history" element={<CompetitionHistory />} />
-              <Route path="students" element={<StudentList />} />
-              <Route path="admins" element={<AdminManagement />} />
-              <Route path="leaderboard" element={<AdminLeaderboard />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="monitoring" element={<SystemMonitor />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
-
-          </Routes>
-        </Router>
+            </Routes>
+          </Router>
         </LiveCompetitionProvider>
       </ThemeProvider>
     </AuthProvider>

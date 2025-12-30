@@ -4,69 +4,61 @@ class SocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
-    this.competitionId = null;
-    this.listeners = new Map();
   }
 
   // Connect to Socket.IO server
-  connect(competitionData) {
+  connect(url = null) {
+    if (this.socket && this.socket.connected) return;
+
     const token = localStorage.getItem('token');
-    
     if (!token) {
-      throw new Error('Authentication token required');
+      console.warn('Authentication token missing for socket');
+      // We might allow anon connection depending on logic, but for now just warn
     }
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
-    
+    const socketUrl = url || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'; // Fallback to 3000 as backend is there
+
     this.socket = io(socketUrl, {
-      auth: {
-        token: token
-      },
+      auth: { token },
       transports: ['websocket', 'polling']
     });
 
-    this.competitionId = competitionData.competition.id;
-
-    // Connection event handlers
     this.socket.on('connect', () => {
       console.log('Connected to Socket.IO server:', this.socket.id);
       this.isConnected = true;
-      
-      // Join competition room
-      this.joinCompetition(competitionData);
     });
 
-    this.socket.on('disconnect', (reason) => {
-      console.log('Disconnected from Socket.IO server:', reason);
+    this.socket.on('disconnect', () => {
       this.isConnected = false;
     });
 
-    this.socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-      this.isConnected = false;
-    });
-
-    // Competition-specific event handlers
-    this.setupCompetitionListeners();
+    // forward any raw event for debugging
+    // this.socket.onAny((event, ...args) => console.log(event, args));
 
     return this.socket;
   }
 
-  // Join competition room
-  joinCompetition(competitionData) {
-    if (!this.socket || !this.isConnected) {
-      console.error('Socket not connected');
-      return;
+  emit(event, data) {
+    if (this.socket) {
+      this.socket.emit(event, data);
     }
+  }
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    this.socket.emit('joinCompetition', {
-      competitionId: competitionData.competition.id,
-      username: user.username || user.name || 'Anonymous'
-    });
+  on(event, callback) {
+    if (this.socket) {
+      this.socket.on(event, callback);
+    }
+  }
 
-    console.log(`Joining competition: ${competitionData.competition.name}`);
+  off(event) {
+    if (this.socket) {
+      this.socket.off(event);
+    }
+  }
+
+  // Legacy method support if needed, or simplified join
+  joinCompetition(competitionId) {
+    this.socket.emit('joinCompetition', { competitionId });
   }
 
   // Setup competition-specific event listeners
@@ -98,45 +90,11 @@ class SocketService {
     });
   }
 
-  // Add event listener
-  on(event, callback) {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-    }
-    this.listeners.get(event).push(callback);
-  }
+  // Simple wrapper methods are defined above (on, off, emit)
+  // Removing complex internal listener map as it duplicates socket.io functionality
 
-  // Remove event listener
-  off(event, callback) {
-    if (this.listeners.has(event)) {
-      const callbacks = this.listeners.get(event);
-      const index = callbacks.indexOf(callback);
-      if (index > -1) {
-        callbacks.splice(index, 1);
-      }
-    }
-  }
-
-  // Emit event to listeners
-  emit(event, data) {
-    if (this.listeners.has(event)) {
-      this.listeners.get(event).forEach(callback => {
-        try {
-          callback(data);
-        } catch (error) {
-          console.error('Error in event listener:', error);
-        }
-      });
-    }
-  }
-
-  // Refresh leaderboard manually
-  refreshLeaderboard() {
-    if (this.socket && this.isConnected && this.competitionId) {
-      this.socket.emit('refreshLeaderboard', {
-        competitionId: this.competitionId
-      });
-    }
+  refreshLeaderboard(competitionId) {
+    this.socket.emit('refreshLeaderboard', { competitionId });
   }
 
   // Disconnect from socket
@@ -145,8 +103,6 @@ class SocketService {
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
-      this.competitionId = null;
-      this.listeners.clear();
       console.log('Socket disconnected');
     }
   }

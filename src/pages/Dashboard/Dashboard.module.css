@@ -3,20 +3,22 @@
 }
 
 .content {
-  max-width: 1300px;
+  max-width: 1000px;
+  /* Reduced width for better list view */
   margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   animation: fadeInUp 0.8s ease-out;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
 
   to {
@@ -28,7 +30,7 @@
 .header h1 {
   font-size: 2.5rem;
   color: var(--text-heading);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-weight: 800;
   letter-spacing: -1px;
 }
@@ -37,25 +39,62 @@
   color: var(--text-secondary);
   font-size: 1.1rem;
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto 2rem;
   line-height: 1.6;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.filterBtn:hover {
+  color: var(--text-primary);
+}
+
+.activeFilter {
+  color: #bf811d;
+  /* Gold/Orange */
+  border-bottom-color: #bf811d;
+}
+
+/* List Layout */
+.tournamentList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
 /* Loading State */
 .loadingState {
   text-align: center;
   padding: 4rem 2rem;
-  animation: fadeInUp 0.5s ease-out;
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--border-color);
-  border-top-color: var(--primary);
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: #bf811d;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 1rem;
 }
 
 @keyframes spin {
@@ -64,276 +103,37 @@
   }
 }
 
-.loadingState p {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-}
-
 /* Error State */
 .errorState {
   text-align: center;
-  padding: 4rem 2rem;
-  background: var(--bg-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  animation: fadeInUp 0.5s ease-out;
-}
-
-.errorState p {
+  padding: 3rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
   color: var(--error);
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
 }
 
 .retryBtn {
-  padding: 0.75rem 2rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
   background: var(--primary);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
-  font-weight: 600;
+  border-radius: 4px;
   cursor: pointer;
-  transition: var(--transition-normal);
-}
-
-.retryBtn:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
 }
 
 /* Empty State */
 .emptyState {
   text-align: center;
   padding: 4rem 2rem;
-  background: var(--bg-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  animation: fadeInUp 0.5s ease-out;
-}
-
-.emptyIcon {
-  font-size: 4rem;
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.emptyState h3 {
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.emptyState p {
   color: var(--text-secondary);
 }
 
-/* Tournament Grid */
-.tournamentGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  animation: fadeInUp 0.8s ease-out 0.2s;
-  animation-fill-mode: both;
-}
-
-.card {
-  background: var(--bg-white);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal);
-  border: 1px solid var(--border-color);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--primary-light));
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--primary);
-}
-
-.card:hover::before {
-  transform: scaleX(1);
-}
-
-.cardHeader {
-  display: flex;
-  justify-content: flex-end;
+.emptyIcon {
+  font-size: 3rem;
+  display: block;
   margin-bottom: 1rem;
-}
-
-/* Status Badges */
-.status {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.statusUpcoming {
-  background: rgba(255, 152, 0, 0.15);
-  color: #f57c00;
-  border: 1px solid rgba(255, 152, 0, 0.3);
-}
-
-.statusLive {
-  background: rgba(39, 174, 96, 0.2);
-  color: #2ecc71;
-  border: 1px solid rgba(39, 174, 96, 0.3);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.statusCompleted {
-  background: rgba(33, 150, 243, 0.15);
-  color: #1976d2;
-  border: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-.cardTitle {
-  font-size: 1.25rem;
-  color: var(--text-heading);
-  margin-bottom: 1.5rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.cardInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  flex: 1;
-}
-
-.infoItem {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.infoItem:last-child {
-  border-bottom: none;
-}
-
-.icon {
-  font-size: 1.1rem;
-  color: var(--primary);
-  width: 24px;
-  text-align: center;
-}
-
-.timeRemaining {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--warning);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.5rem 0.75rem;
-  background: rgba(255, 152, 0, 0.1);
-  border-radius: var(--radius-sm);
-  margin-top: 0.5rem;
-}
-
-.participateBtn {
-  width: 100%;
-  padding: 0.875rem;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  border: none;
-  border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition-normal);
-  box-shadow: var(--shadow-sm);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.participateBtn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  background: linear-gradient(135deg, var(--primary-hover), var(--primary));
-}
-
-.disabledBtn {
-  background: linear-gradient(135deg, #9e9e9e, #bdbdbd) !important;
-  cursor: not-allowed !important;
-  opacity: 0.8;
-}
-
-.disabledBtn:hover {
-  transform: none !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-
-/* Responsive */
-@media (max-width: 968px) {
-  .header h1 {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .header {
-    margin-bottom: 2rem;
-  }
-
-  .header h1 {
-    font-size: 1.75rem;
-  }
-
-  .tournamentGrid {
-    gap: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .content {
-    padding: 0 1rem;
-  }
-
-  .card {
-    padding: 1.25rem;
-  }
-
-  .cardTitle {
-    font-size: 1.1rem;
-  }
+  opacity: 0.5;
 }
 
 /* Access Code Modal */
@@ -343,58 +143,53 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
 }
 
 .modalContent {
-  background: var(--bg-white);
+  background: #262421;
   padding: 30px;
-  border-radius: 12px;
+  border-radius: 8px;
   width: 90%;
   max-width: 400px;
   text-align: center;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
-  animation: fadeInUp 0.3s ease-out;
+  border: 1px solid #404040;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color: #bababa;
 }
 
 .modalContent h3 {
   margin-top: 0;
-  margin-bottom: 10px;
-  color: var(--text-heading);
-}
-
-.modalContent p {
-  color: var(--text-secondary);
-  margin-bottom: 20px;
+  color: #fff;
+  margin-bottom: 8px;
 }
 
 .codeInput {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
+  padding: 10px;
+  margin: 15px 0;
+  background: #363432;
+  border: 1px solid #4d4d4d;
+  border-radius: 4px;
+  color: #fff;
   font-size: 16px;
   text-align: center;
-  outline: none;
 }
 
 .codeInput:focus {
-  border-color: var(--success);
+  border-color: #bf811d;
+  outline: none;
 }
 
 .errorMsg {
-  color: var(--error);
-  font-size: 14px;
+  color: #cc4444;
   margin-bottom: 15px;
+  font-size: 0.9rem;
 }
 
 .modalActions {
@@ -404,28 +199,28 @@
 }
 
 .modalActions button {
-  padding: 10px 20px;
+  padding: 8px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.2s;
 }
 
 .submitBtn {
-  background: var(--success);
+  background: #bf811d;
   color: white;
 }
 
 .submitBtn:hover {
-  background: #6d9e3d;
+  background: #d69324;
 }
 
 .cancelBtn {
-  background: var(--bg-hover);
-  color: var(--text-secondary);
+  background: #363636;
+  color: #bababa;
 }
 
 .cancelBtn:hover {
-  background: var(--border-color);
+  background: #404040;
+  color: #fff;
 }

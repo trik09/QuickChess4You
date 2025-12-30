@@ -1,0 +1,127 @@
+.card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #262421;
+    /* Lichess dark bg */
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    color: #bababa;
+    border-left: 4px solid transparent;
+    transition: background-color 0.2s;
+}
+
+.card:hover {
+    background-color: #302e2c;
+}
+
+.card.upcoming {
+    border-left-color: #bf811d;
+    /* Gold/Orange */
+}
+
+.card.live {
+    border-left-color: #629924;
+    /* Green */
+}
+
+.card.completed {
+    border-left-color: #363636;
+    /* Grey */
+}
+
+.infoSection {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.details {
+    display: flex;
+    gap: 16px;
+    font-size: 0.9rem;
+    color: #999;
+}
+
+.detailItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon {
+    opacity: 0.7;
+}
+
+.statusSection {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.statusBadge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.statusBadge.upcoming {
+    background-color: rgba(191, 129, 29, 0.2);
+    color: #bf811d;
+}
+
+.statusBadge.live {
+    background-color: rgba(98, 153, 36, 0.2);
+    color: #629924;
+}
+
+.statusBadge.completed {
+    background-color: rgba(153, 153, 153, 0.2);
+    color: #999;
+}
+
+.actionBtn {
+    padding: 8px 24px;
+    border-radius: 4px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.joinBtn {
+    background-color: #bf811d;
+    color: #fff;
+}
+
+.joinBtn:hover {
+    background-color: #d69324;
+}
+
+.viewBtn {
+    background-color: #363636;
+    color: #bababa;
+}
+
+.viewBtn:hover {
+    background-color: #404040;
+    color: #fff;
+}
+
+.disabledBtn {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

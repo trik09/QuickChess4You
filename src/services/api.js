@@ -2,7 +2,7 @@
 
 // API Base URL - Update this to match your backend server
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 /**
  * Generic API request function
@@ -29,7 +29,7 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-      console.log(response.data);
+    console.log(response.data);
 
     // Handle non-JSON responses
     let data;
@@ -134,10 +134,10 @@ export const authAPI = {
   updateUser: async (userData, avatarFile) => {
     const userToken = localStorage.getItem("token");
     const formData = new FormData();
-    
+
     if (userData.name) formData.append('name', userData.name);
     if (userData.username) formData.append('username', userData.username);
-    
+
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
@@ -412,20 +412,20 @@ export const competitionAPI = {
 
   // Create competition
   createCompetition: async (competitionData) => {
-  const adminToken = localStorage.getItem("atoken");
+    const adminToken = localStorage.getItem("atoken");
 
-  return apiRequest(
-    "/competition/create-competition",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    return apiRequest(
+      "/competition/create-competition",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(competitionData),
       },
-      body: JSON.stringify(competitionData),
-    },
-    adminToken
-  );
-},
+      adminToken
+    );
+  },
 
 
   // Update competition
@@ -460,7 +460,7 @@ export const competitionAPI = {
     if (accessCode) {
       body.accessCode = accessCode;
     }
-    
+
     return apiRequest(
       `/competition/${id}/join`,
       {
@@ -484,11 +484,34 @@ export const competitionAPI = {
     );
   },
 
-  // Get leaderboard
+  // Finish participation
+  finishParticipation: async (competitionId) => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      `/competition/${competitionId}/finish`,
+      {
+        method: "POST",
+      },
+      userToken
+    );
+  },
+
   getLeaderboard: async (id) => {
     return apiRequest(`/competition/${id}/leaderboard`, {
       method: "GET",
     });
+  },
+
+  // Get current user's participant details (for persistence)
+  getParticipantDetails: async (competitionId) => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      `/competition/${competitionId}/status`,
+      {
+        method: "GET",
+      },
+      userToken
+    );
   },
 
   // Add puzzles to competition
