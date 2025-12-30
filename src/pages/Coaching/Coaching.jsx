@@ -4,31 +4,20 @@ import { FaVideo, FaCalendar, FaChartLine, FaUsers } from 'react-icons/fa';
 function Coaching() {
   const coaches = [
     {
-      name: 'GM Alexander Petrov',
-      title: 'Grandmaster',
-      rating: 2650,
-      specialty: 'Opening Theory & Strategy',
-      experience: '15 years',
-      students: 200,
-      image: '👨‍🏫'
-    },
-    {
-      name: 'IM Sarah Chen',
-      title: 'International Master',
-      rating: 2480,
-      specialty: 'Tactics & Calculation',
-      experience: '10 years',
-      students: 150,
-      image: '👩‍🏫'
-    },
-    {
-      name: 'FM David Kumar',
-      title: 'FIDE Master',
-      rating: 2380,
-      specialty: 'Endgame Mastery',
-      experience: '8 years',
-      students: 120,
-      image: '👨‍💼'
+      name: 'Utkal Santra',
+      title: 'Chess Coach & Player',
+      rating: 'Strong', // or just omit if no specific number
+      specialty: 'Kids & Improving Players',
+      experience: 'Experienced',
+      students: 'Active',
+      image: '👨‍🏫',
+      bio: 'Utkal Santra is a well-known Indian chess coach and player, mainly active in Odisha. He is respected for training young players and organizing chess tournaments at the grassroots level.',
+      highlights: [
+        'Strong competitive chess player',
+        'Dedicated chess coach',
+        'Focuses on kids & improving players',
+        'Known for discipline + practical chess thinking'
+      ]
     }
   ];
 
@@ -37,7 +26,7 @@ function Coaching() {
       <div className={styles.hero}>
         <h1 className={styles.title}>Personal Chess Coaching</h1>
         <p className={styles.subtitle}>
-          One-on-one instruction from titled players to accelerate your chess journey
+          One-on-one instruction from trusted experts to accelerate your chess journey
         </p>
       </div>
 
@@ -71,15 +60,20 @@ function Coaching() {
         <h2>Meet Our Coaches</h2>
         <div className={styles.coachesGrid}>
           {coaches.map((coach, index) => (
-            <div key={index} className={styles.coachCard}>
+            <div key={index} className={styles.coachCard} style={{ maxWidth: '600px', margin: '0 auto' }}>
               <div className={styles.coachImage}>{coach.image}</div>
               <h3 className={styles.coachName}>{coach.name}</h3>
               <div className={styles.coachTitle}>{coach.title}</div>
-              <div className={styles.coachRating}>Rating: {coach.rating}</div>
-              <div className={styles.coachInfo}>
-                <p><strong>Specialty:</strong> {coach.specialty}</p>
-                <p><strong>Experience:</strong> {coach.experience}</p>
-                <p><strong>Students Taught:</strong> {coach.students}+</p>
+              {/* <div className={styles.coachRating}>Rating: {coach.rating}</div> */}
+
+              <div className={styles.coachBio} style={{ margin: '1rem 0', fontStyle: 'italic' }}>
+                "{coach.bio}"
+              </div>
+
+              <div className={styles.coachInfo} style={{ textAlign: 'left', paddingLeft: '1rem' }}>
+                <ul style={{ listStyleType: 'disc', color: '#ccc' }}>
+                  {coach.highlights.map((h, i) => <li key={i}>{h}</li>)}
+                </ul>
               </div>
               <button className={styles.bookBtn}>Book Session</button>
             </div>
@@ -92,7 +86,7 @@ function Coaching() {
         <div className={styles.pricingGrid}>
           <div className={styles.priceCard}>
             <h3>Single Session</h3>
-            <div className={styles.price}>₹3,999<span>/hour</span></div>
+            <div className={styles.price} style={{ fontSize: '1.5rem' }}>Coming Soon</div>
             <ul>
               <li>1 hour live session</li>
               <li>Game analysis</li>
@@ -103,7 +97,7 @@ function Coaching() {
           <div className={`${styles.priceCard} ${styles.popular}`}>
             <div className={styles.badge}>Most Popular</div>
             <h3>Monthly Package</h3>
-            <div className={styles.price}>₹14,999<span>/month</span></div>
+            <div className={styles.price} style={{ fontSize: '1.5rem' }}>Coming Soon</div>
             <ul>
               <li>4 hours of coaching</li>
               <li>Weekly sessions</li>
@@ -114,7 +108,7 @@ function Coaching() {
           </div>
           <div className={styles.priceCard}>
             <h3>Intensive Program</h3>
-            <div className={styles.price}>₹39,999<span>/3 months</span></div>
+            <div className={styles.price} style={{ fontSize: '1.5rem' }}>Coming Soon</div>
             <ul>
               <li>12 hours of coaching</li>
               <li>Bi-weekly sessions</li>

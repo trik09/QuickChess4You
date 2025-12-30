@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { competitionAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
 import {
   FaClock,
   FaTrophy,
@@ -22,6 +23,14 @@ const CompetitionLobby = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Use Context for Real-time updates
+  const {
+    leaderboard: liveLeaderboard,
+    competitionEnded,
+    isConnected,
+    participateInCompetition // Ensure we can connect if not already
+  } = useLiveCompetition();
+
   const [competition, setCompetition] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,29 +44,77 @@ const CompetitionLobby = () => {
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [codeError, setCodeError] = useState("");
 
+  // Handle Competition Ended Event from Socket
+  useEffect(() => {
+    if (competitionEnded) {
+      navigate(`/leaderboard/${id}`);
+    }
+  }, [competitionEnded, id, navigate]);
+
+  // Sync Participants with Live Leaderboard
+  useEffect(() => {
+    if (isConnected && liveLeaderboard && liveLeaderboard.length > 0) {
+      setParticipants(liveLeaderboard);
+    }
+  }, [liveLeaderboard, isConnected]);
+
   useEffect(() => {
     fetchCompetitionData();
-    const interval = setInterval(fetchCompetitionData, 10000); // Poll every 10s for updates
+    const interval = setInterval(fetchCompetitionData, 10000); // Keep polling as backup/for status
     return () => clearInterval(interval);
   }, [id, user]);
 
   useEffect(() => {
-    if (competition && competition.startDate) {
+    if (competition && competition.startTime) {
       const timer = setInterval(() => {
         calculateTimeLeft();
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [competition]);
+  }, [competition, hasJoined]);
 
   const calculateTimeLeft = () => {
     if (!competition) return;
+
     const now = new Date();
     const start = new Date(competition.startTime);
-    const diff = start - now;
+    // If status is technically "Live" but we are just showing "Ends in", we calculate diff to endTime
+    // But user specifically asked for "Start in" logic for lobby waiting.
+
+    // Let's determine if we are waiting for start or waiting for end
+    const isUpcoming = competition.status?.toLowerCase() === 'upcoming';
+    const isLive = competition.status?.toLowerCase() === 'live';
+
+    let targetDate = start;
+    let label = "Starts in:";
+
+    if (isLive) {
+      targetDate = new Date(competition.endTime);
+      label = "Ends in:";
+    }
+
+    const diff = targetDate - now;
 
     if (diff <= 0) {
-      setTimeLeft("Competition Started!");
+      if (isUpcoming) {
+        // Transition from Upcoming to Live
+        setTimeLeft("Starting...");
+        // Trigger refresh or auto-join
+        fetchCompetitionData();
+        // If user is joined, we can auto-navigate
+        if (hasJoined) {
+          navigate(`/competition/${id}/puzzle`, {
+            state: {
+              competitionId: competition._id,
+              competitionTitle: competition.title || competition.name,
+              puzzles: competition.puzzles,
+              time: competition.duration,
+            },
+          });
+        }
+      } else {
+        setTimeLeft("Competition Ended!");
+      }
       return;
     }
 
@@ -66,7 +123,7 @@ const CompetitionLobby = () => {
     const minutes = Math.floor((diff / (1000 * 60)) % 60);
     const seconds = Math.floor((diff / 1000) % 60);
 
-    setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    setTimeLeft(`${days > 0 ? days + 'd ' : ''}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
   };
 
   const fetchCompetitionData = async () => {
@@ -76,41 +133,65 @@ const CompetitionLobby = () => {
       if (compRes.success) {
         setCompetition(compRes.data);
 
-        // Check if user has joined (by checking participants list or checking "hasJoined" if API provides it)
-        // Assuming API returns participants list in competition objects or we fetch separate
-        // compRes.data.participants might be an array of IDs or Objects
+        // Check active status for connecting socket if needed
+        // If we are already connected via PuzzlePage, good. If not, we might want to "participate" implicitly to listen
+        // But participate usually requires action. Lobby is for waiting. 
+        // We can just rely on polling if user hasn't joined, or if joined, we can try to connect.
+
         const parts = compRes.data.participants || [];
 
-        // If we have live leaderboard, use that for more detailed status
-        try {
-          const lbRes = await liveCompetitionAPI.getLeaderboard(id);
-          if (lbRes.success) {
-            setParticipants(lbRes.leaderboard);
-          } else {
-            // Fallback
-            setParticipants(
-              parts.map((p) => ({
-                username: p.username || p.name || "User",
-                userId: p._id || p,
-                status: "Waiting",
-              }))
-            );
+        // For Participants:
+        // Use liveLeaderboard if available, otherwise fetch from API
+        if (!isConnected || liveLeaderboard.length === 0) {
+          // Standard fetch logic
+          try {
+            const lbRes = await liveCompetitionAPI.getLeaderboard(id);
+            if (lbRes.success) {
+              setParticipants(lbRes.leaderboard);
+            } else {
+              // Fallback
+              const normalizedParticipants = parts.map((p) => {
+                if (typeof p === "object") return { ...p, userId: p._id };
+                return { userId: p, username: "Unknown User" };
+              });
+              setParticipants(normalizedParticipants);
+            }
+          } catch (e) {
+            const normalizedParticipants = parts.map((p) => {
+              if (typeof p === "object") return { ...p, userId: p._id };
+              return { userId: p, username: "Unknown User" };
+            });
+            setParticipants(normalizedParticipants);
           }
-        } catch (e) {
-          // Fallback if leaderboard API fails (e.g. comp not started)
-          // Normalize participants data
-          const normalizedParticipants = parts.map((p) => {
-            if (typeof p === "object") return { ...p, userId: p._id };
-            return { userId: p, username: "Unknown User" };
-          });
-          setParticipants(normalizedParticipants);
         }
 
         // Check if current user is in participants
         if (user) {
-          const isJoined = parts.some(
-            (p) => p._id === user.id || p === user.id
-          );
+          let isJoined = false;
+
+          // Check in static list (might be stale or just IDs)
+          if (parts && parts.length > 0) {
+            isJoined = parts.some(p =>
+              (p._id === user.id) ||
+              (p === user.id) ||
+              (p.userId && (p.userId === user.id || p.userId._id === user.id))
+            );
+          }
+
+          // Check in Live Leaderboard (if fetched)
+          if (!isJoined && liveLeaderboard && liveLeaderboard.length > 0) {
+            isJoined = liveLeaderboard.some(p =>
+              (p.userId === user.id) ||
+              (p.userId && p.userId._id === user.id) ||
+              (p.username === user.username)
+            );
+          }
+
+          // Check in API fetched participants (if different from static parts)
+          // logic currently sets setParticipants(fetchedLeaderboard)
+          // so we can check against state 'participants' but that state is set async?
+          // No, we are inside valid scope.
+
           setHasJoined(isJoined);
         }
       } else {
@@ -127,57 +208,51 @@ const CompetitionLobby = () => {
   const joinCompetitionWithCode = async (code = null) => {
     setJoinLoading(true);
     try {
-      await competitionAPI.joinCompetition(id, code);
-      setHasJoined(true);
-      setShowCodeModal(false);
-      fetchCompetitionData(); // Refresh list
+      // Use Context if possible to ensure socket connection immediately
+      if (user) {
+        await participateInCompetition(id, user.username || user.name);
+        setHasJoined(true);
+        setShowCodeModal(false);
+        fetchCompetitionData(); // Refresh state
 
-      // Navigate to puzzle page if code used or competition is live
-      if (
-        code ||
-        (competition &&
-          (competition.status === "Live" ||
-            new Date() >= new Date(competition.startTime)))
-      ) {
-        navigate(`/competition/${id}/puzzle`, {
-          state: {
-            competitionId: competition._id,
-            competitionTitle: competition.title || competition.name,
-            puzzles: competition.puzzles,
-            time: competition.duration,
-          },
-        });
+        // Navigate
+        const isLive = competition && (competition.status?.toLowerCase() === 'live' || new Date() >= new Date(competition.startTime));
+
+        if (code || isLive) {
+          navigate(`/competition/${id}/puzzle`, {
+            state: {
+              competitionId: competition._id
+            }
+          });
+        }
+      } else {
+        // Fallback if no user? (Should not happen due to ProtectedRoute)
+        await competitionAPI.joinCompetition(id, code);
       }
+
     } catch (err) {
       const msg =
         err?.response?.data?.message || err.message || "Failed to join";
-      if (msg.toLowerCase().includes("already")) {
+      // If already joined/participating, we should treat it as success and redirect if live
+      if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("participating")) {
         setHasJoined(true);
         setShowCodeModal(false);
-        fetchCompetitionData(); // Sync state immediately
+        fetchCompetitionData();
 
-        // If already joined, maybe we also want to redirect?
-        // User asked "if it is correct", implying success.
-        // If 'already joined' effectively means success, we can redirect too.
-        if (
-          code ||
-          (competition &&
-            (competition.status === "Live" ||
-              new Date() >= new Date(competition.startTime)))
-        ) {
+        const isLive = competition && (competition.status?.toLowerCase() === 'live' || new Date() >= new Date(competition.startTime));
+
+        if (code || isLive) {
           navigate(`/competition/${id}/puzzle`, {
             state: {
-              competitionId: competition._id,
-              competitionTitle: competition.title || competition.name,
-              puzzles: competition.puzzles,
-              time: competition.duration,
-            },
+              competitionId: competition._id
+            }
           });
         }
       } else {
         if (code) {
           setCodeError(msg);
         } else {
+          // Check if it's just a "competition started" sync issue
           alert(msg);
         }
       }
@@ -192,22 +267,13 @@ const CompetitionLobby = () => {
       return;
     }
 
+    // Since we are in lobby, we want to see live updates.
+    // If user has already submitted, they stay here.
     if (isUserSubmitted()) {
-      alert("You have already submitted this competition");
-      setTimeout(() => {
-        navigate(`/leaderboard/${id}`);
-      }, 1000);
+      // Just toast
+      // alert("You have submitted! Watch the leaderboard.");
       return;
     }
-
-    // Check if competition sends accessCode requirement
-    // Usually backend won't send the code IF it's private, but it sends a flag 'hasAccessCode' or similar.
-    // If we rely on 'accessCode' property existing on the object, it means we can see it.
-    // Let's assume the competition object has a property `accessCode` which might be empty if public,
-    // OR the backend logic in dashboard showed it has `accessCode`.
-
-    // NOTE: In Dashboard.jsx logic was: if (competition && competition.accessCode)
-    // Here we should check the same.
 
     if (competition && competition.accessCode) {
       setShowCodeModal(true);
@@ -230,7 +296,6 @@ const CompetitionLobby = () => {
     ) {
       setCodeError("Incorrect access code.");
     } else {
-      // Should not happen if logic is correct but fallback
       joinCompetitionWithCode(accessCodeInput);
     }
   };
@@ -241,6 +306,7 @@ const CompetitionLobby = () => {
       (p) =>
         p.userId === user._id ||
         (p.userId && p.userId._id === user._id) ||
+        p.userId === user.id ||
         p.username === user.username
     );
     return (
@@ -253,11 +319,10 @@ const CompetitionLobby = () => {
 
   const handleEnterCompetition = () => {
     if (isUserSubmitted()) {
-      setTimeout(() => {
-        alert("You have already submitted your score");
-        navigate(`/leaderboard/${id}`);
-      }, 2000);
-
+      // Do NOT navigate to leaderboard. Just show message.
+      // Or maybe just show a toast?
+      // Users might be confused if nothing happens.
+      alert("You have already submitted your score. Waiting for other players to finish...");
       return;
     }
 
@@ -280,6 +345,15 @@ const CompetitionLobby = () => {
     )
       return "Playing";
     return "Waiting";
+  };
+
+  const formatTime = (seconds) => {
+    if (!seconds && seconds !== 0) return "--";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const getStatusBadge = (status) => {
@@ -362,9 +436,8 @@ const CompetitionLobby = () => {
           </h1>
           <div className="status-badge-container">
             <span
-              className={`status-pill ${
-                competition?.status?.toLowerCase() || "upcoming"
-              }`}
+              className={`status-pill ${competition?.status?.toLowerCase() || "upcoming"
+                }`}
             >
               {competition?.status || "UPCOMING"}
             </span>
@@ -372,22 +445,22 @@ const CompetitionLobby = () => {
         </div>
 
         <div className="header-right">
-          {competition?.status === "Completed" ? (
+          {competition?.status?.toLowerCase() === "completed" ? (
             <h2 className="ended-text">ENDED</h2>
           ) : (
             <div className="timer-section">
               {/* Show countdown timer for live/upcoming */}
-              {(competition?.status === "Upcoming" ||
-                competition?.status === "Live") && (
-                <div className="countdown-display">
-                  <span className="timer-label">
-                    {competition?.status === "Live" ? "Ends in:" : "Starts in:"}
-                  </span>
-                  <div className="timer-value">
-                    <FaClock className="timer-icon" /> {timeLeft || "--:--:--"}
+              {(competition?.status?.toLowerCase() === "upcoming" ||
+                competition?.status?.toLowerCase() === "live") && (
+                  <div className="countdown-display">
+                    <span className="timer-label">
+                      {competition?.status?.toLowerCase() === "live" ? "Ends in:" : "Starts in:"}
+                    </span>
+                    <div className="timer-value">
+                      <FaClock className="timer-icon" /> {timeLeft || "--:--:--"}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="action-buttons">
                 {!hasJoined ? (
@@ -400,8 +473,7 @@ const CompetitionLobby = () => {
                   </button>
                 ) : (
                   <>
-                    {timeLeft === "Competition Started!" ||
-                    new Date() >= new Date(competition?.startTime) ? (
+                    {(competition?.status?.toLowerCase() === "live" || timeLeft === "Starting..." || timeLeft === "Competition Started!" || new Date() >= new Date(competition?.startTime)) ? (
                       <button
                         className="action-btn enter-btn"
                         onClick={handleEnterCompetition}
@@ -461,7 +533,9 @@ const CompetitionLobby = () => {
                     <td className="td-score">
                       {p.score !== undefined ? p.score : "--"}
                     </td>
-                    <td className="td-time">{p.timeUsed || "--"}</td>
+                    <td className="td-time">
+                      {p.timeSpent ? formatTime(p.timeSpent) : "--"}
+                    </td>
                   </tr>
                 ))
               ) : (

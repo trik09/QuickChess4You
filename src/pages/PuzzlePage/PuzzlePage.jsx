@@ -87,7 +87,7 @@ function PuzzlePage() {
 
       // Check if this is a competition
       if (paramCompetitionId) {
-        // Fetch competition data to ensure we have fresh state (start time, duration, puzzles)
+        // Fetch competition data
         const response = await competitionAPI.getById(paramCompetitionId);
 
         if (!response.success || !response.data) {
@@ -97,99 +97,104 @@ function PuzzlePage() {
         const comp = response.data;
         setCompetitionData(comp);
 
-        // Check if this is a live competition (status is 'live')
-        const isLive = comp.status === "live";
-        setIsLiveCompetition(isLive);
-
-        // If it's a live competition, ensure user is registered as participant
-        if (isLive) {
-          try {
-            const user = JSON.parse(localStorage.getItem("user") || "{}");
-            // Use Context method to ensure socket connection and leaderboard updates
-            await participateInCompetition(
-              paramCompetitionId,
-              user.username || user.name
-            );
-            console.log(
-              "Successfully registered for live competition via Context"
-            );
-          } catch (error) {
-            console.log(
-              "Participation registration failed (might already be registered):",
-              error.message
-            );
-            // This is expected if user is already participating
-          }
-        }
-
-        // Check if competition is active
+        // Check active status
         const now = new Date();
         const start = new Date(comp.startTime);
         const end = new Date(comp.endTime);
 
         if (now < start) {
           toast.error("Competition has not started yet!");
-          navigate("/profile");
+          navigate(`/competition/${paramCompetitionId}/lobby`);
           return;
         }
 
-        if (now > end) {
-          toast.error("Competition has ended!");
-          navigate(`/profile`); // Redirect to competitions list instead of admin
-          return;
-        }
+        // Allow viewing past competitions? Maybe not for now based on user request.
+        // But for "Live" logic we usually enforce time.
 
-        // Restore State if exists
-        const stateKey = `puzzleState_${paramCompetitionId}`;
-        const savedState = localStorage.getItem(stateKey);
-        let restoredIndex = 0;
+        const isLive = comp.status === "live";
+        setIsLiveCompetition(isLive);
 
         // Calculate Time Remaining from Server (Source of Truth)
         const msUntilEnd = end - now;
         const secondsLeft = Math.floor(msUntilEnd / 1000);
         setTimeLeft(secondsLeft);
 
-        if (savedState) {
-          const parsed = JSON.parse(savedState);
-          // Do NOT restore timeLeft from local storage for competitions
-          // We trust the server's endTime calculation (secondsLeft) above.
+        // LIVE COMPETITION LOGIC
+        if (isLive) {
+          try {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            // Ensure participation logic
+            await participateInCompetition(paramCompetitionId, user.username || user.name);
 
-          setScore(parsed.score);
-          setSolvedCount(parsed.solvedCount);
-          setPuzzleStatuses(parsed.puzzleStatuses || {});
-          restoredIndex = parsed.currentPuzzleIndex || 0;
-          setCurrentPuzzleIndex(restoredIndex);
+            // Fetch DETAILED puzzles with user's solved status
+            const puzzleRes = await liveCompetitionAPI.getPuzzles(paramCompetitionId);
+
+            if (puzzleRes.success) {
+              // Update Puzzles with IsSolved status
+              const normalized = puzzleRes.puzzles.map((p, index) => ({
+                id: p._id,
+                _id: p._id,
+                index: index + 1,
+                fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                solution: p.solutionMoves || [],
+                title: p.title || `Puzzle ${index + 1}`,
+                type: p.type === "kids" ? "Kids" : (p.title || "Puzzle"),
+                difficulty: p.difficulty || "medium",
+                description: p.description || "",
+                kidsConfig: p.kidsConfig,
+                puzzleType: p.type || "normal",
+                isSolved: p.isSolved
+              }));
+              setPuzzles(normalized);
+
+              // Update Statuses map
+              const statuses = {};
+              normalized.forEach(p => {
+                if (p.isSolved) statuses[p.id] = 'success';
+              });
+              setPuzzleStatuses(statuses);
+
+              // Update Score and Solved Count form Backend
+              if (puzzleRes.participant) {
+                setScore(puzzleRes.participant.score);
+                setSolvedCount(puzzleRes.participant.puzzlesSolved);
+              }
+
+              // Find first unsolved puzzle
+              const firstUnsolved = normalized.findIndex(p => !p.isSolved);
+              if (firstUnsolved !== -1) {
+                setCurrentPuzzleIndex(firstUnsolved);
+              }
+            }
+
+          } catch (err) {
+            console.error("Error syncing live competition data", err);
+            // Fallback to basic loading if detailed fetch fails
+          }
+        }
+
+        // If Puzzles not loaded yet (fallback or non-live)
+        if (puzzles.length === 0 && (!isLive || puzzles.length === 0)) {
+          // Load Basic Puzzles
+          if (comp.puzzles && comp.puzzles.length > 0) {
+            const normalized = comp.puzzles.map((p, index) => ({
+              id: p._id,
+              _id: p._id,
+              index: index + 1,
+              fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+              solution: p.solutionMoves || [],
+              title: p.title,
+              type: p.type,
+              difficulty: p.difficulty,
+              kidsConfig: p.kidsConfig,
+              puzzleType: p.type || "normal",
+            }));
+            setPuzzles(normalized);
+          }
         }
 
         startTimer();
 
-        // Load Puzzles
-        if (comp.puzzles && comp.puzzles.length > 0) {
-          // Normalize puzzles - ensure we have proper FEN and solution data
-          const normalized = comp.puzzles.map((p, index) => ({
-            id: p._id,
-            _id: p._id, // Keep both for compatibility
-            index: index + 1,
-            fen:
-              p.fen ||
-              "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // Default starting position if no FEN
-            solution: p.solutionMoves || [],
-            title: p.title || `Puzzle ${index + 1}`,
-            type:
-              p.type === "kids"
-                ? "Kids"
-                : p.title || `${p.difficulty || "Medium"} Puzzle`,
-            difficulty: p.difficulty || "medium",
-            description: p.description || "",
-            kidsConfig: p.kidsConfig,
-            puzzleType: p.type || "normal",
-          }));
-          setPuzzles(normalized);
-        } else {
-          toast.error("No puzzles found in this competition!");
-          navigate("/competitions");
-          return;
-        }
       } else {
         // Casual Mode (Dashboard link)
         const data = await puzzleAPI.getAll();
@@ -212,7 +217,6 @@ function PuzzlePage() {
         const savedState = localStorage.getItem(stateKey);
         if (savedState) {
           const parsed = JSON.parse(savedState);
-          setTimeLeft(parsed.timeLeft); // Or reset for casual? Usually keep persistence
           setScore(parsed.score);
           setSolvedCount(parsed.solvedCount);
           setPuzzleStatuses(parsed.puzzleStatuses || {});
@@ -220,7 +224,6 @@ function PuzzlePage() {
         } else {
           setTimeLeft(300); // Default 5 mins for casual
         }
-        // startTimer(); // Disabled for unlimited casual play
       }
     } catch (error) {
       console.error("Error loading puzzles:", error);
@@ -358,8 +361,12 @@ function PuzzlePage() {
       } else {
         toast.success("All puzzles completed!");
         // End flow
-        if (competitionData) {
-          navigate("/dashboard"); // Redirect to competitions list instead of admin
+        if (paramCompetitionId && isLiveCompetition) {
+          // Auto-submit for live competition
+          // We can just call the submit handler
+          handleSubmitCompetition();
+        } else if (competitionData) {
+          navigate("/dashboard");
         }
       }
     }, 1000);
@@ -392,8 +399,8 @@ function PuzzlePage() {
         const stateKey = `puzzleState_${paramCompetitionId}`;
         localStorage.removeItem(stateKey);
 
-        // Navigate to leaderboard
-        navigate(`/leaderboard/${competitionData._id}`);
+        // Navigate to lobby (wait for others)
+        navigate(`/competition/${competitionData._id}/lobby`);
       } else {
         toast.error(response.message || "Submission failed");
       }
@@ -524,11 +531,10 @@ function PuzzlePage() {
             {currentPuzzle && (
               <div className={styles.puzzleToMove}>
                 <div
-                  className={`${styles.colorIndicator} ${
-                    currentPuzzle.fen.split(" ")[1] === "w"
-                      ? styles.white
-                      : styles.black
-                  }`}
+                  className={`${styles.colorIndicator} ${currentPuzzle.fen.split(" ")[1] === "w"
+                    ? styles.white
+                    : styles.black
+                    }`}
                 ></div>
                 <span className={styles.moveText}>
                   {currentPuzzle.fen.split(" ")[1] === "w"
@@ -542,9 +548,8 @@ function PuzzlePage() {
           <div className={styles.boardWrapper}>
             {puzzles.length > 0 && currentPuzzle ? (
               <ChessBoard
-                key={`${
-                  currentPuzzle.id || currentPuzzle._id
-                }-${currentPuzzleIndex}`} // Force re-render on puzzle change
+                key={`${currentPuzzle.id || currentPuzzle._id
+                  }-${currentPuzzleIndex}`} // Force re-render on puzzle change
                 fen={currentPuzzle.fen}
                 solution={currentPuzzle.solution}
                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
@@ -554,7 +559,7 @@ function PuzzlePage() {
                 interactive={
                   !solving &&
                   puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
-                    "success"
+                  "success"
                 }
               />
             ) : (

@@ -5,7 +5,7 @@ function Pricing() {
   const plans = [
     {
       name: 'Free',
-      price: 0,
+      price: 'Free',
       period: 'forever',
       features: [
         '100 puzzles per month',
@@ -21,7 +21,7 @@ function Pricing() {
     },
     {
       name: 'Premium',
-      price: 1499,
+      price: 'Coming Soon',
       period: 'month',
       popular: true,
       features: [
@@ -36,7 +36,7 @@ function Pricing() {
     },
     {
       name: 'Pro',
-      price: 3999,
+      price: 'Coming Soon',
       period: 'month',
       features: [
         'Everything in Premium',
@@ -64,11 +64,11 @@ function Pricing() {
         {plans.map((plan, index) => (
           <div key={index} className={`${styles.priceCard} ${plan.popular ? styles.popular : ''}`}>
             {plan.popular && <div className={styles.badge}>Most Popular</div>}
-            
+
             <h3 className={styles.planName}>{plan.name}</h3>
             <div className={styles.price}>
-              {plan.price === 0 ? 'Free' : `₹${plan.price}`}
-              {plan.price !== 0 && <span>/{plan.period}</span>}
+              {plan.price === 'Free' || plan.price === 'Coming Soon' ? plan.price : `₹${plan.price}`}
+              {plan.price !== 'Free' && plan.price !== 'Coming Soon' && <span>/{plan.period}</span>}
             </div>
 
             <ul className={styles.features}>
@@ -87,7 +87,7 @@ function Pricing() {
             </ul>
 
             <button className={styles.selectBtn}>
-              {plan.price === 0 ? 'Get Started' : 'Subscribe Now'}
+              {plan.price === 'Free' ? 'Get Started' : 'Subscribe Now'}
             </button>
           </div>
         ))}

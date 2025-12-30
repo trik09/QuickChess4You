@@ -134,7 +134,7 @@ function AdminLayout() {
         <header className={styles.topbar}>
           <div className={styles.topbarLeft}>
             <img src={logo} alt="QuickChess4You" className={styles.topbarLogo} />
-            <h1>QCFY</h1>
+            {/* <h1>QCFY</h1> */}
           </div>
           <div className={styles.topbarRight}>
             <button className={styles.notificationBtn}><FaBell /></button>

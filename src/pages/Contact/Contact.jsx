@@ -38,22 +38,19 @@ function Contact() {
           <div className={styles.infoCard}>
             <FaEnvelope className={styles.icon} />
             <h3>Email Us</h3>
-            <p>support@quickchess4you.com</p>
-            <p>info@quickchess4you.com</p>
+            <p>quickchess4kids@gmail.com</p>
           </div>
 
           <div className={styles.infoCard}>
             <FaPhone className={styles.icon} />
             <h3>Call Us</h3>
-            <p>+1 (555) 123-4567</p>
-            <p>Mon-Fri: 9AM - 6PM EST</p>
+            <p>+91 99017 39147</p>
           </div>
 
           <div className={styles.infoCard}>
             <FaMapMarkerAlt className={styles.icon} />
             <h3>Visit Us</h3>
-            <p>123 Chess Avenue</p>
-            <p>New York, NY 10001</p>
+            <p>Odisha, India</p>
           </div>
 
           <div className={styles.infoCard}>
