@@ -17,7 +17,8 @@ function PuzzlePage() {
   const navigate = useNavigate();
   const navigator = useNavigate();
   const { user } = useAuth();
-  const { participateInCompetition, disconnectFromCompetition } = useLiveCompetition(); // Destructure disconnect
+  const { participateInCompetition, disconnectFromCompetition } =
+    useLiveCompetition(); // Destructure disconnect
 
   // State
   const [competitionData, setCompetitionData] = useState(null);
@@ -59,17 +60,26 @@ function PuzzlePage() {
   // Persist State
   useEffect(() => {
     if (!loading && puzzles.length > 0 && isLoadedRef.current) {
-      const stateKey = `puzzleState_${paramCompetitionId || 'casual'}`;
+      const stateKey = `puzzleState_${paramCompetitionId || "casual"}`;
       const stateToSave = {
         currentPuzzleIndex,
         timeLeft,
         score,
         solvedCount,
-        puzzleStatuses
+        puzzleStatuses,
       };
       localStorage.setItem(stateKey, JSON.stringify(stateToSave));
     }
-  }, [currentPuzzleIndex, timeLeft, score, solvedCount, puzzleStatuses, loading, paramCompetitionId, puzzles]);
+  }, [
+    currentPuzzleIndex,
+    timeLeft,
+    score,
+    solvedCount,
+    puzzleStatuses,
+    loading,
+    paramCompetitionId,
+    puzzles,
+  ]);
 
   const loadPuzzleContext = async () => {
     try {
@@ -88,18 +98,26 @@ function PuzzlePage() {
         setCompetitionData(comp);
 
         // Check if this is a live competition (status is 'live')
-        const isLive = comp.status === 'live';
+        const isLive = comp.status === "live";
         setIsLiveCompetition(isLive);
 
         // If it's a live competition, ensure user is registered as participant
         if (isLive) {
           try {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
             // Use Context method to ensure socket connection and leaderboard updates
-            await participateInCompetition(paramCompetitionId, user.username || user.name);
-            console.log('Successfully registered for live competition via Context');
+            await participateInCompetition(
+              paramCompetitionId,
+              user.username || user.name
+            );
+            console.log(
+              "Successfully registered for live competition via Context"
+            );
           } catch (error) {
-            console.log('Participation registration failed (might already be registered):', error.message);
+            console.log(
+              "Participation registration failed (might already be registered):",
+              error.message
+            );
             // This is expected if user is already participating
           }
         }
@@ -111,7 +129,7 @@ function PuzzlePage() {
 
         if (now < start) {
           toast.error("Competition has not started yet!");
-          navigate('/profile');
+          navigate("/profile");
           return;
         }
 
@@ -152,27 +170,31 @@ function PuzzlePage() {
             id: p._id,
             _id: p._id, // Keep both for compatibility
             index: index + 1,
-            fen: p.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // Default starting position if no FEN
+            fen:
+              p.fen ||
+              "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", // Default starting position if no FEN
             solution: p.solutionMoves || [],
             title: p.title || `Puzzle ${index + 1}`,
-            type: p.type === 'kids' ? 'Kids' : (p.title || `${p.difficulty || 'Medium'} Puzzle`),
-            difficulty: p.difficulty || 'medium',
-            description: p.description || '',
+            type:
+              p.type === "kids"
+                ? "Kids"
+                : p.title || `${p.difficulty || "Medium"} Puzzle`,
+            difficulty: p.difficulty || "medium",
+            description: p.description || "",
             kidsConfig: p.kidsConfig,
-            puzzleType: p.type || 'normal'
+            puzzleType: p.type || "normal",
           }));
           setPuzzles(normalized);
         } else {
           toast.error("No puzzles found in this competition!");
-          navigate('/competitions');
+          navigate("/competitions");
           return;
         }
-
       } else {
         // Casual Mode (Dashboard link)
         const data = await puzzleAPI.getAll();
         const normalized = data
-          .filter(p => p.fen && (p.solutionMoves?.length || p.kidsConfig))
+          .filter((p) => p.fen && (p.solutionMoves?.length || p.kidsConfig))
           .map((p, i) => ({
             id: p._id,
             index: i + 1,
@@ -181,7 +203,7 @@ function PuzzlePage() {
             type: p.type,
             description: p.description,
             kidsConfig: p.kidsConfig,
-            puzzleType: p.type
+            puzzleType: p.type,
           }));
         setPuzzles(normalized);
 
@@ -213,7 +235,7 @@ function PuzzlePage() {
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current);
           handleTimeout();
@@ -232,7 +254,7 @@ function PuzzlePage() {
       if (paramCompetitionId) {
         navigate(`/`); // Redirect to competitions list instead of admin
       } else {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     }, 2000);
   };
@@ -240,7 +262,9 @@ function PuzzlePage() {
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handlePuzzleSolved = async () => {
@@ -248,7 +272,7 @@ function PuzzlePage() {
     if (!currentPuzzle) return;
 
     // Check if already solved
-    if (puzzleStatuses[currentPuzzle.id] === 'success') return;
+    if (puzzleStatuses[currentPuzzle.id] === "success") return;
 
     // Calculate time taken for this puzzle (simple approximation)
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
@@ -258,11 +282,11 @@ function PuzzlePage() {
       try {
         setSolving(true);
 
-        console.log('Submitting solution:', {
+        console.log("Submitting solution:", {
           puzzle: currentPuzzle.title,
           solution: currentPuzzle.solution,
           solutionType: typeof currentPuzzle.solution,
-          isArray: Array.isArray(currentPuzzle.solution)
+          isArray: Array.isArray(currentPuzzle.solution),
         });
 
         if (isLiveCompetition) {
@@ -276,10 +300,15 @@ function PuzzlePage() {
 
           if (res && res.success && res.scoreEarned) {
             // Only update UI after successful backend response
-            setSolvedCount(prev => prev + 1);
-            setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
-            setScore(prev => prev + res.scoreEarned);
-            toast.success(`Correct! +${res.scoreEarned} points! Leaderboard updated!`);
+            setSolvedCount((prev) => prev + 1);
+            setPuzzleStatuses((prev) => ({
+              ...prev,
+              [currentPuzzle.id]: "success",
+            }));
+            setScore((prev) => prev + res.scoreEarned);
+            toast.success(
+              `Correct! +${res.scoreEarned} points! Leaderboard updated!`
+            );
           } else {
             toast.error(res?.message || "Solution validation failed");
             return; // Don't proceed to next puzzle
@@ -295,9 +324,12 @@ function PuzzlePage() {
 
           if (res.points) {
             // Only update UI after successful backend response
-            setSolvedCount(prev => prev + 1);
-            setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
-            setScore(prev => prev + res.points);
+            setSolvedCount((prev) => prev + 1);
+            setPuzzleStatuses((prev) => ({
+              ...prev,
+              [currentPuzzle.id]: "success",
+            }));
+            setScore((prev) => prev + res.points);
             toast.success(`Correct! +${res.points} points!`);
           } else {
             toast.error("Solution validation failed");
@@ -313,8 +345,8 @@ function PuzzlePage() {
       }
     } else {
       // No competition, just mark as solved locally
-      setSolvedCount(prev => prev + 1);
-      setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'success' }));
+      setSolvedCount((prev) => prev + 1);
+      setPuzzleStatuses((prev) => ({ ...prev, [currentPuzzle.id]: "success" }));
       toast.success("Correct! +10 pts");
     }
 
@@ -322,12 +354,12 @@ function PuzzlePage() {
     setStartTime(Date.now()); // Reset puzzle timer
     setTimeout(() => {
       if (currentPuzzleIndex < puzzles.length - 1) {
-        setCurrentPuzzleIndex(prev => prev + 1);
+        setCurrentPuzzleIndex((prev) => prev + 1);
       } else {
         toast.success("All puzzles completed!");
         // End flow
         if (competitionData) {
-          navigate('/dashboard'); // Redirect to competitions list instead of admin
+          navigate("/dashboard"); // Redirect to competitions list instead of admin
         }
       }
     }, 1000);
@@ -336,7 +368,7 @@ function PuzzlePage() {
   const handleWrongMove = () => {
     const currentPuzzle = puzzles[currentPuzzleIndex];
     if (currentPuzzle) {
-      setPuzzleStatuses(prev => ({ ...prev, [currentPuzzle.id]: 'failed' }));
+      setPuzzleStatuses((prev) => ({ ...prev, [currentPuzzle.id]: "failed" }));
     }
     toast.error("Incorrect move, try again!");
   };
@@ -347,25 +379,27 @@ function PuzzlePage() {
 
     try {
       setSubmitting(true);
-      
-      const response = await liveCompetitionAPI.submitCompetition(competitionData._id);
-      
+
+      const response = await liveCompetitionAPI.submitCompetition(
+        competitionData._id
+      );
+
       if (response.success) {
-        toast.success('Competition submitted successfully!');
+        toast.success("Competition submitted successfully!");
         setShowSubmitModal(false);
-        
+
         // Clear local storage
         const stateKey = `puzzleState_${paramCompetitionId}`;
         localStorage.removeItem(stateKey);
-        
+
         // Navigate to leaderboard
         navigate(`/leaderboard/${competitionData._id}`);
       } else {
-        toast.error(response.message || 'Submission failed');
+        toast.error(response.message || "Submission failed");
       }
     } catch (error) {
-      console.error('Submission error:', error);
-      toast.error(error.message || 'Failed to submit competition');
+      console.error("Submission error:", error);
+      toast.error(error.message || "Failed to submit competition");
     } finally {
       setSubmitting(false);
     }
@@ -400,7 +434,7 @@ function PuzzlePage() {
             ← Back
           </button>
           <div className={styles.titleInfo}>
-            <h1>{competitionData ? competitionData.name : 'Daily Training'}</h1>
+            <h1>{competitionData ? competitionData.name : "Daily Training"}</h1>
           </div>
         </div>
 
@@ -410,9 +444,7 @@ function PuzzlePage() {
           </div>
           {isLiveCompetition && (
             <div className={styles.liveIndicator}>
-              <span className={styles.liveStatus}>
-                🟢 LIVE COMPETITION
-              </span>
+              <span className={styles.liveStatus}>🟢 LIVE COMPETITION</span>
             </div>
           )}
         </div>
@@ -420,7 +452,6 @@ function PuzzlePage() {
 
       {/* Main Content - 3 Column Layout */}
       <div className={styles.mainContent}>
-
         {/* Left Panel - Stats (Only in Competition) */}
         {competitionData ? (
           <div className={styles.leftPanel}>
@@ -428,15 +459,15 @@ function PuzzlePage() {
               <div className={styles.timerDisplay}>
                 <FaClock className={styles.timerIcon} />
                 <div className={styles.statLabel}>Time Left</div>
-                <div className={styles.timerBadge}>
-                  {formatTime(timeLeft)}
-                </div>
+                <div className={styles.timerBadge}>{formatTime(timeLeft)}</div>
               </div>
 
               <div className={styles.statsRow}>
                 <div className={styles.statItem}>
                   <div className={styles.statLabel}>Score</div>
-                  <div className={`${styles.statValue} ${styles.highlight}`}>{Math.round(score)}</div>
+                  <div className={`${styles.statValue} ${styles.highlight}`}>
+                    {Math.round(score)}
+                  </div>
                 </div>
                 <div className={styles.statItem}>
                   <div className={styles.statLabel}>Solved</div>
@@ -445,52 +476,64 @@ function PuzzlePage() {
               </div>
             </div>
 
-            <div className={styles.statCard} style={{ textAlign: 'center' }}>
+            <div className={styles.statCard} style={{ textAlign: "center" }}>
               <div className={styles.statLabel}>Current Status</div>
-              <div style={{ fontSize: '1.2rem', color: '#fff', marginTop: '10px' }}>
+              <div
+                style={{ fontSize: "1.2rem", color: "#fff", marginTop: "10px" }}
+              >
                 Compete Mode
               </div>
             </div>
 
             {/* Submit Competition Button - Only for Live Competitions */}
             {isLiveCompetition && (
-              <div className={styles.statCard} style={{ textAlign: 'center' }}>
-                <button 
-                  className={`${styles.actionBtn} ${styles.btnSubmit}`} 
+              <div className={styles.statCard} style={{ textAlign: "center" }}>
+                <button
+                  className={`${styles.actionBtn} ${styles.btnSubmit}`}
                   onClick={() => setShowSubmitModal(true)}
                   disabled={submitting}
-                  style={{ width: '100%', fontSize: '1rem', padding: '12px' }}
+                  style={{ width: "100%", fontSize: "1rem", padding: "12px" }}
                 >
-                   Submit 
+                  Submit
                 </button>
-               
               </div>
             )}
           </div>
-
-          
         ) : (
-          <div className={styles.leftPanel} style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+          <div
+            className={styles.leftPanel}
+            style={{ visibility: "hidden", pointerEvents: "none" }}
+          >
             {/* Placeholder to keep layout consistent if needed, or we can remove it */}
           </div>
         )}
-
-        
 
         {/* Center Panel - Board */}
         <div className={styles.boardArea}>
           <div className={styles.puzzleInfoBar}>
             <div className={styles.topTitleArea}>
-              <h2 className={styles.puzzleTitle}>{currentPuzzle?.title || 'Chess Puzzle'}</h2>
+              <h2 className={styles.puzzleTitle}>
+                {currentPuzzle?.title || "Chess Puzzle"}
+              </h2>
               {currentPuzzle?.description && (
-                <span className={styles.puzzleSubtitle}>{currentPuzzle.description}</span>
+                <span className={styles.puzzleSubtitle}>
+                  {currentPuzzle.description}
+                </span>
               )}
             </div>
             {currentPuzzle && (
               <div className={styles.puzzleToMove}>
-                <div className={`${styles.colorIndicator} ${currentPuzzle.fen.split(' ')[1] === 'w' ? styles.white : styles.black}`}></div>
+                <div
+                  className={`${styles.colorIndicator} ${
+                    currentPuzzle.fen.split(" ")[1] === "w"
+                      ? styles.white
+                      : styles.black
+                  }`}
+                ></div>
                 <span className={styles.moveText}>
-                  {currentPuzzle.fen.split(' ')[1] === 'w' ? "White to Move" : "Black to Move"}
+                  {currentPuzzle.fen.split(" ")[1] === "w"
+                    ? "White to Move"
+                    : "Black to Move"}
                 </span>
               </div>
             )}
@@ -499,14 +542,20 @@ function PuzzlePage() {
           <div className={styles.boardWrapper}>
             {puzzles.length > 0 && currentPuzzle ? (
               <ChessBoard
-                key={`${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}`} // Force re-render on puzzle change
+                key={`${
+                  currentPuzzle.id || currentPuzzle._id
+                }-${currentPuzzleIndex}`} // Force re-render on puzzle change
                 fen={currentPuzzle.fen}
                 solution={currentPuzzle.solution}
                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                 kidsConfig={currentPuzzle.kidsConfig}
                 onPuzzleSolved={handlePuzzleSolved}
                 onWrongMove={handleWrongMove}
-                interactive={!solving && puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== 'success'}
+                interactive={
+                  !solving &&
+                  puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
+                    "success"
+                }
               />
             ) : (
               <div className={styles.loading}>No Puzzles Available</div>
@@ -514,9 +563,7 @@ function PuzzlePage() {
           </div>
 
           {/* Car Race Visualization */}
-          {isLiveCompetition && (
-            <PuzzleRacer />
-          )}
+          {isLiveCompetition && <PuzzleRacer />}
 
           {/* Moved Title/Description to Top, kept here only if needed for extra info */}
         </div>
@@ -524,7 +571,6 @@ function PuzzlePage() {
         {/* Right Panel - Navigation & Controls */}
         <div className={styles.rightPanel}>
           {/* Show Competition Leaderboard only if it's a competition */}
-          
 
           {/* Regular Navigation Controls */}
           <div className={styles.controlCard}>
@@ -539,9 +585,9 @@ function PuzzlePage() {
                     key={pid}
                     className={`
                         ${styles.navItem} 
-                        ${currentPuzzleIndex === index ? styles.active : ''}
-                        ${status === 'success' ? styles.success : ''}
-                        ${status === 'failed' ? styles.danger : ''}
+                        ${currentPuzzleIndex === index ? styles.active : ""}
+                        ${status === "success" ? styles.success : ""}
+                        ${status === "failed" ? styles.danger : ""}
                       `}
                     onClick={() => {
                       if (!solving) {
@@ -549,7 +595,7 @@ function PuzzlePage() {
                       }
                     }}
                   >
-                    {status === 'success' ? <FaCheckCircle /> : (index + 1)}
+                    {status === "success" ? <FaCheckCircle /> : index + 1}
                   </div>
                 );
               })}
@@ -558,14 +604,20 @@ function PuzzlePage() {
             <div className={styles.navControls}>
               <button
                 className={styles.navArrow}
-                onClick={() => setCurrentPuzzleIndex(Math.max(0, currentPuzzleIndex - 1))}
+                onClick={() =>
+                  setCurrentPuzzleIndex(Math.max(0, currentPuzzleIndex - 1))
+                }
                 disabled={currentPuzzleIndex === 0}
               >
                 ←
               </button>
               <button
                 className={styles.navArrow}
-                onClick={() => setCurrentPuzzleIndex(Math.min(puzzles.length - 1, currentPuzzleIndex + 1))}
+                onClick={() =>
+                  setCurrentPuzzleIndex(
+                    Math.min(puzzles.length - 1, currentPuzzleIndex + 1)
+                  )
+                }
                 disabled={currentPuzzleIndex === puzzles.length - 1}
               >
                 →
@@ -573,33 +625,38 @@ function PuzzlePage() {
             </div>
 
             <div className={styles.controls}>
-              <button className={`${styles.actionBtn} ${styles.btnPrimary}`} onClick={() => {
-                // Reset current puzzle to initial position
-                if (currentPuzzle) {
-                  const puzzleId = currentPuzzle.id || currentPuzzle._id;
-                  setPuzzleStatuses(prev => {
-                    const newStatuses = { ...prev };
-                    delete newStatuses[puzzleId]; // Remove any previous status
-                    return newStatuses;
-                  });
-                  // Force board reset by updating the key
-                  setCurrentPuzzleIndex(prev => prev); // Trigger re-render
-                  toast.success('Board reset!');
-                }
-              }}>
+              <button
+                className={`${styles.actionBtn} ${styles.btnPrimary}`}
+                onClick={() => {
+                  // Reset current puzzle to initial position
+                  if (currentPuzzle) {
+                    const puzzleId = currentPuzzle.id || currentPuzzle._id;
+                    setPuzzleStatuses((prev) => {
+                      const newStatuses = { ...prev };
+                      delete newStatuses[puzzleId]; // Remove any previous status
+                      return newStatuses;
+                    });
+                    // Force board reset by updating the key
+                    setCurrentPuzzleIndex((prev) => prev); // Trigger re-render
+                    toast.success("Board reset!");
+                  }
+                }}
+              >
                 <FaUndo /> Reset Board
               </button>
 
               {/* Submit Competition Button - Only for Live Competitions */}
-              
 
-              <button className={styles.actionBtn} style={{ marginTop: '10px', fontSize: '0.8rem' }} onClick={() => navigate('/dashboard')}>
+              <button
+                className={styles.actionBtn}
+                style={{ marginTop: "10px", fontSize: "0.8rem" }}
+                onClick={() => navigate("/dashboard")}
+              >
                 Exit Session
               </button>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Submission Confirmation Modal */}
@@ -607,7 +664,7 @@ function PuzzlePage() {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <h3>Submit Competition?</h3>
-            
+
             {/* <div className={styles.modalStats}>
               <div className={styles.modalStat}>
                 <span className={styles.modalStatLabel}>Puzzles Solved:</span>
@@ -625,30 +682,32 @@ function PuzzlePage() {
 
             {getUnsolvedCount() > 0 && (
               <div className={styles.modalWarning}>
-                ⚠️ You still have {getUnsolvedCount()} unsolved puzzle{getUnsolvedCount() > 1 ? 's' : ''}. 
-                Are you sure you want to submit now?
+                ⚠️ You still have {getUnsolvedCount()} unsolved puzzle
+                {getUnsolvedCount() > 1 ? "s" : ""}. Are you sure you want to
+                submit now?
               </div>
             )}
 
             <p className={styles.modalText}>
-              Once you submit, you cannot make any more changes to your answers. 
-              Your final score will be calculated and you'll be taken to the leaderboard.
+              Once you submit, you cannot make any more changes to your answers.
+              Your final score will be calculated and you'll be taken to the
+              leaderboard.
             </p>
 
             <div className={styles.modalActions}>
-              <button 
-                className={styles.modalCancel} 
+              <button
+                className={styles.modalCancel}
                 onClick={() => setShowSubmitModal(false)}
                 disabled={submitting}
               >
                 Cancel
               </button>
-              <button 
-                className={styles.modalSubmit} 
+              <button
+                className={styles.modalSubmit}
                 onClick={handleSubmitCompetition}
                 disabled={submitting}
               >
-                {submitting ? 'Submitting...' : 'Submit Competition'}
+                {submitting ? "Submitting..." : "Submit Competition"}
               </button>
             </div>
           </div>
@@ -659,4 +718,3 @@ function PuzzlePage() {
 }
 
 export default PuzzlePage;
-
