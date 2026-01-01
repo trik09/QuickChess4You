@@ -22,7 +22,7 @@ function Competitions() {
     const { user, isAuthenticated } = useAuth();
     const [liveCompetitions, setLiveCompetitions] = useState([]);
     const [upcomingCompetitions, setUpcomingCompetitions] = useState([]);
-    const [completedCompetitions, setCompletedCompetitions] = useState([]); // State for completed competitions
+    const [ENDEDCompetitions, setENDEDCompetitions] = useState([]); // State for ENDED competitions
     const [loading, setLoading] = useState(true);
     const [joiningId, setJoiningId] = useState(null);
 
@@ -41,12 +41,12 @@ function Competitions() {
             const liveRes = await competitionAPI.getCompetitions({ status: 'live', limit: 50 });
             // Fetch upcoming
             const upcomingRes = await competitionAPI.getCompetitions({ status: 'upcoming', limit: 50 });
-            // Fetch completed
-            const completedRes = await competitionAPI.getCompetitions({ status: 'completed', limit: 50 });
+            // Fetch ENDED
+            const ENDEDRes = await competitionAPI.getCompetitions({ status: 'ENDED', limit: 50 });
 
             if (liveRes.success) setLiveCompetitions(liveRes.data);
             if (upcomingRes.success) setUpcomingCompetitions(upcomingRes.data);
-            if (completedRes.success) setCompletedCompetitions(completedRes.data);
+            if (ENDEDRes.success) setENDEDCompetitions(ENDEDRes.data);
         } catch (error) {
             console.error("Failed to load competitions:", error);
             toast.error("Failed to load competitions");
@@ -112,7 +112,7 @@ function Competitions() {
         } else if (status === 'upcoming') {
             statusBadge = <span className={styles.upcomingBadge}>UPCOMING</span>;
         } else {
-            statusBadge = <span className={styles.completedBadge} style={{ background: '#6c757d', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>COMPLETED</span>;
+            statusBadge = <span className={styles.ENDEDBadge} style={{ background: '#6c757d', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>ENDED</span>;
         }
 
         return (
@@ -141,7 +141,7 @@ function Competitions() {
                 </div>
 
                 <div className={styles.cardFooter}>
-                    {status === 'completed' ? (
+                    {status === 'ENDED' ? (
                         <button
                             className={styles.joinBtn}
                             onClick={() => handleViewResults(competition._id)}
@@ -283,12 +283,12 @@ function Competitions() {
                 )}
             </div>
 
-            {completedCompetitions.length > 0 && (
+            {ENDEDCompetitions.length > 0 && (
                 <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>🏆 Past Competitions</h2>
                     <div className={styles.grid}>
-                        {completedCompetitions.map(comp => (
-                            <CompetitionCard key={comp._id} competition={comp} status="completed" />
+                        {ENDEDCompetitions.map(comp => (
+                            <CompetitionCard key={comp._id} competition={comp} status="ENDED" />
                         ))}
                     </div>
                 </div>

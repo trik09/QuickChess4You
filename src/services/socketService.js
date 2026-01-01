@@ -11,13 +11,13 @@ class SocketService {
   // Connect to Socket.IO server
   connect(competitionData) {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       throw new Error('Authentication token required');
     }
 
     const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
-    
+
     this.socket = io(socketUrl, {
       auth: {
         token: token
@@ -31,7 +31,7 @@ class SocketService {
     this.socket.on('connect', () => {
       console.log('Connected to Socket.IO server:', this.socket.id);
       this.isConnected = true;
-      
+
       // Join competition room
       this.joinCompetition(competitionData);
     });
@@ -60,7 +60,7 @@ class SocketService {
     }
 
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
+
     this.socket.emit('joinCompetition', {
       competitionId: competitionData.competition.id,
       username: user.username || user.name || 'Anonymous'
@@ -89,6 +89,12 @@ class SocketService {
     this.socket.on('participantJoined', (data) => {
       console.log('New participant joined:', data);
       this.emit('participantJoined', data);
+    });
+
+    // Competition started
+    this.socket.on('competitionStarted', (data) => {
+      console.log('Competition started:', data);
+      this.emit('competitionStarted', data);
     });
 
     // Error handling

@@ -56,13 +56,15 @@
 }
 
 .activeTab {
-  color: #ff9800; /* Orange highlight like in image? Or maybe white with orange underline */
+  color: #ff9800;
+  /* Orange highlight like in image? Or maybe white with orange underline */
 }
 
 .activeTab::after {
   content: "";
   position: absolute;
-  bottom: -11px; /* aligns with border-bottom of container */
+  bottom: -11px;
+  /* aligns with border-bottom of container */
   left: 0;
   width: 100%;
   height: 2px;
@@ -80,11 +82,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1e1e1e; /* Dark card bg */
-  border-radius: 4px; /* Slightly rounded */
+  background-color: #1e1e1e;
+  /* Dark card bg */
+  border-radius: 4px;
+  /* Slightly rounded */
   padding: 1rem 1.5rem;
   position: relative;
-  border-left: 4px solid #444; /* Default border */
+  border-left: 4px solid #444;
+  /* Default border */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -131,8 +136,10 @@
 }
 
 .statusLive {
-  background-color: #386128; /* Dark Green bg */
-  color: #6aca4b; /* Light Green text */
+  background-color: #386128;
+  /* Dark Green bg */
+  color: #6aca4b;
+  /* Light Green text */
   border: 1px solid #488032;
 }
 
@@ -142,7 +149,7 @@
   border: 1px solid #705816;
 }
 
-.statusCompleted {
+.statusENDED {
   background-color: #333;
   color: #aaa;
   border: 1px solid #444;
@@ -168,10 +175,12 @@
 .borderLive {
   border-left-color: #6aca4b;
 }
+
 .borderUpcoming {
   border-left-color: #ffd700;
 }
-.borderCompleted {
+
+.borderENDED {
   border-left-color: #555;
 }
 
@@ -205,6 +214,7 @@
   color: #fff;
   margin-top: 0;
 }
+
 .modalContent p {
   color: #aaa;
   margin-bottom: 20px;
@@ -222,6 +232,7 @@
   text-align: center;
   outline: none;
 }
+
 .codeInput:focus {
   border-color: #ff9800;
 }
@@ -231,6 +242,7 @@
   gap: 10px;
   justify-content: center;
 }
+
 .submitBtn {
   background: #ff9800;
   color: #000;
@@ -240,6 +252,7 @@
   cursor: pointer;
   font-weight: bold;
 }
+
 .cancelBtn {
   background: #333;
   color: #ddd;
@@ -257,6 +270,7 @@
   padding: 3rem;
   color: #888;
 }
+
 .spinner {
   width: 40px;
   height: 40px;
@@ -266,6 +280,7 @@
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -278,11 +293,13 @@
     align-items: flex-start;
     gap: 1rem;
   }
+
   .cardRight {
     width: 100%;
     justify-content: space-between;
     margin-top: 10px;
   }
+
   .cardDetails {
     flex-wrap: wrap;
     gap: 10px;

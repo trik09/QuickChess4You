@@ -14,7 +14,7 @@ function AdminDashboard() {
   const recentCompetitions = [
     { id: 1, name: 'Spring Championship', status: 'Live', players: 128, startTime: '2 hours ago' },
     { id: 2, name: 'Rapid Blitz', status: 'Upcoming', players: 64, startTime: 'In 3 hours' },
-    { id: 3, name: 'Weekly Puzzle Rush', status: 'Completed', players: 256, startTime: '1 day ago' },
+    { id: 3, name: 'Weekly Puzzle Rush', status: 'ENDED', players: 256, startTime: '1 day ago' },
   ];
 
   const recentPuzzles = [

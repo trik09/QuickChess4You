@@ -68,7 +68,7 @@ Navigate to: **`http://localhost:5173/admin`**
 - Edit/Delete actions
 
 ### Competitions
-- Tabs: All | Upcoming | Live | Completed
+- Tabs: All | Upcoming | Live | ENDED
 - Status badges with animations
 - Player count tracking
 - Time and duration display

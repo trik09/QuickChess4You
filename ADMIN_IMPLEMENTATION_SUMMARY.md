@@ -158,7 +158,7 @@ ADMIN_IMPLEMENTATION_SUMMARY.md
 
 ### 4. Competitions (`/admin/competitions`)
 **Features:**
-- Tab navigation (All, Upcoming, Live, Completed)
+- Tab navigation (All, Upcoming, Live, ENDED)
 - Competition table
 - Status badges with animations
 - Player count tracking
@@ -453,7 +453,7 @@ Change in AdminLayout.module.css:
 
 ## ✅ Checklist
 
-### Completed ✓
+### ENDED ✓
 - [x] Admin layout with collapsible sidebar
 - [x] Dashboard with stats and quick actions
 - [x] Category management page

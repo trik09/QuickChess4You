@@ -79,7 +79,7 @@ src/
 
 3. **🏆 Competition**
    - **📋 All Competitions** (`/admin/competitions`)
-     - Tabs: All | Upcoming | Live | Completed
+     - Tabs: All | Upcoming | Live | ENDED
      - View competition details
      - Edit/Delete competitions
    
@@ -149,7 +149,7 @@ src/
 ### UI Components
 - **Stat Cards**: Dashboard statistics with icons and trend indicators
 - **Data Tables**: Sortable, filterable tables with hover effects
-- **Badges**: Status indicators (Live, Upcoming, Completed, etc.)
+- **Badges**: Status indicators (Live, Upcoming, ENDED, etc.)
 - **Modal Dialogs**: Preview and confirmation popups
 - **Progress Bars**: Visual progress tracking
 - **Action Buttons**: Gradient buttons with hover animations
@@ -177,7 +177,7 @@ src/
 - Search and filter capabilities
 
 ### Competition Management
-- Status tracking (Upcoming, Live, Completed)
+- Status tracking (Upcoming, Live, ENDED)
 - Player management
 - Real-time leaderboard
 - Live monitoring with progress bars

@@ -193,7 +193,7 @@
   color: #8b7332;
 }
 
-.badge.completed {
+.badge.ENDED {
   background: #e3f2fd;
   color: #1565c0;
 }
@@ -217,7 +217,7 @@
   .contentGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .statsGrid {
     grid-template-columns: 1fr;
   }

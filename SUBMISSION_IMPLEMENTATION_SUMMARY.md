@@ -23,7 +23,7 @@
 - **Unsolved Puzzle Warning**: Highlights remaining puzzles before submission
 - **Confirmation Dialog**: "Are you sure?" with current stats display
 - **Navigation**: Easy access to leaderboard from dashboard and after submission
-- **Status Indicators**: Live/Completed status with real-time updates
+- **Status Indicators**: Live/ENDED status with real-time updates
 
 ## 🔧 Technical Implementation
 
@@ -51,7 +51,7 @@ participantSubmitted: { username, score, puzzlesSolved, timeSpent }
 
 // Updated Components
 PuzzlePage.jsx - Added submission modal and button
-Dashboard.jsx - Added "View Results" for completed competitions
+Dashboard.jsx - Added "View Results" for ENDED competitions
 App.jsx - Added leaderboard route
 ```
 
@@ -82,7 +82,7 @@ App.jsx - Added leaderboard route
 
 ### Dashboard Integration
 - Live competitions show "Participate" button
-- Completed competitions show "View Results" button
+- ENDED competitions show "View Results" button
 - Real-time countdown for upcoming competitions
 
 ## 🚀 Usage Instructions
@@ -94,7 +94,7 @@ App.jsx - Added leaderboard route
 4. **View Results**: Access leaderboard via "View Results" or automatic redirect
 
 ### For Admins
-- Competitions automatically transition: Upcoming → Live → Completed
+- Competitions automatically transition: Upcoming → Live → ENDED
 - Final rankings saved to CompetitionRankingSchema
 - Real-time monitoring via Socket.IO events
 
@@ -133,7 +133,7 @@ App.jsx - Added leaderboard route
 - Silver (#c0c0c0) for 2nd place
 - Bronze (#cd7f32) for 3rd place
 - Live indicator: Green gradient
-- Completed indicator: Red gradient
+- ENDED indicator: Red gradient
 
 ### Animations
 - Hover effects on podium users

@@ -69,7 +69,7 @@
   color: #000;
 }
 
-.status.completed {
+.status.ENDED {
   background: linear-gradient(45deg, #ff6b6b, #ee5a52);
   color: white;
 }
@@ -90,7 +90,8 @@
   align-items: center;
   gap: 6px;
   transition: all 0.3s ease;
-  margin-left: auto; /* This pushes the button to the right */
+  margin-left: auto;
+  /* This pushes the button to the right */
 }
 
 .refreshButton:hover {
@@ -116,8 +117,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .emptyState {
@@ -406,6 +412,7 @@
 }
 
 @media (max-width: 480px) {
+
   .tableHeader,
   .tableRow {
     grid-template-columns: 50px 1fr 70px 70px;

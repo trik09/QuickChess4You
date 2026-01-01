@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 function Leaderboard() {
   const { competitionId } = useParams();
   const navigate = useNavigate();
-  
+
   const [leaderboard, setLeaderboard] = useState([]);
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ function Leaderboard() {
       if (response.success) {
         setCompetition(response.data);
         setIsLive(response.data.status === 'live');
-        
+
         // If it's a live competition, setup real-time updates
         if (response.data.status === 'live') {
           setupLiveUpdates();
@@ -46,7 +46,7 @@ function Leaderboard() {
     try {
       setLoading(true);
       const response = await liveCompetitionAPI.getLeaderboard(competitionId);
-      
+
       if (response.success && response.leaderboard) {
         setLeaderboard(response.leaderboard);
         setLastUpdate(new Date());
@@ -131,33 +131,33 @@ function Leaderboard() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button 
-          onClick={() => navigate('/dashboard')} 
+        <button
+          onClick={() => navigate('/dashboard')}
           className={styles.backButton}
         >
           <FaArrowLeft /> Back to Dashboard
         </button>
-        
+
         <div className={styles.titleSection}>
           <h1>Leaderboard</h1>
           {competition && (
             <h2>{competition.name || competition.title}</h2>
           )}
-          
+
           <div className={styles.statusBar}>
-            {/* <span className={`${styles.status} ${isLive ? styles.live : styles.completed}`}>
-              {isLive ? '🟢 LIVE' : '🏁 COMPLETED'}
+            {/* <span className={`${styles.status} ${isLive ? styles.live : styles.ENDED}`}>
+              {isLive ? '🟢 LIVE' : '🏁 ENDED'}
             </span> */}
-            
+
             {/* {lastUpdate && (
               <span className={styles.lastUpdate}>
                 Last updated: {lastUpdate.toLocaleTimeString()}
               </span>
             )} */}
-            
+
             {isLive && (
-              <button 
-                onClick={loadLeaderboard} 
+              <button
+                onClick={loadLeaderboard}
                 className={styles.refreshButton}
               >
                 <FaSync /> Refresh
@@ -236,14 +236,14 @@ function Leaderboard() {
             </div>
 
             {leaderboard.map((participant, index) => (
-              <div 
-                key={participant.userId} 
+              <div
+                key={participant.userId}
                 className={`${styles.tableRow} ${isCurrentUser(participant.userId) ? styles.currentUser : ''}`}
               >
                 <div className={styles.rankCell}>
                   {getRankIcon(participant.rank)}
                 </div>
-                
+
                 <div className={styles.playerCell}>
                   <span className={styles.username}>
                     {participant.username}
@@ -252,17 +252,17 @@ function Leaderboard() {
                     )}
                   </span>
                 </div>
-                
+
                 <div className={styles.scoreCell}>
                   <span className={styles.score}>{participant.score}</span>
                   <span className={styles.points}>pts</span>
                 </div>
-                
+
                 {/* <div className={styles.puzzlesCell}>
                   <FaPuzzlePiece className={styles.puzzleIcon} />
                   <span>{participant.puzzlesSolved}</span>
                 </div> */}
-                
+
                 <div className={styles.timeCell}>
                   <FaClock className={styles.clockIcon} />
                   <span>{formatTime(participant.timeSpent)}</span>

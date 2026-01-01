@@ -61,8 +61,8 @@ function LiveTournament() {
   const handleEnd = async (id) => {
     if (!window.confirm("Are you sure you want to end this tournament?")) return;
     try {
-      // Logic to force end (update status to completed) - assuming updateCompetition exists
-      await competitionAPI.updateCompetition(id, { status: 'completed', isActive: false });
+      // Logic to force end (update status to ENDED) - assuming updateCompetition exists
+      await competitionAPI.updateCompetition(id, { status: 'ENDED', isActive: false });
       toast.success("Tournament ended.");
       fetchLiveTournaments();
       setSelectedTournament(null);

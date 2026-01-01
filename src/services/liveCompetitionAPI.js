@@ -46,13 +46,17 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
  */
 export const liveCompetitionAPI = {
   // Participate in live competition (REST API validation)
-  participate: async (competitionId, username) => {
+  participate: async (competitionId, username, accessCode = null) => {
     const userToken = localStorage.getItem("token");
+    const body = { username };
+    if (accessCode) {
+      body.accessCode = accessCode;
+    }
     return apiRequest(
       `/live-competition/${competitionId}/participate`,
       {
         method: "POST",
-        body: JSON.stringify({ username }),
+        body: JSON.stringify(body),
       },
       userToken
     );
@@ -89,6 +93,15 @@ export const liveCompetitionAPI = {
       method: "GET",
     });
   },
+  getLobbyState: async (competitionId) => {
+    const token = localStorage.getItem("token");
+    return apiRequest(
+      `/live-competition/${competitionId}/lobby-state`,
+      { method: "GET" },
+      token
+    );
+  },
+
 
   // Get competition puzzles for participants
   getPuzzles: async (competitionId) => {

@@ -50,7 +50,7 @@ function Dashboard() {
             status = "Live";
             canParticipate = true;
           } else {
-            status = "Completed";
+            status = "ENDED";
             canParticipate = false;
           }
 
@@ -72,7 +72,7 @@ function Dashboard() {
             participants: comp.participants?.length || 0,
             maxPlayers: comp.maxPlayers || 100,
             prize: comp.prize || "TBA",
-            status, // Live, Upcoming, Completed
+            status, // Live, Upcoming, ENDED
             canParticipate,
             puzzles: comp.puzzles || [],
             durationText,
@@ -81,12 +81,12 @@ function Dashboard() {
           };
         });
 
-        // Sort: Live first, then Upcoming (soonest first), then Completed (recent first)
+        // Sort: Live first, then Upcoming (soonest first), then ENDED (recent first)
         const sorted = formattedCompetitions.sort((a, b) => {
           if (a.status === "Live" && b.status !== "Live") return -1;
           if (b.status === "Live" && a.status !== "Live") return 1;
-          if (a.status === "Upcoming" && b.status === "Completed") return -1;
-          if (b.status === "Upcoming" && a.status === "Completed") return 1;
+          if (a.status === "Upcoming" && b.status === "ENDED") return -1;
+          if (b.status === "Upcoming" && a.status === "ENDED") return 1;
           return new Date(b.startDate) - new Date(a.startDate);
         });
 
@@ -132,7 +132,7 @@ function Dashboard() {
           let newStatus = comp.status;
           if (now < start) newStatus = "Upcoming";
           else if (now >= start && now <= end) newStatus = "Live";
-          else newStatus = "Completed";
+          else newStatus = "ENDED";
 
           return newStatus !== comp.status
             ? { ...comp, status: newStatus }
@@ -162,7 +162,7 @@ function Dashboard() {
       return;
     }
 
-    if (competition.status === "Completed") {
+    if (competition.status === "ENDED") {
       navigate(`/leaderboard/${competition._id}`);
       return;
     }
@@ -178,8 +178,8 @@ function Dashboard() {
         return styles.statusLive;
       case "Upcoming":
         return styles.statusUpcoming;
-      case "Completed":
-        return styles.statusCompleted;
+      case "ENDED":
+        return styles.statusENDED;
       default:
         return "";
     }
@@ -192,8 +192,8 @@ function Dashboard() {
         return styles.borderLive;
       case "Upcoming":
         return styles.borderUpcoming;
-      case "Completed":
-        return styles.borderCompleted;
+      case "ENDED":
+        return styles.borderENDED;
       default:
         return "";
     }
@@ -211,12 +211,11 @@ function Dashboard() {
 
         {/* Filter Tabs */}
         <div className={styles.filterTabs}>
-          {["All", "Upcoming", "Live", "Completed"].map((tab) => (
+          {["All", "Upcoming", "Live", "ENDED"].map((tab) => (
             <button
               key={tab}
-              className={`${styles.tab} ${
-                activeTab === tab ? styles.activeTab : ""
-              }`}
+              className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ""
+                }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}

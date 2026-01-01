@@ -73,7 +73,7 @@ const CompetitionLeaderboard = ({ competitionId, isLive = false, theme = 'dark' 
               userId: participant.user._id || participant.user,
               username: participant.user.name || participant.user.username || 'Unknown',
               score: participant.score || 0,
-              puzzlesSolved: participant.completedPuzzles?.length || 0,
+              puzzlesSolved: participant.ENDEDPuzzles?.length || 0,
               timeSpent: 0
             }));
             setLeaderboard(convertedLeaderboard);

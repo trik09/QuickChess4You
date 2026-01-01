@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { competitionAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
+import socketService from "../../services/socketService";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
 import {
@@ -36,82 +37,197 @@ const CompetitionLobby = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState("");
-  const [hasJoined, setHasJoined] = useState(false);
-  const [joinLoading, setJoinLoading] = useState(false);
+
+  // New simplified state
+  const [competitionState, setCompetitionState] = useState("");
+  const [participantState, setParticipantState] = useState("NOT_JOINED");
+  const [serverTime, setServerTime] = useState(null);
+  const [isJoinProcessing, setIsJoinProcessing] = useState(false);
 
   // Access Code Modal State
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [codeError, setCodeError] = useState("");
 
-  // Handle Competition Ended Event from Socket
+  // Handle Competition Events from Socket
+  useEffect(() => {
+    // We can use socketService directly to listen for events
+    // This allows us to navigate even if state hasn't propagated yet
+
+    // Define handlers
+    const onCompetitionStarted = () => {
+      // Update state and allow user to enter when ready
+      setCompetitionState("LIVE");
+      // Refresh lobby state to get updated data
+      liveCompetitionAPI.getLobbyState(id).then(res => {
+        if (res.success) {
+          setCompetitionState(res.competitionState);
+          setParticipants(res.leaderboard);
+        }
+      });
+      // Don't auto-navigate, let user click "Enter Competition" button
+      // Or auto-navigate if they're already joined
+      if (participantState === "JOINED" || participantState === "PLAYING") {
+        // Auto-navigate when competition starts and user is ready
+        setTimeout(() => {
+          navigate(`/competition/${id}/puzzle`);
+        }, 1000);
+      }
+    };
+
+    const onCompetitionEnded = (data) => {
+      setCompetitionState("ENDED");
+      // Update leaderboard with final results
+      if (data && data.leaderboard) {
+        setParticipants(data.leaderboard);
+      }
+      // Navigate to leaderboard after a short delay
+      setTimeout(() => {
+        navigate(`/leaderboard/${id}`);
+      }, 2000);
+    };
+
+    const onLeaderboardUpdate = (leaderboard) => {
+      setParticipants(leaderboard);
+    };
+
+    const onParticipantSubmitted = (data) => {
+      // Refresh leaderboard when someone submits
+      liveCompetitionAPI.getLobbyState(id).then(res => {
+        if (res.success) {
+          setParticipants(res.leaderboard);
+          // Update participant state if it's the current user
+          if (participantState === "PLAYING") {
+            setParticipantState("SUBMITTED");
+          }
+        }
+      });
+    };
+
+    // Attach listeners
+    socketService.on("competitionStarted", onCompetitionStarted);
+    socketService.on("competitionEnded", onCompetitionEnded);
+    socketService.on("leaderboardUpdate", onLeaderboardUpdate);
+    socketService.on("participantSubmitted", onParticipantSubmitted);
+
+    // Cleanup
+    return () => {
+      socketService.off("competitionStarted", onCompetitionStarted);
+      socketService.off("competitionEnded", onCompetitionEnded);
+      socketService.off("leaderboardUpdate", onLeaderboardUpdate);
+      socketService.off("participantSubmitted", onParticipantSubmitted);
+    };
+  }, [id, navigate, participantState]);
+
+  // Handle Competition Ended Event from Context (Redundant but safe to keep as fallback)
   useEffect(() => {
     if (competitionEnded) {
       navigate(`/leaderboard/${id}`);
     }
   }, [competitionEnded, id, navigate]);
 
-  // Sync Participants with Live Leaderboard
+  // Sync Participants with Live Leaderboard if available
   useEffect(() => {
     if (isConnected && liveLeaderboard && liveLeaderboard.length > 0) {
       setParticipants(liveLeaderboard);
     }
   }, [liveLeaderboard, isConnected]);
 
+  // Main Load Effect
   useEffect(() => {
-    fetchCompetitionData();
-    const interval = setInterval(fetchCompetitionData, 10000); // Keep polling as backup/for status
-    return () => clearInterval(interval);
-  }, [id, user]);
+    async function loadLobby() {
+      try {
+        const res = await liveCompetitionAPI.getLobbyState(id);
 
+        if (res.success) {
+          setCompetition(res.competition);
+          // Always update participants from server (server is source of truth)
+          setParticipants(res.leaderboard);
+
+          setCompetitionState(res.competitionState);
+          setParticipantState(res.participantState);
+          setServerTime(res.serverTime);
+        } else {
+          setError(res.message || "Failed to load lobby.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Error loading competition.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadLobby();
+
+    // Poll occasionally to sync server time/state if socket fails (every 15 seconds for better performance with 20+ players)
+    const interval = setInterval(loadLobby, 15000);
+    return () => clearInterval(interval);
+  }, [id]);
+
+  // Server Time Tick
   useEffect(() => {
-    if (competition && competition.startTime) {
+    if (serverTime) {
+      const timer = setInterval(() => {
+        setServerTime(prev => prev + 1000);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [serverTime !== null]); // Only restart if serverTime was null (first load), ideally just run once start
+
+  // Countdown Logic
+  useEffect(() => {
+    if (competition && serverTime) {
       const timer = setInterval(() => {
         calculateTimeLeft();
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [competition, hasJoined]);
+  }, [competition, serverTime, competitionState]);
 
   const calculateTimeLeft = () => {
-    if (!competition) return;
+    if (!competition || !serverTime) return;
 
-    const now = new Date();
-    const start = new Date(competition.startTime);
-    // If status is technically "Live" but we are just showing "Ends in", we calculate diff to endTime
-    // But user specifically asked for "Start in" logic for lobby waiting.
+    const start = new Date(competition.startTime).getTime();
+    const end = new Date(competition.endTime).getTime();
+    const now = serverTime;
 
-    // Let's determine if we are waiting for start or waiting for end
-    const isUpcoming = competition.status?.toLowerCase() === 'upcoming';
-    const isLive = competition.status?.toLowerCase() === 'live';
-
-    let targetDate = start;
-    let label = "Starts in:";
-
-    if (isLive) {
-      targetDate = new Date(competition.endTime);
-      label = "Ends in:";
+    // Check if competition should have started
+    if (competitionState === "UPCOMING" && now >= start) {
+      // Refresh state to get LIVE status
+      liveCompetitionAPI.getLobbyState(id).then(res => {
+        if (res.success && res.competitionState === "LIVE") {
+          setCompetitionState("LIVE");
+        }
+      }).catch(err => console.error("Failed to refresh state:", err));
     }
 
-    const diff = targetDate - now;
+    // Determine target based on state
+    // If UPCOMING, count down to start
+    // If LIVE, count down to end
+    let target = start;
+    let label = "Starts in:";
+
+    if (competitionState === "LIVE" || (competitionState === "UPCOMING" && now >= start)) {
+      target = end;
+      label = "Ends in:";
+    } else if (competitionState === "ENDED") {
+      setTimeLeft("Competition Ended!");
+      return;
+    }
+
+    const diff = target - now;
 
     if (diff <= 0) {
-      if (isUpcoming) {
-        // Transition from Upcoming to Live
+      if (competitionState === "UPCOMING") {
+        // It should be live soon or is starting
         setTimeLeft("Starting...");
-        // Trigger refresh or auto-join
-        fetchCompetitionData();
-        // If user is joined, we can auto-navigate
-        if (hasJoined) {
-          navigate(`/competition/${id}/puzzle`, {
-            state: {
-              competitionId: competition._id,
-              competitionTitle: competition.title || competition.name,
-              puzzles: competition.puzzles,
-              time: competition.duration,
-            },
-          });
-        }
+        // Refresh state to get LIVE status
+        liveCompetitionAPI.getLobbyState(id).then(res => {
+          if (res.success && res.competitionState === "LIVE") {
+            setCompetitionState("LIVE");
+          }
+        }).catch(err => console.error("Failed to refresh state:", err));
       } else {
         setTimeLeft("Competition Ended!");
       }
@@ -126,156 +242,71 @@ const CompetitionLobby = () => {
     setTimeLeft(`${days > 0 ? days + 'd ' : ''}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
   };
 
-  const fetchCompetitionData = async () => {
-    try {
-      // Fetch competition details
-      const compRes = await competitionAPI.getById(id);
-      if (compRes.success) {
-        setCompetition(compRes.data);
-
-        // Check active status for connecting socket if needed
-        // If we are already connected via PuzzlePage, good. If not, we might want to "participate" implicitly to listen
-        // But participate usually requires action. Lobby is for waiting. 
-        // We can just rely on polling if user hasn't joined, or if joined, we can try to connect.
-
-        const parts = compRes.data.participants || [];
-
-        // For Participants:
-        // Use liveLeaderboard if available, otherwise fetch from API
-        if (!isConnected || liveLeaderboard.length === 0) {
-          // Standard fetch logic
-          try {
-            const lbRes = await liveCompetitionAPI.getLeaderboard(id);
-            if (lbRes.success) {
-              setParticipants(lbRes.leaderboard);
-            } else {
-              // Fallback
-              const normalizedParticipants = parts.map((p) => {
-                if (typeof p === "object") return { ...p, userId: p._id };
-                return { userId: p, username: "Unknown User" };
-              });
-              setParticipants(normalizedParticipants);
-            }
-          } catch (e) {
-            const normalizedParticipants = parts.map((p) => {
-              if (typeof p === "object") return { ...p, userId: p._id };
-              return { userId: p, username: "Unknown User" };
-            });
-            setParticipants(normalizedParticipants);
-          }
-        }
-
-        // Check if current user is in participants
-        if (user) {
-          let isJoined = false;
-
-          // Check in static list (might be stale or just IDs)
-          if (parts && parts.length > 0) {
-            isJoined = parts.some(p =>
-              (p._id === user.id) ||
-              (p === user.id) ||
-              (p.userId && (p.userId === user.id || p.userId._id === user.id))
-            );
-          }
-
-          // Check in Live Leaderboard (if fetched)
-          if (!isJoined && liveLeaderboard && liveLeaderboard.length > 0) {
-            isJoined = liveLeaderboard.some(p =>
-              (p.userId === user.id) ||
-              (p.userId && p.userId._id === user.id) ||
-              (p.username === user.username)
-            );
-          }
-
-          // Check in API fetched participants (if different from static parts)
-          // logic currently sets setParticipants(fetchedLeaderboard)
-          // so we can check against state 'participants' but that state is set async?
-          // No, we are inside valid scope.
-
-          setHasJoined(isJoined);
-        }
-      } else {
-        setError("Failed to load competition details.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Error loading competition.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const joinCompetitionWithCode = async (code = null) => {
-    setJoinLoading(true);
-    try {
-      // Use Context if possible to ensure socket connection immediately
-      if (user) {
-        await participateInCompetition(id, user.username || user.name);
-        setHasJoined(true);
-        setShowCodeModal(false);
-        fetchCompetitionData(); // Refresh state
-
-        // Navigate
-        const isLive = competition && (competition.status?.toLowerCase() === 'live' || new Date() >= new Date(competition.startTime));
-
-        if (code || isLive) {
-          navigate(`/competition/${id}/puzzle`, {
-            state: {
-              competitionId: competition._id
-            }
-          });
-        }
-      } else {
-        // Fallback if no user? (Should not happen due to ProtectedRoute)
-        await competitionAPI.joinCompetition(id, code);
-      }
-
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message || err.message || "Failed to join";
-      // If already joined/participating, we should treat it as success and redirect if live
-      if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("participating")) {
-        setHasJoined(true);
-        setShowCodeModal(false);
-        fetchCompetitionData();
-
-        const isLive = competition && (competition.status?.toLowerCase() === 'live' || new Date() >= new Date(competition.startTime));
-
-        if (code || isLive) {
-          navigate(`/competition/${id}/puzzle`, {
-            state: {
-              competitionId: competition._id
-            }
-          });
-        }
-      } else {
-        if (code) {
-          setCodeError(msg);
-        } else {
-          // Check if it's just a "competition started" sync issue
-          alert(msg);
-        }
-      }
-    } finally {
-      setJoinLoading(false);
-    }
-  };
-
-  const handleJoin = async () => {
     if (!user) {
       navigate("/", { state: { openLogin: true } });
       return;
     }
 
-    // Since we are in lobby, we want to see live updates.
-    // If user has already submitted, they stay here.
-    if (isUserSubmitted()) {
-      // Just toast
-      // alert("You have submitted! Watch the leaderboard.");
+    setIsJoinProcessing(true);
+    setCodeError("");
+    try {
+      // Join competition with access code if provided
+      const response = await liveCompetitionAPI.participate(id, user.username || user.name, code);
+      
+      if (response.success) {
+        // Refresh state to update participantState
+        const res = await liveCompetitionAPI.getLobbyState(id);
+        if (res.success) {
+          setParticipantState(res.participantState);
+          setCompetitionState(res.competitionState);
+          setParticipants(res.leaderboard);
+        }
+
+        setShowCodeModal(false);
+        setAccessCodeInput("");
+
+        // Join socket room for real-time updates - connect via socketService
+        // The socket connection should be established when user enters the lobby
+        // We'll join the competition room when socket is ready
+        socketService.connect({ competition: { id } }).then(() => {
+          socketService.socket?.emit('joinCompetition', { competitionId: id });
+        }).catch(err => {
+          console.error('Socket connection failed:', err);
+        });
+      }
+
+    } catch (err) {
+      const errorData = err?.response?.data || {};
+      const msg = errorData.error || errorData.message || err.message || "Failed to join";
+      
+      // If already joined, just update state
+      if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("participating")) {
+        const res = await liveCompetitionAPI.getLobbyState(id);
+        setParticipantState(res.success ? res.participantState : "JOINED");
+        setShowCodeModal(false);
+        setAccessCodeInput("");
+      } else {
+        if (code !== null) {
+          setCodeError(msg);
+        } else {
+          alert(msg);
+        }
+      }
+    } finally {
+      setIsJoinProcessing(false);
+    }
+  };
+
+  const handleJoin = () => {
+    if (!user) {
+      navigate("/", { state: { openLogin: true } });
       return;
     }
 
-    if (competition && competition.accessCode) {
+    // Check if access code is required (from competition data)
+    if (competition && competition.requiresAccessCode) {
       setShowCodeModal(true);
       setAccessCodeInput("");
       setCodeError("");
@@ -287,46 +318,20 @@ const CompetitionLobby = () => {
 
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
-    if (competition && accessCodeInput === competition.accessCode) {
-      joinCompetitionWithCode(accessCodeInput);
-    } else if (
-      competition &&
-      competition.accessCode &&
-      accessCodeInput !== competition.accessCode
-    ) {
-      setCodeError("Incorrect access code.");
+    // Server will validate the code, just send it
+    if (accessCodeInput.trim()) {
+      await joinCompetitionWithCode(accessCodeInput.trim());
     } else {
-      joinCompetitionWithCode(accessCodeInput);
+      setCodeError("Please enter an access code");
     }
   };
 
-  const isUserSubmitted = () => {
-    if (!user || !participants) return false;
-    const currentParticipant = participants.find(
-      (p) =>
-        p.userId === user._id ||
-        (p.userId && p.userId._id === user._id) ||
-        p.userId === user.id ||
-        p.username === user.username
-    );
-    return (
-      currentParticipant &&
-      (currentParticipant.submitted ||
-        currentParticipant.isSubmitted ||
-        currentParticipant.status === "Submitted")
-    );
-  };
-
   const handleEnterCompetition = () => {
-    if (isUserSubmitted()) {
-      // Do NOT navigate to leaderboard. Just show message.
-      // Or maybe just show a toast?
-      // Users might be confused if nothing happens.
+    if (participantState === "SUBMITTED" || participantState === "ENDED") {
       alert("You have already submitted your score. Waiting for other players to finish...");
       return;
     }
 
-    // Navigate to puzzle page
     navigate(`/competition/${id}/puzzle`, {
       state: {
         competitionId: competition._id,
@@ -337,46 +342,18 @@ const CompetitionLobby = () => {
     });
   };
 
-  const getStatus = (participant) => {
-    if (participant.isSubmitted) return "Submitted";
-    if (
-      (participant.score > 0 || participant.puzzlesSolved > 0) &&
-      !participant.isSubmitted
-    )
-      return "Playing";
-    return "Waiting";
-  };
-
   const formatTime = (seconds) => {
     if (!seconds && seconds !== 0) return "--";
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "Submitted":
-        return (
-          <span className="status-badge submitted">
-            <FaCheckCircle /> Submitted
-          </span>
-        );
-      case "Playing":
-        return (
-          <span className="status-badge playing">
-            <FaPlayCircle /> Playing
-          </span>
-        );
-      default:
-        return (
-          <span className="status-badge waiting">
-            <FaHourglassStart /> Waiting
-          </span>
-        );
-    }
+  const getStatus = (participant) => {
+    // Just fallback if participant.status isn't populated for some reason
+    if (participant.status) return participant.status;
+    if (participant.isSubmitted) return "Submitted";
+    return "Waiting";
   };
 
   if (loading) return <div className="loading-container">Loading...</div>;
@@ -436,44 +413,45 @@ const CompetitionLobby = () => {
           </h1>
           <div className="status-badge-container">
             <span
-              className={`status-pill ${competition?.status?.toLowerCase() || "upcoming"
-                }`}
+              className={`status-pill ${competitionState?.toLowerCase() || "upcoming"}`}
             >
-              {competition?.status || "UPCOMING"}
+              {competitionState || "UPCOMING"}
             </span>
           </div>
         </div>
 
         <div className="header-right">
-          {competition?.status?.toLowerCase() === "completed" ? (
+          {competitionState === "ENDED" ? (
             <h2 className="ended-text">ENDED</h2>
           ) : (
             <div className="timer-section">
               {/* Show countdown timer for live/upcoming */}
-              {(competition?.status?.toLowerCase() === "upcoming" ||
-                competition?.status?.toLowerCase() === "live") && (
-                  <div className="countdown-display">
-                    <span className="timer-label">
-                      {competition?.status?.toLowerCase() === "live" ? "Ends in:" : "Starts in:"}
-                    </span>
-                    <div className="timer-value">
-                      <FaClock className="timer-icon" /> {timeLeft || "--:--:--"}
-                    </div>
+              {(competitionState === "UPCOMING" || competitionState === "LIVE") && (
+                <div className="countdown-display">
+                  <span className="timer-label">
+                    {competitionState === "LIVE" ? "Ends in:" : "Starts in:"}
+                  </span>
+                  <div className="timer-value">
+                    <FaClock className="timer-icon" /> {timeLeft || "--:--:--"}
                   </div>
-                )}
+                </div>
+              )}
 
               <div className="action-buttons">
-                {!hasJoined ? (
+                {participantState === "NOT_JOINED" ? (
                   <button
                     className="action-btn join-btn"
                     onClick={handleJoin}
-                    disabled={joinLoading}
+                    disabled={isJoinProcessing}
                   >
-                    {joinLoading ? "Joining..." : "Join Competition"}
+                    {isJoinProcessing ? "Joining..." : "Join Competition"}
                   </button>
                 ) : (
                   <>
-                    {(competition?.status?.toLowerCase() === "live" || timeLeft === "Starting..." || timeLeft === "Competition Started!" || new Date() >= new Date(competition?.startTime)) ? (
+                    {/* If joined, we show 'Joined' status OR 'Enter' if it's Live/Playing */}
+                    {/* Logic: If competition is live, show Enter. If upcoming, show Joined. */}
+
+                    {(competitionState === "LIVE" || competitionState === "PLAYING") ? (
                       <button
                         className="action-btn enter-btn"
                         onClick={handleEnterCompetition}
@@ -529,7 +507,7 @@ const CompetitionLobby = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="td-status">{p.status || getStatus(p)}</td>
+                    <td className="td-status">{getStatus(p)}</td>
                     <td className="td-score">
                       {p.score !== undefined ? p.score : "--"}
                     </td>
@@ -611,7 +589,7 @@ const CompetitionLobby = () => {
         }
         .status-pill.upcoming { color: #facc15; border-color: #634d04; background: rgba(250, 204, 21, 0.1); }
         .status-pill.live { color: #ef4444; border-color: #7f1d1d; background: rgba(239, 68, 68, 0.1); }
-        .status-pill.completed { color: #9ca3af; border-color: #374151; background: rgba(107, 114, 128, 0.1); }
+        .status-pill.ENDED { color: #9ca3af; border-color: #374151; background: rgba(107, 114, 128, 0.1); }
 
         .header-right {
             display: flex;
@@ -798,43 +776,35 @@ const CompetitionLobby = () => {
             color: #fff;
             margin-bottom: 1rem;
             font-size: 1rem;
-            outline: none;
-        }
-        .code-input:focus {
-            border-color: #3b82f6;
-            ring: 2px solid rgba(59, 130, 246, 0.5);
         }
         .error-msg {
-            color: #ef4444 !important;
+            color: #ef4444;
             font-size: 0.9rem;
-            margin-bottom: 1rem !important;
-            text-align: left;
+            margin-bottom: 1rem;
         }
         .modal-actions {
             display: flex;
             gap: 10px;
-            justify-content: flex-end;
+            justify-content: center;
+        }
+        .modal-actions button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
         }
         .cancel-btn {
-            background: transparent;
-            border: 1px solid #4b5563;
-            color: #9ca3af;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
+            background: #374151;
+            color: #d1d5db;
         }
         .cancel-btn:hover {
-            background: #374151;
-            color: #fff;
+            background: #4b5563;
         }
         .submit-btn {
             background: #3b82f6;
-            border: none;
             color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
         }
         .submit-btn:hover {
             background: #2563eb;

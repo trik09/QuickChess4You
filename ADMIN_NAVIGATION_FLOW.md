@@ -42,7 +42,7 @@
         ├─► 🏆 Competition
         │   │
         │   ├─► 📋 All Competitions (/admin/competitions)
-        │   │   ├─ Tabs: All | Upcoming | Live | Completed
+        │   │   ├─ Tabs: All | Upcoming | Live | ENDED
         │   │   ├─ Competition Table
         │   │   ├─ Status Badges
         │   │   ├─ View Details (👁️)
@@ -184,7 +184,7 @@
 
 ### 4. Competitions (`/admin/competitions`)
 **Components:**
-- TabBar (All, Upcoming, Live, Completed)
+- TabBar (All, Upcoming, Live, ENDED)
 - CompetitionTable
 - StatusBadge
 - CreateButton
@@ -327,7 +327,7 @@ Dashboard → System Monitor → View Health Cards → Check Logs
 - **Confirmation**: Delete confirmations
 
 ### Badges
-- **Status**: Color-coded (Live, Upcoming, Completed)
+- **Status**: Color-coded (Live, Upcoming, ENDED)
 - **Difficulty**: Color-coded (Easy, Medium, Hard, Expert)
 - **Animated**: Pulse effect for "Live" status
 

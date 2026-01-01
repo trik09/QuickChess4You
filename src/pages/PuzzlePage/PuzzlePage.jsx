@@ -102,17 +102,13 @@ function PuzzlePage() {
         const start = new Date(comp.startTime);
         const end = new Date(comp.endTime);
 
-        if (now < start) {
-          toast.error("Competition has not started yet!");
+        const isLive = comp.status === "live" || comp.status === "LIVE";
+        setIsLiveCompetition(isLive);
+
+        if (!isLive) {
           navigate(`/competition/${paramCompetitionId}/lobby`);
           return;
         }
-
-        // Allow viewing past competitions? Maybe not for now based on user request.
-        // But for "Live" logic we usually enforce time.
-
-        const isLive = comp.status === "live";
-        setIsLiveCompetition(isLive);
 
         // Calculate Time Remaining from Server (Source of Truth)
         const msUntilEnd = end - now;
@@ -359,7 +355,7 @@ function PuzzlePage() {
       if (currentPuzzleIndex < puzzles.length - 1) {
         setCurrentPuzzleIndex((prev) => prev + 1);
       } else {
-        toast.success("All puzzles completed!");
+        toast.success("All puzzles ENDED!");
         // End flow
         if (paramCompetitionId && isLiveCompetition) {
           // Auto-submit for live competition

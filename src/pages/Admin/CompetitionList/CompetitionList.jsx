@@ -143,7 +143,7 @@ function CompetitionList() {
     const endDate = new Date(competition.endTime);
 
     if (now < startDate) return "Upcoming";
-    if (now > endDate) return "Completed";
+    if (now > endDate) return "ENDED";
     return "Live";
   };
 
@@ -321,7 +321,7 @@ function CompetitionList() {
         const variantMap = {
           Live: "live",
           Upcoming: "warning",
-          Completed: "info",
+          ENDED: "info",
         };
         return <Badge variant={variantMap[status]}>{status}</Badge>;
       },
@@ -410,11 +410,11 @@ function CompetitionList() {
           Live
         </button>
         <button
-          className={`${styles.tab} ${activeTab === "completed" ? styles.active : ""
+          className={`${styles.tab} ${activeTab === "ENDED" ? styles.active : ""
             }`}
-          onClick={() => setActiveTab("completed")}
+          onClick={() => setActiveTab("ENDED")}
         >
-          Completed
+          ENDED
         </button>
       </div>
 
@@ -461,8 +461,8 @@ function CompetitionList() {
                 variant="danger"
               />
 
-              {/* Show Result Button for Completed Competitions */}
-              {comp.status === 'Completed' && (
+              {/* Show Result Button for ENDED Competitions */}
+              {comp.status === 'ENDED' && (
                 <Button
                   size="small"
                   variant="secondary"
