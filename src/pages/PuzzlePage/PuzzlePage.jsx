@@ -45,6 +45,31 @@ function PuzzlePage() {
   const timerRef = useRef(null);
   const isLoadedRef = useRef(false);
 
+  // Listen for competition events from socket directly
+  useEffect(() => {
+    if (isLiveCompetition && paramCompetitionId) {
+      const onCompetitionEnded = () => {
+        toast.success("Competition Ended! Redirecting to Leaderboard...");
+        setTimeout(() => {
+          navigate(`/leaderboard/${paramCompetitionId}`);
+        }, 1000);
+      };
+
+      // Attach
+      import("../../services/socketService").then(module => {
+        const socketService = module.default;
+        socketService.on("competitionEnded", onCompetitionEnded);
+      });
+
+      return () => {
+        import("../../services/socketService").then(module => {
+          const socketService = module.default;
+          socketService.off("competitionEnded", onCompetitionEnded);
+        });
+      }
+    }
+  }, [isLiveCompetition, paramCompetitionId, navigate]);
+
   // 1. Initial Data Fetch & Restore
   useEffect(() => {
     loadPuzzleContext();
@@ -395,8 +420,8 @@ function PuzzlePage() {
         const stateKey = `puzzleState_${paramCompetitionId}`;
         localStorage.removeItem(stateKey);
 
-        // Navigate to lobby (wait for others)
-        navigate(`/competition/${competitionData._id}/lobby`);
+        // Navigate to Leaderboard (wait for others)
+        navigate(`/leaderboard/${competitionData._id}`);
       } else {
         toast.error(response.message || "Submission failed");
       }

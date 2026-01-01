@@ -176,20 +176,22 @@ function Leaderboard() {
       ) : (
         <div className={styles.leaderboardContainer}>
           {/* Top 3 Podium */}
-          {leaderboard.length >= 3 && (
+          {leaderboard.length > 0 && (
             <div className={styles.podium}>
               {/* 2nd Place */}
               <div className={styles.podiumPosition + ' ' + styles.second}>
-                <div className={styles.podiumUser}>
-                  <div className={styles.podiumRank}>
-                    <FaMedal className={styles.silverMedal} />
+                {leaderboard[1] ? (
+                  <div className={styles.podiumUser}>
+                    <div className={styles.podiumRank}>
+                      <FaMedal className={styles.silverMedal} />
+                    </div>
+                    <div className={styles.podiumInfo}>
+                      <h3>{leaderboard[1].username}</h3>
+                      <p>{leaderboard[1].score} pts</p>
+                      <small>{leaderboard[1].puzzlesSolved} puzzles</small>
+                    </div>
                   </div>
-                  <div className={styles.podiumInfo}>
-                    <h3>{leaderboard[1].username}</h3>
-                    <p>{leaderboard[1].score} pts</p>
-                    <small>{leaderboard[1].puzzlesSolved} puzzles</small>
-                  </div>
-                </div>
+                ) : <div className={styles.podiumUser} style={{ opacity: 0 }}></div>}
                 <div className={styles.podiumBase + ' ' + styles.secondBase}>2nd</div>
               </div>
 
@@ -210,16 +212,18 @@ function Leaderboard() {
 
               {/* 3rd Place */}
               <div className={styles.podiumPosition + ' ' + styles.third}>
-                <div className={styles.podiumUser}>
-                  <div className={styles.podiumRank}>
-                    <FaMedal className={styles.bronzeMedal} />
+                {leaderboard[2] ? (
+                  <div className={styles.podiumUser}>
+                    <div className={styles.podiumRank}>
+                      <FaMedal className={styles.bronzeMedal} />
+                    </div>
+                    <div className={styles.podiumInfo}>
+                      <h3>{leaderboard[2].username}</h3>
+                      <p>{leaderboard[2].score} pts</p>
+                      <small>{leaderboard[2].puzzlesSolved} puzzles</small>
+                    </div>
                   </div>
-                  <div className={styles.podiumInfo}>
-                    <h3>{leaderboard[2].username}</h3>
-                    <p>{leaderboard[2].score} pts</p>
-                    <small>{leaderboard[2].puzzlesSolved} puzzles</small>
-                  </div>
-                </div>
+                ) : <div className={styles.podiumUser} style={{ opacity: 0 }}></div>}
                 <div className={styles.podiumBase + ' ' + styles.thirdBase}>3rd</div>
               </div>
             </div>

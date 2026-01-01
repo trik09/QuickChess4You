@@ -31,12 +31,19 @@ function Competitions() {
     const [selectedCompetitionId, setSelectedCompetitionId] = useState(null);
 
     useEffect(() => {
-        fetchCompetitions();
+        fetchCompetitions(); // Initial load
+
+        // Poll for updates every 5 seconds
+        const interval = setInterval(() => {
+            fetchCompetitions(true);
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, []);
 
-    const fetchCompetitions = async () => {
+    const fetchCompetitions = async (isBackground = false) => {
         try {
-            setLoading(true);
+            if (!isBackground) setLoading(true);
             // Fetch live
             const liveRes = await competitionAPI.getCompetitions({ status: 'live', limit: 50 });
             // Fetch upcoming
@@ -49,9 +56,9 @@ function Competitions() {
             if (ENDEDRes.success) setENDEDCompetitions(ENDEDRes.data);
         } catch (error) {
             console.error("Failed to load competitions:", error);
-            toast.error("Failed to load competitions");
+            if (!isBackground) toast.error("Failed to load competitions");
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
     };
 
