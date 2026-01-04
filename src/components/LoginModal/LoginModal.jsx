@@ -79,7 +79,7 @@ function LoginModal({ isOpen, onClose }) {
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/dashboard');
+        navigate('/');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -109,7 +109,7 @@ function LoginModal({ isOpen, onClose }) {
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/dashboard');
+        navigate('/');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -210,7 +210,7 @@ function LoginModal({ isOpen, onClose }) {
     try {
       await authAPI.resetPassword(formData.newPassword, tempToken);
       setSuccess('Password reset successful! Please login with your new password.');
-      
+
       // Reset all states after success
       setTimeout(() => {
         setIsResetMode(false);
@@ -237,7 +237,7 @@ function LoginModal({ isOpen, onClose }) {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose}>×</button>
-        
+
         <div className={styles.modalContent}>
           <div className={styles.modalHeader}>
             <div className={styles.logo}>
@@ -247,19 +247,19 @@ function LoginModal({ isOpen, onClose }) {
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
             <p className={styles.subtitle}>
-              {isSignUp 
-                ? 'Join thousands of chess players worldwide' 
+              {isSignUp
+                ? 'Join thousands of chess players worldwide'
                 : 'Sign in to continue your chess journey'}
             </p>
           </div>
 
           {error && (
-            <div className={styles.errorMessage} style={{ 
-              padding: '12px', 
-              background: '#fee2e2', 
-              border: '1px solid #fca5a5', 
-              borderRadius: '8px', 
-              color: '#dc2626', 
+            <div className={styles.errorMessage} style={{
+              padding: '12px',
+              background: '#fee2e2',
+              border: '1px solid #fca5a5',
+              borderRadius: '8px',
+              color: '#dc2626',
               marginBottom: '16px',
               fontSize: '0.875rem'
             }}>
@@ -268,12 +268,12 @@ function LoginModal({ isOpen, onClose }) {
           )}
 
           {success && (
-            <div className={styles.successMessage} style={{ 
-              padding: '12px', 
-              background: '#d1fae5', 
-              border: '1px solid #86efac', 
-              borderRadius: '8px', 
-              color: '#059669', 
+            <div className={styles.successMessage} style={{
+              padding: '12px',
+              background: '#d1fae5',
+              border: '1px solid #86efac',
+              borderRadius: '8px',
+              color: '#059669',
               marginBottom: '16px',
               fontSize: '0.875rem'
             }}>
@@ -284,19 +284,19 @@ function LoginModal({ isOpen, onClose }) {
           <form onSubmit={handleSubmit} className={styles.form}>
             {isSignUp && !isOTPMode && (
               <>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="name"
-                  placeholder="Full Name" 
+                  placeholder="Full Name"
                   className={styles.input}
                   value={formData.name}
                   onChange={handleInputChange}
                   required
                 />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="username"
-                  placeholder="Username" 
+                  placeholder="Username"
                   className={styles.input}
                   value={formData.username}
                   onChange={handleInputChange}
@@ -304,11 +304,11 @@ function LoginModal({ isOpen, onClose }) {
                 />
               </>
             )}
-            
-            <input 
-              type="email" 
+
+            <input
+              type="email"
               name="email"
-              placeholder="Email address" 
+              placeholder="Email address"
               className={styles.input}
               value={formData.email}
               onChange={handleInputChange}
@@ -319,17 +319,17 @@ function LoginModal({ isOpen, onClose }) {
             {isResetMode ? (
               <>
                 <div className={styles.passwordContainer}>
-                  <input 
+                  <input
                     type={showNewPassword ? "text" : "password"}
                     name="newPassword"
-                    placeholder="New Password" 
+                    placeholder="New Password"
                     className={styles.input}
                     value={formData.newPassword}
                     onChange={handleInputChange}
                     required
                     minLength={6}
                   />
-                  <span 
+                  <span
                     className={styles.eyeIcon}
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
@@ -337,10 +337,10 @@ function LoginModal({ isOpen, onClose }) {
                   </span>
                 </div>
                 <div className={styles.passwordContainer} style={{ marginTop: '16px' }}>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     name="confirmPassword"
-                    placeholder="Confirm New Password" 
+                    placeholder="Confirm New Password"
                     className={styles.input}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
@@ -350,10 +350,10 @@ function LoginModal({ isOpen, onClose }) {
                 </div>
               </>
             ) : isOTPMode ? (
-              <input 
-                type="text" 
+              <input
+                type="text"
                 name="otp"
-                placeholder="Enter 6-digit OTP" 
+                placeholder="Enter 6-digit OTP"
                 className={styles.input}
                 value={formData.otp}
                 onChange={handleInputChange}
@@ -364,10 +364,10 @@ function LoginModal({ isOpen, onClose }) {
               <>
                 {!isSignUp && (
                   <div className={styles.passwordContainer}>
-                    <input 
-                      type="password" 
+                    <input
+                      type="password"
                       name="password"
-                      placeholder="Password" 
+                      placeholder="Password"
                       className={styles.input}
                       value={formData.password}
                       onChange={handleInputChange}
@@ -379,10 +379,10 @@ function LoginModal({ isOpen, onClose }) {
                 {isSignUp && (
                   <>
                     <div className={styles.passwordContainer}>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         name="password"
-                        placeholder="Password" 
+                        placeholder="Password"
                         className={styles.input}
                         value={formData.password}
                         onChange={handleInputChange}
@@ -390,10 +390,10 @@ function LoginModal({ isOpen, onClose }) {
                       />
                     </div>
                     <div className={styles.passwordContainer}>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         name="confirmPassword"
-                        placeholder="Confirm Password" 
+                        placeholder="Confirm Password"
                         className={styles.input}
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
@@ -404,14 +404,14 @@ function LoginModal({ isOpen, onClose }) {
                 )}
               </>
             )}
-            
+
             {!isSignUp && !isOTPMode && !isResetMode && (
               <div className={styles.rememberRow}>
                 <label className={styles.checkbox}>
                   <input type="checkbox" />
                   <span>Remember me</span>
                 </label>
-                <button 
+                <button
                   type="button"
                   onClick={handleForgotPassword}
                   className={styles.forgotLink}
@@ -422,25 +422,25 @@ function LoginModal({ isOpen, onClose }) {
               </div>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={styles.submitBtn}
               disabled={loading}
               style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
             >
-              {loading 
-                ? 'Please wait...' 
+              {loading
+                ? 'Please wait...'
                 : isResetMode
                   ? 'Reset Password'
-                  : isOTPMode 
-                    ? 'Verify OTP' 
-                    : isSignUp 
-                    ? 'Sign Up' 
-                    : 'Log In'}
+                  : isOTPMode
+                    ? 'Verify OTP'
+                    : isSignUp
+                      ? 'Sign Up'
+                      : 'Log In'}
             </button>
 
             {(isOTPMode || isResetMode) && (
-              <button 
+              <button
                 type="button"
                 onClick={() => {
                   setIsOTPMode(false);
@@ -474,8 +474,8 @@ function LoginModal({ isOpen, onClose }) {
 
             <p className={styles.switchText}>
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={styles.switchBtn}
                 onClick={() => setIsSignUp(!isSignUp)}
               >

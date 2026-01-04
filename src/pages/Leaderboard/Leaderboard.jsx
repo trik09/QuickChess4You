@@ -132,7 +132,7 @@ function Leaderboard() {
     <div className={styles.container}>
       <div className={styles.header}>
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/')}
           className={styles.backButton}
         >
           <FaArrowLeft /> Back to Dashboard

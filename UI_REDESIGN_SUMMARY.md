@@ -116,7 +116,7 @@ Complete redesign of the user-side interface with a consistent light theme and d
 - `src/layouts/MainLayout/MainLayout.jsx` - Dual navigation
 - `src/layouts/MainLayout/MainLayout.module.css` - Light theme styles
 - `src/components/TopHeader/TopHeader.jsx` - Enhanced with auth
-- `src/pages/Dashboard/Dashboard.module.css` - Light theme
+- `src/pages//.module.css` - Light theme
 - `src/pages/Home/Home.module.css` - Light theme
 - `src/pages/PuzzlePage/PuzzlePage.module.css` - Light theme
 - `src/App.jsx` - Added Settings route

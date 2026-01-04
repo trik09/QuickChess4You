@@ -106,7 +106,7 @@ src/
 ## Navigation Flow
 
 1. **/** - Landing page (Home) with login button in navbar
-2. **/dashboard** - Tournament listings (after login)
+2. **/** - Tournament listings (after login)
 3. **/puzzle** - Interactive puzzle solver (after login)
 
 ## Color Scheme (Premium Orange-Brown)

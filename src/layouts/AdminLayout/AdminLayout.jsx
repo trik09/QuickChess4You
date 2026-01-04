@@ -29,7 +29,7 @@ function AdminLayout() {
   };
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: FaChartLine, label: 'Dashboard', exact: true },
+    { path: '/admin/', icon: FaChartLine, label: 'Dashboard', exact: true },
     {
       label: 'Puzzle Management',
       icon: FaPuzzlePiece,
@@ -127,30 +127,20 @@ function AdminLayout() {
             <span className={styles.menuIcon}><FaHome /></span>
             {!sidebarCollapsed && <span>Back to Site</span>}
           </Link>
+          <button
+            className={`${styles.menuItem} ${styles.logoutMenuItem}`}
+            onClick={() => setShowLogoutConfirm(true)}
+            title={sidebarCollapsed ? "Logout" : ""}
+          >
+            <span className={styles.menuIcon}><FaSignOutAlt /></span>
+            {!sidebarCollapsed && <span>Logout</span>}
+          </button>
         </div>
       </aside>
 
       <div className={styles.mainContent}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarLeft}>
-            <img src={logo} alt="QuickChess4You" className={styles.topbarLogo} />
-            {/* <h1>QCFY</h1> */}
-          </div>
-          <div className={styles.topbarRight}>
-            <button className={styles.notificationBtn}><FaBell /></button>
-            <div className={styles.adminProfile}>
-              <span>{localStorage.getItem('adminUser') || 'Admin'}</span>
-              <div className={styles.avatar}><FaUser /></div>
-            </div>
-            <button
-              className={styles.logoutBtn}
-              onClick={() => setShowLogoutConfirm(true)}
-              title="Logout"
-            >
-              <FaSignOutAlt />
-            </button>
-          </div>
-        </header>
+        {/* Header removed as per new design */}
+
 
         <main className={styles.content}>
           <Outlet />

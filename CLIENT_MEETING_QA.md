@@ -29,7 +29,7 @@ The app will run on http://localhost:5174/
 ### Q4: What pages are included in the prototype?
 **A:** Three main pages:
 1. **Login Page (/)** - User authentication interface
-2. **Dashboard (/dashboard)** - Tournament listings with cards
+2. **Dashboard (/)** - Tournament listings with cards
 3. **Puzzle Page (/puzzle)** - Interactive chess puzzle solver
 
 ### Q5: Does the login actually authenticate users?

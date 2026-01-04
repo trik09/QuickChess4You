@@ -45,7 +45,7 @@ const MainLayout = () => {
     // Navigation items - "Home" is now implied by the Logo
     const navItems = [
         // { path: '/puzzles', label: 'Puzzles', icon: <FaChessBoard /> },
-        { path: '/dashboard', label: 'Tournaments', icon: <FaTrophy /> },
+        { path: '/', label: 'Tournaments', icon: <FaTrophy /> },
         { path: '/courses', label: 'Courses', icon: <FaGraduationCap /> },
         { path: '/coaching', label: 'Coaching', icon: <FaChalkboardTeacher /> },
         { path: '/pricing', label: 'Pricing', icon: <FaTags /> },

@@ -92,7 +92,7 @@ Root (/)
 │   └── Stats
 │   └── Puzzle selector
 │
-├── Tournaments (/dashboard)
+├── Tournaments (/)
 │   └── Tournament cards
 │   └── Upcoming events
 │   └── Registration

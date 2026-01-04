@@ -42,10 +42,9 @@ function Navbar({ onLoginClick }) {
 
       <nav className={styles.navbar}>
         <div className={styles.container}>
-          {/* LOGO */}
+          {/* LOGO - Image Only */}
           <Link to="/" className={styles.logo}>
             <img src={logo} alt="Quick Chess" className={styles.logoImg} />
-            <span className={styles.logoText}>QUICK CHESS 4 YOU</span>
           </Link>
 
           {/* HAMBURGER BUTTON */}
@@ -66,32 +65,18 @@ function Navbar({ onLoginClick }) {
             <ul className={styles.navLinks}>
               {isHomePage ? (
                 <>
-                  <li>
-                    <a href="#features">Features</a>
-                  </li>
-                  <li>
-                    <Link to="/dashboard">Tournaments</Link>
-                  </li>
-                  <li>
-                    <a href="#about">About</a>
-                  </li>
+                  <li><a href="#home">Home</a></li>
+                  <li><a href="#about">About</a></li>
+                  <li><Link to="/learn/capture">Learn</Link></li>
+                  <li><a href="#courses">Courses</a></li>
+                  <li><a href="#pricing">Pricing</a></li>
+                  <li><a href="#coaching">Coaching</a></li>
+                  <li><a href="#contact">Contact</a></li>
                 </>
               ) : (
                 <>
-                  <li>
-                    <Link to="/">Home</Link>
-                  </li>
-                  <li>
-                    <Link to="/dashboard">Tournaments</Link>
-                  </li>
-                  <li>
-                    <Link to="/puzzle">Puzzles</Link>
-                  </li>
-                  {isAuthenticated && (
-                    <li>
-                      <Link to="/profile">Profile</Link>
-                    </li>
-                  )}
+                  <li><Link to="/">Home</Link></li>
+                  <li><Link to="/">Puzzle Arena</Link></li>
                 </>
               )}
             </ul>
@@ -99,7 +84,7 @@ function Navbar({ onLoginClick }) {
             {/* AUTHENTICATION */}
             <div className={styles.authSection}>
               {/* Theme Settings Button */}
-              <button 
+              <button
                 className={styles.settingsBtn}
                 onClick={() => {
                   setIsThemeModalOpen(true);
@@ -112,7 +97,7 @@ function Navbar({ onLoginClick }) {
 
               {isAuthenticated ? (
                 <div className={styles.userProfile}>
-                  <div className={styles.userInfo}>
+                  <div className={styles.userInfo} onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
                     <div className={styles.avatar}>
                       {user?.avatar ? (
                         <img src={user.avatar} alt="User" />
@@ -153,9 +138,9 @@ function Navbar({ onLoginClick }) {
       </nav>
 
       {/* Theme Customization Modal */}
-      <ThemeModal 
-        isOpen={isThemeModalOpen} 
-        onClose={() => setIsThemeModalOpen(false)} 
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
       />
     </>
   );

@@ -1,22 +1,23 @@
+import React from 'react';
 import styles from './Pricing.module.css';
-import { FaCheck } from 'react-icons/fa';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 
 function Pricing() {
   const plans = [
     {
       name: 'Free',
-      price: 'Free',
+      price: '0',
       period: 'forever',
       features: [
         '100 puzzles per month',
-        'Basic tournaments',
-        'Community access',
-        'Progress tracking'
+        'Basic tournaments access',
+        'Community forums',
+        'Basic progress tracking'
       ],
       limitations: [
-        'Limited puzzle access',
-        'No coaching',
-        'Basic analytics'
+        'Advanced analytics',
+        'Personal coaching',
+        'Opening database'
       ]
     },
     {
@@ -25,14 +26,15 @@ function Pricing() {
       period: 'month',
       popular: true,
       features: [
-        'Unlimited puzzles',
-        'All tournaments',
+        'Unlimited interactive puzzles',
+        'All tournament access',
         'Priority support',
-        'Advanced analytics',
+        'Advanced analytics dashboard',
         '1 coaching session/month',
-        'Opening database',
-        'Game analysis tools'
-      ]
+        'Opening explorer tools',
+        'Stockfish game analysis'
+      ],
+      limitations: []
     },
     {
       name: 'Pro',
@@ -41,80 +43,89 @@ function Pricing() {
       features: [
         'Everything in Premium',
         '4 coaching sessions/month',
-        'Personal training plan',
+        'Personalized training plan',
+        'Exclusive GM masterclasses',
         'Tournament preparation',
-        'Opening repertoire builder',
-        'Unlimited game analysis',
         'Priority tournament entry',
-        'Exclusive masterclasses'
-      ]
+        'Team battles access'
+      ],
+      limitations: []
     }
   ];
 
   return (
-    <div className={styles.container}>
-      <div className={styles.hero}>
-        <h1 className={styles.title}>Choose Your Plan</h1>
-        <p className={styles.subtitle}>
-          Select the perfect plan to match your chess ambitions
-        </p>
-      </div>
+    <section className={styles.pricingWrapper}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Simple, Transparent Pricing</h2>
+          <p className={styles.subtitle}>
+            Choose the plan that best fits your chess journey.
+          </p>
+        </div>
 
-      <div className={styles.pricingGrid}>
-        {plans.map((plan, index) => (
-          <div key={index} className={`${styles.priceCard} ${plan.popular ? styles.popular : ''}`}>
-            {plan.popular && <div className={styles.badge}>Most Popular</div>}
+        <div className={styles.pricingGrid}>
+          {plans.map((plan, index) => (
+            <div
+              key={index}
+              className={`${styles.priceCard} ${plan.popular ? styles.popularCard : ''}`}
+            >
+              {plan.popular && <div className={styles.badge}>Most Popular</div>}
 
-            <h3 className={styles.planName}>{plan.name}</h3>
-            <div className={styles.price}>
-              {plan.price === 'Free' || plan.price === 'Coming Soon' ? plan.price : `₹${plan.price}`}
-              {plan.price !== 'Free' && plan.price !== 'Coming Soon' && <span>/{plan.period}</span>}
+              <h3 className={styles.planName}>{plan.name}</h3>
+
+              <div className={styles.price}>
+                {plan.price === 'Coming Soon' ? (
+                  <span className={styles.priceText}>{plan.price}</span>
+                ) : (
+                  <>
+                    <span className={styles.currency}>₹</span>
+                    {plan.price}
+                    <span className={styles.period}>/{plan.period}</span>
+                  </>
+                )}
+              </div>
+
+              <ul className={styles.featuresList}>
+                {plan.features.map((feature, i) => (
+                  <li key={`feat-${i}`}>
+                    <FaCheck className={styles.iconCheck} />
+                    {feature}
+                  </li>
+                ))}
+                {plan.limitations && plan.limitations.map((lim, i) => (
+                  <li key={`lim-${i}`} className={styles.limitation}>
+                    <FaTimes className={styles.iconCross} />
+                    {lim}
+                  </li>
+                ))}
+              </ul>
+
+              <button className={`${styles.ctaBtn} ${plan.popular ? styles.primaryBtn : ''}`}>
+                {plan.price === '0' ? 'Get Started Free' : 'Notify Me'}
+              </button>
             </div>
+          ))}
+        </div>
 
-            <ul className={styles.features}>
-              {plan.features.map((feature, i) => (
-                <li key={i}>
-                  <FaCheck className={styles.checkIcon} />
-                  {feature}
-                </li>
-              ))}
-              {plan.limitations && plan.limitations.map((limitation, i) => (
-                <li key={`limit-${i}`} className={styles.limitation}>
-                  <span className={styles.crossIcon}>✗</span>
-                  {limitation}
-                </li>
-              ))}
-            </ul>
-
-            <button className={styles.selectBtn}>
-              {plan.price === 'Free' ? 'Get Started' : 'Subscribe Now'}
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <section className={styles.faq}>
-        <h2>Frequently Asked Questions</h2>
-        <div className={styles.faqGrid}>
-          <div className={styles.faqItem}>
-            <h3>Can I change my plan later?</h3>
-            <p>Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
-          </div>
-          <div className={styles.faqItem}>
-            <h3>Is there a free trial?</h3>
-            <p>Premium and Pro plans come with a 7-day free trial. No credit card required to start.</p>
-          </div>
-          <div className={styles.faqItem}>
-            <h3>What payment methods do you accept?</h3>
-            <p>We accept UPI, credit/debit cards, net banking, and all major payment methods through Razorpay.</p>
-          </div>
-          <div className={styles.faqItem}>
-            <h3>Can I cancel anytime?</h3>
-            <p>Absolutely! Cancel your subscription anytime with no penalties or hidden fees.</p>
+        <div className={styles.faqSection}>
+          <h3>Frequently Asked Questions</h3>
+          <div className={styles.faqGrid}>
+            <div className={styles.faqItem}>
+              <h4>Can I change my plan later?</h4>
+              <p>Yes, you can upgrade, downgrade, or cancel your plan at any time from your account settings.</p>
+            </div>
+            <div className={styles.faqItem}>
+              <h4>Is there a free trial?</h4>
+              <p>We offer a 7-day free trial for Premium and Pro plans so you can experience the full power of our platform.</p>
+            </div>
+            <div className={styles.faqItem}>
+              <h4>What payment methods do you accept?</h4>
+              <p>We accept all major credit cards, UPI, and net banking options secured by Razorpay.</p>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 

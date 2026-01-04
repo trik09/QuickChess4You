@@ -5,6 +5,12 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  /* Navbar height + buffer */
+}
+
 /* Shared Variables (Layout, Shadows, etc.) */
 :root {
   --primary: #b58863;

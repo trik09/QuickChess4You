@@ -110,7 +110,7 @@ const playSound = (type) => {
 }
 
 
-function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleType = 'normal', kidsConfig = null, interactive = true }) {
+function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
 
@@ -142,6 +142,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // Offset from mouse to piece top-left in logical pixels
   const [draggedPieceImage, setDraggedPieceImage] = useState(null);
   const boardRef = useRef(null);
+  const wrapperRef = useRef(null);
   const mouseHandlersRef = useRef({});
   const dragStateRef = useRef({ draggedPiece: null, possibleMoves: [] });
   const dragTimeoutRef = useRef(null);
@@ -200,6 +201,40 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
       }
     }
   }, [fen, solution, puzzleType, kidsConfig]);
+
+  // Auto-play solution logic
+  useEffect(() => {
+    if (showSolution && puzzleType === 'normal') {
+      const playNext = () => {
+        if (solutionIndex >= normalizedSolution.length) {
+          // Finished solution
+          if (onPuzzleSolved && feedback !== 'solved') {
+            setFeedback('solved');
+            if (onPuzzleSolved) onPuzzleSolved();
+          }
+          return;
+        }
+
+        const nextMove = normalizedSolution[solutionIndex];
+        // Ensure move is valid in current state
+        let result = null;
+        try {
+          result = game.move(nextMove);
+        } catch (e) { console.error(e); }
+
+        if (result) {
+          playSound(result.san.includes('x') ? 'capture' : 'move');
+          setMoveHistory(prev => [...prev, result.san]);
+          setLastMove({ from: result.from, to: result.to });
+          setGame(new Chess(game.fen()));
+          setSolutionIndex(prev => prev + 1);
+        }
+      };
+
+      const timer = setTimeout(playNext, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [showSolution, solutionIndex, normalizedSolution, game, puzzleType, feedback]);
 
   // Cleanup effect for mouse event listeners
   useEffect(() => {
@@ -509,13 +544,15 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
   // Custom Mouse Drag Handlers using useRef to avoid circular dependency
   useEffect(() => {
     mouseHandlersRef.current.handleMouseMove = (e) => {
-      if (!boardRef.current) return;
+      if (!boardRef.current || !wrapperRef.current) return;
+
+      const wrapperRect = wrapperRef.current.getBoundingClientRect();
+      setDragPosition({
+        x: (e.clientX - wrapperRect.left) / scale,
+        y: (e.clientY - wrapperRect.top) / scale
+      });
 
       const rect = boardRef.current.getBoundingClientRect();
-      setDragPosition({
-        x: (e.clientX - rect.left) / scale,
-        y: (e.clientY - rect.top) / scale
-      });
 
       // Determine which square we're over
       const squareSize = rect.width / 8;
@@ -610,16 +647,16 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     setDraggedPieceImage(pieceImages[piece.color === 'w' ? piece.type.toUpperCase() : piece.type]);
     setPossibleMoves(movesToSquares);
 
-    // Get mouse position relative to board
-    const rect = boardRef.current.getBoundingClientRect();
-    const logicalX = (e.clientX - rect.left) / scale;
-    const logicalY = (e.clientY - rect.top) / scale;
+    // Get mouse position relative to wrapper (for visual positioning)
+    const wrapperRect = wrapperRef.current.getBoundingClientRect();
+    const logicalX = (e.clientX - wrapperRect.left) / scale;
+    const logicalY = (e.clientY - wrapperRect.top) / scale;
     setDragPosition({
       x: logicalX,
       y: logicalY
     });
 
-    // Calculate offset from piece top-left
+    // Calculate offset from piece top-left (User wants drag from click position)
     // Note: e.target is the image element
     const pieceRect = e.target.getBoundingClientRect();
     const offsetX = (e.clientX - pieceRect.left) / scale;
@@ -680,15 +717,17 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
         boxShadow: scale < 1 ? 'none' : undefined
       }}
     >
-      <div style={{
-        transform: `scale(${scale})`,
-        // transformOrigin: 'top center',
-        width: '610px', // Force natural width context
-        // height: '610px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
-      }}>
+      <div
+        ref={wrapperRef}
+        style={{
+          transform: `scale(${scale})`,
+          // transformOrigin: 'top center',
+          width: '610px', // Force natural width context
+          // height: '610px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
         {feedback && (
           <div className={`${styles.feedback} ${styles[feedback]}`}>
             {feedback === 'correct' && (puzzleType === 'kids' ? 'Yummy! 😋' : '✓ Correct!')}
@@ -717,7 +756,7 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
                         className={styles.piece}
                         style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
-                        {target.item === 'pizza' ? '🍕' : '🍫'}
+                        {target.item === 'pizza' ? '🍕' : target.item === 'chocolate' ? '🍫' : target.item === 'star' ? '⭐' : '🎯'}
                       </div>
                     );
                   }

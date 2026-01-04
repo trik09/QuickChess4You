@@ -1,10 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './TopHeader.module.css';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 
 function TopHeader({ onLoginClick }) {
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className={styles.topHeader}>
@@ -22,18 +23,24 @@ function TopHeader({ onLoginClick }) {
           <Link to="/contact" className={styles.navLink}>Contact</Link>
         </nav>
 
+
         <div className={styles.actions}>
           {isAuthenticated ? (
-            <div className={styles.userInfo}>
+            <div
+              className={styles.userInfo}
+              onClick={() => navigate("/dashboard")}
+              style={{ cursor: "pointer" }}
+            >
               <div className={styles.avatar}>
                 {user?.avatar ? (
                   <img src={user.avatar} alt="User" />
                 ) : (
-                  <span>{user?.username?.[0]?.toUpperCase() || 'U'}</span>
+                  <span>{user?.username?.[0]?.toUpperCase() || "U"}</span>
                 )}
               </div>
+
               <span className={styles.username}>
-                {user?.name || user?.username || 'Player'}
+                {user?.name || user?.username || "Player"}
               </span>
             </div>
           ) : (
@@ -41,7 +48,9 @@ function TopHeader({ onLoginClick }) {
               <button className={styles.loginBtn} onClick={onLoginClick}>
                 Login
               </button>
-              <button className={styles.signupBtn} onClick={onLoginClick}>Sign Up</button>
+              <button className={styles.signupBtn} onClick={onLoginClick}>
+                Sign Up
+              </button>
             </>
           )}
         </div>

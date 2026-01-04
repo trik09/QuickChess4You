@@ -34,7 +34,7 @@ function AdminLogin() {
           response.atoken             // admin JWT token
         );
 
-        navigate('/admin/dashboard');
+        navigate('/admin/');
       } else {
         setError('Login failed: No token received');
       }
@@ -50,7 +50,7 @@ function AdminLogin() {
     <div className={styles.loginPage}>
       <div className={styles.loginContainer}>
         <div className={styles.loginCard}>
-          
+
           {/* Logo Section */}
           <div className={styles.logoSection}>
             {/* <img src={logo} alt="QuickChess4You" className={styles.logo} /> */}
@@ -128,7 +128,7 @@ function AdminLogin() {
             </div> */}
           </form>
 
-         
+
         </div>
       </div>
     </div>

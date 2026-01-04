@@ -1,5 +1,6 @@
+import React from 'react';
 import styles from './Courses.module.css';
-import { FaChessKnight, FaChessRook, FaChessQueen, FaClock, FaStar } from 'react-icons/fa';
+import { FaChessKnight, FaChessRook, FaChessQueen, FaClock, FaStar, FaArrowRight } from 'react-icons/fa';
 
 function Courses() {
   const courses = [
@@ -39,74 +40,81 @@ function Courses() {
   ];
 
   return (
-    <div className={styles.container}>
-      <div className={styles.hero}>
-        <h1 className={styles.title}>Our Courses</h1>
-        <p className={styles.subtitle}>
-          Structured learning paths designed to take you from beginner to master
-        </p>
-      </div>
+    <section className={styles.coursesWrapper}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Featured Courses</h2>
+          <p className={styles.subtitle}>
+            Structured learning paths designed by grandmasters to take you from beginner to master.
+          </p>
+        </div>
 
-      <div className={styles.coursesGrid}>
-        {courses.map((course) => (
-          <div key={course.id} className={styles.courseCard}>
-            <div className={styles.courseIcon}>{course.icon}</div>
-            <div className={styles.courseLevel}>{course.level}</div>
-            
-            <h2 className={styles.courseTitle}>{course.title}</h2>
-            <p className={styles.courseDescription}>{course.description}</p>
-
-            <div className={styles.courseStats}>
-              <div className={styles.stat}>
-                <FaClock />
-                <span>{course.duration}</span>
+        <div className={styles.coursesGrid}>
+          {courses.map((course) => (
+            <div key={course.id} className={styles.courseCard}>
+              <div className={styles.cardHeader}>
+                <div className={styles.courseIcon}>{course.icon}</div>
+                <div className={styles.levelBadge}>{course.level}</div>
+                <h3 className={styles.courseTitle}>{course.title}</h3>
+                <p className={styles.courseDescription}>{course.description}</p>
               </div>
-              <div className={styles.stat}>
-                <FaStar />
-                <span>{course.rating} ({course.students} students)</span>
+
+              <div className={styles.cardBody}>
+                <div className={styles.statsRow}>
+                  <div className={styles.statItem}>
+                    <FaClock /> {course.duration}
+                  </div>
+                  <div className={styles.statItem}>
+                    <FaStar /> {course.rating} ({course.students})
+                  </div>
+                </div>
+
+                <div className={styles.topicsList}>
+                  <h4>Curriculum Highlights</h4>
+                  <ul>
+                    {course.topics.map((topic, index) => (
+                      <li key={index}>{topic}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <button className={styles.enrollBtn}>
+                  Enroll Now <FaArrowRight />
+                </button>
               </div>
             </div>
+          ))}
+        </div>
 
-            <div className={styles.topics}>
-              <h4>What You'll Learn:</h4>
-              <ul>
-                {course.topics.map((topic, index) => (
-                  <li key={index}>{topic}</li>
-                ))}
-              </ul>
+        <div className={styles.featuresWrapper}>
+          <div className={styles.header} style={{ marginBottom: '40px' }}>
+            <h3 className={styles.title} style={{ fontSize: '2rem' }}>Why Join Our Courses?</h3>
+          </div>
+          <div className={styles.featuresGrid}>
+            <div className={styles.featureItem}>
+              <div className={styles.featureIcon}>📚</div>
+              <h3>Comprehensive Curriculum</h3>
+              <p>Step-by-step progressions covering every phase of the game.</p>
             </div>
-
-            <button className={styles.enrollBtn}>Enroll Now</button>
-          </div>
-        ))}
-      </div>
-
-      <section className={styles.features}>
-        <h2>Course Features</h2>
-        <div className={styles.featuresGrid}>
-          <div className={styles.feature}>
-            <div className={styles.featureIcon}>📚</div>
-            <h3>Comprehensive Curriculum</h3>
-            <p>Carefully structured lessons covering all aspects of chess</p>
-          </div>
-          <div className={styles.feature}>
-            <div className={styles.featureIcon}>🎥</div>
-            <h3>Video Lessons</h3>
-            <p>High-quality video content with detailed explanations</p>
-          </div>
-          <div className={styles.feature}>
-            <div className={styles.featureIcon}>✍️</div>
-            <h3>Practice Exercises</h3>
-            <p>Hundreds of puzzles and exercises to reinforce learning</p>
-          </div>
-          <div className={styles.feature}>
-            <div className={styles.featureIcon}>📊</div>
-            <h3>Progress Tracking</h3>
-            <p>Monitor your improvement with detailed analytics</p>
+            <div className={styles.featureItem}>
+              <div className={styles.featureIcon}>🎥</div>
+              <h3>Video Lessons</h3>
+              <p>HD video content containing detailed explanations.</p>
+            </div>
+            <div className={styles.featureItem}>
+              <div className={styles.featureIcon}>✍️</div>
+              <h3>Practice Exercises</h3>
+              <p>Reinforce learning with interactive puzzles and drills.</p>
+            </div>
+            <div className={styles.featureItem}>
+              <div className={styles.featureIcon}>📊</div>
+              <h3>Progress Tracking</h3>
+              <p>Monitor your improvement with detailed performance analytics.</p>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 

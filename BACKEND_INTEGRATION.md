@@ -65,7 +65,7 @@ Created utility functions for:
   - Redirects unauthenticated users to home page
   - Supports both user and admin authentication
   - Protected routes:
-    - `/dashboard` - Requires user authentication
+    - `/` - Requires user authentication
     - `/puzzle` - Requires user authentication
     - `/admin/*` - Requires admin authentication (separate system)
 
@@ -221,7 +221,7 @@ All API calls include error handling:
 - `src/pages/Login/Login.jsx` - Integrated login and OTP APIs
 - `src/components/Navbar/Navbar.jsx` - Added user display and logout
 - `src/components/ProtectedRoute/ProtectedRoute.jsx` - Backend auth check
-- `src/pages/Dashboard/Dashboard.jsx` - Updated to use auth
+- `src/pages//.jsx` - Updated to use auth
 - `src/pages/Home/Home.jsx` - Added auth redirect
 - `src/App.jsx` - Protected routes with authentication
 

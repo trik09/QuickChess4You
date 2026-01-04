@@ -10,7 +10,7 @@ The goal was to prevent unauthenticated users from joining a competition and red
 - If detected, `LoginModal` is opened automatically.
 - This allows any part of the application to "redirect to login" by navigating to `/?login=true`.
 
-### 2. `src/pages/Dashboard/Dashboard.jsx`
+### 2. `src/pages//.jsx`
 
 - Updated `handleParticipate` function.
 - Added a check for `!user`.

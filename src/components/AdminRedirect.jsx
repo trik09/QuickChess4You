@@ -5,6 +5,6 @@ export default function AdminRedirect() {
   const { isAdminAuthenticated } = useAuth();
 
   return isAdminAuthenticated
-    ? <Navigate to="/admin/dashboard" replace />
+    ? <Navigate to="/admin/" replace />
     : <Navigate to="/admin/login" replace />;
 }

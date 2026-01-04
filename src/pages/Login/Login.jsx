@@ -54,7 +54,7 @@ function Login() {
       userLogin(response.user, response.token);   // <-- UPDATED
 
       setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      setTimeout(() => navigate('/'), 1500);
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -170,17 +170,17 @@ function Login() {
             <div className={styles.successBox}>{success}</div>
           )}
 
-          <form 
+          <form
             onSubmit={
               isResetMode
                 ? handleResetPassword
                 : isOTPMode
-                ? handleVerifyOTP
-                : handleLogin
+                  ? handleVerifyOTP
+                  : handleLogin
             }
             className={styles.form}
           >
-            <input 
+            <input
               type="email"
               name="email"
               placeholder="Email address"
@@ -203,7 +203,7 @@ function Login() {
                     onChange={handleInputChange}
                     required
                   />
-                  <span 
+                  <span
                     className={styles.eyeIcon}
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
@@ -250,7 +250,7 @@ function Login() {
                   <span>Remember me</span>
                 </label>
 
-                <button 
+                <button
                   type="button"
                   onClick={handleForgotPassword}
                   className={styles.forgotLink}
@@ -264,17 +264,17 @@ function Login() {
               {loading
                 ? "Please wait..."
                 : isResetMode
-                ? "Reset Password"
-                : isOTPMode
-                ? "Verify OTP"
-                : "Log in"}
+                  ? "Reset Password"
+                  : isOTPMode
+                    ? "Verify OTP"
+                    : "Log in"}
             </button>
           </form>
         </div>
       </div>
 
       <div className={styles.rightSection}>
-        <img 
+        <img
           src="https://images.unsplash.com/photo-1586165368502-1bad197a6461?w=800&q=80"
           alt="Chess Board"
           className={styles.chessImage}

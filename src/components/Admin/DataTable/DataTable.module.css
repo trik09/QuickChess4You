@@ -64,12 +64,13 @@
   font-style: italic;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .tableContainer {
     overflow-x: auto;
   }
-  
+
   .table {
-    min-width: 600px;
+    min-width: 800px;
+    /* Ensure table doesn't squash on small screens */
   }
 }

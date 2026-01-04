@@ -278,7 +278,7 @@ function PuzzlePage() {
       if (paramCompetitionId) {
         navigate(`/`); // Redirect to competitions list instead of admin
       } else {
-        navigate("/dashboard");
+        navigate("/");
       }
     }, 2000);
   };
@@ -387,7 +387,7 @@ function PuzzlePage() {
           // We can just call the submit handler
           handleSubmitCompetition();
         } else if (competitionData) {
-          navigate("/dashboard");
+          navigate("/");
         }
       }
     }, 1000);
@@ -676,7 +676,7 @@ function PuzzlePage() {
               <button
                 className={styles.actionBtn}
                 style={{ marginTop: "10px", fontSize: "0.8rem" }}
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/")}
               >
                 Exit Session
               </button>

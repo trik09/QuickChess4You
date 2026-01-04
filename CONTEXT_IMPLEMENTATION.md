@@ -160,7 +160,7 @@ function MyComponent() {
 - `src/components/Navbar/Navbar.jsx` - Uses useAuth
 - `src/components/ProtectedRoute/ProtectedRoute.jsx` - Uses useAuth
 - `src/pages/Home/Home.jsx` - Uses useAuth
-- `src/pages/Dashboard/Dashboard.jsx` - Uses useAuth
+- `src/pages//.jsx` - Uses useAuth
 
 ## ⚠️ Notes
 
