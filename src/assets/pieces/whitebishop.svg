@@ -1,9 +1,12 @@
-<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M2.05574 16.8745C3.87945 16.3508 7.50531 17.1067 9.32902 15.7969C11.1527 17.1067 14.7786 16.3508 16.6023 16.8745C16.6023 16.8745 17.4891 17.1666 18.2186 17.9522C17.8538 18.4759 17.3318 18.4834 16.6023 18.2216C14.7786 17.6978 11.1527 18.4683 9.32902 17.6827C7.50531 18.4683 3.87945 17.6978 2.05574 18.2216C1.32625 18.4834 0.804195 18.4759 0.439453 17.9522C1.16894 16.9047 2.05574 16.8745 2.05574 16.8745Z" fill="white" stroke="black" stroke-width="0.878228" stroke-linejoin="round"/>
-<path d="M5.28886 14.7174C6.63577 16.0644 12.0234 16.0644 13.3703 14.7174C13.6397 13.9092 13.3703 13.6398 13.3703 13.6398C13.3703 12.2927 12.0234 11.4845 12.0234 11.4845C14.9866 10.6763 15.256 5.28809 9.32957 3.13281C3.4032 5.28809 3.67258 10.6763 6.63577 11.4845C6.63577 11.4845 5.28886 12.2927 5.28886 13.6398C5.28886 13.6398 5.01948 13.9092 5.28886 14.7174Z" fill="white" stroke="black" stroke-width="0.878228" stroke-linejoin="round"/>
-<path d="M10.6762 1.78455C10.6762 2.52866 10.0734 3.1316 9.32933 3.1316C8.5853 3.1316 7.98242 2.52866 7.98242 1.78455C7.98242 1.04044 8.5853 0.4375 9.32933 0.4375C10.0728 0.4375 10.6762 1.04098 10.6762 1.78455Z" fill="white" stroke="black" stroke-width="0.878228" stroke-linejoin="round"/>
-<path d="M6.63477 11.4844H12.0224" stroke="black" stroke-width="0.878228"/>
-<path d="M5.28906 13.6406H13.3705" stroke="black" stroke-width="0.878228"/>
-<path d="M9.32812 5.82812V8.52222" stroke="black" stroke-width="0.878228" stroke-linecap="round"/>
-<path d="M7.98242 7.17188H10.6762" stroke="black" stroke-width="0.878228" stroke-linecap="round"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
+  <g style="opacity:1; fill:none; fill-rule:evenodd; fill-opacity:1; stroke:#000000; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; stroke-miterlimit:4; stroke-dasharray:none; stroke-opacity:1;" transform="translate(0,0.6)">
+    <g style="fill:#ffffff; stroke:#000000; stroke-linecap:butt;">
+      <path d="M 9,36 C 12.39,35.03 19.11,36.43 22.5,34 C 25.89,36.43 32.61,35.03 36,36 C 36,36 37.65,36.54 39,38 C 38.32,38.97 37.35,38.99 36,38.5 C 32.61,37.53 25.89,38.96 22.5,37.5 C 19.11,38.96 12.39,37.53 9,38.5 C 7.65,38.99 6.68,38.97 6,38 C 7.35,36.54 9,36 9,36 z"/>
+      <path d="M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,27.5 27.5,26 27.5,26 C 33,24.5 33.5,14.5 22.5,10.5 C 11.5,14.5 12,24.5 17.5,26 C 17.5,26 15,27.5 15,30 C 15,30 14.5,30.5 15,32 z"/>
+      <path d="M 25 8 A 2.5 2.5 0 1 1  20,8 A 2.5 2.5 0 1 1  25 8 z"/>
+    </g>
+    <path d="M 17.5,26 L 27.5,26 M 15,30 L 30,30 M 22.5,15.5 L 22.5,20.5 M 20,18 L 25,18" style="fill:none; stroke:#000000; stroke-linejoin:miter;"/>
+  </g>
 </svg>

@@ -29,7 +29,7 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-      console.log(response.data);
+    console.log(response.data);
 
     // Handle non-JSON responses
     let data;
@@ -134,10 +134,10 @@ export const authAPI = {
   updateUser: async (userData, avatarFile) => {
     const userToken = localStorage.getItem("token");
     const formData = new FormData();
-    
+
     if (userData.name) formData.append('name', userData.name);
     if (userData.username) formData.append('username', userData.username);
-    
+
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
@@ -267,6 +267,30 @@ export const adminAPI = {
       "/puzzle/puzzle-stats",
       {
         method: "GET",
+      },
+      adminToken
+    );
+  },
+
+  // Get all users/students
+  getAllUsers: async () => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      "/admin/users",
+      {
+        method: "GET",
+      },
+      adminToken
+    );
+  },
+
+  // Delete a user by ID
+  deleteUser: async (id) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/admin/users/${id}`,
+      {
+        method: "DELETE",
       },
       adminToken
     );
@@ -412,20 +436,20 @@ export const competitionAPI = {
 
   // Create competition
   createCompetition: async (competitionData) => {
-  const adminToken = localStorage.getItem("atoken");
+    const adminToken = localStorage.getItem("atoken");
 
-  return apiRequest(
-    "/competition/create-competition",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    return apiRequest(
+      "/competition/create-competition",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(competitionData),
       },
-      body: JSON.stringify(competitionData),
-    },
-    adminToken
-  );
-},
+      adminToken
+    );
+  },
 
 
   // Update competition
@@ -460,7 +484,7 @@ export const competitionAPI = {
     if (accessCode) {
       body.accessCode = accessCode;
     }
-    
+
     return apiRequest(
       `/competition/${id}/join`,
       {

@@ -78,9 +78,9 @@
 
 /* Square colors are now applied via inline styles from theme context */
 
-.square:hover {
+/* .square:hover {
   filter: brightness(0.92);
-}
+} */
 
 .selected {
   background-color: #baca44 !important;
@@ -114,8 +114,8 @@
 }
 
 .piece {
-  width: 70%;
-  height: 70%;
+  width: 90%;
+  height: 90%;
   user-select: none;
   z-index: 2;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));

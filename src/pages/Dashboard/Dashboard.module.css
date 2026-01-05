@@ -1,77 +1,151 @@
+/* --- VARIABLES & THEME --- */
+/* These map to your global theme. If variables aren't defined globally, the second value is the fallback */
 .container {
+  --bg-page: var(--bg-light, #f8f9fa);
+  --bg-card: var(--bg-white, #ffffff);
+  --text-main: var(--text-primary, #1a1a1a);
+  --text-sub: var(--text-muted, #5a5a5a);
+  --border-color: var(--border-light, #e0e0e0);
+  --primary-color: var(--primary, #b58863);
+  --primary-hover: var(--primary-dark, #8b6b4e);
+
+  /* Action Button Colors for Light Mode */
+  --btn-bg: #f0f0f0;
+  --btn-text: #1a1a1a;
+  --btn-border: #d0d0d0;
+  --btn-hover-bg: #1a1a1a;
+  --btn-hover-text: #ffffff;
+
+  /* Status Colors for Light Mode */
+  --live-bg: rgba(76, 175, 80, 0.15);
+  --live-text: #1b5e20;
+  --live-border: #4caf50;
+
+  --upcoming-bg: rgba(255, 152, 0, 0.15);
+  --upcoming-text: #e65100;
+  --upcoming-border: #ff9800;
+
+  --ended-bg: rgba(97, 97, 97, 0.1);
+  --ended-text: #424242;
+  --ended-border: #9e9e9e;
+
   width: 100%;
   min-height: 100vh;
-  padding-bottom: 3rem;
-  font-family: "Inter", sans-serif;
+  padding-bottom: 6rem;
+  /* Extra space for bottom nav on mobile */
+  font-family: 'Inter', sans-serif;
+  color: var(--text-main);
+  background: var(--bg-page);
+}
+
+/* Dark Mode Override (If parent has data-theme='dark') */
+:global([data-theme='dark']) .container {
+  --bg-page: #121212;
+  --bg-card: #1e1e1e;
+  --text-main: #ffffff;
+  --text-sub: #b0b0b0;
+  --border-color: #333333;
+
+  /* Action Button Colors for Dark Mode */
+  --btn-bg: #2a2a2a;
+  --btn-text: #ffffff;
+  --btn-border: #404040;
+  --btn-hover-bg: #ffffff;
+  --btn-hover-text: #1a1a1a;
+
+  /* Status Colors for Dark Mode */
+  --live-bg: rgba(76, 175, 80, 0.2);
+  --live-text: #81c784;
+  --live-border: #66bb6a;
+
+  --upcoming-bg: rgba(255, 193, 7, 0.2);
+  --upcoming-text: #ffd54f;
+  --upcoming-border: #ffca28;
+
+  --ended-bg: rgba(189, 189, 189, 0.1);
+  --ended-text: #bdbdbd;
+  --ended-border: #757575;
 }
 
 .content {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 1rem;
 }
 
+/* --- HEADER --- */
 .header {
-  text-align: center;
-  margin-top: 3rem;
-  margin-bottom: 2rem;
+  padding: 2rem 0 1.5rem;
+  text-align: left;
 }
 
 .header h1 {
-  font-size: 2.5rem;
-  color: #fff;
-  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
   font-weight: 800;
+  margin-bottom: 0.25rem;
+  color: black;
+}
+
+.header h1 {
+  color: rgb(167, 117, 76)
 }
 
 .header p {
-  color: #aaa;
-  font-size: 1rem;
+  color: var(--text-sub);
+  font-size: 0.95rem;
 }
 
-/* Tabs */
+/* --- TABS --- */
+.tabsContainer {
+  position: sticky;
+  top: 60px;
+  /* Below mobile header */
+  z-index: 10;
+  background: var(--bg-page);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
 .filterTabs {
   display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #333;
-  padding-bottom: 10px;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+  padding: 0.25rem 0.25rem 0.75rem;
+}
+
+.filterTabs::-webkit-scrollbar {
+  display: none;
+  /* Chrome/Safari */
 }
 
 .tab {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-sub);
+  font-size: 0.9rem;
   font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  white-space: nowrap;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.tab:hover {
-  color: #fff;
+.tab.activeTab {
+  background: var(--text-main);
+  color: black;
+  /* Inverted contrast */
+  border-color: var(--text-main);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.activeTab {
-  color: #ff9800;
-  /* Orange highlight like in image? Or maybe white with orange underline */
-}
-
-.activeTab::after {
-  content: "";
-  position: absolute;
-  bottom: -11px;
-  /* aligns with border-bottom of container */
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #ff9800;
-}
-
-/* List View */
+/* --- CARD LIST --- */
 .tournamentList {
   display: flex;
   flex-direction: column;
@@ -79,203 +153,157 @@
 }
 
 .card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #1e1e1e;
-  /* Dark card bg */
-  border-radius: 4px;
-  /* Slightly rounded */
-  padding: 1rem 1.5rem;
-  position: relative;
-  border-left: 4px solid #444;
-  /* Default border */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.cardLeft {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-color);
+}
+
+/* Status Strips on Left Border */
+.card.live {
+  border-left: 4px solid var(--live-border);
+}
+
+.card.upcoming {
+  border-left: 4px solid var(--upcoming-border);
+}
+
+.card.ended {
+  border-left: 4px solid var(--ended-border);
+}
+
+/* --- CARD CONTENT --- */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardTitleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .cardTitle {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   margin: 0;
+  line-height: 1.3;
 }
 
-.cardDetails {
-  display: flex;
-  gap: 1.5rem;
-  color: #888;
-  font-size: 0.85rem;
-  align-items: center;
+.cardArrow {
+  color: var(--text-sub);
+  opacity: 0.5;
+  font-size: 0.9rem;
 }
 
-.detailItem {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cardRight {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-/* Buttons and Badges */
+/* Badges */
 .statusBadge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  width: fit-content;
+  display: inline-block;
 }
 
-.statusLive {
-  background-color: #386128;
-  /* Dark Green bg */
-  color: #6aca4b;
-  /* Light Green text */
-  border: 1px solid #488032;
+.badgeLive {
+  background: var(--live-bg);
+  color: var(--live-text);
 }
 
-.statusUpcoming {
-  background-color: #4a3b10;
-  color: #ffd700;
-  border: 1px solid #705816;
+.badgeUpcoming {
+  background: var(--upcoming-bg);
+  color: var(--upcoming-text);
 }
 
-.statusENDED {
-  background-color: #333;
-  color: #aaa;
-  border: 1px solid #444;
+.badgeEnded {
+  background: var(--ended-bg);
+  color: var(--ended-text);
 }
 
-.viewBtn {
-  background-color: #333;
-  color: #ddd;
+/* Info Grid */
+.cardInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 0.2rem;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-sub);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.infoIcon {
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+/* Button */
+.cardAction {
+  margin-top: 0.5rem;
+}
+
+.actionBtn {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 8px;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
   font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: 1px solid var(--btn-border);
 }
 
-.viewBtn:hover {
-  background-color: #444;
-  color: #fff;
+.card:hover .actionBtn {
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+  border-color: var(--btn-hover-bg);
 }
 
-/* Card Borders based on status */
-.borderLive {
-  border-left-color: #6aca4b;
-}
-
-.borderUpcoming {
-  border-left-color: #ffd700;
-}
-
-.borderENDED {
-  border-left-color: #555;
-}
-
-/* Modal (Keep existing styles mostly) */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.modalContent {
-  background: #1e1e1e;
-  padding: 30px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  border: 1px solid #333;
-  color: #fff;
-}
-
-.modalContent h3 {
-  color: #fff;
-  margin-top: 0;
-}
-
-.modalContent p {
-  color: #aaa;
-  margin-bottom: 20px;
-}
-
-.codeInput {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 16px;
-  text-align: center;
-  outline: none;
-}
-
-.codeInput:focus {
-  border-color: #ff9800;
-}
-
-.modalActions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.submitBtn {
-  background: #ff9800;
-  color: #000;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.cancelBtn {
-  background: #333;
-  color: #ddd;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* Empty/Loading */
+/* --- EMPTY STATES --- */
 .loadingState,
 .emptyState,
 .errorState {
   text-align: center;
-  padding: 3rem;
-  color: #888;
+  padding: 4rem 1rem;
+  color: var(--text-sub);
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px dashed var(--border-color);
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #333;
-  border-top-color: #ff9800;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -287,21 +315,64 @@
   }
 }
 
-@media (max-width: 768px) {
+/* --- RESPONSIVE ADJUSTMENTS --- */
+/* Tablet & Desktop */
+@media (min-width: 768px) {
   .card {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+  }
+
+  .cardHeader {
+    flex: 1;
+    align-items: center;
+    justify-content: flex-start;
     gap: 1rem;
   }
 
-  .cardRight {
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 10px;
+  .cardTitleSection {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
   }
 
-  .cardDetails {
-    flex-wrap: wrap;
-    gap: 10px;
+  /* On desktop, show details in a row, not grid */
+  .cardInfoGrid {
+    display: flex;
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+    margin-left: auto;
+    /* Push to right */
+    margin-right: 2rem;
+    gap: 1.5rem;
+  }
+
+  .cardAction {
+    margin-top: 0;
+    width: auto;
+  }
+
+  .actionBtn {
+    width: auto;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .cardArrow {
+    display: none;
+  }
+}
+
+/* Mobile Tweaks */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .cardInfoGrid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 }

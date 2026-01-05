@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import {
     FaUser,
-    FaCog,
     FaSignOutAlt,
-    FaSun,
-    FaMoon,
     FaChevronLeft,
     FaChevronRight,
     FaThLarge,
@@ -15,29 +12,21 @@ import {
     FaHistory
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
 import styles from './StudentLayout.module.css';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 
 const StudentLayout = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { user, logout } = useAuth();
-    const { darkMode, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
-    // Student Navigation Items
+    // Primary Navigation (Bottom Bar on Mobile / Sidebar on Desktop)
     const navItems = [
-        { path: '/Dashboard', label: 'Puzzle Arena', icon: <FaThLarge /> },
-        { path: '/Dashboard/competitions', label: 'My Competitions', icon: <FaTrophy /> },
-        { path: '/Dashboard/courses', label: 'My Courses', icon: <FaGraduationCap /> },
-        { path: '/Dashboard/puzzles', label: 'Puzzle History', icon: <FaHistory /> },
-        { path: '/puzzle', label: 'Solve Puzzles', icon: <FaPuzzlePiece /> }, // Direct link to play
-    ];
-
-    const userItems = [
-        { path: '/profile', label: 'Profile', icon: <FaUser /> },
-        { path: '/settings', label: 'Settings', icon: <FaCog /> },
+        { path: '/Dashboard', label: 'Arena', icon: <FaThLarge /> },
+        { path: '/Dashboard/competitions', label: 'Compete', icon: <FaTrophy /> },
+        { path: '/puzzle', label: 'Play', icon: <FaPuzzlePiece />, isSpecial: true }, // Special styling for Play
+        { path: '/Dashboard/courses', label: 'Learn', icon: <FaGraduationCap /> },
+        { path: '/Dashboard/puzzles', label: 'History', icon: <FaHistory /> },
     ];
 
     const handleLogout = () => {
@@ -45,66 +34,49 @@ const StudentLayout = () => {
         navigate('/');
     };
 
-    // Close mobile menu on route change
-    const location = useLocation();
-    useEffect(() => {
-        setIsMobileMenuOpen(false);
-    }, [location]);
-
     return (
         <div className={styles.container}>
-            {/* Mobile Header */}
+            {/* --- MOBILE: Top App Bar --- */}
             <header className={styles.mobileHeader}>
-                <Link to="/" className={styles.logoLink} title="Puzzle Arena">
-                    <img src={logo} alt="Puzzle Arena" className={styles.logoImg} />
+                <Link to="/" className={styles.mobileLogo}>
+                    <img src={logo} alt="Logo" />
                 </Link>
-                <button
-                    className={styles.mobileMenuBtn}
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                    {isMobileMenuOpen ? <FaChevronLeft /> : <FaThLarge />}
-                </button>
+                <div className={styles.mobileHeaderActions}>
+                    <Link to="/profile" className={styles.mobileAvatar}>
+                        {user?.avatar ? (
+                            <img src={user.avatar} alt="User" />
+                        ) : (
+                            <span>{user?.username?.[0]?.toUpperCase() || 'U'}</span>
+                        )}
+                    </Link>
+                </div>
             </header>
 
-            {/* Mobile Overlay */}
-            <div
-                className={`${styles.mobileOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-            />
-
-            {/* Sidebar */}
-            <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''} ${isMobileMenuOpen ? styles.mobileOpen : ''}`}>
-                {/* Logo Section */}
+            {/* --- DESKTOP: Sidebar (Hidden on Mobile) --- */}
+            <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.collapsed : ''}`}>
                 <div className={styles.logoSection}>
                     {!isSidebarCollapsed && (
-                        <Link to="/" className={styles.logoLink} title="Puzzle Arena">
-                            {/* Logo Image is hidden in desktop sidebar if we want cleaner look or keep it? 
-                                 Design decision: Keep it for brand identity.
-                             */}
+                        <Link to="/" className={styles.logoLink}>
                             <img src={logo} alt="Quick Chess" className={styles.logoImg} />
-                            {/* Removed text as per request <span className={styles.logoText}>Quick Chess</span> */}
                         </Link>
                     )}
                     <button
                         className={styles.toggleBtn}
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
                     >
                         {isSidebarCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
                     </button>
                 </div>
 
-                {/* Navigation Links */}
                 <nav className={styles.navLinks}>
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
                             to={item.path}
-                            end={item.path === '/Dashboard'} // Exact match for root dashboard
+                            end={item.path === '/Dashboard'}
                             className={({ isActive }) =>
                                 `${styles.navItem} ${isActive ? styles.active : ''}`
                             }
-                            title={item.label}
                         >
                             <span className={styles.navIcon}>{item.icon}</span>
                             {!isSidebarCollapsed && <span className={styles.navLabel}>{item.label}</span>}
@@ -113,22 +85,13 @@ const StudentLayout = () => {
 
                     <div className={styles.separator} />
 
-                    {userItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            className={({ isActive }) =>
-                                `${styles.navItem} ${isActive ? styles.active : ''}`
-                            }
-                            title={item.label}
-                        >
-                            <span className={styles.navIcon}>{item.icon}</span>
-                            {!isSidebarCollapsed && <span className={styles.navLabel}>{item.label}</span>}
-                        </NavLink>
-                    ))}
+                    {/* Desktop Specific Profile Links */}
+                    <NavLink to="/profile" className={styles.navItem}>
+                        <span className={styles.navIcon}><FaUser /></span>
+                        {!isSidebarCollapsed && <span className={styles.navLabel}>Profile</span>}
+                    </NavLink>
                 </nav>
 
-                {/* Footer Section */}
                 <div className={styles.sidebarFooter}>
                     <div className={styles.userProfile}>
                         <div className={styles.avatar}>
@@ -140,10 +103,8 @@ const StudentLayout = () => {
                         </div>
                         {!isSidebarCollapsed && (
                             <div className={styles.userDetails}>
-                                <div className={styles.userName}>
-                                    {user?.name || user?.username || 'Player'}
-                                </div>
-                                <button onClick={handleLogout} className={styles.logoutBtn} title="Logout">
+                                <div className={styles.userName}>{user?.name || 'Player'}</div>
+                                <button onClick={handleLogout} className={styles.logoutBtn}>
                                     <FaSignOutAlt /> Logout
                                 </button>
                             </div>
@@ -152,10 +113,27 @@ const StudentLayout = () => {
                 </div>
             </aside>
 
-            {/* Main Content */}
+            {/* --- MAIN CONTENT --- */}
             <main className={`${styles.mainContent} ${isSidebarCollapsed ? styles.expanded : ''}`}>
                 <Outlet />
             </main>
+
+            {/* --- MOBILE: Bottom Navigation Bar --- */}
+            <nav className={styles.bottomNav}>
+                {navItems.map((item) => (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.path === '/Dashboard'}
+                        className={({ isActive }) =>
+                            `${styles.bottomNavItem} ${isActive ? styles.bottomNavActive : ''} ${item.isSpecial ? styles.specialNavItem : ''}`
+                        }
+                    >
+                        <span className={styles.bottomNavIcon}>{item.icon}</span>
+                        <span className={styles.bottomNavLabel}>{item.label}</span>
+                    </NavLink>
+                ))}
+            </nav>
         </div>
     );
 };

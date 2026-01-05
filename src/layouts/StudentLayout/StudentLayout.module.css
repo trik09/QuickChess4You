@@ -1,4 +1,6 @@
-/* StudentLayout container */
+/* StudentLayout.module.css */
+
+/* --- SHARED VARIABLES & BASE --- */
 .container {
     display: flex;
     min-height: 100vh;
@@ -6,9 +8,9 @@
     color: var(--text-primary);
 }
 
-/* Sidebar (Desktop) */
+/* --- DESKTOP SIDEBAR STYLES --- */
 .sidebar {
-    width: var(--sidebar-width, 240px);
+    width: 240px;
     background: var(--bg-white);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -18,9 +20,8 @@
     left: 0;
     height: 100vh;
     z-index: 50;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-sm);
-    color: var(--text-muted);
 }
 
 .sidebar.collapsed {
@@ -29,34 +30,17 @@
 
 /* Logo Section */
 .logoSection {
-    height: 109px;
+    height: 90px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 1rem;
     border-bottom: 1px solid var(--border-color);
-    background: var(--bg-white);
-}
-
-.logoLink {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    color: var(--text-heading);
-    overflow: hidden;
 }
 
 .logoImg {
-    height: 80px;
+    height: 60px;
     object-fit: contain;
-}
-
-.logoText {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--primary);
-    white-space: nowrap;
 }
 
 .toggleBtn {
@@ -64,36 +48,11 @@
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    border-radius: 4px;
-    transition: all 0.2s;
     margin-left: auto;
+    padding: 5px;
 }
 
-.toggleBtn:hover {
-    color: var(--text-primary);
-    background: var(--bg-hover);
-}
-
-.sidebar.collapsed .logoSection {
-    justify-content: center;
-    padding: 0;
-}
-
-.sidebar.collapsed .logoLink {
-    display: none;
-}
-
-.sidebar.collapsed .toggleBtn {
-    width: 100%;
-    margin: 0;
-}
-
-/* Navigation */
+/* Desktop Navigation */
 .navLinks {
     flex: 1;
     padding: 1rem 0;
@@ -101,12 +60,6 @@
     flex-direction: column;
     gap: 0.25rem;
     overflow-y: auto;
-}
-
-.separator {
-    height: 1px;
-    background: var(--border-light);
-    margin: 0.5rem 1rem;
 }
 
 .navItem {
@@ -135,130 +88,74 @@
     font-size: 1.1rem;
     min-width: 24px;
     display: flex;
-    align-items: center;
     justify-content: center;
 }
 
 .navLabel {
     margin-left: 1rem;
     white-space: nowrap;
-    font-size: 0.95rem;
 }
 
-.sidebar.collapsed .navItem {
-    padding: 0.75rem 0;
-    justify-content: center;
-}
-
-.sidebar.collapsed .navLabel {
-    display: none;
-}
-
-.sidebar.collapsed .navIcon {
-    font-size: 1.3rem;
-}
-
-/* Footer / User Profile */
+/* Desktop Footer */
 .sidebarFooter {
     padding: 1rem;
     border-top: 1px solid var(--border-color);
-    background: var(--bg-white);
-}
-
-.themeToggleBtn {
-    background: transparent;
-    border: 1px solid var(--border-light);
-    color: var(--text-muted);
-    width: 100%;
-    padding: 0.6rem;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    margin-bottom: 0.5rem;
-}
-
-.themeToggleBtn:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    border-color: var(--text-muted);
-}
-
-.sidebar.collapsed .themeToggleBtn span {
-    display: none;
 }
 
 .userProfile {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    overflow: hidden;
+    gap: 10px;
 }
 
 .avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #b58863, #d4a574);
+    background: var(--primary);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-weight: 700;
-    flex-shrink: 0;
+    font-weight: bold;
 }
 
 .avatar img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 .userDetails {
-    flex: 1;
-    min-width: 0;
-}
-
-.userName {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.85rem;
 }
 
 .logoutBtn {
-    background: transparent;
+    background: none;
     border: none;
-    color: var(--text-muted);
-    font-size: 0.8rem;
     cursor: pointer;
+    color: #ff6b6b;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 5px;
     padding: 0;
-    margin-top: 0.2rem;
+    margin-top: 4px;
 }
 
-.logoutBtn:hover {
-    color: #ff6b6b;
+.sidebar.collapsed .navLabel,
+.sidebar.collapsed .userDetails,
+.sidebar.collapsed .logoLink {
+    display: none;
 }
 
-/* Main Content Area */
+/* --- MAIN CONTENT --- */
 .mainContent {
     flex: 1;
     margin-left: 240px;
     padding: 2rem;
     width: calc(100% - 240px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--bg-light);
+    transition: all 0.3s;
 }
 
 .mainContent.expanded {
@@ -266,65 +163,144 @@
     width: calc(100% - 72px);
 }
 
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
-        width: 240px;
-        /* Always wide when open on mobile */
-    }
+/* --- MOBILE ONLY STYLES --- */
+.mobileHeader,
+.bottomNav {
+    display: none;
+    /* Hidden on Desktop */
+}
 
-    .sidebar.mobileOpen {
-        transform: translateX(0);
-        width: 240px;
+@media (max-width: 768px) {
+
+    /* 1. Reset Desktop Styles */
+    .sidebar {
+        display: none;
+        /* Hide Sidebar completely */
     }
 
     .mainContent {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 0 !important;
+        width: 100% !important;
         padding: 1rem;
+        padding-top: 70px;
+        /* Space for Top Header */
+        padding-bottom: 80px;
+        /* Space for Bottom Nav */
     }
 
-    .mainContent.expanded {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .mobileOverlay {
+    /* 2. Top App Header */
+    .mobileHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 60px;
+        background: var(--bg-white);
+        padding: 0 1rem;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 40;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s;
+        z-index: 100;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid var(--border-light);
     }
 
-    .mobileOverlay.active {
-        opacity: 1;
-        pointer-events: auto;
+    .mobileLogo img {
+        height: 40px;
     }
 
-    .mobileHeader {
+    .mobileAvatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: var(--bg-hover);
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 1rem;
-        background: var(--bg-white);
-        border-bottom: 1px solid var(--border-color);
-        position: sticky;
-        top: 0;
-        z-index: 30;
+        justify-content: center;
+        overflow: hidden;
+        color: var(--text-primary);
+        font-weight: bold;
+        text-decoration: none;
     }
 
-    .mobileMenuBtn {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: var(--text-primary);
-        cursor: pointer;
+    .mobileAvatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* 3. Bottom Navigation Bar */
+    .bottomNav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: var(--bg-white);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 65px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        border-top: 1px solid var(--border-light);
+        z-index: 100;
+        padding-bottom: env(safe-area-inset-bottom);
+        /* For iPhone X+ */
+    }
+
+    .bottomNavItem {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: var(--text-muted);
+        flex: 1;
+        height: 100%;
+        transition: color 0.2s;
+    }
+
+    .bottomNavIcon {
+        font-size: 1.25rem;
+        margin-bottom: 4px;
+    }
+
+    .bottomNavLabel {
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    /* Active State */
+    .bottomNavActive {
+        color: var(--primary);
+    }
+
+    .bottomNavActive .bottomNavIcon {
+        transform: translateY(-2px);
+        transition: transform 0.2s;
+    }
+
+    /* Special "Play" Button Style (Middle button) */
+    .specialNavItem {
+        color: var(--primary);
+    }
+
+    .specialNavItem .bottomNavIcon {
+        background: var(--primary);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        margin-bottom: 2px;
+        box-shadow: 0 4px 10px rgba(181, 136, 99, 0.4);
+        transform: translateY(-10px);
+        /* Floating effect */
+    }
+
+    .specialNavItem.bottomNavActive .bottomNavIcon {
+        transform: translateY(-12px) scale(1.1);
     }
 }
