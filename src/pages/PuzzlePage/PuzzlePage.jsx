@@ -49,9 +49,9 @@ function PuzzlePage() {
   useEffect(() => {
     if (isLiveCompetition && paramCompetitionId) {
       const onCompetitionEnded = () => {
-        toast.success("Competition Ended! Redirecting to Leaderboard...");
+        toast.success("Competition Ended! Redirecting to lobby...");
         setTimeout(() => {
-          navigate(`/leaderboard/${paramCompetitionId}`);
+          navigate(`/competition/${paramCompetitionId}/lobby`);
         }, 1000);
       };
 
@@ -272,11 +272,10 @@ function PuzzlePage() {
 
   const handleTimeout = () => {
     toast.error("Time's up!");
-    // Clear storage on timeout? Maybe not, to show results.
-    // Wait a bit then redirect
+    // Redirect to lobby for competition, or home for casual
     setTimeout(() => {
       if (paramCompetitionId) {
-        navigate(`/`); // Redirect to competitions list instead of admin
+        navigate(`/competition/${paramCompetitionId}/lobby`); // Lobby will show as leaderboard
       } else {
         navigate("/");
       }
@@ -413,15 +412,15 @@ function PuzzlePage() {
       );
 
       if (response.success) {
-        toast.success("Competition submitted successfully!");
+        toast.success("Submitted! Returning to lobby...");
         setShowSubmitModal(false);
 
         // Clear local storage
         const stateKey = `puzzleState_${paramCompetitionId}`;
         localStorage.removeItem(stateKey);
 
-        // Navigate to Leaderboard (wait for others)
-        navigate(`/leaderboard/${competitionData._id}`);
+        // Navigate back to Lobby (player waits there with live scores)
+        navigate(`/competition/${competitionData._id}/lobby`);
       } else {
         toast.error(response.message || "Submission failed");
       }

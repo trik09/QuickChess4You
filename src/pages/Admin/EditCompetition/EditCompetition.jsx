@@ -443,8 +443,8 @@ function EditCompetition() {
 
       {/* Preview Modal */}
       {previewPuzzle && (
-        <div className={styles.modalOverlay} onClick={() => setPreviewPuzzle(null)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
             <div className={styles.modalHead}>
               <h4>{previewPuzzle.title}</h4>
               <button onClick={() => setPreviewPuzzle(null)}><FaTimesCircle /></button>

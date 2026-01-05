@@ -59,7 +59,7 @@ const CompetitionLobby = () => {
 
     // Define handlers
     const onCompetitionStarted = () => {
-      // Update state and allow user to enter when ready
+      // Update state
       setCompetitionState("LIVE");
       // Refresh lobby state to get updated data
       liveCompetitionAPI.getLobbyState(id).then(res => {
@@ -69,11 +69,13 @@ const CompetitionLobby = () => {
         }
       });
 
-      // Auto-navigate to puzzle page
-      toast.success("Competition Started! Redirecting...");
-      setTimeout(() => {
-        navigate(`/competition/${id}/puzzle`);
-      }, 1000);
+      // Auto-navigate to puzzle page ONLY if user is JOINED
+      if (participantState === "JOINED" || participantState === "PLAYING") {
+        toast.success("Competition Started! Redirecting...");
+        setTimeout(() => {
+          navigate(`/competition/${id}/puzzle`);
+        }, 1500);
+      }
     };
 
     const onCompetitionEnded = (data) => {
@@ -82,14 +84,28 @@ const CompetitionLobby = () => {
       if (data && data.leaderboard) {
         setParticipants(data.leaderboard);
       }
-      // Navigate to leaderboard after a short delay
-      setTimeout(() => {
-        navigate(`/leaderboard/${id}`);
-      }, 2000);
+      // DON'T navigate - lobby will convert to leaderboard view
+      toast.success("Competition Ended! Calculating final rankings...");
     };
 
     const onLeaderboardUpdate = (leaderboard) => {
       setParticipants(leaderboard);
+    };
+
+    const onLiveScoreUpdate = (data) => {
+      // Real-time score update for individual player
+      setParticipants(prev => {
+        const updated = prev.map(p =>
+          p.userId === data.userId
+            ? { ...p, score: data.score, puzzlesSolved: data.puzzlesSolved, timeSpent: data.timeSpent, status: data.status }
+            : p
+        );
+        // Re-sort by puzzles solved, then time
+        return updated.sort((a, b) => {
+          if (b.puzzlesSolved !== a.puzzlesSolved) return b.puzzlesSolved - a.puzzlesSolved;
+          return a.timeSpent - b.timeSpent;
+        });
+      });
     };
 
     const onParticipantSubmitted = (data) => {
@@ -109,6 +125,7 @@ const CompetitionLobby = () => {
     socketService.on("competitionStarted", onCompetitionStarted);
     socketService.on("competitionEnded", onCompetitionEnded);
     socketService.on("leaderboardUpdate", onLeaderboardUpdate);
+    socketService.on("liveScoreUpdate", onLiveScoreUpdate);
     socketService.on("participantSubmitted", onParticipantSubmitted);
 
     // Cleanup
@@ -116,16 +133,10 @@ const CompetitionLobby = () => {
       socketService.off("competitionStarted", onCompetitionStarted);
       socketService.off("competitionEnded", onCompetitionEnded);
       socketService.off("leaderboardUpdate", onLeaderboardUpdate);
+      socketService.off("liveScoreUpdate", onLiveScoreUpdate);
       socketService.off("participantSubmitted", onParticipantSubmitted);
     };
   }, [id, navigate, participantState]);
-
-  // Handle Competition Ended Event from Context (Redundant but safe to keep as fallback)
-  useEffect(() => {
-    if (competitionEnded) {
-      navigate(`/leaderboard/${id}`);
-    }
-  }, [competitionEnded, id, navigate]);
 
   // Sync Participants with Live Leaderboard if available
   useEffect(() => {
@@ -134,17 +145,7 @@ const CompetitionLobby = () => {
     }
   }, [liveLeaderboard, isConnected]);
 
-  // Auto-redirect to Leaderboard when competition state becomes ENDED
-  useEffect(() => {
-    if (competitionState === "ENDED") {
-      const timeout = setTimeout(() => {
-        // Only redirect if we are still on the lobby page to avoid loops
-        // navigate will push to history, perfectly fine
-        navigate(`/leaderboard/${id}`);
-      }, 2000); // 2 second delay to let user see "ENDED" status
-      return () => clearTimeout(timeout);
-    }
-  }, [competitionState, id, navigate]);
+  // NO auto-redirect when competition ends - lobby converts to leaderboard view
 
   // Main Load Effect
   useEffect(() => {
@@ -418,7 +419,10 @@ const CompetitionLobby = () => {
 
         <div className="header-right">
           {competitionState === "ENDED" ? (
-            <h2 className="ended-text">ENDED</h2>
+            <div className="ended-section">
+              <FaTrophy className="trophy-large" />
+              <h2 className="ended-text">Final Results</h2>
+            </div>
           ) : (
             <div className="timer-section">
               {/* Show countdown timer for live/upcoming */}
@@ -469,7 +473,9 @@ const CompetitionLobby = () => {
 
       {/* Participants Card */}
       <div className="lobby-card participants-card">
-        <h2 className="section-title">Participants ({participants.length})</h2>
+        <h2 className="section-title">
+          {competitionState === "ENDED" ? "🏆 Final Rankings" : `Participants (${participants.length})`}
+        </h2>
         <div className="table-responsive">
           <table className="participants-table">
             <thead>
@@ -477,8 +483,8 @@ const CompetitionLobby = () => {
                 <th className="th-rank">Rank</th>
                 <th className="th-player">Player</th>
                 <th className="th-status">Status</th>
-                <th className="th-score">Score</th>
-                <th className="th-time">Time Used</th>
+                <th className="th-puzzles">Puzzles</th>
+                <th className="th-time">Time</th>
               </tr>
             </thead>
             <tbody>
@@ -486,9 +492,15 @@ const CompetitionLobby = () => {
                 participants.map((p, idx) => (
                   <tr
                     key={idx}
-                    className={p.userId === user?.id ? "row-highlight" : ""}
+                    className={`${p.userId === user?.id ? "row-highlight" : ""} ${competitionState === "ENDED" && idx < 3 ? "winner-row" : ""
+                      }`}
                   >
-                    <td className="td-rank">#{idx + 1}</td>
+                    <td className="td-rank">
+                      {competitionState === "ENDED" && idx === 0 && <span className="medal gold">🥇</span>}
+                      {competitionState === "ENDED" && idx === 1 && <span className="medal silver">🥈</span>}
+                      {competitionState === "ENDED" && idx === 2 && <span className="medal bronze">🥉</span>}
+                      {(competitionState !== "ENDED" || idx > 2) && `#${idx + 1}`}
+                    </td>
                     <td className="td-player">
                       <div className="player-info">
                         {p.userId === user?.id ? (
@@ -504,8 +516,8 @@ const CompetitionLobby = () => {
                       </div>
                     </td>
                     <td className="td-status">{getStatus(p)}</td>
-                    <td className="td-score">
-                      {p.score !== undefined ? p.score : "--"}
+                    <td className="td-puzzles">
+                      <strong>{p.puzzlesSolved || 0}</strong> / {competition?.puzzles?.length || "?"}
                     </td>
                     <td className="td-time">
                       {p.timeSpent ? formatTime(p.timeSpent) : "--"}
@@ -600,6 +612,21 @@ const CompetitionLobby = () => {
             letter-spacing: 1px;
             margin: 0;
         }
+        .ended-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .trophy-large {
+            font-size: 3rem;
+            color: #ffd700;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
         .timer-section {
             text-align: right;
             display: flex;
@@ -691,11 +718,25 @@ const CompetitionLobby = () => {
             border-bottom: 1px solid #2a2a2a;
         }
         
-        .th-rank, .td-rank { width: 60px; color: #666; font-weight: bold; }
-        .th-player, .td-player { width: 40%; }
-        .th-status, .td-status { width: 20%; color: #888; }
-        .th-score, .td-score { width: 15%; color: #888; }
+        .th-rank, .td-rank { width: 80px; color: #666; font-weight: bold; text-align: center; }
+        .th-player, .td-player { width: 35%; }
+        .th-status, .td-status { width: 15%; color: #888; }
+        .th-puzzles, .td-puzzles { width: 20%; color: #888; font-weight: 600; }
         .th-time, .td-time { width: 15%; color: #888; }
+
+        .medal {
+            font-size: 1.5rem;
+            display: inline-block;
+            animation: bounce 1s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .winner-row {
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+            border-left: 3px solid #ffd700;
+        }
 
         .player-info {
             display: flex;

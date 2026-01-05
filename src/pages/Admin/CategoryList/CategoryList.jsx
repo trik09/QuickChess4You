@@ -232,8 +232,8 @@ function CategoryList() {
 
       {/* Modal */}
       {showModal && (
-        <div className={styles.modalOverlay} onClick={handleCloseModal}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h2>{editingCategory ? 'Edit Category' : 'Create New Category'}</h2>
               <button className={styles.closeBtn} onClick={handleCloseModal}>

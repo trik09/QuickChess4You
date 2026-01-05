@@ -25,7 +25,7 @@ function ThemeModal({ isOpen, onClose }) {
 
   return (
     <>
-      <div className={styles.overlay} onClick={onClose} />
+      <div className={styles.overlay} />
       <div className={styles.modal}>
         <div className={styles.header}>
           <h2>Customize Experience</h2>

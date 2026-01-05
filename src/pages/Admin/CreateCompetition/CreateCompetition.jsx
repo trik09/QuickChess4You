@@ -434,8 +434,8 @@ function CreateCompetition() {
 
       {/* Preview Modal */}
       {previewPuzzle && (
-        <div className={styles.modalOverlay} onClick={() => setPreviewPuzzle(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h4>{previewPuzzle.title}</h4>
               <button onClick={() => setPreviewPuzzle(null)}><FaTimesCircle /></button>

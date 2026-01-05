@@ -216,7 +216,6 @@ function Competitions() {
                         alignItems: 'center',
                         padding: '20px'
                     }}
-                    onClick={() => setShowResultModal(false)}
                 >
                     <div
                         style={{
@@ -229,7 +228,6 @@ function Competitions() {
                             position: 'relative',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
                         }}
-                        onClick={e => e.stopPropagation()}
                     >
                         <div style={{ padding: '15px 20px', borderBottom: '1px solid #404040', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3 style={{ margin: 0, color: '#e5e5e5', display: 'flex', alignItems: 'center', gap: '10px' }}>

@@ -49,7 +49,7 @@ function Profile() {
       setLoading(true);
       setError('');
       const response = await authAPI.getCurrentUser();
-      
+
       if (response.user) {
         setUserData(response.user);
         // Update context and localStorage with fresh data
@@ -93,7 +93,7 @@ function Profile() {
   };
 
   // Format join date
-  const joinDate = userData.createdAt 
+  const joinDate = userData.createdAt
     ? new Date(userData.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : 'N/A';
 
@@ -156,12 +156,12 @@ function Profile() {
         <div className={styles.profileHeader}>
           <div className={styles.headerContent}>
             <div className={styles.avatarSection}>
-              <div 
+              <div
                 className={`${styles.avatar} ${getAvatarUrl(userData.avatar) ? styles.avatarClickable : ''}`}
                 onClick={handleAvatarClick}
               >
                 {getAvatarUrl(userData.avatar) ? (
-                  <img src={getAvatarUrl(userData.avatar) } 
+                  <img src={getAvatarUrl(userData.avatar)}
                     alt={userData.name || 'User'} />
                 ) : (
                   <span className={styles.avatarPlaceholder} >
@@ -350,11 +350,11 @@ function Profile() {
 
       {/* Avatar Image Viewer Modal */}
       {showAvatarModal && getAvatarUrl(userData.avatar) && (
-        <div className={styles.avatarModalOverlay} onClick={handleCloseAvatarModal}>
-          <div className={styles.avatarModalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.avatarModalOverlay}>
+          <div className={styles.avatarModalContent}>
             <div className={styles.avatarModalHeader}>
               {/* <h3>{userData.name || 'User'}'s Profile Picture</h3> */}
-              <button 
+              <button
                 className={styles.avatarModalClose}
                 onClick={handleCloseAvatarModal}
                 aria-label="Close"
@@ -363,9 +363,9 @@ function Profile() {
               </button>
             </div>
             <div className={styles.avatarModalBody}>
-              <img 
-                src={getAvatarUrl(userData.avatar)} 
-                alt={userData.name || 'User'} 
+              <img
+                src={getAvatarUrl(userData.avatar)}
+                alt={userData.name || 'User'}
                 className={styles.avatarModalImage}
               />
             </div>
