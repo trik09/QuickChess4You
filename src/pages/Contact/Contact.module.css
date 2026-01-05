@@ -30,16 +30,10 @@
 
 .content {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 60px;
-  align-items: start;
-}
-
-/* Contact Info Side */
-.infoColumn {
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .infoCard {

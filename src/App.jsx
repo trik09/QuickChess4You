@@ -25,6 +25,7 @@ import CompetitionLobby from "./pages/CompetitionLobby/CompetitionLobby";
 
 // Admin Imports
 import CapturePuzzle from "./pages/Learn/CapturePuzzle";
+import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
 
 import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
 import AdminDashboard from "./pages/Admin/AdminDashboard/AdminDashboard";
@@ -63,6 +64,7 @@ function App() {
               {/* LANDING PAGE LAYOUT (Public) */}
               <Route element={<LandingLayout />}>
                 <Route path="/" element={<Home />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/learn/capture" element={<CapturePuzzle />} />
                 {/* Keep these valid for direct links, or handle in Home as sections */}
               </Route>

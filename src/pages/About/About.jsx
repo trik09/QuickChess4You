@@ -49,7 +49,7 @@ function About() {
             <div className={styles.statCard}>
               <FaGraduationCap className={styles.statIcon} />
               <span className={styles.statValue}>50+</span>
-              <span className={styles.statLabel}>Grandmasters</span>
+              <span className={styles.statLabel}>Masters</span>
             </div>
           </div>
         </div>

@@ -651,28 +651,6 @@ function PuzzlePage() {
 
             <div className={styles.controls}>
               <button
-                className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                onClick={() => {
-                  // Reset current puzzle to initial position
-                  if (currentPuzzle) {
-                    const puzzleId = currentPuzzle.id || currentPuzzle._id;
-                    setPuzzleStatuses((prev) => {
-                      const newStatuses = { ...prev };
-                      delete newStatuses[puzzleId]; // Remove any previous status
-                      return newStatuses;
-                    });
-                    // Force board reset by updating the key
-                    setCurrentPuzzleIndex((prev) => prev); // Trigger re-render
-                    toast.success("Board reset!");
-                  }
-                }}
-              >
-                <FaUndo /> Reset Board
-              </button>
-
-              {/* Submit Competition Button - Only for Live Competitions */}
-
-              <button
                 className={styles.actionBtn}
                 style={{ marginTop: "10px", fontSize: "0.8rem" }}
                 onClick={() => navigate("/")}

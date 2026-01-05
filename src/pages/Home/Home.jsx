@@ -5,6 +5,7 @@ import Courses from '../Courses/Courses';
 import Pricing from '../Pricing/Pricing';
 import Coaching from '../Coaching/Coaching';
 import Contact from '../Contact/Contact';
+import Footer from '../../components/Footer/Footer';
 import styles from './Home.module.css';
 
 const Home = () => {
@@ -31,6 +32,8 @@ const Home = () => {
       <div id="contact" className={styles.sectionWrapper}>
         <Contact />
       </div>
+
+      <Footer />
     </div>
   );
 };
