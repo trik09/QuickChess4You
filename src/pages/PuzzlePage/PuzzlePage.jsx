@@ -9,7 +9,7 @@ import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
 import CompetitionLeaderboard from "../../components/CompetitionLeaderboard/CompetitionLeaderboard";
-import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer"; // Import PuzzleRacer
+// import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer"; // REMOVED: Car race component
 import styles from "./PuzzlePage.module.css";
 
 function PuzzlePage() {
@@ -147,8 +147,33 @@ function PuzzlePage() {
         if (isLive) {
           try {
             const user = JSON.parse(localStorage.getItem("user") || "{}");
-            // Ensure participation logic
-            await participateInCompetition(paramCompetitionId, user.username || user.name);
+            
+            // Check if we already have valid puzzle data to avoid duplicate participation calls
+            const stateKey = `puzzleState_${paramCompetitionId}`;
+            const savedState = localStorage.getItem(stateKey);
+            let hasValidState = false;
+            
+            if (savedState) {
+              try {
+                const parsed = JSON.parse(savedState);
+                hasValidState = parsed.puzzleStatuses && Object.keys(parsed.puzzleStatuses).length > 0;
+              } catch (e) {
+                console.error('Error parsing saved state:', e);
+              }
+            }
+            
+            // Only participate if we don't have valid state already
+            let participationResponse = null;
+            if (!hasValidState) {
+              try {
+                participationResponse = await participateInCompetition(paramCompetitionId, user.username || user.name);
+              } catch (participationError) {
+                // Silent handling of participation errors during initialization
+                console.log('Participation error (continuing with fallback):', participationError.message);
+              }
+            } else {
+              console.log('Using existing valid state, skipping participation call');
+            }
 
             // Fetch DETAILED puzzles with user's solved status
             const puzzleRes = await liveCompetitionAPI.getPuzzles(paramCompetitionId);
@@ -167,44 +192,106 @@ function PuzzlePage() {
                 description: p.description || "",
                 kidsConfig: p.kidsConfig,
                 puzzleType: p.type || "normal",
-                isSolved: p.isSolved
+                isSolved: p.isSolved,
+                isFailed: p.isFailed,
+                status: p.status
               }));
               setPuzzles(normalized);
 
-              // Update Statuses map from server
+              // Update Statuses map from server data
               const statuses = {};
               normalized.forEach(p => {
-                if (p.isSolved) statuses[p.id] = 'success';
+                if (p.isSolved || p.status === 'solved') {
+                  statuses[p.id] = 'success';
+                } else if (p.isFailed || p.status === 'failed') {
+                  statuses[p.id] = 'failed';
+                }
               });
 
-              // Restore from localStorage if available (for failed puzzles)
+              console.log('Setting puzzle statuses from server:', statuses);
+              setPuzzleStatuses(statuses);
+
+              // Restore board states from localStorage and merge with server data
               const stateKey = `puzzleState_${paramCompetitionId}`;
               const savedState = localStorage.getItem(stateKey);
               if (savedState) {
-                const parsed = JSON.parse(savedState);
-                // Merge saved statuses (for failed puzzles) with server statuses
-                Object.assign(statuses, parsed.puzzleStatuses || {});
-                setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+                try {
+                  const parsed = JSON.parse(savedState);
+                  // Merge server statuses with localStorage statuses
+                  const mergedStatuses = { ...parsed.puzzleStatuses, ...statuses };
+                  setPuzzleStatuses(mergedStatuses);
+                  setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+                  console.log('Merged puzzle statuses (server + localStorage):', mergedStatuses);
+                  console.log('Restored board states from localStorage:', parsed.puzzleBoardStates);
+                } catch (e) {
+                  console.error('Error parsing saved state:', e);
+                }
               }
 
-              setPuzzleStatuses(statuses);
-
-              // Update Score and Solved Count form Backend
+              // Update Score and Solved Count from Backend
               if (puzzleRes.participant) {
                 setScore(puzzleRes.participant.score);
                 setSolvedCount(puzzleRes.participant.puzzlesSolved);
               }
 
               // Find first unsolved puzzle
-              const firstUnsolved = normalized.findIndex(p => !p.isSolved);
+              const firstUnsolved = normalized.findIndex(p => !p.isSolved && p.status !== 'solved' && p.status !== 'failed');
               if (firstUnsolved !== -1) {
                 setCurrentPuzzleIndex(firstUnsolved);
+              } else {
+                // All puzzles are solved, stay on current or go to first
+                setCurrentPuzzleIndex(0);
               }
             }
 
           } catch (err) {
             console.error("Error syncing live competition data", err);
-            // Fallback to basic loading if detailed fetch fails
+            // Silent error handling during initialization - no toast errors
+            
+            // Fallback: Load basic puzzles from competition data
+            if (comp.puzzles && comp.puzzles.length > 0) {
+              const normalized = comp.puzzles.map((p, index) => ({
+                id: p._id,
+                _id: p._id,
+                index: index + 1,
+                fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                solution: p.solutionMoves || [],
+                title: p.title || `Puzzle ${index + 1}`,
+                type: p.type === "kids" ? "Kids" : (p.title || "Puzzle"),
+                difficulty: p.difficulty || "medium",
+                description: p.description || "",
+                kidsConfig: p.kidsConfig,
+                puzzleType: p.type || "normal",
+                isSolved: false,
+                isFailed: false,
+                status: 'unsolved'
+              }));
+              setPuzzles(normalized);
+              
+              // Try to restore from localStorage with proper state merging
+              const stateKey = `puzzleState_${paramCompetitionId}`;
+              const savedState = localStorage.getItem(stateKey);
+              if (savedState) {
+                try {
+                  const parsed = JSON.parse(savedState);
+                  setPuzzleStatuses(parsed.puzzleStatuses || {});
+                  setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+                  setScore(parsed.score || 0);
+                  setSolvedCount(parsed.solvedCount || 0);
+                  if (parsed.currentPuzzleIndex !== undefined) {
+                    setCurrentPuzzleIndex(parsed.currentPuzzleIndex);
+                  }
+                  console.log('Restored complete state from localStorage:', {
+                    statuses: parsed.puzzleStatuses,
+                    score: parsed.score,
+                    solvedCount: parsed.solvedCount,
+                    currentIndex: parsed.currentPuzzleIndex
+                  });
+                } catch (e) {
+                  console.error('Error parsing saved state:', e);
+                }
+              }
+            }
           }
         }
 
@@ -263,7 +350,22 @@ function PuzzlePage() {
       }
     } catch (error) {
       console.error("Error loading puzzles:", error);
-      toast.error("Failed to load puzzles");
+      // Silent error handling during initialization to prevent black page
+      
+      // Provide fallback to prevent black page
+      setLoading(false);
+      isLoadedRef.current = true;
+      
+      // Only navigate away for critical errors, not initialization issues
+      if (error.message && error.message.includes('critical')) {
+        setTimeout(() => {
+          if (paramCompetitionId) {
+            navigate(`/competition/${paramCompetitionId}/lobby`);
+          } else {
+            navigate("/");
+          }
+        }, 3000);
+      }
     } finally {
       setLoading(false);
       isLoadedRef.current = true;
@@ -407,7 +509,7 @@ function PuzzlePage() {
     }, 1000);
   };
 
-  const handleWrongMove = () => {
+  const handleWrongMove = async () => {
     const currentPuzzle = puzzles[currentPuzzleIndex];
     if (!currentPuzzle) return;
 
@@ -415,6 +517,30 @@ function PuzzlePage() {
 
     // Check if already marked as failed
     if (puzzleStatuses[puzzleId] === "failed") return;
+
+    // Calculate time taken for this puzzle
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+    // Submit failed attempt to backend if it's a live competition
+    if (competitionData && isLiveCompetition) {
+      try {
+        setSolving(true);
+        
+        // Submit wrong solution to backend to mark as failed
+        const res = await liveCompetitionAPI.submitSolution(
+          competitionData._id,
+          currentPuzzle.id,
+          ['wrong', 'move'], // Send wrong moves
+          timeTaken
+        );
+
+        console.log('Failed attempt submitted to backend:', res);
+      } catch (error) {
+        console.error('Failed to submit wrong move:', error);
+      } finally {
+        setSolving(false);
+      }
+    }
 
     // Mark as failed and lock the puzzle
     setPuzzleStatuses((prev) => ({ ...prev, [puzzleId]: "failed" }));
@@ -524,6 +650,7 @@ function PuzzlePage() {
               </div>
             </div>
 
+            {/* REMOVED: Current Status section
             <div className={styles.statCard} style={{ textAlign: "center" }}>
               <div className={styles.statLabel}>Current Status</div>
               <div
@@ -532,6 +659,7 @@ function PuzzlePage() {
                 Compete Mode
               </div>
             </div>
+            */}
 
             {/* Submit Competition Button - Only for Live Competitions */}
             {isLiveCompetition && (
@@ -616,8 +744,9 @@ function PuzzlePage() {
             )}
           </div>
 
-          {/* Car Race Visualization */}
+          {/* REMOVED: Car Race Visualization
           {isLiveCompetition && <PuzzleRacer />}
+          */}
 
           {/* Moved Title/Description to Top, kept here only if needed for extra info */}
         </div>
@@ -634,6 +763,7 @@ function PuzzlePage() {
               {puzzles.map((puzzle, index) => {
                 const pid = puzzle.id || puzzle._id;
                 const status = puzzleStatuses[pid];
+                
                 return (
                   <div
                     key={pid}
@@ -646,7 +776,15 @@ function PuzzlePage() {
                     onClick={() => {
                       if (!solving) {
                         setCurrentPuzzleIndex(index);
+                        if (status === "success") {
+                          toast.info("Puzzle already solved!");
+                        } else if (status === "failed") {
+                          toast.info("Puzzle failed - you can view but not interact!");
+                        }
                       }
+                    }}
+                    style={{
+                      cursor: 'pointer'
                     }}
                   >
                     {status === "success" ? <FaCheckCircle /> : index + 1}
@@ -678,6 +816,7 @@ function PuzzlePage() {
               </button>
             </div>
 
+            {/* REMOVED: Exit Session button
             <div className={styles.controls}>
               <button
                 className={styles.actionBtn}
@@ -687,6 +826,7 @@ function PuzzlePage() {
                 Exit Session
               </button>
             </div>
+            */}
           </div>
         </div>
       </div>

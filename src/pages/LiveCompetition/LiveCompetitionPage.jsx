@@ -304,7 +304,7 @@ const LiveCompetitionPage = () => {
                   <span className={styles['stat-value']}>
                     {getSolvedPuzzlesCount()}/{getTotalPuzzlesCount()}
                   </span>
-                  <span className={styles['stat-label']}>Puzzles</span>
+                  <span className={styles['stat-label']}>Puzzles Solved</span>
                 </div>
                 <div className={styles['stat-item']}>
                   <span className={styles['stat-value']}>

@@ -359,15 +359,38 @@
 }
 
 .navItem.success {
-  background-color: rgba(102, 187, 106, 0.15);
-  color: var(--success);
-  border-color: var(--success);
+  background-color: rgba(102, 187, 106, 0.25) !important;
+  color: var(--success) !important;
+  border-color: var(--success) !important;
+}
+
+.navItem.success:hover {
+  background-color: rgba(102, 187, 106, 0.35) !important;
+  color: var(--success) !important;
 }
 
 .navItem.danger {
-  background-color: rgba(255, 82, 82, 0.15);
-  color: var(--danger);
-  border-color: var(--danger);
+  background-color: rgba(255, 82, 82, 0.25) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+.navItem.danger:hover {
+  background-color: rgba(255, 82, 82, 0.35) !important;
+  color: var(--danger) !important;
+}
+
+.navItem.locked {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  background-color: rgba(102, 102, 102, 0.15);
+  color: var(--text-muted);
+  border-color: rgba(102, 102, 102, 0.3);
+}
+
+.navItem.locked:hover {
+  background-color: rgba(102, 102, 102, 0.15) !important;
+  color: var(--text-muted) !important;
 }
 
 /* Control Buttons */

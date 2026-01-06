@@ -62,6 +62,29 @@ export const LiveCompetitionProvider = ({ children }) => {
       setIsLoading(true);
       setError(null);
 
+      // Check if already participating to avoid duplicate calls
+      if (competition && competition.id === competitionId) {
+        console.log('Already participating in this competition');
+        return { success: true, competition };
+      }
+
+      // Check localStorage for existing participation to avoid duplicate calls
+      const stateKey = `competition_${competitionId}_state`;
+      const existingState = localStorage.getItem(stateKey);
+      if (existingState) {
+        try {
+          const parsed = JSON.parse(existingState);
+          if (parsed.puzzleStates && Object.keys(parsed.puzzleStates).length > 0) {
+            console.log('Found existing participation state, skipping API call');
+            // Load competition data without making participation call
+            await loadCompetitionPuzzles(competitionId);
+            return { success: true, message: 'Using existing participation' };
+          }
+        } catch (e) {
+          console.error('Error parsing existing state:', e);
+        }
+      }
+
       // RESET STATE: Clear any previous competition data to prevent "ghost" racers
       setCompetition(null);
       setLeaderboard([]);
@@ -69,6 +92,7 @@ export const LiveCompetitionProvider = ({ children }) => {
       setParticipant(null);
       setCompetitionEnded(false);
       setTotalPuzzleCount(0); // Reset total puzzle count
+      
       const response = await liveCompetitionAPI.participate(competitionId, username);
 
       if (!response.success) {
@@ -95,8 +119,17 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     } catch (error) {
       console.error('Participation failed:', error);
-      setError(error.message);
-      toast.error(error.message);
+      
+      // Silent error handling during initialization - don't show toast for common errors
+      if (!error.message.toLowerCase().includes('already') && 
+          !error.message.toLowerCase().includes('participating') &&
+          !error.message.toLowerCase().includes('invalid access code')) {
+        setError(error.message);
+        toast.error(error.message);
+      } else {
+        // For access code errors during refresh, just log silently
+        console.log('Participation error (silent):', error.message);
+      }
       throw error;
     } finally {
       setIsLoading(false);
@@ -188,14 +221,38 @@ export const LiveCompetitionProvider = ({ children }) => {
             storedState: storedState
           });
           
-          // Server data takes precedence for status, but we preserve board positions
+          // Determine final status - server takes precedence, then localStorage
+          let finalStatus = 'unsolved';
+          let isSolved = false;
+          let isFailed = false;
+          let isLocked = false;
+          
+          if (puzzle.status && (puzzle.status === 'solved' || puzzle.status === 'failed')) {
+            // Server has definitive status
+            finalStatus = puzzle.status;
+            isSolved = puzzle.status === 'solved';
+            isFailed = puzzle.status === 'failed';
+            isLocked = true;
+          } else if (storedState && (storedState.status === 'solved' || storedState.status === 'failed')) {
+            // Use localStorage status if server doesn't have it
+            finalStatus = storedState.status;
+            isSolved = storedState.status === 'solved';
+            isFailed = storedState.status === 'failed';
+            isLocked = storedState.isLocked || true;
+          } else if (puzzle.isSolved || puzzle.isFailed) {
+            // Fallback to boolean flags
+            finalStatus = puzzle.isSolved ? 'solved' : 'failed';
+            isSolved = puzzle.isSolved;
+            isFailed = puzzle.isFailed;
+            isLocked = true;
+          }
+          
           return {
             ...puzzle,
-            // Use server status if available, otherwise use stored status
-            status: puzzle.status || storedState?.status || 'unsolved',
-            isSolved: puzzle.isSolved || puzzle.status === 'solved',
-            isFailed: puzzle.isFailed || puzzle.status === 'failed',
-            isLocked: puzzle.isLocked || puzzle.status === 'solved' || puzzle.status === 'failed',
+            status: finalStatus,
+            isSolved,
+            isFailed,
+            isLocked,
             
             // Preserve board position from localStorage if available
             boardPosition: puzzle.boardPosition || storedState?.boardPosition,
@@ -249,11 +306,14 @@ export const LiveCompetitionProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Failed to load puzzles:', error);
-      // Don't show toast on initialization to avoid spam
-      if (competition) {
+      // Silent error handling during initialization to prevent toast spam
+      // Only show toast if this is a user-initiated action (not on page load)
+      const isInitialLoad = !competition;
+      if (!isInitialLoad) {
         toast.error('Failed to load competition puzzles');
       }
-      throw error; // Re-throw so caller can handle
+      // Don't throw error to prevent black page - return error info instead
+      return { success: false, error: error.message };
     }
   };
 
@@ -397,7 +457,14 @@ export const LiveCompetitionProvider = ({ children }) => {
 
   // Get total puzzles count
   const getTotalPuzzlesCount = () => {
-    return totalPuzzleCount || puzzles.length;
+    // Priority: 1. Actual puzzles loaded, 2. Competition total, 3. Stored total
+    if (puzzles && puzzles.length > 0) {
+      return puzzles.length;
+    }
+    if (competition && competition.puzzles && competition.puzzles.length > 0) {
+      return competition.puzzles.length;
+    }
+    return totalPuzzleCount || 0;
   };
 
   // Check if competition is active
