@@ -14,7 +14,7 @@ const Footer = () => {
                     <div className={styles.brandSection}>
                         <div className={styles.logo}>
                             <FaChess className={styles.logoIcon} />
-                            <span>Quick Chess 4 You</span>
+                            <span>Quick Chess For You</span>
                         </div>
                         <p className={styles.brandDescription}>
                             Empowering chess enthusiasts with interactive learning, competitive tournaments, and comprehensive training programs.
@@ -69,7 +69,7 @@ const Footer = () => {
 
                 {/* Copyright */}
                 <div className={styles.copyright}>
-                    <p>&copy; {currentYear} Quick Chess 4 You. All rights reserved.</p>
+                    <p>&copy; {currentYear} Quick Chess For You. All rights reserved.</p>
                 </div>
             </div>
         </footer>

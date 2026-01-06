@@ -483,7 +483,7 @@ const CompetitionLobby = () => {
                 <th className="th-rank">Rank</th>
                 <th className="th-player">Player</th>
                 <th className="th-status">Status</th>
-                <th className="th-puzzles">Puzzles</th>
+                <th className="th-puzzles">Score</th>
                 <th className="th-time">Time</th>
               </tr>
             </thead>
@@ -517,7 +517,7 @@ const CompetitionLobby = () => {
                     </td>
                     <td className="td-status">{getStatus(p)}</td>
                     <td className="td-puzzles">
-                      <strong>{p.puzzlesSolved || 0}</strong> / {competition?.puzzles?.length || "?"}
+                      <strong>{p.puzzlesSolved || 0}</strong> / {competition?.totalPuzzles || competition?.puzzles?.length || 0}
                     </td>
                     <td className="td-time">
                       {p.timeSpent ? formatTime(p.timeSpent) : "--"}

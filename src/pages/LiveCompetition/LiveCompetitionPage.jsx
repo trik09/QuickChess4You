@@ -23,7 +23,11 @@ const LiveCompetitionPage = () => {
     disconnectFromCompetition,
     getSolvedPuzzlesCount,
     getTotalPuzzlesCount,
-    isCompetitionActive
+    isCompetitionActive,
+    saveBoardPosition,
+    getBoardPosition,
+    isPuzzleLocked,
+    loadCompetitionPuzzles
   } = useLiveCompetition();
 
   const [competitionData, setCompetitionData] = useState(null);
@@ -36,6 +40,12 @@ const LiveCompetitionPage = () => {
   // Load competition data on mount
   useEffect(() => {
     loadCompetitionData();
+    // Also try to load puzzle states if user is already participating
+    if (id) {
+      loadCompetitionPuzzles(id).catch(error => {
+        console.log('User not participating yet:', error.message);
+      });
+    }
   }, [id]);
 
   // Cleanup on unmount
@@ -74,8 +84,13 @@ const LiveCompetitionPage = () => {
   };
 
   const handlePuzzleSelect = (puzzle) => {
-    if (puzzle.isSolved) {
-      toast.info('You have already solved this puzzle!');
+    // Check if puzzle is locked (solved or failed)
+    if (puzzle.isLocked || puzzle.isSolved || puzzle.isFailed) {
+      if (puzzle.isSolved) {
+        toast.info('You have already solved this puzzle!');
+      } else if (puzzle.isFailed) {
+        toast.info('This puzzle has been failed and is locked.');
+      }
       return;
     }
 
@@ -89,7 +104,11 @@ const LiveCompetitionPage = () => {
     try {
       const timeSpent = Math.floor((Date.now() - puzzleStartTime) / 1000);
 
-      await submitSolution(selectedPuzzle._id, solution, timeSpent);
+      // Get current board position if available (for future chess board integration)
+      const boardPosition = null; // TODO: Get from chess board component
+      const moveHistory = []; // TODO: Get from chess board component
+
+      await submitSolution(selectedPuzzle._id, solution, timeSpent, boardPosition, moveHistory);
 
       // Close puzzle view
       setSelectedPuzzle(null);
@@ -97,6 +116,7 @@ const LiveCompetitionPage = () => {
 
     } catch (error) {
       console.error('Solution submission failed:', error);
+      // Don't close puzzle view on error, let user try again or navigate away manually
     }
   };
 
@@ -302,16 +322,32 @@ const LiveCompetitionPage = () => {
               {puzzles.map((puzzle, index) => (
                 <div
                   key={puzzle._id}
-                  className={`${styles['puzzle-card']} ${puzzle.isSolved ? styles.solved : ''} ${!isCompetitionActive() ? styles.disabled : ''
-                    }`}
+                  className={`${styles['puzzle-card']} 
+                    ${puzzle.isSolved ? styles.solved : ''} 
+                    ${puzzle.isFailed ? styles.failed : ''} 
+                    ${puzzle.isLocked ? styles.locked : ''} 
+                    ${!isCompetitionActive() ? styles.disabled : ''}`}
                   onClick={() => isCompetitionActive() && handlePuzzleSelect(puzzle)}
                 >
                   <div className={styles['puzzle-number']}>#{index + 1}</div>
                   <div className={styles['puzzle-title']}>{puzzle.title}</div>
                   <div className={styles['puzzle-difficulty']}>{puzzle.difficulty}</div>
+                  
                   {puzzle.isSolved && (
                     <div className={styles['solved-indicator']}>
                       ✅ +{puzzle.solvedData?.scoreEarned || 0} pts
+                    </div>
+                  )}
+                  
+                  {puzzle.isFailed && (
+                    <div className={styles['failed-indicator']}>
+                      ❌ Failed
+                    </div>
+                  )}
+                  
+                  {puzzle.status === 'in_progress' && (
+                    <div className={styles['in-progress-indicator']}>
+                      🔄 In Progress
                     </div>
                   )}
                 </div>

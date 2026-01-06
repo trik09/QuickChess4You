@@ -75,13 +75,23 @@ export const liveCompetitionAPI = {
   },
 
   // Submit puzzle solution with Socket.IO notification
-  submitSolution: async (competitionId, puzzleId, solution, timeSpent) => {
+  submitSolution: async (competitionId, puzzleId, solution, timeSpent, boardPosition = null, moveHistory = []) => {
     const userToken = localStorage.getItem("token");
+    const body = { solution, timeSpent };
+    
+    if (boardPosition) {
+      body.boardPosition = boardPosition;
+    }
+    
+    if (moveHistory && moveHistory.length > 0) {
+      body.moveHistory = moveHistory;
+    }
+    
     return apiRequest(
       `/live-competition/${competitionId}/puzzles/${puzzleId}/submit`,
       {
         method: "POST",
-        body: JSON.stringify({ solution, timeSpent }),
+        body: JSON.stringify(body),
       },
       userToken
     );

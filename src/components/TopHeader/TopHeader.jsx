@@ -11,8 +11,8 @@ function TopHeader({ onLoginClick }) {
     <header className={styles.topHeader}>
       <div className={styles.container}>
         <Link to="/" className={styles.logo}>
-          <img src={logo} alt="Quick Chess 4 You" className={styles.logoImg} />
-          <span className={styles.logoText}>Quick Chess 4 You</span>
+          <img src={logo} alt="Quick Chess For You" className={styles.logoImg} />
+          <span className={styles.logoText}>Quick Chess For You</span>
         </Link>
 
         <nav className={styles.nav}>

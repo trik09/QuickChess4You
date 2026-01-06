@@ -29,6 +29,7 @@ function PuzzlePage() {
   const [isLiveCompetition, setIsLiveCompetition] = useState(false);
 
   const [puzzleStatuses, setPuzzleStatuses] = useState({}); // { [puzzleId]: 'success' | 'failed' }
+  const [puzzleBoardStates, setPuzzleBoardStates] = useState({}); // { [puzzleId]: { fen: string, moveHistory: string[] } }
 
   // Timer & Score
   const [timeLeft, setTimeLeft] = useState(0); // in seconds
@@ -92,6 +93,7 @@ function PuzzlePage() {
         score,
         solvedCount,
         puzzleStatuses,
+        puzzleBoardStates,
       };
       localStorage.setItem(stateKey, JSON.stringify(stateToSave));
     }
@@ -101,6 +103,7 @@ function PuzzlePage() {
     score,
     solvedCount,
     puzzleStatuses,
+    puzzleBoardStates,
     loading,
     paramCompetitionId,
     puzzles,
@@ -168,11 +171,22 @@ function PuzzlePage() {
               }));
               setPuzzles(normalized);
 
-              // Update Statuses map
+              // Update Statuses map from server
               const statuses = {};
               normalized.forEach(p => {
                 if (p.isSolved) statuses[p.id] = 'success';
               });
+
+              // Restore from localStorage if available (for failed puzzles)
+              const stateKey = `puzzleState_${paramCompetitionId}`;
+              const savedState = localStorage.getItem(stateKey);
+              if (savedState) {
+                const parsed = JSON.parse(savedState);
+                // Merge saved statuses (for failed puzzles) with server statuses
+                Object.assign(statuses, parsed.puzzleStatuses || {});
+                setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+              }
+
               setPuzzleStatuses(statuses);
 
               // Update Score and Solved Count form Backend
@@ -241,6 +255,7 @@ function PuzzlePage() {
           setScore(parsed.score);
           setSolvedCount(parsed.solvedCount);
           setPuzzleStatuses(parsed.puzzleStatuses || {});
+          setPuzzleBoardStates(parsed.puzzleBoardStates || {});
           setCurrentPuzzleIndex(parsed.currentPuzzleIndex || 0);
         } else {
           setTimeLeft(300); // Default 5 mins for casual
@@ -394,10 +409,16 @@ function PuzzlePage() {
 
   const handleWrongMove = () => {
     const currentPuzzle = puzzles[currentPuzzleIndex];
-    if (currentPuzzle) {
-      setPuzzleStatuses((prev) => ({ ...prev, [currentPuzzle.id]: "failed" }));
-    }
-    toast.error("Incorrect move, try again!");
+    if (!currentPuzzle) return;
+
+    const puzzleId = currentPuzzle.id || currentPuzzle._id;
+
+    // Check if already marked as failed
+    if (puzzleStatuses[puzzleId] === "failed") return;
+
+    // Mark as failed and lock the puzzle
+    setPuzzleStatuses((prev) => ({ ...prev, [puzzleId]: "failed" }));
+    toast.error("Incorrect! This puzzle is now locked.");
   };
 
   // Handle early submission
@@ -576,10 +597,18 @@ function PuzzlePage() {
                 kidsConfig={currentPuzzle.kidsConfig}
                 onPuzzleSolved={handlePuzzleSolved}
                 onWrongMove={handleWrongMove}
+                onBoardStateChange={(fen, moveHistory) => {
+                  const puzzleId = currentPuzzle.id || currentPuzzle._id;
+                  setPuzzleBoardStates(prev => ({
+                    ...prev,
+                    [puzzleId]: { fen, moveHistory }
+                  }));
+                }}
+                savedBoardState={puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]}
                 interactive={
                   !solving &&
-                  puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
-                  "success"
+                  puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "success" &&
+                  puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "failed"
                 }
               />
             ) : (

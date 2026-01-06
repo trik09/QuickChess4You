@@ -71,7 +71,7 @@ const MainLayout = () => {
                 {/* Logo Section */}
                 <div className={styles.logoSection}>
                     <Link to="/" className={styles.logoLink} title="Home">
-                        <img src={logo} alt="Quick Chess 4 You" className={styles.logoImg} />
+                        <img src={logo} alt="Quick Chess For You" className={styles.logoImg} />
                         {/* {!isSidebarCollapsed && <span className={styles.logoText}>QCFY</span>} */}
                     </Link>
                     <button

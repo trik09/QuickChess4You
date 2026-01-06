@@ -83,11 +83,7 @@
   font-size: 1.8rem;
   font-weight: 800;
   margin-bottom: 0.25rem;
-  color: black;
-}
-
-.header h1 {
-  color: rgb(167, 117, 76)
+  color: var(--primary, #b58863);
 }
 
 .header p {
@@ -375,4 +371,115 @@
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
+}
+
+/* Explicit theme fixes for light mode */
+[data-theme='light'] .container {
+  --bg-page: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-main: #495057 !important;
+  --text-sub: #6c757d !important;
+  --border-color: #dee2e6;
+}
+
+[data-theme='light'] .header h1 {
+  color: #b58863 !important;
+}
+
+[data-theme='light'] .header p {
+  color: #6c757d !important;
+}
+
+[data-theme='light'] .cardTitle {
+  color: #495057 !important;
+}
+
+[data-theme='light'] .infoItem {
+  color: #6c757d !important;
+}
+
+[data-theme='light'] .tab {
+  color: #6c757d !important;
+}
+
+[data-theme='light'] .tab.activeTab {
+  color: #ffffff !important;
+  background: #495057 !important;
+}
+
+[data-theme='light'] .cardArrow {
+  color: #6c757d !important;
+}
+
+/* Dark theme explicit overrides */
+[data-theme='dark'] .container {
+  --bg-page: #121212;
+  --bg-card: #1e1e1e;
+  --text-main: #ffffff !important;
+  --text-sub: #b0b0b0 !important;
+  --border-color: #333333;
+}
+
+[data-theme='dark'] .header h1 {
+  color: #b58863 !important;
+}
+
+[data-theme='dark'] .header p {
+  color: #b0b0b0 !important;
+}
+
+[data-theme='dark'] .cardTitle {
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .infoItem {
+  color: #b0b0b0 !important;
+}
+
+[data-theme='dark'] .tab {
+  color: #b0b0b0 !important;
+}
+
+[data-theme='dark'] .tab.activeTab {
+  color: #121212 !important;
+  background: #ffffff !important;
+}
+
+[data-theme='dark'] .cardArrow {
+  color: #b0b0b0 !important;
+}
+
+/* Fallback for no theme attribute (default to light) */
+:root:not([data-theme]) .container {
+  --text-main: #495057 !important;
+  --text-sub: #6c757d !important;
+}
+
+:root:not([data-theme]) .header h1 {
+  color: #b58863 !important;
+}
+
+:root:not([data-theme]) .header p {
+  color: #6c757d !important;
+}
+
+:root:not([data-theme]) .cardTitle {
+  color: #495057 !important;
+}
+
+:root:not([data-theme]) .infoItem {
+  color: #6c757d !important;
+}
+
+:root:not([data-theme]) .tab {
+  color: #6c757d !important;
+}
+
+:root:not([data-theme]) .tab.activeTab {
+  color: #ffffff !important;
+  background: #495057 !important;
+}
+
+:root:not([data-theme]) .cardArrow {
+  color: #6c757d !important;
 }

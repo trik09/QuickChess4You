@@ -50,7 +50,7 @@ function Dashboard() {
           return {
             id: comp._id,
             _id: comp._id,
-            title: comp.title || "Untitled Competition",
+            title: comp.name || comp.title || "Untitled Competition",
             dateDisplay: formatDateRange(comp.startTime),
             startDate: comp.startTime,
             endDate: comp.endTime,

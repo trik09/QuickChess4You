@@ -383,6 +383,23 @@
 .puzzle-list-item.solved {
     opacity: 0.7;
     background-color: rgba(76, 175, 80, 0.05);
+    border-left: 3px solid #4caf50;
+}
+
+.puzzle-list-item.failed {
+    opacity: 0.7;
+    background-color: rgba(244, 67, 54, 0.05);
+    border-left: 3px solid #f44336;
+}
+
+.puzzle-list-item.locked {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.puzzle-list-item.in-progress {
+    background-color: rgba(255, 152, 0, 0.05);
+    border-left: 3px solid #ff9800;
 }
 
 .puzzle-index {
@@ -463,5 +480,399 @@
 
     .puzzle-list {
         max-height: 300px;
+    }
+}
+/* Competition Header */
+.competition-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.connection-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.indicator {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.indicator.connected {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.indicator.disconnected {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.toggle-leaderboard-btn,
+.leave-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-leaderboard-btn:hover,
+.leave-btn:hover {
+    background-color: var(--background-secondary);
+}
+
+/* Error and Status Banners */
+.error-banner,
+.competition-ended-banner {
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.error-banner {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.competition-ended-banner {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+/* Competition Content Layout */
+.competition-content {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+}
+
+.left-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.right-panel {
+    width: 350px;
+    flex-shrink: 0;
+}
+
+/* Participant Stats */
+.participant-stats {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.participant-stats h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: var(--background-secondary);
+    border-radius: 8px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Puzzles Section */
+.puzzles-section {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex: 1;
+}
+
+.puzzles-section h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.puzzles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.puzzle-card {
+    background: var(--background-secondary);
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.puzzle-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.puzzle-card.solved {
+    border-color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+.puzzle-card.failed {
+    border-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.05);
+}
+
+.puzzle-card.locked {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.puzzle-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.puzzle-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.puzzle-number {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.puzzle-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.puzzle-difficulty {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.solved-indicator {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.failed-indicator {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.in-progress-indicator {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Puzzle Solving Interface */
+.puzzle-solving-interface {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.puzzle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.puzzle-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.puzzle-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.difficulty,
+.category {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.difficulty {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.category {
+    background-color: var(--background-secondary);
+    color: var(--text-secondary);
+}
+
+.puzzle-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: var(--background-secondary);
+}
+
+.chess-board-placeholder {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.temp-solution-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.correct-solution-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.wrong-solution-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .competition-content {
+        flex-direction: column;
+    }
+    
+    .right-panel {
+        width: 100%;
+    }
+    
+    .puzzles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .competition-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .puzzles-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .puzzle-solving-interface {
+        height: auto;
+        min-height: 100vh;
     }
 }

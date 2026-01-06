@@ -110,7 +110,7 @@ const playSound = (type) => {
 }
 
 
-function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false }) {
+function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, onBoardStateChange, savedBoardState, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
 
@@ -201,6 +201,21 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
       }
     }
   }, [fen, solution, puzzleType, kidsConfig]);
+
+  // Restore saved board state if available
+  useEffect(() => {
+    if (savedBoardState && savedBoardState.fen) {
+      try {
+        const restoredGame = new Chess(savedBoardState.fen);
+        setGame(restoredGame);
+        if (savedBoardState.moveHistory) {
+          setMoveHistory(savedBoardState.moveHistory);
+        }
+      } catch (error) {
+        console.error('Failed to restore board state:', error);
+      }
+    }
+  }, [savedBoardState]);
 
   // Auto-play solution logic
   useEffect(() => {
@@ -423,6 +438,11 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     }
 
     // No computer response in Kids Mode
+
+    // Notify parent of board state change
+    if (onBoardStateChange) {
+      onBoardStateChange(game.fen(), newHistory);
+    }
   };
 
   const handleUserMove = (from, to) => {
@@ -494,6 +514,13 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, puzzleTyp
     } else {
       if (onWrongMove) onWrongMove();
       resetToInitial();
+    }
+
+    // Notify parent of board state change for normal puzzles too
+    if (onBoardStateChange) {
+      setTimeout(() => {
+        onBoardStateChange(game.fen(), newHistory);
+      }, 100);
     }
   };
 

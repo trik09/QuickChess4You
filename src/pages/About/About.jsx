@@ -20,7 +20,7 @@ function About() {
           <div className={styles.missionContent}>
             <h3>Our Mission</h3>
             <p>
-              At Quick Chess 4 You, we believe that chess is more than just a game—it's a tool for developing critical thinking,
+              At Quick Chess For You, we believe that chess is more than just a game—it's a tool for developing critical thinking,
               strategic planning, and mental discipline. Our mission is to make high-quality chess education accessible to everyone,
               from beginners taking their first steps to advanced players seeking to master the game.
             </p>

@@ -6,14 +6,14 @@ const PrivacyPolicy = () => {
         <div className={styles.wrapper}>
             <div className={styles.container}>
                 <div className={styles.header}>
-                    <h1>Privacy Policy – Quick Chess 4 You</h1>
+                    <h1>Privacy Policy – Quick Chess For You</h1>
                     <p className={styles.lastUpdated}>Last Updated: January 5, 2026</p>
                 </div>
 
                 <section className={styles.section}>
                     <h2>Introduction</h2>
                     <p>
-                        Welcome to Quick Chess 4 You. We understand that privacy online is important to users of our App, especially while creating accounts and using interactive services. This Privacy Policy governs our data practices for users who visit the App without registering ("Visitors") and users who register and use the services provided by Quick Chess 4 You ("Registered Users").
+                        Welcome to Quick Chess For You. We understand that privacy online is important to users of our App, especially while creating accounts and using interactive services. This Privacy Policy governs our data practices for users who visit the App without registering ("Visitors") and users who register and use the services provided by Quick Chess For You ("Registered Users").
                     </p>
                 </section>
 
@@ -44,7 +44,7 @@ const PrivacyPolicy = () => {
 
                 <section className={styles.section}>
                     <h2>Who Collects the Information?</h2>
-                    <p>Quick Chess 4 You directly collects user information.</p>
+                    <p>Quick Chess For You directly collects user information.</p>
                     <p>
                         In addition, trusted third-party service providers (such as hosting providers, analytics tools, payment processors, and authentication services) may collect limited information as required to provide their services.
                     </p>
@@ -100,7 +100,7 @@ const PrivacyPolicy = () => {
 
                 <section className={styles.section}>
                     <h2>Cookies and Tracking Technologies</h2>
-                    <p>Quick Chess 4 You may use cookies and similar technologies to:</p>
+                    <p>Quick Chess For You may use cookies and similar technologies to:</p>
                     <ul>
                         <li>Maintain login sessions</li>
                         <li>Enhance security</li>
@@ -165,7 +165,7 @@ const PrivacyPolicy = () => {
                 <section className={styles.section}>
                     <h2>Changes to This Privacy Policy</h2>
                     <p>
-                        Quick Chess 4 You may update this Privacy Policy from time to time. Any changes will be posted within the App or on our website.
+                        Quick Chess For You may update this Privacy Policy from time to time. Any changes will be posted within the App or on our website.
                     </p>
                     <p>
                         If changes significantly affect user privacy, we will notify users accordingly.
