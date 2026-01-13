@@ -6,6 +6,7 @@ import styles from './LandingLayout.module.css';
 
 const LandingLayout = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('login');
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -17,15 +18,26 @@ const LandingLayout = () => {
         }
     }, [location, navigate]);
 
+    const handleLoginClick = () => {
+        setModalMode('login');
+        setIsLoginModalOpen(true);
+    };
+
+    const handleSignupClick = () => {
+        setModalMode('signup');
+        setIsLoginModalOpen(true);
+    };
+
     return (
         <div className={styles.container}>
-            <Navbar onLoginClick={() => setIsLoginModalOpen(true)} />
+            <Navbar onLoginClick={handleLoginClick} onSignupClick={handleSignupClick} />
             <main className={styles.main}>
                 <Outlet />
             </main>
             <LoginModal
                 isOpen={isLoginModalOpen}
                 onClose={() => setIsLoginModalOpen(false)}
+                initialMode={modalMode}
             />
         </div>
     );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authAPI } from '../../services/api';
@@ -6,14 +6,16 @@ import styles from './LoginModal.module.css';
 import { FaFacebookF } from 'react-icons/fa';
 import { FaInstagram } from 'react-icons/fa';
 
-function LoginModal({ isOpen, onClose }) {
+function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [isOTPMode, setIsOTPMode] = useState(false);
+  const [isSignupOTPMode, setIsSignupOTPMode] = useState(false); // New: for signup OTP
   const [isResetMode, setIsResetMode] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [tempToken, setTempToken] = useState(null);
+  const [tempSignupData, setTempSignupData] = useState(null); // New: store signup data temporarily
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -27,6 +29,20 @@ function LoginModal({ isOpen, onClose }) {
     newPassword: ''
   });
 
+  // Sync modal mode with initialMode prop when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsSignUp(initialMode === 'signup');
+      // Reset other states when modal opens
+      setIsOTPMode(false);
+      setIsSignupOTPMode(false);
+      setIsResetMode(false);
+      setTempSignupData(null);
+      setError('');
+      setSuccess('');
+    }
+  }, [isOpen, initialMode]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -37,7 +53,7 @@ function LoginModal({ isOpen, onClose }) {
     setSuccess('');
   };
 
-  const handleRegister = async (e) => {
+  const handleSendSignupOTP = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -63,14 +79,54 @@ function LoginModal({ isOpen, onClose }) {
     }
 
     try {
-      const response = await authAPI.register(
-        {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          username: formData.username,
-        },
-        null // No avatar during registration
+      // Store signup data temporarily
+      setTempSignupData({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+      });
+
+      // Send OTP for signup verification
+      await authAPI.sendSignupOTP({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        username: formData.username,
+      });
+
+      setSuccess('OTP sent to your email! Please check your inbox.');
+      setIsSignupOTPMode(true);
+    } catch (err) {
+      setError(err.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifySignupOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    if (!formData.email || !formData.otp) {
+      setError('Email and OTP are required');
+      setLoading(false);
+      return;
+    }
+
+    if (!tempSignupData) {
+      setError('Signup data not found. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authAPI.verifySignupOTP(
+        formData.email,
+        formData.otp,
+        tempSignupData
       );
 
       // Use context to store token, user data, and optional admin token (atoken)
@@ -82,7 +138,7 @@ function LoginModal({ isOpen, onClose }) {
         navigate('/');
       }, 1500);
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Invalid OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -169,12 +225,14 @@ function LoginModal({ isOpen, onClose }) {
   };
 
   const handleSubmit = (e) => {
-    if (isOTPMode) {
+    if (isSignupOTPMode) {
+      handleVerifySignupOTP(e);
+    } else if (isOTPMode) {
       handleVerifyOTP(e);
     } else if (isResetMode) {
       handleResetPassword(e);
     } else if (isSignUp) {
-      handleRegister(e);
+      handleSendSignupOTP(e);
     } else {
       handleLogin(e);
     }
@@ -244,12 +302,18 @@ function LoginModal({ isOpen, onClose }) {
               <span className={styles.logoIcon}>♔</span>
             </div>
             <h2 className={styles.title}>
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+              {isSignupOTPMode
+                ? 'Verify Your Email'
+                : isSignUp
+                  ? 'Create Account'
+                  : 'Welcome Back'}
             </h2>
             <p className={styles.subtitle}>
-              {isSignUp
-                ? 'Join thousands of chess players worldwide'
-                : 'Sign in to continue your chess journey'}
+              {isSignupOTPMode
+                ? 'Enter the OTP sent to your email to complete registration'
+                : isSignUp
+                  ? 'Join thousands of chess players worldwide'
+                  : 'Sign in to continue your chess journey'}
             </p>
           </div>
 
@@ -282,7 +346,7 @@ function LoginModal({ isOpen, onClose }) {
           )}
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            {isSignUp && !isOTPMode && (
+            {isSignUp && !isOTPMode && !isSignupOTPMode && (
               <>
                 <input
                   type="text"
@@ -313,7 +377,7 @@ function LoginModal({ isOpen, onClose }) {
               value={formData.email}
               onChange={handleInputChange}
               required
-              disabled={isOTPMode || isResetMode}
+              disabled={isOTPMode || isResetMode || isSignupOTPMode}
             />
 
             {isResetMode ? (
@@ -349,7 +413,7 @@ function LoginModal({ isOpen, onClose }) {
                   />
                 </div>
               </>
-            ) : isOTPMode ? (
+            ) : isOTPMode || isSignupOTPMode ? (
               <input
                 type="text"
                 name="otp"
@@ -376,7 +440,7 @@ function LoginModal({ isOpen, onClose }) {
                   </div>
                 )}
 
-                {isSignUp && (
+                {isSignUp && !isSignupOTPMode && (
                   <>
                     <div className={styles.passwordContainer}>
                       <input
@@ -405,7 +469,7 @@ function LoginModal({ isOpen, onClose }) {
               </>
             )}
 
-            {!isSignUp && !isOTPMode && !isResetMode && (
+            {!isSignUp && !isOTPMode && !isResetMode && !isSignupOTPMode && (
               <div className={styles.rememberRow}>
                 <label className={styles.checkbox}>
                   <input type="checkbox" />
@@ -432,27 +496,31 @@ function LoginModal({ isOpen, onClose }) {
                 ? 'Please wait...'
                 : isResetMode
                   ? 'Reset Password'
-                  : isOTPMode
-                    ? 'Verify OTP'
-                    : isSignUp
-                      ? 'Sign Up'
-                      : 'Log In'}
+                  : isSignupOTPMode
+                    ? 'Verify OTP & Create Account'
+                    : isOTPMode
+                      ? 'Verify OTP'
+                      : isSignUp
+                        ? 'Send OTP'
+                        : 'Log In'}
             </button>
 
-            {(isOTPMode || isResetMode) && (
+            {(isOTPMode || isResetMode || isSignupOTPMode) && (
               <button
                 type="button"
                 onClick={() => {
                   setIsOTPMode(false);
                   setIsResetMode(false);
+                  setIsSignupOTPMode(false);
                   setFormData(prev => ({ ...prev, otp: '' }));
+                  setTempSignupData(null);
                   setError('');
                   setSuccess('');
                 }}
                 className={styles.switchBtn}
                 style={{ marginTop: '8px', fontSize: '0.875rem' }}
               >
-                Back to Login
+                {isSignupOTPMode ? 'Back to Sign Up' : 'Back to Login'}
               </button>
             )}
 

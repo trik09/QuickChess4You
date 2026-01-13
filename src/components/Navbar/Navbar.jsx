@@ -5,7 +5,7 @@ import ThemeModal from "../ThemeModal/ThemeModal";
 import styles from "./Navbar.module.css";
 import logo from "../../assets/QuickChessForYou-Logo.svg";
 
-function Navbar({ onLoginClick }) {
+function Navbar({ onLoginClick, onSignupClick }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   const location = useLocation();
@@ -127,7 +127,10 @@ function Navbar({ onLoginClick }) {
                     Log In
                   </button>
 
-                  <button className={styles.signupBtn}>
+                  <button className={styles.signupBtn} onClick={() => {
+                    onSignupClick();
+                    setIsOpen(false);
+                  }}>
                     Sign Up
                   </button>
                 </div>

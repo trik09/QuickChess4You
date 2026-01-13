@@ -118,6 +118,33 @@ export const authAPI = {
     );
   },
 
+  // Send OTP for signup email verification
+  sendSignupOTP: async (userData) => {
+    return apiRequest("/user/send-signup-otp", {
+      method: "POST",
+      body: JSON.stringify({
+        email: userData.email,
+        name: userData.name,
+        username: userData.username,
+        password: userData.password
+      }),
+    });
+  },
+
+  // Verify signup OTP and complete registration
+  verifySignupOTP: async (email, otp, userData) => {
+    return apiRequest("/user/verify-signup-otp", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        otp,
+        name: userData.name,
+        username: userData.username,
+        password: userData.password
+      }),
+    });
+  },
+
   // Get current user data
   getCurrentUser: async () => {
     const userToken = localStorage.getItem("token");

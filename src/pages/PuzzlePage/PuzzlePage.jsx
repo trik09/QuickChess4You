@@ -544,7 +544,7 @@ function PuzzlePage() {
 
     // Mark as failed and lock the puzzle
     setPuzzleStatuses((prev) => ({ ...prev, [puzzleId]: "failed" }));
-    toast.error("Incorrect! This puzzle is now locked.");
+    toast.error("Incorrect! .");
   };
 
   // Handle early submission
