@@ -63,7 +63,7 @@ function Leaderboard() {
         setLeaderboard(newLeaderboard);
       });
     } catch (error) {
-       console.error(error);
+      console.error(error);
     }
   };
 
@@ -94,28 +94,23 @@ function Leaderboard() {
   return (
     <div className={styles.container}>
       <div className={styles.headerWrapper}>
-        <button onClick={() => navigate('/')} className={styles.backButton}>
-          <FaArrowLeft /> <span>Back</span>
-        </button>
-
         <div className={styles.titleSection}>
           <h1 className={styles.pageTitle}>Leaderboard</h1>
           {competition && <h2 className={styles.compName}>{competition.name}</h2>}
-          
+
           {isLive && (
-             <div className={styles.liveBadge}>
-                <span className={styles.pulse}></span> LIVE UPDATES
-             </div>
+            <div className={styles.liveBadge}>
+              <span className={styles.pulse}></span> LIVE UPDATES
+            </div>
           )}
         </div>
-        
-        {/* Placeholder for symmetry or refresh button */}
+
         <div className={styles.headerAction}>
-             {isLive && (
-              <button onClick={loadLeaderboard} className={styles.iconBtn}>
-                <FaSync />
-              </button>
-            )}
+          {isLive && (
+            <button onClick={loadLeaderboard} className={styles.iconBtn}>
+              <FaSync />
+            </button>
+          )}
         </div>
       </div>
 
@@ -130,14 +125,14 @@ function Leaderboard() {
             {/* --- PODIUM SECTION --- */}
             {leaderboard.length > 0 && (
               <div className={styles.podiumContainer}>
-                
+
                 {/* 2nd Place */}
                 <div className={`${styles.podiumColumn} ${styles.secondPlace}`}>
                   {leaderboard[1] && (
                     <>
+                      <div className={styles.medalIcon}>🥈</div>
                       <div className={styles.avatar}>
-                         <span className={styles.avatarLetter}>{leaderboard[1].username[0]}</span>
-                         <div className={styles.badge}>2</div>
+                        <span className={styles.avatarLetter}>{leaderboard[1].username[0]}</span>
                       </div>
                       <div className={styles.podiumName}>{leaderboard[1].username}</div>
                       <div className={styles.podiumScore}>{leaderboard[1].score} pts</div>
@@ -149,9 +144,9 @@ function Leaderboard() {
                 {/* 1st Place */}
                 <div className={`${styles.podiumColumn} ${styles.firstPlace}`}>
                   <div className={styles.crownIcon}><FaCrown /></div>
+                  <div className={styles.medalIcon}>🥇</div>
                   <div className={styles.avatar}>
-                     <span className={styles.avatarLetter}>{leaderboard[0].username[0]}</span>
-                     <div className={styles.badge}>1</div>
+                    <span className={styles.avatarLetter}>{leaderboard[0].username[0]}</span>
                   </div>
                   <div className={styles.podiumName}>{leaderboard[0].username}</div>
                   <div className={styles.podiumScore}>{leaderboard[0].score} pts</div>
@@ -162,9 +157,9 @@ function Leaderboard() {
                 <div className={`${styles.podiumColumn} ${styles.thirdPlace}`}>
                   {leaderboard[2] && (
                     <>
+                      <div className={styles.medalIcon}>🥉</div>
                       <div className={styles.avatar}>
-                         <span className={styles.avatarLetter}>{leaderboard[2].username[0]}</span>
-                         <div className={styles.badge}>3</div>
+                        <span className={styles.avatarLetter}>{leaderboard[2].username[0]}</span>
                       </div>
                       <div className={styles.podiumName}>{leaderboard[2].username}</div>
                       <div className={styles.podiumScore}>{leaderboard[2].score} pts</div>
@@ -183,29 +178,29 @@ function Leaderboard() {
                 <span className={styles.alignRight}>Score</span>
                 <span className={`${styles.alignRight} ${styles.hideMobile}`}>Time</span>
               </div>
-              
+
               <div className={styles.tableBody}>
                 {leaderboard.map((user, index) => (
-                  <div 
-                    key={user.userId} 
+                  <div
+                    key={user.userId}
                     className={`${styles.tableRow} ${isCurrentUser(user.userId) ? styles.currentUser : ''}`}
-                    style={{animationDelay: `${index * 0.05}s`}}
+                    style={{ animationDelay: `${index * 0.05}s` }}
                   >
                     <div className={styles.rankCol}>
                       {user.rank <= 3 ? <FaMedal className={styles[`medal${user.rank}`]} /> : `#${user.rank}`}
                     </div>
-                    
+
                     <div className={styles.playerCol}>
                       <span className={styles.rowName}>{user.username}</span>
                       {isCurrentUser(user.userId) && <span className={styles.youTag}>YOU</span>}
                     </div>
-                    
+
                     <div className={`${styles.scoreCol} ${styles.alignRight}`}>
                       {user.score}
                     </div>
-                    
+
                     <div className={`${styles.timeCol} ${styles.alignRight} ${styles.hideMobile}`}>
-                      <FaClock className={styles.tinyIcon}/> {formatTime(user.timeSpent)}
+                      <FaClock className={styles.tinyIcon} /> {formatTime(user.timeSpent)}
                     </div>
                   </div>
                 ))}

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup } from 'react-icons/fa';
+import { useEffect, useState, useRef } from 'react';
+import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup, FaUpload, FaDownload } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, SearchBar, FilterSelect, Button, DataTable, Badge, IconButton } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
@@ -28,6 +28,75 @@ function PuzzleList() {
 
   const handleDelete = (puzzle) => {
     setDeleteConfirm(puzzle);
+  };
+
+
+
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const json = JSON.parse(e.target.result);
+
+        if (!Array.isArray(json)) {
+          alert('Invalid JSON: Root must be an array of puzzles.');
+          return;
+        }
+
+        if (confirm(`Ready to import ${json.length} puzzles?`)) {
+          setIsLoading(true);
+          const response = await adminAPI.bulkCreatePuzzles(json);
+          setIsLoading(false);
+
+          alert(response.message || 'Import successful!');
+          if (response.results?.failed > 0) {
+            console.error('Import errors:', response.results.errors);
+            alert(`Import finished with ${response.results.failed} errors. Check console for details.`);
+          }
+          // Refresh list
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error('Import error:', err);
+        alert('Failed to parse JSON file: ' + err.message);
+        setIsLoading(false);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    event.target.value = '';
+  };
+
+  const handleExport = async () => {
+    try {
+      setIsLoading(true);
+      const data = await adminAPI.exportPuzzles();
+      if (!data || data.length === 0) {
+        alert("No puzzles to export.");
+        setIsLoading(false);
+        return;
+      }
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `puzzles_export_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export puzzles.");
+      setIsLoading(false);
+    }
   };
 
   const confirmDelete = async () => {
@@ -169,9 +238,32 @@ function PuzzleList() {
         title="Puzzle Management"
         subtitle="Manage all chess puzzles"
         action={
-          <Button to="/admin/puzzles/create" icon={FaChess}>
-            Create Puzzle
-          </Button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <input
+              type="file"
+              accept=".json"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileUpload}
+            />
+            <Button
+              variant="secondary"
+              icon={FaUpload}
+              onClick={() => fileInputRef.current.click()}
+            >
+              Import JSON
+            </Button>
+            <Button
+              variant="secondary"
+              icon={FaDownload}
+              onClick={handleExport}
+            >
+              Export JSON
+            </Button>
+            <Button to="/admin/puzzles/create" icon={FaChess}>
+              Create Puzzle
+            </Button>
+          </div>
         }
       />
 

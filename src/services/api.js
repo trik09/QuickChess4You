@@ -235,6 +235,28 @@ export const adminAPI = {
     });
   },
 
+  // Bulk create puzzles
+  bulkCreatePuzzles: async (puzzles) => {
+    const adminToken = localStorage.getItem("atoken");
+
+    return apiRequest("/puzzle/bulk-create-puzzle", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(puzzles),
+    });
+  },
+
+  // Export puzzles
+  exportPuzzles: async () => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest("/puzzle/export-puzzles", {
+      method: "GET",
+    }, adminToken);
+  },
+
   // Update a puzzle
   updatePuzzle: async (id, puzzleData) => {
     const adminToken = localStorage.getItem("atoken");

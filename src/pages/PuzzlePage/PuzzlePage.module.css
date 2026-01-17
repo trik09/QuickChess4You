@@ -461,6 +461,17 @@
   transform: translateY(-2px);
 }
 
+.navArrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: var(--bg-hover);
+  /* Keep background but dim it? Or make it transparent? User said 'dull', 'not clickable' */
+  color: var(--text-muted);
+  box-shadow: none;
+  transform: none;
+}
+
 .feedbackMessage {
   text-align: center;
   padding: 1rem;
@@ -623,6 +634,7 @@
     /* Hide on mobile to save space */
   }
 }
+
 /* Submit Button Styles */
 .btnSubmit {
   background: linear-gradient(45deg, #ff6b6b, #ee5a52) !important;
@@ -780,11 +792,11 @@
     padding: 1.5rem;
     margin: 1rem;
   }
-  
+
   .modalActions {
     flex-direction: column;
   }
-  
+
   .modalCancel,
   .modalSubmit {
     width: 100%;

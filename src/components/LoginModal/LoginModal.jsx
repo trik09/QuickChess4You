@@ -72,8 +72,20 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      setLoading(false);
+      return;
+    }
+
+    if (!/\d/.test(formData.password)) {
+      setError('Password must contain at least one number');
+      setLoading(false);
+      return;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      setError('Password must contain at least one special character');
       setLoading(false);
       return;
     }

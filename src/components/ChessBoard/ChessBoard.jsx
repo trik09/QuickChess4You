@@ -110,7 +110,7 @@ const playSound = (type) => {
 }
 
 
-function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, onBoardStateChange, savedBoardState, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false }) {
+function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSolved, onWrongMove, onBoardStateChange, savedBoardState, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
 
@@ -129,6 +129,8 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, onBoardSt
   const [userColor, setUserColor] = useState('w'); // 'w' or 'b'
 
   const [normalizedSolution, setNormalizedSolution] = useState([]);
+  const [allNormalizedPaths, setAllNormalizedPaths] = useState([]);
+  const [validPathIndices, setValidPathIndices] = useState([]);
 
   // Kids Mode State
   const [capturedTargets, setCapturedTargets] = useState([]); // Array of captured squares
@@ -174,33 +176,39 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, onBoardSt
 
     // Normalize solution moves to SAN (only for normal)
     if (puzzleType === 'normal') {
-      try {
-        const tempGame = new Chess(fen);
-        const sanMoves = [];
-
-        if (Array.isArray(solution)) {
-          for (const move of solution) {
-            let result = null;
-            try {
-              result = tempGame.move(move);
-            } catch (e) {
-              if (typeof move === 'string' && (move.length === 4 || move.length === 5)) {
-                const from = move.substring(0, 2);
-                const to = move.substring(2, 4);
-                const promotion = move.length === 5 ? move[4] : undefined;
-                try { result = tempGame.move({ from, to, promotion }); } catch (e2) { }
+      const normalizePath = (path) => {
+        try {
+          const tempGame = new Chess(fen);
+          const sanMoves = [];
+          if (Array.isArray(path)) {
+            for (const move of path) {
+              let result = null;
+              try { result = tempGame.move(move); } catch (e) {
+                // Try sloppy parsing for coordinates (e2e4)
+                if (typeof move === 'string' && (move.length === 4 || move.length === 5)) {
+                  const from = move.substring(0, 2);
+                  const to = move.substring(2, 4);
+                  const promotion = move.length === 5 ? move[4] : undefined;
+                  try { result = tempGame.move({ from, to, promotion }); } catch (e2) { }
+                }
               }
+              if (result) sanMoves.push(result.san);
+              else break;
             }
-            if (result) sanMoves.push(result.san);
-            else break;
           }
-        }
-        setNormalizedSolution(sanMoves);
-      } catch (error) {
-        setNormalizedSolution([]);
-      }
+          return sanMoves;
+        } catch (error) { return []; }
+      };
+
+      const mainPath = normalizePath(solution);
+      const altPaths = (alternativeSolutions || []).map(normalizePath).filter(p => p.length > 0);
+      const allPaths = [mainPath, ...altPaths].filter(p => p.length > 0);
+
+      setNormalizedSolution(mainPath); // Keep main for backwards compat / defaults
+      setAllNormalizedPaths(allPaths);
+      setValidPathIndices(allPaths.map((_, i) => i)); // All valid initially
     }
-  }, [fen, solution, puzzleType, kidsConfig]);
+  }, [fen, solution, alternativeSolutions, puzzleType, kidsConfig]);
 
   // Restore saved board state if available
   useEffect(() => {
@@ -473,42 +481,69 @@ function ChessBoard({ fen, solution = [], onPuzzleSolved, onWrongMove, onBoardSt
     setMoveHistory(newHistory);
     setLastMove({ from, to });
 
-    const expected = normalizedSolution[solutionIndex] || null;
-    if (expected && normalizeSAN(san) === normalizeSAN(expected)) {
+    // Validate User Move against all valid paths
+    const userMoveSan = normalizeSAN(san);
+
+    // Filter valid paths: keep those where current move matches
+    const nextValidIndices = validPathIndices.filter(idx => {
+      const path = allNormalizedPaths[idx];
+      return path && path[solutionIndex] && normalizeSAN(path[solutionIndex]) === userMoveSan;
+    });
+
+    if (nextValidIndices.length > 0) {
       setFeedback('correct');
+      setValidPathIndices(nextValidIndices);
 
       let nextIndex = solutionIndex + 1;
 
-      // Auto-play Black's response
-      if (nextIndex < normalizedSolution.length) {
-        setTimeout(() => {
-          const expectedBlackMove = normalizedSolution[nextIndex];
-          const blackResult = game.move(expectedBlackMove);
-          if (blackResult) {
-            playSound(blackResult.san.includes('x') ? 'capture' : 'move');
-            setMoveHistory((prev) => [...prev, blackResult.san]);
-            setLastMove({ from: blackResult.from, to: blackResult.to });
-            setSolutionIndex(nextIndex + 1);
-            setGame(new Chess(game.fen()));
+      // Determine if ANY valid path is finished (or if we need to reply)
+      // If user solved it (reached end of a path), we can consider it solved? 
+      // Usually we want to follow the longest line if possible, OR if they played a mate we stop.
 
-            if ((nextIndex + 1) >= normalizedSolution.length || game.isCheckmate()) {
-              setTimeout(() => {
-                setFeedback('solved');
-                playSound('solved');
-                if (onPuzzleSolved) onPuzzleSolved();
-              }, 300);
-            } else {
-              setFeedback(null);
-            }
-          }
-        }, 300);
-        setSolutionIndex(nextIndex);
-      } else {
+      const winningPathIndex = nextValidIndices.find(idx => nextIndex >= allNormalizedPaths[idx].length);
+      const isCheckmate = game.isCheckmate();
+
+      if (winningPathIndex !== undefined || isCheckmate) {
         setTimeout(() => {
           setFeedback('solved');
           playSound('solved');
           if (onPuzzleSolved) onPuzzleSolved();
         }, 300);
+      } else {
+        // Opponent Response
+        // We pick the first valid path remaining to dictate the response. 
+        // Ideally we should pick the longest one or the "main" one if available.
+        // nextValidIndices[0] is a safe heuristic.
+        const responsePathIdx = nextValidIndices[0];
+        const responsePath = allNormalizedPaths[responsePathIdx];
+
+        if (nextIndex < responsePath.length) {
+          setTimeout(() => {
+            const expectedBlackMove = responsePath[nextIndex];
+            const blackResult = game.move(expectedBlackMove);
+            if (blackResult) {
+              playSound(blackResult.san.includes('x') ? 'capture' : 'move');
+              setMoveHistory((prev) => [...prev, blackResult.san]);
+              setLastMove({ from: blackResult.from, to: blackResult.to });
+              setSolutionIndex(nextIndex + 1);
+              setGame(new Chess(game.fen()));
+
+              // Check if end of puzzle after opponent move
+              if ((nextIndex + 1) >= responsePath.length || game.isCheckmate()) {
+                setTimeout(() => {
+                  setFeedback('solved');
+                  playSound('solved');
+                  if (onPuzzleSolved) onPuzzleSolved();
+                }, 300);
+              } else {
+                setFeedback(null);
+              }
+            }
+          }, 300);
+          setSolutionIndex(nextIndex); // Update index for user's next turn (wait, this is actually set AFTER opponent move usually? No, user move increments index) 
+          // Actually logic above: user moves (idx 0), we set index to 1. Opponent moves (idx 1), we set index to 2.
+          // So solutionIndex tracks 'moves played so far' effectively.
+        }
       }
       setGame(new Chess(game.fen()));
     } else {

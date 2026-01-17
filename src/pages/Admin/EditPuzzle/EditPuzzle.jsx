@@ -36,6 +36,7 @@ function EditPuzzle() {
     title: '',
     fen: '',
     correctMove: '',
+    alternativeSolutions: [],
     difficulty: 'Medium',
     category: 'Tactics',
     description: '',
@@ -97,6 +98,12 @@ function EditPuzzle() {
       correctMove: Array.isArray(puzzle.solutionMoves)
         ? puzzle.solutionMoves.join(', ')
         : '',
+      correctMove: Array.isArray(puzzle.solutionMoves)
+        ? puzzle.solutionMoves.join(', ')
+        : '',
+      alternativeSolutions: Array.isArray(puzzle.alternativeSolutions)
+        ? puzzle.alternativeSolutions.map(sol => sol.join(', '))
+        : [],
       difficulty: difficultyLabelMap[difficultyNormalized] || 'Medium',
       category: puzzle.category || 'Tactics',
       description: mainDesc,
@@ -183,11 +190,32 @@ function EditPuzzle() {
     validateFEN(value);
   };
 
+
   const parseSolutionMoves = (raw) =>
     raw
       .split(/[\n,]/)
       .map((m) => m.trim())
       .filter(Boolean);
+
+  const handleAddAlternative = () => {
+    setFormData(prev => ({
+      ...prev,
+      alternativeSolutions: [...prev.alternativeSolutions, ""]
+    }));
+  };
+
+  const handleRemoveAlternative = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      alternativeSolutions: prev.alternativeSolutions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAlternativeChange = (index, value) => {
+    const newAlts = [...formData.alternativeSolutions];
+    newAlts[index] = value;
+    setFormData(prev => ({ ...prev, alternativeSolutions: newAlts }));
+  };
 
   // Drag and Drop Logic for Kids Mode & Manual Editor
   const handlePaletteDragStart = (e, type, value, color) => {
@@ -337,12 +365,17 @@ function EditPuzzle() {
         setApiError('Add at least one solution move (comma separated).'); return;
       }
 
+      const alternativeSolutions = formData.alternativeSolutions
+        .map(sol => parseSolutionMoves(sol))
+        .filter(sol => sol.length > 0);
+
       const payload = {
         title: formData.title.trim(),
         fen: formData.fen.trim(),
         difficulty: difficultyMap[formData.difficulty] || 'medium',
         category: formData.category,
         solutionMoves,
+        alternativeSolutions,
         description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join('\n\n'),
         type: 'normal',
       };
@@ -540,6 +573,36 @@ function EditPuzzle() {
                 <div className={styles.formGroup}>
                   <label>Correct Move(s) *</label>
                   <input type="text" value={formData.correctMove} onChange={(e) => setFormData((prev) => ({ ...prev, correctMove: e.target.value }))} required />
+                  <div style={{ marginTop: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label style={{ fontSize: '0.9em', color: '#666', fontWeight: '500' }}>Alternative Solutions (Optional)</label>
+                      <button
+                        type="button"
+                        onClick={handleAddAlternative}
+                        style={{ fontSize: '0.85em', background: '#e2e8f0', border: 'none', color: '#2d3748', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}
+                      >
+                        + Add Alternative
+                      </button>
+                    </div>
+                    {formData.alternativeSolutions.map((sol, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                        <input
+                          type="text"
+                          value={sol}
+                          onChange={(e) => handleAlternativeChange(index, e.target.value)}
+                          placeholder="e.g., Qf7#"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAlternative(index)}
+                          style={{ background: '#feb2b2', color: '#c53030', border: 'none', borderRadius: '4px', padding: '0 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}

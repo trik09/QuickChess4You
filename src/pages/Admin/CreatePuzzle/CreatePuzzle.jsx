@@ -35,6 +35,7 @@ function CreatePuzzle() {
     title: "",
     fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     correctMove: "",
+    alternativeSolutions: [],
     difficulty: "medium",
     category: "",
     description: "",
@@ -166,6 +167,26 @@ function CreatePuzzle() {
       .map((m) => m.trim())
       .filter(Boolean);
 
+  const handleAddAlternative = () => {
+    setFormData(prev => ({
+      ...prev,
+      alternativeSolutions: [...prev.alternativeSolutions, ""]
+    }));
+  };
+
+  const handleRemoveAlternative = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      alternativeSolutions: prev.alternativeSolutions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleAlternativeChange = (index, value) => {
+    const newAlts = [...formData.alternativeSolutions];
+    newAlts[index] = value;
+    setFormData(prev => ({ ...prev, alternativeSolutions: newAlts }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -194,6 +215,10 @@ function CreatePuzzle() {
         return;
       }
 
+      const alternativeSolutions = formData.alternativeSolutions
+        .map(sol => parseSolutionMoves(sol))
+        .filter(sol => sol.length > 0);
+
       // Build Payload
       const payload = {
         title: formData.title.trim(),
@@ -201,6 +226,7 @@ function CreatePuzzle() {
         difficulty: formData.difficulty.toLowerCase(),
         category: formData.category,
         solutionMoves,
+        alternativeSolutions,
         description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join("\n\n"),
         type: 'normal'
       };
@@ -647,6 +673,36 @@ function CreatePuzzle() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, correctMove: e.target.value }))}
                     placeholder="e.g., Qh5, e2e4"
                   />
+                  <div style={{ marginTop: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label style={{ fontSize: '0.9em', color: '#666', fontWeight: '500' }}>Alternative Solutions (Optional)</label>
+                      <button
+                        type="button"
+                        onClick={handleAddAlternative}
+                        style={{ fontSize: '0.85em', background: '#e2e8f0', border: 'none', color: '#2d3748', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}
+                      >
+                        + Add Alternative
+                      </button>
+                    </div>
+                    {formData.alternativeSolutions.map((sol, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                        <input
+                          type="text"
+                          value={sol}
+                          onChange={(e) => handleAlternativeChange(index, e.target.value)}
+                          placeholder="e.g., Qf7#"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAlternative(index)}
+                          style={{ background: '#feb2b2', color: '#c53030', border: 'none', borderRadius: '4px', padding: '0 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}

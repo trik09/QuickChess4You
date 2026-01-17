@@ -147,12 +147,12 @@ function PuzzlePage() {
         if (isLive) {
           try {
             const user = JSON.parse(localStorage.getItem("user") || "{}");
-            
+
             // Check if we already have valid puzzle data to avoid duplicate participation calls
             const stateKey = `puzzleState_${paramCompetitionId}`;
             const savedState = localStorage.getItem(stateKey);
             let hasValidState = false;
-            
+
             if (savedState) {
               try {
                 const parsed = JSON.parse(savedState);
@@ -161,7 +161,7 @@ function PuzzlePage() {
                 console.error('Error parsing saved state:', e);
               }
             }
-            
+
             // Only participate if we don't have valid state already
             let participationResponse = null;
             if (!hasValidState) {
@@ -186,6 +186,7 @@ function PuzzlePage() {
                 index: index + 1,
                 fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 solution: p.solutionMoves || [],
+                alternativeSolutions: p.alternativeSolutions || [],
                 title: p.title || `Puzzle ${index + 1}`,
                 type: p.type === "kids" ? "Kids" : (p.title || "Puzzle"),
                 difficulty: p.difficulty || "medium",
@@ -247,7 +248,7 @@ function PuzzlePage() {
           } catch (err) {
             console.error("Error syncing live competition data", err);
             // Silent error handling during initialization - no toast errors
-            
+
             // Fallback: Load basic puzzles from competition data
             if (comp.puzzles && comp.puzzles.length > 0) {
               const normalized = comp.puzzles.map((p, index) => ({
@@ -256,6 +257,7 @@ function PuzzlePage() {
                 index: index + 1,
                 fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 solution: p.solutionMoves || [],
+                alternativeSolutions: p.alternativeSolutions || [],
                 title: p.title || `Puzzle ${index + 1}`,
                 type: p.type === "kids" ? "Kids" : (p.title || "Puzzle"),
                 difficulty: p.difficulty || "medium",
@@ -267,7 +269,7 @@ function PuzzlePage() {
                 status: 'unsolved'
               }));
               setPuzzles(normalized);
-              
+
               // Try to restore from localStorage with proper state merging
               const stateKey = `puzzleState_${paramCompetitionId}`;
               const savedState = localStorage.getItem(stateKey);
@@ -305,6 +307,7 @@ function PuzzlePage() {
               index: index + 1,
               fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
               solution: p.solutionMoves || [],
+              alternativeSolutions: p.alternativeSolutions || [],
               title: p.title,
               type: p.type,
               difficulty: p.difficulty,
@@ -322,11 +325,13 @@ function PuzzlePage() {
         const data = await puzzleAPI.getAll();
         const normalized = data
           .filter((p) => p.fen && (p.solutionMoves?.length || p.kidsConfig))
+          .slice(0, 5) // Limit to 5 puzzles as per user request
           .map((p, i) => ({
             id: p._id,
             index: i + 1,
             fen: p.fen,
             solution: p.solutionMoves,
+            alternativeSolutions: p.alternativeSolutions,
             type: p.type,
             description: p.description,
             kidsConfig: p.kidsConfig,
@@ -351,11 +356,11 @@ function PuzzlePage() {
     } catch (error) {
       console.error("Error loading puzzles:", error);
       // Silent error handling during initialization to prevent black page
-      
+
       // Provide fallback to prevent black page
       setLoading(false);
       isLoadedRef.current = true;
-      
+
       // Only navigate away for critical errors, not initialization issues
       if (error.message && error.message.includes('critical')) {
         setTimeout(() => {
@@ -407,9 +412,15 @@ function PuzzlePage() {
       .padStart(2, "0")}`;
   };
 
-  const handlePuzzleSolved = async () => {
+  const handlePuzzleSolved = async (winningMoves) => {
     const currentPuzzle = puzzles[currentPuzzleIndex];
     if (!currentPuzzle) return;
+
+    // Use passed winning moves or fallback to default solution
+    // If winningMoves is an array of strings (SAN), use it.
+    const solutionToSend = (Array.isArray(winningMoves) && winningMoves.length > 0)
+      ? winningMoves
+      : currentPuzzle.solution;
 
     // Check if already solved
     if (puzzleStatuses[currentPuzzle.id] === "success") return;
@@ -434,7 +445,7 @@ function PuzzlePage() {
           const res = await liveCompetitionAPI.submitSolution(
             competitionData._id,
             currentPuzzle.id,
-            currentPuzzle.solution,
+            solutionToSend,
             timeTaken
           );
 
@@ -458,7 +469,7 @@ function PuzzlePage() {
           const res = await competitionAPI.submitSolution(
             competitionData._id,
             currentPuzzle.id,
-            currentPuzzle.solution,
+            solutionToSend,
             timeTaken
           );
 
@@ -525,7 +536,7 @@ function PuzzlePage() {
     if (competitionData && isLiveCompetition) {
       try {
         setSolving(true);
-        
+
         // Submit wrong solution to backend to mark as failed
         const res = await liveCompetitionAPI.submitSolution(
           competitionData._id,
@@ -545,6 +556,22 @@ function PuzzlePage() {
     // Mark as failed and lock the puzzle
     setPuzzleStatuses((prev) => ({ ...prev, [puzzleId]: "failed" }));
     toast.error("Incorrect! .");
+
+    // Move to next puzzle automatically (same as success)
+    setStartTime(Date.now());
+    setTimeout(() => {
+      if (currentPuzzleIndex < puzzles.length - 1) {
+        setCurrentPuzzleIndex((prev) => prev + 1);
+      } else {
+        toast.success("All puzzles ENDED!");
+        // End flow
+        if (paramCompetitionId && isLiveCompetition) {
+          handleSubmitCompetition();
+        } else if (competitionData) {
+          navigate("/");
+        }
+      }
+    }, 1000);
   };
 
   // Handle early submission
@@ -721,6 +748,7 @@ function PuzzlePage() {
                   }-${currentPuzzleIndex}`} // Force re-render on puzzle change
                 fen={currentPuzzle.fen}
                 solution={currentPuzzle.solution}
+                alternativeSolutions={currentPuzzle.alternativeSolutions}
                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                 kidsConfig={currentPuzzle.kidsConfig}
                 onPuzzleSolved={handlePuzzleSolved}
@@ -763,7 +791,7 @@ function PuzzlePage() {
               {puzzles.map((puzzle, index) => {
                 const pid = puzzle.id || puzzle._id;
                 const status = puzzleStatuses[pid];
-                
+
                 return (
                   <div
                     key={pid}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaChess } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaChess, FaWhatsapp } from 'react-icons/fa';
 import styles from './Footer.module.css';
 
 const Footer = () => {
@@ -72,6 +72,17 @@ const Footer = () => {
                     <p>&copy; {currentYear} Quick Chess For You. All rights reserved.</p>
                 </div>
             </div>
+
+            {/* Floating WhatsApp Icon */}
+            <a
+                href="https://wa.me/6362957513"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.whatsappFloat}
+                aria-label="Chat on WhatsApp"
+            >
+                <FaWhatsapp />
+            </a>
         </footer>
     );
 };
