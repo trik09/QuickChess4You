@@ -97,6 +97,12 @@ class SocketService {
       this.emit('competitionStarted', data);
     });
 
+    // Competition Joined (Initial Data & Time Sync)
+    this.socket.on('competitionJoined', (data) => {
+      console.log('Joined competition:', data);
+      this.emit('competitionJoined', data);
+    });
+
     // Error handling
     this.socket.on('error', (error) => {
       console.error('Socket error:', error);

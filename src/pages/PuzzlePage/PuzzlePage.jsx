@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaClock, FaUndo, FaCheckCircle } from "react-icons/fa";
+import { FaClock, FaUndo, FaCheckCircle, FaEye } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
@@ -15,6 +15,7 @@ import styles from "./PuzzlePage.module.css";
 function PuzzlePage() {
   const { id: paramCompetitionId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const navigator = useNavigate();
   const { user } = useAuth();
   const { participateInCompetition, disconnectFromCompetition } =
@@ -27,6 +28,8 @@ function PuzzlePage() {
   const [loading, setLoading] = useState(true);
   const [solving, setSolving] = useState(false);
   const [isLiveCompetition, setIsLiveCompetition] = useState(false);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
 
   const [puzzleStatuses, setPuzzleStatuses] = useState({}); // { [puzzleId]: 'success' | 'failed' }
   const [puzzleBoardStates, setPuzzleBoardStates] = useState({}); // { [puzzleId]: { fen: string, moveHistory: string[] } }
@@ -133,9 +136,15 @@ function PuzzlePage() {
         const isLive = comp.status === "live" || comp.status === "LIVE";
         setIsLiveCompetition(isLive);
 
-        if (!isLive) {
-          navigate(`/competition/${paramCompetitionId}/lobby`);
-          return;
+        // Check review mode
+        const reviewMode = location.state?.reviewMode || false;
+        setIsReviewMode(reviewMode);
+
+        if (!reviewMode) {
+          if (!isLive) {
+            navigate(`/competition/${paramCompetitionId}/lobby`);
+            return;
+          }
         }
 
         // Calculate Time Remaining from Server (Source of Truth)
@@ -144,7 +153,7 @@ function PuzzlePage() {
         setTimeLeft(secondsLeft);
 
         // LIVE COMPETITION LOGIC
-        if (isLive) {
+        if (isLive && !reviewMode) {
           try {
             const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -297,8 +306,8 @@ function PuzzlePage() {
           }
         }
 
-        // If Puzzles not loaded yet (fallback or non-live)
-        if (puzzles.length === 0 && (!isLive || puzzles.length === 0)) {
+        // If Puzzles not loaded yet (fallback or non-live or review mode)
+        if (puzzles.length === 0 && ((!isLive && !reviewMode) || puzzles.length === 0)) {
           // Load Basic Puzzles
           if (comp.puzzles && comp.puzzles.length > 0) {
             const normalized = comp.puzzles.map((p, index) => ({
@@ -318,7 +327,9 @@ function PuzzlePage() {
           }
         }
 
-        startTimer();
+        if (!reviewMode) {
+          startTimer();
+        }
 
       } else {
         // Casual Mode (Dashboard link)
@@ -428,6 +439,23 @@ function PuzzlePage() {
     // Calculate time taken for this puzzle (simple approximation)
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
 
+    // If Review Mode, don't submit to backend, just show correct locally
+    if (isReviewMode) {
+      setPuzzleStatuses((prev) => ({ ...prev, [currentPuzzle.id]: "success" }));
+      toast.success("Correct! (Review Mode)");
+
+      // Move to next puzzle automatically
+      setTimeout(() => {
+        if (currentPuzzleIndex < puzzles.length - 1) {
+          setCurrentPuzzleIndex((prev) => prev + 1);
+          setShowSolution(false); // Reset solution view
+        } else {
+          toast.success("All puzzles completed in review!");
+        }
+      }, 1000);
+      return;
+    }
+
     // Submit to Backend first (no optimistic update)
     if (competitionData) {
       try {
@@ -531,6 +559,12 @@ function PuzzlePage() {
 
     // Calculate time taken for this puzzle
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+    // If Review Mode, don't submit wrong move
+    if (isReviewMode) {
+      toast.error("Incorrect move! Try again.");
+      return;
+    }
 
     // Submit failed attempt to backend if it's a live competition
     if (competitionData && isLiveCompetition) {
@@ -643,9 +677,14 @@ function PuzzlePage() {
           <div className={styles.puzzleProgress}>
             Puzzle {currentPuzzleIndex + 1} / {puzzles.length}
           </div>
-          {isLiveCompetition && (
+          {isLiveCompetition && !isReviewMode && (
             <div className={styles.liveIndicator}>
               <span className={styles.liveStatus}>🟢 LIVE COMPETITION</span>
+            </div>
+          )}
+          {isReviewMode && (
+            <div className={styles.liveIndicator}>
+              <span className={styles.liveStatus} style={{ backgroundColor: '#4a5568' }}>Review Mode</span>
             </div>
           )}
         </div>
@@ -660,7 +699,9 @@ function PuzzlePage() {
               <div className={styles.timerDisplay}>
                 <FaClock className={styles.timerIcon} />
                 <div className={styles.statLabel}>Time Left</div>
-                <div className={styles.timerBadge}>{formatTime(timeLeft)}</div>
+                <div className={styles.timerBadge}>
+                  {isReviewMode ? "Unlimited" : formatTime(timeLeft)}
+                </div>
               </div>
 
               <div className={styles.statsRow}>
@@ -689,7 +730,7 @@ function PuzzlePage() {
             */}
 
             {/* Submit Competition Button - Only for Live Competitions */}
-            {isLiveCompetition && (
+            {isLiveCompetition && !isReviewMode && (
               <div className={styles.statCard} style={{ textAlign: "center" }}>
                 <button
                   className={`${styles.actionBtn} ${styles.btnSubmit}`}
@@ -737,6 +778,16 @@ function PuzzlePage() {
                     ? "White to Move"
                     : "Black to Move"}
                 </span>
+                {isReviewMode && (
+                  <button
+                    className={styles.actionBtn}
+                    style={{ marginLeft: '10px', padding: '4px 8px', fontSize: '0.8rem' }}
+                    onClick={() => setShowSolution(!showSolution)}
+                  >
+                    <FaEye style={{ marginRight: '5px' }} />
+                    {showSolution ? "Hide Solution" : "View Solution"}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -763,9 +814,11 @@ function PuzzlePage() {
                 savedBoardState={puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]}
                 interactive={
                   !solving &&
-                  puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "success" &&
-                  puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "failed"
+                  (isReviewMode || (
+                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "success" &&
+                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "failed"))
                 }
+                showSolution={showSolution}
               />
             ) : (
               <div className={styles.loading}>No Puzzles Available</div>

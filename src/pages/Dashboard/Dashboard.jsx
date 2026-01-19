@@ -115,11 +115,22 @@ function Dashboard() {
       navigate("/", { state: { openLogin: true } });
       return;
     }
+    // If ended, user can choose to view results (Leaderboard) or view puzzles
+    // This handler defaults to enter lobby or leaderboard
     if (competition.status === "Ended") {
       navigate(`/leaderboard/${competition._id}`);
     } else {
       navigate(`/competition/${competition._id}/lobby`);
     }
+  };
+
+  const handleViewPuzzles = (e, competition) => {
+    e.stopPropagation(); // Prevent triggering parent click
+    if (!isUserAuthenticated) {
+      navigate("/", { state: { openLogin: true } });
+      return;
+    }
+    navigate(`/competition/${competition._id}/puzzle`, { state: { reviewMode: true } });
   };
 
   return (
@@ -202,9 +213,30 @@ function Dashboard() {
 
                 {/* Action Button (Visible on Desktop mostly, or bottom of card) */}
                 <div className={styles.cardAction}>
-                  <button className={styles.actionBtn}>
-                    {comp.status === "Ended" ? "View Results" : "Enter Lobby"}
-                  </button>
+                  {comp.status === "Ended" ? (
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/leaderboard/${comp._id}`);
+                        }}
+                      >
+                        View Results
+                      </button>
+                      <button
+                        className={`${styles.actionBtn} ${styles.secondaryBtn}`}
+                        style={{ backgroundColor: '#4a5568' }}
+                        onClick={(e) => handleViewPuzzles(e, comp)}
+                      >
+                        View Puzzles
+                      </button>
+                    </div>
+                  ) : (
+                    <button className={styles.actionBtn}>
+                      Enter Lobby
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
