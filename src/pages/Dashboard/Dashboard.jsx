@@ -9,7 +9,9 @@ import {
   FaPuzzlePiece,
   FaUserFriends,
   FaTrophy,
-  FaChevronRight
+  FaChevronRight,
+  FaChartBar,
+  FaEye
 } from "react-icons/fa";
 
 function Dashboard() {
@@ -62,7 +64,6 @@ function Dashboard() {
           };
         });
 
-        // Sort: Live -> Upcoming -> Ended
         const sorted = formattedCompetitions.sort((a, b) => {
           const statusOrder = { Live: 1, Upcoming: 2, Ended: 3 };
           if (statusOrder[a.status] !== statusOrder[b.status]) {
@@ -106,7 +107,7 @@ function Dashboard() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      hour12: false,
+      hour12: true,
     });
   };
 
@@ -115,8 +116,6 @@ function Dashboard() {
       navigate("/", { state: { openLogin: true } });
       return;
     }
-    // If ended, user can choose to view results (Leaderboard) or view puzzles
-    // This handler defaults to enter lobby or leaderboard
     if (competition.status === "Ended") {
       navigate(`/leaderboard/${competition._id}`);
     } else {
@@ -125,7 +124,7 @@ function Dashboard() {
   };
 
   const handleViewPuzzles = (e, competition) => {
-    e.stopPropagation(); // Prevent triggering parent click
+    e.stopPropagation();
     if (!isUserAuthenticated) {
       navigate("/", { state: { openLogin: true } });
       return;
@@ -137,11 +136,14 @@ function Dashboard() {
     <div className={styles.container}>
       <div className={styles.content}>
         <div className={styles.header}>
-          <h1>Puzzle Arena</h1>
-          <p>Compete in real-time chess puzzle battles</p>
+          <div className={styles.headerText}>
+            <h1>Puzzle Arena</h1>
+            <p>Compete in real-time chess puzzle battles</p>
+          </div>
+          {/* Optional: Add a "Create" button or stats here in the future */}
         </div>
 
-        {/* Scrollable Filter Tabs */}
+        {/* Filter Tabs */}
         <div className={styles.tabsContainer}>
           <div className={styles.filterTabs}>
             {["All", "Live", "Upcoming", "Ended"].map((tab) => (
@@ -169,8 +171,8 @@ function Dashboard() {
         ) : filteredCompetitions.length === 0 ? (
           <div className={styles.emptyState}>
             <FaTrophy className={styles.emptyIcon} />
-            <h3>No Competitions</h3>
-            <p>Check back later for new tournaments.</p>
+            <h3>No Competitions Found</h3>
+            <p>There are no tournaments in this category right now.</p>
           </div>
         ) : (
           <div className={styles.tournamentList}>
@@ -180,61 +182,60 @@ function Dashboard() {
                 className={`${styles.card} ${styles[comp.status.toLowerCase()]}`}
                 onClick={() => handleParticipate(comp)}
               >
-                {/* Mobile: Top Row (Status Badge) */}
-                <div className={styles.cardHeader}>
-                  <div className={styles.cardTitleSection}>
-                    <h3 className={styles.cardTitle}>{comp.title}</h3>
+                <div className={styles.cardMain}>
+                  {/* Header: Status + Title */}
+                  <div className={styles.cardHeader}>
                     <span className={`${styles.statusBadge} ${styles[`badge${comp.status}`]}`}>
+                      {comp.status === 'Live' && <span className={styles.liveDot}></span>}
                       {comp.status}
                     </span>
+                    <h3 className={styles.cardTitle}>{comp.title}</h3>
                   </div>
-                  <FaChevronRight className={styles.cardArrow} />
+
+                  {/* Metadata Grid */}
+                  <div className={styles.metaGrid}>
+                    <div className={styles.metaItem}>
+                      <FaCalendarAlt className={styles.metaIcon} />
+                      <span>{comp.dateDisplay}</span>
+                    </div>
+                    <div className={styles.metaItem}>
+                      <FaClock className={styles.metaIcon} />
+                      <span>{comp.durationText}</span>
+                    </div>
+                    <div className={styles.metaItem}>
+                      <FaPuzzlePiece className={styles.metaIcon} />
+                      <span>{comp.puzzlesCount} Puzzles</span>
+                    </div>
+                    <div className={styles.metaItem}>
+                      <FaUserFriends className={styles.metaIcon} />
+                      <span>{comp.participants} Players</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Grid Info Section */}
-                <div className={styles.cardInfoGrid}>
-                  <div className={styles.infoItem}>
-                    <FaCalendarAlt className={styles.infoIcon} />
-                    <span>{comp.dateDisplay}</span>
-                  </div>
-                  <div className={styles.infoItem}>
-                    <FaClock className={styles.infoIcon} />
-                    <span>{comp.durationText}</span>
-                  </div>
-                  <div className={styles.infoItem}>
-                    <FaPuzzlePiece className={styles.infoIcon} />
-                    <span>{comp.puzzlesCount} Puzzles</span>
-                  </div>
-                  <div className={styles.infoItem}>
-                    <FaUserFriends className={styles.infoIcon} />
-                    <span>{comp.participants} Players</span>
-                  </div>
-                </div>
-
-                {/* Action Button (Visible on Desktop mostly, or bottom of card) */}
-                <div className={styles.cardAction}>
+                {/* Footer / Actions */}
+                <div className={styles.cardFooter}>
                   {comp.status === "Ended" ? (
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div className={styles.actionGroup}>
                       <button
-                        className={styles.actionBtn}
+                        className={`${styles.actionBtn} ${styles.outlineBtn}`}
+                        onClick={(e) => handleViewPuzzles(e, comp)}
+                      >
+                        <FaEye /> Puzzles
+                      </button>
+                      <button
+                        className={`${styles.actionBtn} ${styles.primaryBtn}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/leaderboard/${comp._id}`);
                         }}
                       >
-                        View Results
-                      </button>
-                      <button
-                        className={`${styles.actionBtn} ${styles.secondaryBtn}`}
-                        style={{ backgroundColor: '#4a5568' }}
-                        onClick={(e) => handleViewPuzzles(e, comp)}
-                      >
-                        View Puzzles
+                        <FaChartBar /> Results
                       </button>
                     </div>
                   ) : (
-                    <button className={styles.actionBtn}>
-                      Enter Lobby
+                    <button className={`${styles.actionBtn} ${styles.primaryBtn} ${styles.fullWidthBtn}`}>
+                      {comp.status === 'Live' ? 'Join Now' : 'Enter Lobby'} <FaChevronRight />
                     </button>
                   )}
                 </div>

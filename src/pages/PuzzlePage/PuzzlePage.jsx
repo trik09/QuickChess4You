@@ -202,6 +202,8 @@ function PuzzlePage() {
                 description: p.description || "",
                 kidsConfig: p.kidsConfig,
                 puzzleType: p.type || "normal",
+                level: p.level || 1,
+                rating: p.rating || 400,
                 isSolved: p.isSolved,
                 isFailed: p.isFailed,
                 status: p.status
@@ -322,6 +324,8 @@ function PuzzlePage() {
               difficulty: p.difficulty,
               kidsConfig: p.kidsConfig,
               puzzleType: p.type || "normal",
+              level: p.level || 1,
+              rating: p.rating || 400,
             }));
             setPuzzles(normalized);
           }
@@ -346,7 +350,10 @@ function PuzzlePage() {
             type: p.type,
             description: p.description,
             kidsConfig: p.kidsConfig,
+            kidsConfig: p.kidsConfig,
             puzzleType: p.type,
+            level: p.level || 1,
+            rating: p.rating || 400
           }));
         setPuzzles(normalized);
 
@@ -773,11 +780,16 @@ function PuzzlePage() {
                     : styles.black
                     }`}
                 ></div>
-                <span className={styles.moveText}>
-                  {currentPuzzle.fen.split(" ")[1] === "w"
-                    ? "White to Move"
-                    : "Black to Move"}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span className={styles.moveText}>
+                    {currentPuzzle.fen.split(" ")[1] === "w"
+                      ? "White to Move"
+                      : "Black to Move"}
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: '#a0aec0' }}>
+                    Level {currentPuzzle.level} | Rating {currentPuzzle.rating}
+                  </span>
+                </div>
                 {isReviewMode && (
                   <button
                     className={styles.actionBtn}

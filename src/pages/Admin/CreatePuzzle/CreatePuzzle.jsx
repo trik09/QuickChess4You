@@ -22,6 +22,16 @@ import blackRook from '../../../assets/pieces/blackrook.svg';
 import blackQueen from '../../../assets/pieces/blackqueen.svg';
 import blackKing from '../../../assets/pieces/blackking.svg';
 
+const LEVEL_RANGES = {
+  1: { easy: [400, 570], medium: [570, 740], hard: [740, 910] },
+  2: { easy: [910, 1080], medium: [1080, 1250], hard: [1250, 1420] },
+  3: { easy: [1420, 1590], medium: [1590, 1760], hard: [1760, 1930] },
+  4: { easy: [1930, 2100], medium: [2100, 2270], hard: [2270, 2440] },
+  5: { easy: [2440, 2610], medium: [2610, 2780], hard: [2780, 2950] },
+  6: { easy: [2950, 3120], medium: [3120, 3290], hard: [3290, 3460] },
+  7: { easy: [3460, 3630], medium: [3630, 3800], hard: [3800, 4000] }
+};
+
 function CreatePuzzle() {
   const navigate = useNavigate();
   const { isAdminAuthenticated } = useAuth();
@@ -40,6 +50,8 @@ function CreatePuzzle() {
     category: "",
     description: "",
     hints: "",
+    level: 1,
+    rating: 400
   });
 
   // Kids Mode State
@@ -228,7 +240,9 @@ function CreatePuzzle() {
         solutionMoves,
         alternativeSolutions,
         description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join("\n\n"),
-        type: 'normal'
+        type: 'normal',
+        level: Number(formData.level),
+        rating: Number(formData.rating)
       };
       submitPayload(payload);
 
@@ -255,7 +269,9 @@ function CreatePuzzle() {
           piece: kidsState.pieceType,
           startSquare: kidsState.startSquare,
           targets: kidsState.targets
-        }
+        },
+        level: Number(formData.level),
+        rating: Number(formData.rating)
       };
       submitPayload(payload);
     }
@@ -738,6 +754,42 @@ function CreatePuzzle() {
             </div>
 
             <div className={styles.formGroup}>
+              <label>Level (1-7) *</label>
+              <select
+                required
+                value={formData.level}
+                onChange={(e) => {
+                  const newLevel = Number(e.target.value);
+                  // Auto-update rating ref if needed, or just hint
+                  setFormData(prev => ({ ...prev, level: newLevel }));
+                }}
+              >
+                {[1, 2, 3, 4, 5, 6, 7].map(l => (
+                  <option key={l} value={l}>Level {l}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Rating *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={formData.rating}
+                  onChange={(e) => setFormData(prev => ({ ...prev, rating: e.target.value }))}
+                />
+                <small style={{ color: '#718096' }}>
+                  Recommended for Level {formData.level} ({formData.difficulty}):
+                  {LEVEL_RANGES[formData.level] && LEVEL_RANGES[formData.level][formData.difficulty]
+                    ? ` ${LEVEL_RANGES[formData.level][formData.difficulty][0]} - ${LEVEL_RANGES[formData.level][formData.difficulty][1]}`
+                    : ' N/A'}
+                </small>
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
               <label>Description</label>
               <textarea
                 rows="3"
@@ -770,7 +822,7 @@ function CreatePuzzle() {
           <div className={styles.previewHeader}>
             <h3>Live Preview</h3>
             <span className={styles.previewBadge}>
-              {formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1)}
+              {formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1)} | Lvl {formData.level} ({formData.rating})
             </span>
           </div>
 
