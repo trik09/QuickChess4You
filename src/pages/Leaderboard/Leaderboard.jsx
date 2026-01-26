@@ -95,8 +95,8 @@ function Leaderboard() {
     <div className={styles.container}>
       <div className={styles.headerWrapper}>
         <div className={styles.titleSection}>
-          <h1 className={styles.pageTitle}>Leaderboard</h1>
-          {competition && <h2 className={styles.compName}>{competition.name}</h2>}
+          <h1 className={styles.pageTitle}>{competition.name}</h1>
+          {/* {competition && <h2 className={styles.compName}></h2>} */}
 
           {isLive && (
             <div className={styles.liveBadge}>
