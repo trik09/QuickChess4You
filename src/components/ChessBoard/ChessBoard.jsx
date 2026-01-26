@@ -132,7 +132,8 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
   const [allNormalizedPaths, setAllNormalizedPaths] = useState([]);
   const [validPathIndices, setValidPathIndices] = useState([]);
 
-  // Kids Mode State
+  // Promotion State
+  const [promotionPending, setPromotionPending] = useState(null); // { from, to, color }
   const [capturedTargets, setCapturedTargets] = useState([]); // Array of captured squares
   const [kidsTargets, setKidsTargets] = useState([]); // Initial targets from config
 
@@ -161,6 +162,7 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
     setFeedback(null);
     setSolutionIndex(0);
     setInitialFen(fen);
+    setPromotionPending(null);
 
     // Determine user color based on FEN side to move
     const turn = newGame.turn();
@@ -453,7 +455,7 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
     }
   };
 
-  const handleUserMove = (from, to) => {
+  const handleUserMove = (from, to, promotion = null) => {
     // Branch based on Puzzle Type
     if (puzzleType === 'kids') {
       handleKidsMove(from, to);
@@ -463,10 +465,32 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
     // Normal Puzzle Logic
     if (game.turn() !== userColor) return;
 
-    const moveAttempt = { from, to, promotion: 'q' };
+    // Normal Puzzle Logic
+    if (game.turn() !== userColor) return;
+
+    // Check for promotion requirement if not supplied
+    if (!promotion) {
+      const piece = game.get(from);
+      if (piece?.type === 'p' && (
+        (piece.color === 'w' && to[1] === '8') ||
+        (piece.color === 'b' && to[1] === '1')
+      )) {
+        // Intercept for promotion
+        setPromotionPending({ from, to, color: piece.color });
+        return;
+      }
+    }
+
+    // Default to queen if still null (shouldn't happen with interception, but safe fallback) or use chosen piece
+    const moveAttempt = { from, to, promotion: promotion || 'q' };
     let result = null;
     try {
-      result = game.move(moveAttempt);
+      try {
+        result = game.move(moveAttempt);
+      } catch (e) {
+        // If move failed (e.g. invalid promotion), try without promotion just in case, but usually strict
+        try { result = game.move({ from, to }); } catch (e2) { result = null; }
+      }
     } catch (e) {
       result = null;
     }
@@ -557,6 +581,13 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
         onBoardStateChange(game.fen(), newHistory);
       }, 100);
     }
+  };
+
+  const handlePromotionSelect = (pieceChar) => {
+    if (!promotionPending) return;
+    const { from, to } = promotionPending;
+    setPromotionPending(null);
+    handleUserMove(from, to, pieceChar);
   };
 
   const handleSquareClick = (square) => {
@@ -797,6 +828,28 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
             {feedback === 'solved' && '🎉 Puzzle Solved!'}
           </div>
         )}
+
+        {/* Promotion Modal Overlay */}
+        {promotionPending && (
+          <div className={styles.promotionOverlay}>
+            <div className={styles.promotionModal}>
+              <div className={styles.promotionHeader}>Choose Promotion</div>
+              <div className={styles.promotionOptions}>
+                {['q', 'r', 'b', 'n'].map(p => (
+                  <div
+                    key={p}
+                    className={styles.promotionOption}
+                    onClick={() => handlePromotionSelect(p)}
+                  >
+                    <img src={pieceImages[promotionPending.color === 'w' ? p.toUpperCase() : p]} alt={p} />
+                  </div>
+                ))}
+              </div>
+              <div className={styles.promotionCancel} onClick={() => setPromotionPending(null)}>✕</div>
+            </div>
+          </div>
+        )}
+
         <div className={styles.board} ref={boardRef}>
           {(userColor === 'w' ? ranks : [...ranks].reverse()).map((rank, rankIndex) => (
             <div key={rank} className={styles.row}>
