@@ -190,56 +190,132 @@
 
 /* FAQ Section */
 .faqSection {
-  max-width: 900px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
 .faqSection h3 {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 40px;
+  font-size: 3.5rem;
+  line-height: 1.1;
+  font-weight: 700;
+  margin-bottom: 60px;
   color: var(--text-heading);
 }
 
 .faqGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .faqItem {
-  background: var(--bg-light);
-  padding: 30px;
-  border-radius: 16px;
-  border: 1px solid transparent;
+  background: #f1f5f9;
+  /* Default light bg */
+  border-radius: 50px;
+  padding: 24px 32px;
+  cursor: pointer;
   transition: all 0.3s ease;
+  overflow: hidden;
+  border: 1px solid transparent;
+  /* Prevent layout shift */
 }
 
-.faqItem:hover {
-  border-color: var(--primary);
+[data-theme='dark'] .faqItem {
+  background: rgba(255, 255, 255, 0.05);
+  /* Dark theme pill bg */
+}
+
+/* Open State */
+.faqItem.active {
   background: var(--bg-white);
+  border-radius: 30px;
+  /* Slightly less rounded when open? Or keep it? Image shows rounded. */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-color: var(--primary);
+  /* Theme color border */
 }
 
-.faqItem h4 {
+[data-theme='dark'] .faqItem.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--primary);
+}
+
+.faqHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.faqHeader h4 {
   font-size: 1.1rem;
-  margin-bottom: 10px;
+  font-weight: 600;
+  margin: 0;
   color: var(--text-heading);
 }
 
-.faqItem p {
+.faqIcon {
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #000;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .faqIcon {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.faqItem:hover .faqIcon {
+  transform: rotate(90deg);
+}
+
+.faqItem.active .faqHeader {
+  margin-bottom: 20px;
+  /* Space for content when open */
+}
+
+.faqItem.active .faqIcon {
+  transform: rotate(45deg);
+  /* X shape if using Plus, or handled by icon switch */
+  background: #000;
+  color: #fff;
+}
+
+[data-theme='dark'] .faqItem.active .faqIcon {
+  background: #fff;
+  color: #000;
+}
+
+.faqContent {
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+  padding-right: 40px;
+}
+
+.faqItem.active .faqContent {
+  max-height: 200px;
+  opacity: 1;
+}
+
+.faqContent p {
   color: var(--text-secondary);
   line-height: 1.6;
+  margin: 0;
 }
 
 /* Responsive */
 @media (max-width: 992px) {
-  .popularCard {
-    transform: scale(1);
-  }
-
-  .popularCard:hover {
-    transform: translateY(-8px);
+  .faqSection h3 {
+    font-size: 2.5rem;
   }
 }
 
@@ -256,7 +332,12 @@
     grid-template-columns: 1fr;
   }
 
-  .faqGrid {
+  /* .faqGrid {
     grid-template-columns: 1fr;
+  } Removed since it's flex-col now */
+
+  .faqItem {
+    padding: 20px 24px;
+    border-radius: 40px;
   }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './About.module.css';
-import { FaChess, FaTrophy, FaUsers, FaGraduationCap, FaRegLightbulb, FaGlobeAmericas, FaChessKnight } from 'react-icons/fa';
+import { FaChess, FaTrophy, FaUsers, FaGraduationCap } from 'react-icons/fa';
+import { PiMedal, PiLightbulb, PiStrategy, PiTrophy, PiGlobe } from 'react-icons/pi';
 
 function About() {
   return (
@@ -54,41 +55,52 @@ function About() {
           </div>
         </div>
 
-        {/* Core Values */}
-        <div className={styles.valuesSection}>
-          <h3 className={styles.title} style={{ fontSize: '2rem' }}>Why Choose Us</h3>
-
-          <div className={styles.valuesGrid}>
-            <div className={styles.valueCard}>
-              <div className={styles.valueIconWrapper}>
-                <FaRegLightbulb />
+        {/* Why Choose Us - Refactored */}
+        <div className={styles.whyChooseWrapper}>
+          <div className={styles.whyChooseContainer}>
+            {/* Left Column */}
+            <div className={styles.whyChooseLeft}>
+              <h2 className={styles.whyChooseTitle}>
+                Why <br /> Choose Us
+              </h2>
+              <div className={styles.awardIconWrapper}>
+                <PiMedal className={styles.awardIcon} />
               </div>
-              <h3>Smart Learning</h3>
-              <p>Adaptive curriculum that evolves with your playing style and skill level.</p>
             </div>
 
-            <div className={styles.valueCard}>
-              <div className={styles.valueIconWrapper}>
-                <FaChessKnight />
+            {/* Right Column */}
+            <div className={styles.whyChooseRight}>
+              <div className={styles.valueItem}>
+                <div className={styles.valueHeader}>
+                  <h3 className={styles.valueTitle}>Smart Learning</h3>
+                  <PiLightbulb className={styles.valueIcon} />
+                </div>
+                <p className={styles.valueDesc}>Adaptive curriculum that evolves with your playing style and skill level.</p>
               </div>
-              <h3>Expert Coaching</h3>
-              <p>Direct access to titled players and experienced coaches for personalized guidance.</p>
-            </div>
 
-            <div className={styles.valueCard}>
-              <div className={styles.valueIconWrapper}>
-                <FaTrophy />
+              <div className={styles.valueItem}>
+                <div className={styles.valueHeader}>
+                  <h3 className={styles.valueTitle}>Expert Coaching</h3>
+                  <PiStrategy className={styles.valueIcon} />
+                </div>
+                <p className={styles.valueDesc}>Direct access to titled players and experienced coaches for personalized guidance.</p>
               </div>
-              <h3>Competitive Play</h3>
-              <p>Regular tournaments and leagues to test your skills against players worldwide.</p>
-            </div>
 
-            <div className={styles.valueCard}>
-              <div className={styles.valueIconWrapper}>
-                <FaGlobeAmericas />
+              <div className={styles.valueItem}>
+                <div className={styles.valueHeader}>
+                  <h3 className={styles.valueTitle}>Competitive Play</h3>
+                  <PiTrophy className={styles.valueIcon} />
+                </div>
+                <p className={styles.valueDesc}>Regular tournaments and leagues to test your skills against players worldwide.</p>
               </div>
-              <h3>Global Community</h3>
-              <p>Join a vibrant community of chess enthusiasts to learn, share, and grow together.</p>
+
+              <div className={styles.valueItem}>
+                <div className={styles.valueHeader}>
+                  <h3 className={styles.valueTitle}>Global Community</h3>
+                  <PiGlobe className={styles.valueIcon} />
+                </div>
+                <p className={styles.valueDesc}>Join a vibrant community of chess enthusiasts to learn, share, and grow together.</p>
+              </div>
             </div>
           </div>
         </div>

@@ -123,11 +123,9 @@ function ThemeModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        <div className={styles.footer}>
-          <button className={styles.applyBtn} onClick={onClose}>
-            Apply Changes
-          </button>
-        </div>
+        <button className={styles.footer} onClick={onClose}>
+          Apply Changes
+        </button>
       </div>
     </>
   );

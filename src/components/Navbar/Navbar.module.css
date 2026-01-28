@@ -24,14 +24,14 @@
   z-index: 3000;
 }
 
-/* Dark Mode Overrides */
+/* Dark Mode Overrides for Desktop */
 :global([data-theme='dark']) .navbar {
-  background: transparent;
+  background: rgba(22, 21, 18, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   --text-main: #ffffff;
-  --text-muted: #rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.7);
   --bg-off-white: rgba(255, 255, 255, 0.1);
   --border-color: rgba(255, 255, 255, 0.2);
 }
@@ -54,6 +54,8 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  z-index: 3100;
+  /* Ensure logo stays above if needed */
 }
 
 .logoImg {
@@ -61,22 +63,16 @@
   width: auto;
 }
 
-.logoText {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: -0.3px;
-}
-
 /* ===========================
-   DESKTOP NAV
+   DESKTOP MENU WRAPPER
 =========================== */
-.navMenu {
+.desktopMenu {
   display: flex;
   align-items: center;
-  margin-left: 48px;
   flex: 1;
   justify-content: space-between;
+  margin-left: 40px;
+  /* Add some spacing from logo */
 }
 
 .navLinks {
@@ -92,16 +88,12 @@
   opacity: 0.85;
   text-decoration: none;
   transition: var(--transition);
+  font-family: 'Poppins', sans-serif;
 }
 
 .navLinks a:hover {
   opacity: 1;
   color: var(--primary);
-}
-
-:global([data-theme='dark']) .navLinks a:hover {
-  color: #fff;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 /* ===========================
@@ -128,6 +120,7 @@
   cursor: pointer;
   transition: var(--transition);
   color: var(--text-main);
+  font-family: 'Poppins', sans-serif;
 }
 
 .loginBtn:hover {
@@ -146,6 +139,7 @@
   cursor: pointer;
   transition: var(--transition);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  font-family: 'Poppins', sans-serif;
 }
 
 .signupBtn:hover {
@@ -192,35 +186,27 @@
   object-fit: cover;
 }
 
-.username {
-  font-weight: 600;
-  font-size: .9rem;
-  color: var(--text-main);
-  max-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.logoutBtn {
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  font-weight: 600;
+.settingsBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: var(--bg-off-white);
+  font-size: 1.25rem;
   cursor: pointer;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
 }
 
-:global([data-theme='dark']) .logoutBtn {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.logoutBtn:hover {
-  color: #cc1f1f;
-}
-
-:global([data-theme='dark']) .logoutBtn:hover {
-  color: #ff6b6b;
+.settingsBtn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: rotate(15deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
 }
 
 /* ===========================
@@ -246,135 +232,233 @@
   transition: var(--transition);
 }
 
-.hamburger.open span:nth-child(1) {
-  transform: rotate(45deg) translateY(14px);
-}
-
-.hamburger.open span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.open span:nth-child(3) {
-  transform: rotate(-45deg) translateY(-14px);
-}
-
 /* ===========================
-   MOBILE DRAWER
+   MOBILE MENU (LimelQ Style)
 =========================== */
-@media (max-width: 768px) {
-  .hamburger {
-    display: flex;
-  }
-
-  .navMenu {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    height: 100vh;
-    width: 78%;
-    max-width: 310px;
-    background: var(--bg-color);
-    flex-direction: column;
-    padding: 100px 26px 30px;
-    box-shadow: -2px 0 16px rgba(0, 0, 0, 0.18);
-    transition: 0.35s ease-in-out;
-    z-index: 3500;
-  }
-
-  /* Mobile drawer in Dark Mode should probably have a background */
-  :global([data-theme='dark']) .navMenu {
-    background: #1a1a1a;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .navMenu.active {
-    right: 0;
-  }
-
-  .navLinks {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .navLinks li {
-    width: 100%;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .navLinks a {
-    padding: 16px 0;
-    font-size: 1.1rem;
-  }
-
-  .authSection {
-    flex-direction: column;
-    width: 100%;
-    margin-top: 25px;
-  }
-
-  .authButtons {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .loginBtn,
-  .signupBtn {
-    width: 100%;
-    padding: 14px;
-  }
-
-  .userProfile {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .userInfo {
-    width: 100%;
-    padding: 12px;
-  }
-}
-
-/* ===========================
-   MOBILE OVERLAY (DIM BACKGROUND)
-=========================== */
-.overlay {
+.mobileMenuWrapper {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  opacity: 0;
-  visibility: hidden;
-  transition: var(--transition);
-  z-index: 2000;
+  background: #E6DDD6;
+  /* Beige Theme (Default/Light) */
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  /* Initial state hidden */
+  padding: 24px;
+  color: #000;
+  /* Default black text */
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-.overlay.active {
-  opacity: 1;
-  visibility: visible;
+:global([data-theme='dark']) .mobileMenuWrapper {
+  background: #161512;
+  /* Dark Theme Background */
+  color: #fff;
 }
 
+/* Header: Logo + Close */
+.mobileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
 
-.settingsBtn {
-  width: 40px;
+.mobileHeaderControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobileLogo img {
   height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--border-color);
-  background: var(--bg-off-white);
-  font-size: 1.25rem;
+  width: auto;
+  filter: brightness(0);
+  /* Default Black Logo */
+  transition: filter 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileLogo img {
+  filter: brightness(0) invert(1);
+  /* White Logo in Dark Mode */
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
   cursor: pointer;
-  transition: var(--transition);
+  color: #000;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-main);
-  /* Ensure icon takes text color */
+  transition: color 0.3s ease;
 }
 
-.settingsBtn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  transform: rotate(15deg) scale(1.1);
-  /* Moon rotation */
-  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
+:global([data-theme='dark']) .closeBtn {
+  color: #fff;
+}
+
+.mobileThemeBtn {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #000;
+  transition: all 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileThemeBtn {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Content: Links */
+.mobileContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mobileLinks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.mobileLinkItem {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  transition: border-color 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileLinkItem {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.mobileLinkItem:first-child {
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+:global([data-theme='dark']) .mobileLinkItem:first-child {
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+.mobileLinkItem a {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: #000;
+  text-decoration: none;
+  padding: 16px 0;
+  line-height: 1.1;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileLinkItem a {
+  color: #fff;
+}
+
+.mobileLinkItem a:before {
+  content: "▪";
+  font-size: 1.5rem;
+  margin-right: 15px;
+  vertical-align: middle;
+  color: #000;
+  transition: color 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileLinkItem a:before {
+  color: var(--primary);
+}
+
+/* Footer: Auth Buttons */
+.mobileFooter {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.mobileAuth {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.mobileLoginBtn {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  background: transparent;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileLoginBtn {
+  color: #fff;
+}
+
+.callCtaBtn {
+  font-family: 'Poppins', sans-serif;
+  background: #262421;
+  color: #fff;
+  padding: 12px 24px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+:global([data-theme='dark']) .callCtaBtn {
+  background: #fff;
+  color: #000;
+}
+
+.mobileUsername {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000;
+  transition: color 0.3s ease;
+}
+
+:global([data-theme='dark']) .mobileUsername {
+  color: #fff;
+}
+
+
+/* ===========================
+   RESPONSIVE TRIGGERS
+=========================== */
+@media (max-width: 900px) {
+  .desktopMenu {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobileMenuWrapper {
+    display: none;
+    /* Force hide on desktop */
+  }
 }

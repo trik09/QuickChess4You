@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './Pricing.module.css';
-import { FaCheck, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaPlus } from 'react-icons/fa';
 
 function Pricing() {
+  const [activeFaq, setActiveFaq] = useState(0);
+
   const plans = [
     {
       name: 'Free',
@@ -52,6 +54,25 @@ function Pricing() {
       limitations: []
     }
   ];
+
+  const faqs = [
+    {
+      question: 'Can I change my plan later?',
+      answer: 'Yes, you can upgrade, downgrade, or cancel your plan at any time from your account settings.'
+    },
+    {
+      question: 'Is there a free trial?',
+      answer: 'We offer a 7-day free trial for Premium and Pro plans so you can experience the full power of our platform.'
+    },
+    {
+      question: 'What payment methods do you accept?',
+      answer: 'We accept all major credit cards, UPI, and net banking options secured by Razorpay.'
+    }
+  ];
+
+  const toggleFaq = (index) => {
+    setActiveFaq(prev => prev === index ? -1 : index);
+  };
 
   return (
     <section className={styles.pricingWrapper}>
@@ -108,20 +129,25 @@ function Pricing() {
         </div>
 
         <div className={styles.faqSection}>
-          <h3>Frequently Asked Questions</h3>
+          <h3>Frequently<br />Asked Questions</h3>
           <div className={styles.faqGrid}>
-            <div className={styles.faqItem}>
-              <h4>Can I change my plan later?</h4>
-              <p>Yes, you can upgrade, downgrade, or cancel your plan at any time from your account settings.</p>
-            </div>
-            <div className={styles.faqItem}>
-              <h4>Is there a free trial?</h4>
-              <p>We offer a 7-day free trial for Premium and Pro plans so you can experience the full power of our platform.</p>
-            </div>
-            <div className={styles.faqItem}>
-              <h4>What payment methods do you accept?</h4>
-              <p>We accept all major credit cards, UPI, and net banking options secured by Razorpay.</p>
-            </div>
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className={`${styles.faqItem} ${activeFaq === index ? styles.active : ''}`}
+                onClick={() => toggleFaq(index)}
+              >
+                <div className={styles.faqHeader}>
+                  <h4>{faq.question}</h4>
+                  <div className={styles.faqIcon}>
+                    {activeFaq === index ? <FaTimes /> : <FaPlus />}
+                  </div>
+                </div>
+                <div className={styles.faqContent}>
+                  <p>{faq.answer}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

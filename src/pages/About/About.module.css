@@ -106,77 +106,195 @@
   letter-spacing: 1px;
 }
 
-/* Features Section */
-.valuesSection {
-  text-align: center;
-}
-
-.valuesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  margin-top: 60px;
-}
-
-.valueCard {
-  background: var(--bg-white);
-  padding: 40px;
-  border-radius: 24px;
-  border: 1px solid var(--border-color);
-  transition: all 0.4s ease;
-  position: relative;
+/* Why Choose Us Section - Refactored */
+.whyChooseWrapper {
+  margin-top: 100px;
+  background: var(--bg-card);
+  /* Default Dark: Black/Dark via variable usually, or set explicit if needed */
+  border-radius: 40px;
   overflow: hidden;
+  position: relative;
+  /* Pattern overlay can go here if we have one */
+  background-image: repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 5px,
+      rgba(255, 255, 255, 0.03) 5px,
+      rgba(255, 255, 255, 0.03) 10px);
 }
 
-.valueCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 4px;
-  background: var(--primary);
-  transition: width 0.4s ease;
+[data-theme='dark'] .whyChooseWrapper {
+  background-color: #0d1117;
+  /* Or pure black per request if user wants strict black */
+  background-color: #000000;
 }
 
-.valueCard:hover::before {
-  width: 100%;
+:global([data-theme='light']) .whyChooseWrapper {
+  background-color: #b58863;
+  color: #ffffff;
 }
 
-.valueCard:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+.whyChooseContainer {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 60px;
+  padding: 80px;
+  align-items: flex-start;
 }
 
-.valueIconWrapper {
-  width: 70px;
-  height: 70px;
-  background: rgba(181, 136, 99, 0.1);
-  border-radius: 20px;
+/* Left Column */
+.whyChooseLeft {
+  position: relative;
+  /* background-color: #d84545; */
+  display: flex;
+  flex-direction: column;
+
+}
+
+.awardIconWrapper {
+  display: inline-flex;
+  margin-bottom: 30px;
+  color: var(--primary);
+  /* Maintain primary color or force specific color? */
+}
+
+/* Force specific colors for better contrast on these backgrounds */
+:global([data-theme='light']) .awardIconWrapper {
+  color: #ffffff;
+  /* White icon on brown bg */
+}
+
+[data-theme='dark'] .awardIconWrapper {
+  color: #b58863;
+  /* Brown/Gold icon on black bg */
+  color: #4ade80;
+  /* Or matching the green in the image? Let's use primary or a nice green */
+  color: #ffffff;
+  /* Let's stick to white or theme color. Image had green icons. */
+}
+
+/* Fixing colors based on image reference - looks like green accent on updates?
+   User said "replace icons with outline icons".
+   Let's keep it simple: White text, Green or White icons.
+*/
+.awardIcon {
+  font-size: 18rem;
+  color: #ffffff27;
+}
+
+.whyChooseTitle {
+  font-size: 4.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #ffffff;
+  /* Always white on these backgrounds */
+}
+
+/* Right Column */
+.whyChooseRight {
+  display: flex;
+  flex-direction: column;
+}
+
+.valueItem {
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  /* Flex to align title/icon and desc? Or stacked? */
+  flex-direction: column;
+  /* Match image: Title | Year/Icon -> Desc? Image has horizontal items */
+  /* Image: Label + Title + Year + Icon Arrow.
+     Our content is Title + Icon + Desc.
+     Let's do:
+     Row: Title ....... Icon
+     Row: Desc
+  */
+}
+
+.valueItem:first-child {
+  padding-top: 0;
+}
+
+.valueItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.valueHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* margin-bottom: 12px; */
+}
+
+.valueTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.valueIcon {
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  transform: rotate(-45deg);
+  /* Arrow effect or just style? */
+  /* User requested specific outline icons. Let's styling them nicely */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  padding: 8px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px;
-  color: var(--primary);
-  font-size: 2rem;
   transition: all 0.3s ease;
 }
 
-.valueCard:hover .valueIconWrapper {
-  background: var(--primary);
-  color: #fff;
-  transform: rotateY(360deg);
+.valueItem:hover .valueIcon {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: rotate(0deg);
+  /* Interactive effect */
 }
 
-.valueCard h3 {
-  font-size: 1.5rem;
-  margin-bottom: 16px;
-  color: var(--text-heading);
-}
-
-.valueCard p {
-  color: var(--text-muted);
+.valueDesc {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
   line-height: 1.6;
+  max-width: 90%;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .whyChooseContainer {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px;
+  }
+
+  .whyChooseTitle {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .whyChooseWrapper {
+    margin-top: 60px;
+    border-radius: 24px;
+  }
+
+  .whyChooseContainer {
+    padding: 30px;
+  }
+
+  .valueTitle {
+    font-size: 1.4rem;
+  }
+
+  .valueIcon {
+    width: 40px;
+    height: 40px;
+    padding: 6px;
+  }
 }
 
 /* Animations */
@@ -219,5 +337,11 @@
 
   .statsGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .awardIcon {
+    display: none;
   }
 }

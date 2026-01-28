@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Courses.module.css';
 import { FaChessKnight, FaChessRook, FaChessQueen, FaClock, FaStar, FaArrowRight } from 'react-icons/fa';
+import { PiBookOpenText, PiVideo, PiPencilCircle, PiChartBar } from 'react-icons/pi';
 
 function Courses() {
   const courses = [
@@ -87,27 +88,35 @@ function Courses() {
         </div>
 
         <div className={styles.featuresWrapper}>
-          <div className={styles.header} style={{ marginBottom: '40px' }}>
-            <h3 className={styles.title} style={{ fontSize: '2rem' }}>Why Join Our Courses?</h3>
+          <div className={styles.header} style={{ marginBottom: '60px' }}>
+            <h3 className={styles.title} style={{ fontSize: '2.5rem' }}>Why Join Our Courses?</h3>
           </div>
           <div className={styles.featuresGrid}>
             <div className={styles.featureItem}>
-              <div className={styles.featureIcon}>📚</div>
+              <div className={styles.featureIconWrapper}>
+                <PiBookOpenText className={styles.featureIcon} />
+              </div>
               <h3>Comprehensive Curriculum</h3>
               <p>Step-by-step progressions covering every phase of the game.</p>
             </div>
             <div className={styles.featureItem}>
-              <div className={styles.featureIcon}>🎥</div>
+              <div className={styles.featureIconWrapper}>
+                <PiVideo className={styles.featureIcon} />
+              </div>
               <h3>Video Lessons</h3>
               <p>HD video content containing detailed explanations.</p>
             </div>
             <div className={styles.featureItem}>
-              <div className={styles.featureIcon}>✍️</div>
+              <div className={styles.featureIconWrapper}>
+                <PiPencilCircle className={styles.featureIcon} />
+              </div>
               <h3>Practice Exercises</h3>
               <p>Reinforce learning with interactive puzzles and drills.</p>
             </div>
             <div className={styles.featureItem}>
-              <div className={styles.featureIcon}>📊</div>
+              <div className={styles.featureIconWrapper}>
+                <PiChartBar className={styles.featureIcon} />
+              </div>
               <h3>Progress Tracking</h3>
               <p>Monitor your improvement with detailed performance analytics.</p>
             </div>

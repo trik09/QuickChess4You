@@ -71,7 +71,7 @@
 .heroTitle {
     font-size: 4rem;
     line-height: 1.1;
-    font-weight: 700;
+    font-weight: 600;
     color: #fff;
     letter-spacing: -1px;
 }
@@ -267,7 +267,7 @@
 @media (max-width: 768px) {
     .heroWrapper {
         min-height: auto;
-        padding: 100px 20px 60px;
+        padding: 30px 20px 60px;
         align-items: flex-start;
     }
 
@@ -286,6 +286,7 @@
 
     .heroTitle {
         font-size: 2.8rem;
+        margin-bottom: 0;
     }
 
     .ctaGroup {

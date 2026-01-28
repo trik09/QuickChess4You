@@ -189,45 +189,85 @@
 
 /* Features Section */
 .featuresWrapper {
-  background: var(--bg-white);
-  border-radius: 30px;
-  padding: 60px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
+  /* Removed container bg to let cards stand out or use subtle one */
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  margin-top: 120px;
 }
 
 .featuresGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 40px;
-  margin-top: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  margin-top: 60px;
 }
 
 .featureItem {
-  text-align: center;
+  background: var(--bg-white);
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: left;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
 }
 
-.featureIcon {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  display: inline-block;
-  transition: transform 0.3s ease;
+.featureItem:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary);
 }
 
-.featureItem:hover .featureIcon {
+.featureIconWrapper {
+  width: 60px;
+  height: 60px;
+  background: rgba(181, 136, 99, 0.1);
+  /* Primary color low opacity */
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.featureItem:hover .featureIconWrapper {
+  background: var(--primary);
   transform: scale(1.1) rotate(5deg);
 }
 
+.featureIcon {
+  font-size: 2rem;
+  color: var(--primary);
+  transition: all 0.3s ease;
+}
+
+.featureItem:hover .featureIcon {
+  color: #fff;
+}
+
 .featureItem h3 {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-heading);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .featureItem p {
   color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Dark Theme Adjustments for Cards if needed explicitly beyond vars */
+[data-theme='dark'] .featureItem {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* Responsive */
@@ -241,7 +281,7 @@
   }
 
   .featuresWrapper {
-    padding: 30px;
+    padding: 0px;
   }
 
   .statsRow {
