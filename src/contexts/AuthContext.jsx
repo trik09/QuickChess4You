@@ -6,9 +6,15 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   // ------------------ USER AUTH ------------------
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
-  );
+  const [user, setUser] = useState(() => {
+    try {
+      const item = localStorage.getItem("user");
+      return item ? JSON.parse(item) : null;
+    } catch (e) {
+      console.warn("Error parsing user from localStorage:", e);
+      return null;
+    }
+  });
   const [token, setToken] = useState(localStorage.getItem("token") || null);
 
   const isUserAuthenticated = !!token;
@@ -30,9 +36,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ------------------ ADMIN AUTH ------------------
-  const [admin, setAdmin] = useState(
-    JSON.parse(localStorage.getItem("admin")) || null
-  );
+  const [admin, setAdmin] = useState(() => {
+    try {
+      const item = localStorage.getItem("admin");
+      return item ? JSON.parse(item) : null;
+    } catch (e) {
+      console.warn("Error parsing admin from localStorage:", e);
+      return null;
+    }
+  });
   const [atoken, setAToken] = useState(localStorage.getItem("atoken") || null);
 
   const isAdminAuthenticated = !!atoken;

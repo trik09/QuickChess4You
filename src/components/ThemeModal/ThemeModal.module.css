@@ -8,7 +8,7 @@
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 1100;
+  z-index: 4100;
   animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -33,7 +33,7 @@
   background: var(--white);
   border-radius: var(--radius-lg);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  z-index: 1101;
+  z-index: 4101;
   width: 90%;
   max-width: 600px;
   max-height: 88vh;
@@ -454,7 +454,7 @@
 
 /* Footer with enhanced button */
 .footer {
-  padding: 20px 24px;
+  padding: 24px 24px 32px 24px;
   border-top: 1px solid var(--border-color);
   background: var(--bg-white);
   position: relative;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BsMoon } from "react-icons/bs";
 import { useAuth } from "../../contexts/AuthContext";
 import ThemeModal from "../ThemeModal/ThemeModal";
 import styles from "./Navbar.module.css";
@@ -84,6 +85,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
             {/* AUTHENTICATION */}
             <div className={styles.authSection}>
               {/* Theme Settings Button */}
+              {/* Theme Settings Button */}
               <button
                 className={styles.settingsBtn}
                 onClick={() => {
@@ -92,7 +94,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
                 }}
                 title="Customize Board"
               >
-                ⚙️
+                <BsMoon />
               </button>
 
               {isAuthenticated ? (

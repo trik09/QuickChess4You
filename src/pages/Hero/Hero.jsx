@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaChessKing, FaChessKnight } from 'react-icons/fa';
+import { BsArrowRight } from "react-icons/bs";
 import styles from './Hero.module.css';
-import heroimg from "../../assets/hero.png"
+import chess1 from "../../assets/Chess-1.png";
+import chess2 from "../../assets/Chess-2.png";
 
 const Hero = () => {
     const navigate = useNavigate();
@@ -19,16 +21,17 @@ const Hero = () => {
 
                     <h1 className={styles.heroTitle}>
                         Master Strategy <br />
-                        <span className={styles.textGradient}>One Move at a Time</span>
+                        One Move at a Time
                     </h1>
 
                     <p className={styles.heroSubtitle}>
-                        Elevate your game with daily puzzles. Join 10k+ masters in the making.
+                        Elevate your game with daily puzzles. <br className={styles.desktopBr} />
+                        Join 10k+ masters in the making.
                     </p>
 
                     <div className={styles.ctaGroup}>
                         <button className={styles.btnPrimary} onClick={() => navigate('/puzzle')}>
-                            Start Solving <FaChessKnight />
+                            Start Solving <BsArrowRight className={styles.btnIcon} />
                         </button>
                         <button className={styles.btnSecondary} onClick={() => navigate('/dashboard')}>
                             View Tournaments
@@ -36,19 +39,29 @@ const Hero = () => {
                     </div>
                 </div>
 
-                {/* RIGHT SIDE: Hero Image */}
+                {/* RIGHT SIDE: Grid */}
                 <div className={styles.heroVisual}>
-                    <div className={styles.imageContainer}>
-                        <img 
-                            src={heroimg}
-                            alt="Chess Strategy"
-                            className={styles.heroImage}
-                        />
-                        <div className={styles.imageOverlay}>
-                            <div className={styles.floatingCard}>
-                                <FaChessKing className={styles.cardIcon} />
-                                <span>QCFY</span>
-                            </div>
+                    <div className={styles.gridContainer}>
+                        {/* 1. Stats Card (Top Left) */}
+                        <div className={`${styles.gridItem} ${styles.cardStats} ${styles.cardTopLeft}`}>
+                            <h3>10K+</h3>
+                            <p>STUDENTS</p>
+                        </div>
+
+                        {/* 2. Image (Top Right) */}
+                        <div className={`${styles.gridItem} ${styles.imageItem}`}>
+                            <img src={chess1} alt="Chess Strategy" />
+                        </div>
+
+                        {/* 3. Image (Bottom Left) */}
+                        <div className={`${styles.gridItem} ${styles.imageItem}`}>
+                            <img src={chess2} alt="Chess Board" />
+                        </div>
+
+                        {/* 4. Stats Card (Bottom Right) */}
+                        <div className={`${styles.gridItem} ${styles.cardStats} ${styles.cardBottomRight}`}>
+                            <h3>50k+</h3>
+                            <p>TOURNAMENTS</p>
                         </div>
                     </div>
                 </div>

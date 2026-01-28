@@ -7,11 +7,13 @@ import Coaching from '../Coaching/Coaching';
 import Contact from '../Contact/Contact';
 import Footer from '../../components/Footer/Footer';
 import styles from './Home.module.css';
+import HighlightsStrip from '../HighlightsStrip/HighlightsStrip';
 
 const Home = () => {
   return (
     <div className={styles.mainWrapper}>
       <Hero />
+      <HighlightsStrip />
 
       <div id="about" className={styles.sectionWrapper}>
         <About />

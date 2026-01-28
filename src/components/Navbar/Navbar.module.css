@@ -18,10 +18,22 @@
   right: 0;
   height: 70px;
   background: var(--bg-color);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
-  z-index: 3000; 
+  z-index: 3000;
+}
+
+/* Dark Mode Overrides */
+:global([data-theme='dark']) .navbar {
+  background: transparent;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+  --text-muted: #rgba(255, 255, 255, 0.7);
+  --bg-off-white: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(255, 255, 255, 0.2);
 }
 
 .container {
@@ -87,6 +99,11 @@
   color: var(--primary);
 }
 
+:global([data-theme='dark']) .navLinks a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
 /* ===========================
    AUTH BUTTONS
 =========================== */
@@ -110,6 +127,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
+  color: var(--text-main);
 }
 
 .loginBtn:hover {
@@ -127,7 +145,7 @@
   color: white;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .signupBtn:hover {
@@ -193,8 +211,16 @@
   transition: var(--transition);
 }
 
+:global([data-theme='dark']) .logoutBtn {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .logoutBtn:hover {
   color: #cc1f1f;
+}
+
+:global([data-theme='dark']) .logoutBtn:hover {
+  color: #ff6b6b;
 }
 
 /* ===========================
@@ -209,7 +235,7 @@
   cursor: pointer;
   border: none;
   background: transparent;
-  z-index: 4000; 
+  z-index: 4000;
 }
 
 .hamburger span {
@@ -221,13 +247,15 @@
 }
 
 .hamburger.open span:nth-child(1) {
- transform: rotate(45deg) translateY(14px);
+  transform: rotate(45deg) translateY(14px);
 }
+
 .hamburger.open span:nth-child(2) {
   opacity: 0;
 }
+
 .hamburger.open span:nth-child(3) {
- transform: rotate(-45deg) translateY(-14px);
+  transform: rotate(-45deg) translateY(-14px);
 }
 
 /* ===========================
@@ -248,9 +276,15 @@
     background: var(--bg-color);
     flex-direction: column;
     padding: 100px 26px 30px;
-    box-shadow: -2px 0 16px rgba(0,0,0,0.18);
+    box-shadow: -2px 0 16px rgba(0, 0, 0, 0.18);
     transition: 0.35s ease-in-out;
     z-index: 3500;
+  }
+
+  /* Mobile drawer in Dark Mode should probably have a background */
+  :global([data-theme='dark']) .navMenu {
+    background: #1a1a1a;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .navMenu.active {
@@ -307,7 +341,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   opacity: 0;
   visibility: hidden;
   transition: var(--transition);
@@ -332,11 +366,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-main);
+  /* Ensure icon takes text color */
 }
 
 .settingsBtn:hover {
   background: var(--primary);
   border-color: var(--primary);
-  transform: rotate(90deg) scale(1.1);
+  color: white;
+  transform: rotate(15deg) scale(1.1);
+  /* Moon rotation */
   box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
 }
