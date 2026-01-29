@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BsMoon, BsX } from "react-icons/bs";
+import { BsGear, BsX } from "react-icons/bs";
 import { useAuth } from "../../contexts/AuthContext";
 import ThemeModal from "../ThemeModal/ThemeModal";
 import styles from "./Navbar.module.css";
@@ -97,7 +97,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
                 onClick={() => setIsThemeModalOpen(true)}
                 title="Customize Board"
               >
-                <BsMoon />
+                <BsGear />
               </button>
 
               {isAuthenticated ? (
@@ -142,7 +142,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
               }}
               title="Customize Board"
             >
-              <BsMoon size={20} />
+              <BsGear size={20} />
             </button>
             <button className={styles.closeBtn} onClick={() => setIsOpen(false)}>
               <BsX size={32} />
