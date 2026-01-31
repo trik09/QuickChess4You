@@ -357,7 +357,6 @@ function PuzzlePage() {
             type: p.type,
             description: p.description,
             kidsConfig: p.kidsConfig,
-            kidsConfig: p.kidsConfig,
             puzzleType: p.type,
             level: p.level || 1,
             rating: p.rating || 400

@@ -110,14 +110,10 @@ function EditPuzzle() {
       correctMove: Array.isArray(puzzle.solutionMoves)
         ? puzzle.solutionMoves.join(', ')
         : '',
-      correctMove: Array.isArray(puzzle.solutionMoves)
-        ? puzzle.solutionMoves.join(', ')
-        : '',
       alternativeSolutions: Array.isArray(puzzle.alternativeSolutions)
         ? puzzle.alternativeSolutions.map(sol => sol.join(', '))
         : [],
       difficulty: difficultyLabelMap[difficultyNormalized] || 'Medium',
-      category: puzzle.category || 'Tactics',
       category: puzzle.category || 'Tactics',
       description: mainDesc,
       hints,
