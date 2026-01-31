@@ -260,6 +260,108 @@
   color: #b58863;
 }
 
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.btnSecondary {
+  background: transparent !important;
+  border: 2px solid transparent !important;
+}
+
+[data-theme="light"] .btnSecondary {
+  border-color: #e5d5c5 !important;
+  color: #8b6242 !important;
+}
+
+[data-theme="light"] .btnSecondary:hover {
+  background: #f5f0eb !important;
+  border-color: #b58863 !important;
+  color: #2d2520 !important;
+}
+
+[data-theme="dark"] .btnSecondary {
+  border-color: #3a3028 !important;
+  color: #d4a373 !important;
+}
+
+[data-theme="dark"] .btnSecondary:hover {
+  background: #252525 !important;
+  border-color: #b58863 !important;
+  color: #f5f0eb !important;
+}
+
+/* Progress Card */
+.progressCard {
+  border-radius: 14px;
+  padding: 1.5rem;
+  border: 2px solid transparent;
+  text-align: center;
+}
+
+[data-theme="light"] .progressCard {
+  background: #ffffff;
+  border-color: #e5d5c5;
+  box-shadow: 0 2px 8px rgba(181, 136, 99, 0.1);
+}
+
+[data-theme="dark"] .progressCard {
+  background: #1a1a1a;
+  border-color: #3a3028;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+}
+
+[data-theme="light"] .progressLabel {
+  color: #8b6242;
+}
+
+[data-theme="dark"] .progressLabel {
+  color: #d4a373;
+}
+
+.progressStats {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.progressItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.progressValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #b58863;
+}
+
+.progressText {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+[data-theme="light"] .progressText {
+  color: #8b6242;
+}
+
+[data-theme="dark"] .progressText {
+  color: #d4a373;
+}
+
 /* --- TIMER & STATS --- */
 .timerDisplay {
   display: flex;

@@ -253,8 +253,51 @@
 .formGroup input {
   width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: var(--bg-input); color: white;
 }
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
 .primaryBtn {
-  background: var(--gold); color: black; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;
+  background: var(--gold); 
+  color: black; 
+  border: none; 
+  padding: 12px 24px; 
+  border-radius: 8px; 
+  font-weight: bold; 
+  cursor: pointer;
+  transition: 0.2s;
+  flex: 1;
+  min-width: 150px;
+}
+.primaryBtn:hover {
+  background: #c49d2e;
+  transform: translateY(-2px);
+}
+
+.logoutBtn {
+  background: transparent;
+  color: #ff4444;
+  border: 1px solid #ff4444;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  flex: 1;
+  min-width: 150px;
+}
+.logoutBtn:hover {
+  background: #ff4444;
+  color: white;
+  transform: translateY(-2px);
 }
 
 /* Modal */

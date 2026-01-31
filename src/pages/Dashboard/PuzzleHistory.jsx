@@ -1,4 +1,6 @@
 import React from 'react';
+import { FaHistory } from 'react-icons/fa';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import styles from './DashboardPages.module.css';
 
 const PuzzleHistory = () => {
@@ -10,10 +12,11 @@ const PuzzleHistory = () => {
 
     return (
         <div className={styles.pageContainer}>
-            <header className={styles.pageHeader}>
-                <h1>Puzzle History</h1>
-                <p>Review your recent tactical exercises</p>
-            </header>
+            <PageHeader
+                title="Puzzle History"
+                subtitle="Review your recent tactical exercises"
+                icon={<FaHistory />}
+            />
 
             <div className={styles.statsOverview}>
                 <div className={styles.statBox}>

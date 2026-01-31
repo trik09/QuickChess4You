@@ -12,14 +12,17 @@ import {
   FaCheckCircle,
   FaHourglassStart,
   FaPlayCircle,
+  FaBolt,
+  FaChartLine,
+  FaHistory,
+  FaArrowUp,
+  FaMedal,
+  FaCrown,
+  FaFire
 } from "react-icons/fa";
 import { useRef } from "react";
 import toast from "react-hot-toast";
-
-// We will inline the styles for now or create a CSS file.
-// Since Leaderboard.css is imported, we can reuse classes.
-// But let's create a CompetitionLobby.css if needed.
-// For now, I'll assume we can reuse standard styles or define a new css file.
+import styles from "./CompetitionLobby.module.css";
 
 const CompetitionLobby = () => {
   const { id } = useParams();
@@ -353,15 +356,223 @@ const CompetitionLobby = () => {
     return "Waiting";
   };
 
-  if (loading) return <div className="loading-container">Loading...</div>;
-  if (error) return <div className="error-container">{error}</div>;
+  // Helper function to calculate accuracy
+  const calculateAccuracy = (puzzlesSolved, totalPuzzles) => {
+    if (!totalPuzzles || totalPuzzles === 0) return 0;
+    return Math.round((puzzlesSolved / totalPuzzles) * 100);
+  };
 
+  if (loading) return <div className={styles.loadingContainer}>Loading...</div>;
+  if (error) return <div className={styles.errorContainer}>{error}</div>;
+
+  // ENHANCED LEADERBOARD VIEW FOR ENDED COMPETITIONS
+  if (competitionState === "ENDED") {
+    const top3 = participants.slice(0, 3);
+    const totalPuzzles = competition?.totalPuzzles || competition?.puzzles?.length || 20;
+
+    // Stats for static display
+    const averageAccuracy = participants.length > 0
+      ? Math.round(participants.reduce((acc, curr) => acc + (calculateAccuracy(curr.puzzlesSolved, totalPuzzles)), 0) / participants.length)
+      : 0;
+
+    return (
+      <div className={styles.leaderboardPage}>
+        {/* Page Header */}
+        <div className={styles.pageHeader}>
+          <div className={styles.headerContent}>
+            <h1 className={styles.pageTitle}>{competition?.title || competition?.name}</h1>
+            <div className={styles.competitionMeta}>
+              <span className={styles.metaItem}>
+                <FaClock /> {competition?.duration} MIN
+              </span>
+              <span className={styles.metaItem}>
+                <FaUserCircle /> {participants.length} PLAYERS
+              </span>
+              <span className={styles.statusEnded}>
+                ✅ COMPLETED
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content: Podium + Leaderboard */}
+        <div className={styles.mainContent}>
+          {/* Left Side: Podium Display */}
+          <div className={styles.podiumSection}>
+            <h2 className={styles.sectionTitle}>
+              <FaTrophy /> TOP CHAMPIONS
+            </h2>
+
+            <div className={styles.podium}>
+              {/* 2nd Place */}
+              <div className={`${styles.podiumPlace} ${styles.second}`}>
+                <div className={styles.podiumAvatarContainer}>
+                  <div className={styles.avatarCircle}>
+                    {top3[1] ? top3[1].username?.[0]?.toUpperCase() : '?'}
+                  </div>
+                  {top3[1] && <div className={`${styles.medalIcon} ${styles.medal2}`}><FaMedal /></div>}
+                </div>
+                <div className={styles.podiumName}>{top3[1]?.username || 'Empty'}</div>
+                <div className={styles.podiumScore}>{top3[1]?.score || 0} PTS</div>
+                <div className={styles.podiumBar}>
+                  {top3[1] && (
+                    <div className={styles.barDetails}>
+                      <span>{calculateAccuracy(top3[1].puzzlesSolved, totalPuzzles)}% ACC</span>
+                      <span>{formatTime(top3[1].timeSpent)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 1st Place */}
+              <div className={`${styles.podiumPlace} ${styles.first}`}>
+                <div className={styles.podiumAvatarContainer}>
+                  <FaCrown className={styles.crownIcon} />
+                  <div className={styles.avatarCircle}>
+                    {top3[0] ? top3[0].username?.[0]?.toUpperCase() : '?'}
+                  </div>
+                  {top3[0] && <div className={`${styles.medalIcon} ${styles.medal1}`}><FaMedal /></div>}
+                </div>
+                <div className={styles.podiumName}>{top3[0]?.username || 'Winner'}</div>
+                <div className={styles.podiumScore}>{top3[0]?.score || 0} PTS</div>
+                <div className={styles.podiumBar}>
+                  {top3[0] && (
+                    <div className={styles.barDetails}>
+                      <span>{calculateAccuracy(top3[0].puzzlesSolved, totalPuzzles)}% ACC</span>
+                      <span>{formatTime(top3[0].timeSpent)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 3rd Place */}
+              <div className={`${styles.podiumPlace} ${styles.third}`}>
+                <div className={styles.podiumAvatarContainer}>
+                  <div className={styles.avatarCircle}>
+                    {top3[2] ? top3[2].username?.[0]?.toUpperCase() : '?'}
+                  </div>
+                  {top3[2] && <div className={`${styles.medalIcon} ${styles.medal3}`}><FaMedal /></div>}
+                </div>
+                <div className={styles.podiumName}>{top3[2]?.username || 'Empty'}</div>
+                <div className={styles.podiumScore}>{top3[2]?.score || 0} PTS</div>
+                <div className={styles.podiumBar}>
+                  {top3[2] && (
+                    <div className={styles.barDetails}>
+                      <span>{calculateAccuracy(top3[2].puzzlesSolved, totalPuzzles)}% ACC</span>
+                      <span>{formatTime(top3[2].timeSpent)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Highlights (Info Cards) */}
+            <div className={styles.infoCards}>
+              <div className={styles.infoCard}>
+                <div className={styles.cardIcon}>
+                  <FaBolt />
+                </div>
+                <div className={styles.cardContent}>
+                  <h4>Fastest Solver</h4>
+                  <p>
+                    {participants.sort((a, b) => (a.timeSpent || 999999) - (b.timeSpent || 999999))[0]?.username || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Extra Static Stats Section */}
+            <div className={styles.staticStatsGrid}>
+              <div className={styles.staticStatCard}>
+                <span className={styles.staticStatLabel}>Avg Accuracy</span>
+                <span className={styles.staticStatValue}>{averageAccuracy}%</span>
+                <span className={styles.staticStatTrend}><FaArrowUp /> +2.4% vs Avg</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Full Leaderboard Table */}
+          <div className={styles.tableContainer}>
+            <div className={styles.tableContainerHeader}>
+              <div className={styles.tableTitle}>
+                <FaChartLine /> FULL RANKINGS
+              </div>
+              <div className={styles.tableSubTitle}>
+                Showing 1-{participants.length} of {participants.length}
+              </div>
+            </div>
+
+            <div className={styles.tableHeader}>
+              <span>Rank</span>
+              <span>Player</span>
+              <span>Score</span>
+              <span>Acc</span>
+              <span className={styles.alignRight}>Time</span>
+              <span className={styles.alignRight}>Progress</span>
+            </div>
+
+            <div className={styles.tableBody}>
+              {participants.map((p, idx) => (
+                <div
+                  key={idx}
+                  className={`${styles.tableRow} ${p.userId === user?.id ? styles.currentUser : ''}`}
+                >
+                  <div className={styles.rankCol}>
+                    {idx === 0 && <FaTrophy className={styles.medal1} />}
+                    {idx === 1 && <FaMedal className={styles.medal2} />}
+                    {idx === 2 && <FaMedal className={styles.medal3} />}
+                    {idx > 2 && `#${idx + 1}`}
+                  </div>
+
+                  <div className={styles.playerCol}>
+                    <div className={styles.playerAvatarSmall}>
+                      {p.username?.[0]?.toUpperCase()}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ lineHeight: 1 }}>{p.username || p.name}</span>
+                      {p.userId === user?.id && <span className={styles.youTag}>YOU</span>}
+                    </div>
+                  </div>
+
+                  <div className={styles.scoreCol}>
+                    {p.score || 0}
+                  </div>
+
+                  <div className={styles.accuracyVal}>
+                    {calculateAccuracy(p.puzzlesSolved, totalPuzzles)}%
+                  </div>
+
+                  <div className={`${styles.timeCol} ${styles.alignRight}`}>
+                    {formatTime(p.timeSpent)}
+                  </div>
+
+                  <div className={styles.alignRight} style={{ paddingLeft: '1rem' }}>
+                    {/* Accuracy Bar as Progress */}
+                    <div className={styles.accuracyWrapper}>
+                      <div className={styles.accuracyBg}>
+                        <div
+                          className={styles.accuracyFill}
+                          style={{ width: `${calculateAccuracy(p.puzzlesSolved, totalPuzzles)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ORIGINAL LOBBY VIEW FOR UPCOMING/LIVE COMPETITIONS
   return (
-    <div className="competition-lobby">
+    <div className={styles.competitionLobby}>
       {/* Modal for Access Code */}
       {showCodeModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             <h3>Enter Access Code</h3>
             <p>This competition is password protected.</p>
             <form onSubmit={handleCodeSubmit}>
@@ -370,19 +581,19 @@ const CompetitionLobby = () => {
                 placeholder="Enter Code"
                 value={accessCodeInput}
                 onChange={(e) => setAccessCodeInput(e.target.value)}
-                className="code-input"
+                className={styles.codeInput}
                 autoFocus
               />
-              {codeError && <p className="error-msg">{codeError}</p>}
-              <div className="modal-actions">
+              {codeError && <p className={styles.errorMsg}>{codeError}</p>}
+              <div className={styles.modalActions}>
                 <button
                   type="button"
                   onClick={() => setShowCodeModal(false)}
-                  className="cancel-btn"
+                  className={styles.cancelBtn}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="submit-btn">
+                <button type="submit" className={styles.submitBtn}>
                   Join
                 </button>
               </div>
@@ -392,11 +603,11 @@ const CompetitionLobby = () => {
       )}
 
       {/* Header Card */}
-      <div className="lobby-card header-card">
-        <div className="header-left">
-          <h1 className="comp-title">
+      <div className={`${styles.lobbyCard} ${styles.headerCard}`}>
+        <div className={styles.headerLeft}>
+          <h1 className={styles.compTitle}>
             {competition?.title || competition?.name}
-            <span className="comp-date">
+            <span className={styles.compDate}>
               {competition?.startTime &&
                 ` – ${new Date(competition.startTime).toLocaleString("en-US", {
                   month: "short",
@@ -408,83 +619,76 @@ const CompetitionLobby = () => {
                 })}`}
             </span>
           </h1>
-          <div className="status-badge-container">
+          <div className={styles.statusBadgeContainer}>
             <span
-              className={`status-pill ${competitionState?.toLowerCase() || "upcoming"}`}
+              className={`${styles.statusPill} ${styles[competitionState?.toLowerCase() || "upcoming"]}`}
             >
               {competitionState || "UPCOMING"}
             </span>
           </div>
         </div>
 
-        <div className="header-right">
-          {competitionState === "ENDED" ? (
-            <div className="ended-section">
-              <FaTrophy className="trophy-large" />
-              <h2 className="ended-text">Final Results</h2>
-            </div>
-          ) : (
-            <div className="timer-section">
-              {/* Show countdown timer for live/upcoming */}
-              {(competitionState === "UPCOMING" || competitionState === "LIVE") && (
-                <div className="countdown-display">
-                  <span className="timer-label">
-                    {competitionState === "LIVE" ? "Ends in:" : "Starts in:"}
-                  </span>
-                  <div className="timer-value">
-                    <FaClock className="timer-icon" /> {timeLeft || "--:--:--"}
-                  </div>
+        <div className={styles.headerRight}>
+          <div className={styles.timerSection}>
+            {/* Show countdown timer for live/upcoming */}
+            {(competitionState === "UPCOMING" || competitionState === "LIVE") && (
+              <div className={styles.countdownDisplay}>
+                <span className={styles.timerLabel}>
+                  {competitionState === "LIVE" ? "Ends in:" : "Starts in:"}
+                </span>
+                <div className={styles.timerValue}>
+                  <FaClock className={styles.timerIcon} /> {timeLeft || "--:--:--"}
                 </div>
-              )}
-
-              <div className="action-buttons">
-                {participantState === "NOT_JOINED" ? (
-                  <button
-                    className="action-btn join-btn"
-                    onClick={handleJoin}
-                    disabled={isJoinProcessing}
-                  >
-                    {isJoinProcessing ? "Joining..." : "Join Competition"}
-                  </button>
-                ) : (
-                  <>
-                    {/* If joined, we show 'Joined' status OR 'Enter' if it's Live/Playing */}
-                    {/* Logic: If competition is live, show Enter. If upcoming, show Joined. */}
-
-                    {(competitionState === "LIVE" || competitionState === "PLAYING") ? (
-                      <button
-                        className="action-btn enter-btn"
-                        onClick={handleEnterCompetition}
-                      >
-                        Enter Competition
-                      </button>
-                    ) : (
-                      <span className="joined-text">
-                        <FaCheckCircle /> Joined
-                      </span>
-                    )}
-                  </>
-                )}
               </div>
+            )}
+
+            <div className={styles.actionButtons}>
+              {participantState === "NOT_JOINED" ? (
+                <button
+                  className={`${styles.actionBtn} ${styles.joinBtn}`}
+                  onClick={handleJoin}
+                  disabled={isJoinProcessing}
+                >
+                  {isJoinProcessing ? "Joining..." : "Join Competition"}
+                </button>
+              ) : (
+                <>
+                  {/* If joined, we show 'Joined' status OR 'Enter' if it's Live/Playing */}
+                  {/* Logic: If competition is live, show Enter. If upcoming, show Joined. */}
+
+                  {(competitionState === "LIVE" || competitionState === "PLAYING") ? (
+                    <button
+                      className={`${styles.actionBtn} ${styles.enterBtn}`}
+                      onClick={handleEnterCompetition}
+                    >
+                      Enter Competition
+                    </button>
+                  ) : (
+                    <span className={styles.joinedText}>
+                      <FaCheckCircle /> Joined
+                    </span>
+                  )}
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Participants Card */}
-      <div className="lobby-card participants-card">
-        <h2 className="section-title">
-          {competitionState === "ENDED" ? "🏆 Final Rankings" : `Participants (${participants.length})`}
+      <div className={`${styles.lobbyCard} ${styles.participantsCard}`}>
+        <h2 className={styles.sectionTitle}>
+          Participants ({participants.length})
         </h2>
-        <div className="table-responsive">
-          <table className="participants-table">
+        <div className={styles.tableResponsive}>
+          <table className={styles.participantsTable}>
             <thead>
               <tr>
-                <th className="th-rank">Rank</th>
-                <th className="th-player">Player</th>
-                <th className="th-status">Status</th>
-                <th className="th-puzzles">Score</th>
-                <th className="th-time">Time</th>
+                <th className={styles.thRank}>Rank</th>
+                <th className={styles.thPlayer}>Player</th>
+                <th className={styles.thStatus}>Status</th>
+                <th className={styles.thPuzzles}>Score</th>
+                <th className={styles.thTime}>Time</th>
               </tr>
             </thead>
             <tbody>
@@ -492,41 +696,35 @@ const CompetitionLobby = () => {
                 participants.map((p, idx) => (
                   <tr
                     key={idx}
-                    className={`${p.userId === user?.id ? "row-highlight" : ""} ${competitionState === "ENDED" && idx < 3 ? "winner-row" : ""
-                      }`}
+                    className={`${p.userId === user?.id ? styles.rowHighlight : ""}`}
                   >
-                    <td className="td-rank">
-                      {competitionState === "ENDED" && idx === 0 && <span className="medal gold">🥇</span>}
-                      {competitionState === "ENDED" && idx === 1 && <span className="medal silver">🥈</span>}
-                      {competitionState === "ENDED" && idx === 2 && <span className="medal bronze">🥉</span>}
-                      {(competitionState !== "ENDED" || idx > 2) && `#${idx + 1}`}
-                    </td>
-                    <td className="td-player">
-                      <div className="player-info">
+                    <td className={styles.tdRank}>#{idx + 1}</td>
+                    <td className={styles.tdPlayer}>
+                      <div className={styles.playerInfo}>
                         {p.userId === user?.id ? (
-                          <span className="player-avatar self">You</span>
+                          <span className={`${styles.playerAvatar} ${styles.self}`}>You</span>
                         ) : (
-                          <span className="player-avatar">
+                          <span className={styles.playerAvatar}>
                             <FaUserCircle />
                           </span>
                         )}
-                        <span className="player-name">
+                        <span className={styles.playerName}>
                           {p.username || p.name || "User"}
                         </span>
                       </div>
                     </td>
-                    <td className="td-status">{getStatus(p)}</td>
-                    <td className="td-puzzles">
+                    <td className={styles.tdStatus}>{getStatus(p)}</td>
+                    <td className={styles.tdPuzzles}>
                       <strong>{p.puzzlesSolved || 0}</strong> / {competition?.totalPuzzles || competition?.puzzles?.length || 0}
                     </td>
-                    <td className="td-time">
+                    <td className={styles.tdTime}>
                       {p.timeSpent ? formatTime(p.timeSpent) : "--"}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="empty-row">
+                  <td colSpan="5" className={styles.emptyRow}>
                     No participants yet.
                   </td>
                 </tr>
@@ -535,319 +733,7 @@ const CompetitionLobby = () => {
           </table>
         </div>
       </div>
-
-      <style>{`
-        .competition-lobby {
-          padding: 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-          color: #e0e0e0;
-          font-family: 'Inter', sans-serif;
-        }
-        
-        /* General Card Style */
-        .lobby-card {
-           background-color: #1e1e1e; /* Dark Card Background */
-           border-radius: 8px;
-           padding: 1.5rem 2rem;
-           margin-bottom: 2rem;
-           box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-           border: 1px solid #333;
-        }
-
-        /* HEADER CARD */
-        .header-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .header-left {
-            flex: 1;
-        }
-        .comp-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #fff;
-            margin: 0 0 1rem 0;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .comp-date {
-            font-weight: 400;
-            color: #a0a0a0;
-        }
-        .status-badge-container {
-            margin-top: 5px;
-        }
-        .status-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid #444;
-            color: #bbb;
-            background: #2a2a2a;
-        }
-        .status-pill.upcoming { color: #facc15; border-color: #634d04; background: rgba(250, 204, 21, 0.1); }
-        .status-pill.live { color: #ef4444; border-color: #7f1d1d; background: rgba(239, 68, 68, 0.1); }
-        .status-pill.ENDED { color: #9ca3af; border-color: #374151; background: rgba(107, 114, 128, 0.1); }
-
-        .header-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-        }
-        .ended-text {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: 1px;
-            margin: 0;
-        }
-        .ended-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        .trophy-large {
-            font-size: 3rem;
-            color: #ffd700;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .timer-section {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-        .countdown-display {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            margin-bottom: 12px;
-        }
-        .timer-label {
-            font-size: 0.85rem;
-            color: #9ca3af;
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .timer-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #ffd700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Roboto Mono', monospace; /* Monospace for steady numbers */
-        }
-        .timer-value .timer-icon {
-            font-size: 1.4rem;
-            color: #eab308;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .action-btn {
-            padding: 10px 24px;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-        .join-btn {
-            background-color: #3b82f6; 
-            color: white;
-        }
-        .join-btn:hover { background-color: #2563eb; }
-        .enter-btn {
-            background-color: #10b981;
-            color: white;
-        }
-        .enter-btn:hover { background-color: #059669; }
-        .joined-text {
-            color: #10b981;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* PARTICIPANTS CARD */
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #fff;
-            margin: 0 0 1.5rem 0;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .participants-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-        .participants-table th {
-            text-align: left;
-            padding: 10px;
-            color: #888;
-            font-weight: 500;
-            border-bottom: 1px solid #333;
-        }
-        .participants-table td {
-            padding: 14px 10px;
-            color: #ccc;
-            border-bottom: 1px solid #2a2a2a;
-        }
-        
-        .th-rank, .td-rank { width: 80px; color: #666; font-weight: bold; text-align: center; }
-        .th-player, .td-player { width: 35%; }
-        .th-status, .td-status { width: 15%; color: #888; }
-        .th-puzzles, .td-puzzles { width: 20%; color: #888; font-weight: 600; }
-        .th-time, .td-time { width: 15%; color: #888; }
-
-        .medal {
-            font-size: 1.5rem;
-            display: inline-block;
-            animation: bounce 1s ease-in-out;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        .winner-row {
-            background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
-            border-left: 3px solid #ffd700;
-        }
-
-        .player-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .player-avatar {
-            font-size: 1.2rem;
-            color: #666;
-            display: flex;
-        }
-        .player-avatar.self {
-             background: #3b82f6;
-             color: white;
-             font-size: 0.7rem;
-             padding: 2px 6px;
-             border-radius: 4px;
-             font-weight: bold;
-             text-transform: uppercase;
-        }
-        .player-name {
-            font-weight: 500;
-            color: #eee;
-        }
-        
-        .row-highlight {
-            background-color: rgba(59, 130, 246, 0.08);
-        }
-        .empty-row {
-            text-align: center;
-            padding: 2rem;
-            color: #555;
-            font-style: italic;
-        }
-        
-        /* MODAL STYLES */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: #1f2937;
-            padding: 2rem;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid #374151;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .modal-content h3 {
-            margin-top: 0;
-            color: #fff;
-            margin-bottom: 0.5rem;
-        }
-        .modal-content p {
-            color: #9ca3af;
-            margin-bottom: 1.5rem;
-        }
-        .code-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #4b5563;
-            background: #374151;
-            color: #fff;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
-        .error-msg {
-            color: #ef4444;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .modal-actions button {
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s;
-        }
-        .cancel-btn {
-            background: #374151;
-            color: #d1d5db;
-        }
-        .cancel-btn:hover {
-            background: #4b5563;
-        }
-        .submit-btn {
-            background: #3b82f6;
-            color: white;
-        }
-        .submit-btn:hover {
-            background: #2563eb;
-        }
-      `}</style>
-    </div>
+    </div >
   );
 };
 

@@ -15,11 +15,11 @@ function Contact() {
             </a>
           </div>
 
-          <a href="tel:+919901739147" className={styles.ctaCard}>
+          <a href="tel:+916362957513" className={styles.ctaCard}>
             <span className={styles.ctaLabel}>Call Us</span>
             <div className={styles.ctaAction}>
               <PiPhoneCall className={styles.ctaIcon} size={24} />
-              <span className={styles.phoneNumber}>+91 99017 39147</span>
+              <span className={styles.phoneNumber}>+91 63629 57513</span>
 
             </div>
           </a>

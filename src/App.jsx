@@ -16,12 +16,14 @@ import PuzzleHistory from "./pages/Dashboard/PuzzleHistory";
 
 import CasualPuzzlePage from "./pages/PuzzlePage/CasualPuzzlePage";
 import PuzzlePage from "./pages/PuzzlePage/PuzzlePage";
+import DailyTrainingPage from "./pages/DailyTraining/DailyTrainingPage";
 import CompetitionLeaderboard from "./pages/Leaderboard/Leaderboard";
 import Profile from "./pages/Profile/Profile";
 import EditProfile from "./pages/Profile/EditProfile";
 import UserSettings from "./pages/Settings/Settings";
 import LiveCompetitionPage from "./pages/LiveCompetition/LiveCompetitionPage";
 import CompetitionLobby from "./pages/CompetitionLobby/CompetitionLobby";
+import Gallery from "./pages/Gallery/Gallery";
 
 // Admin Imports
 import CapturePuzzle from "./pages/Learn/CapturePuzzle";
@@ -53,6 +55,7 @@ import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import AdminProtectedRoute from "./components/ProtectedRoute/AdminProtectedRoute";
 import AdminRedirect from "./components/AdminRedirect"; // NEW
 import { AuthProvider } from "./contexts/AuthContext";
+import CompetitionRejoinManager from "./components/CompetitionRejoinManager/CompetitionRejoinManager";
 
 function App() {
   return (
@@ -60,12 +63,14 @@ function App() {
       <ThemeProvider>
         <LiveCompetitionProvider>
           <Router>
+            <CompetitionRejoinManager />
             <Routes>
               {/* LANDING PAGE LAYOUT (Public) */}
               <Route element={<LandingLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/learn/capture" element={<CapturePuzzle />} />
+                <Route path="/gallery" element={<Gallery />} />
                 {/* Keep these valid for direct links, or handle in Home as sections */}
               </Route>
 
@@ -88,7 +93,7 @@ function App() {
 
                 {/* Puzzles */}
                 <Route path="/puzzles" element={<CasualPuzzlePage />} />
-                <Route path="/puzzle" element={<PuzzlePage />} />
+                <Route path="/puzzle" element={<DailyTrainingPage />} />
                 <Route path="/competition/:id/puzzle" element={<PuzzlePage />} />
                 <Route path="/tournament/:id/puzzle" element={<PuzzlePage />} />
 
@@ -109,6 +114,8 @@ function App() {
                   </AdminProtectedRoute>
                 }
               >
+                <Route path="" element={<AdminDashboard />} />
+
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="categories" element={<CategoryList />} />
                 <Route path="puzzles" element={<PuzzleList />} />

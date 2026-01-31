@@ -34,7 +34,7 @@ const Hero = () => {
                             Start Solving <BsArrowRight className={styles.btnIcon} />
                         </button>
                         <button className={styles.btnSecondary} onClick={() => navigate('/dashboard')}>
-                            View Tournaments
+                            View Puzzle Arena
                         </button>
                     </div>
                 </div>

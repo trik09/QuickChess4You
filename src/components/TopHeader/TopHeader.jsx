@@ -20,6 +20,7 @@ function TopHeader({ onLoginClick }) {
           <Link to="/courses" className={styles.navLink}>Courses</Link>
           <Link to="/coaching" className={styles.navLink}>Coaching</Link>
           <Link to="/pricing" className={styles.navLink}>Pricing</Link>
+          <Link to="/gallery" className={styles.navLink}>Gallery</Link>
           <Link to="/contact" className={styles.navLink}>Contact</Link>
         </nav>
 

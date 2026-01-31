@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaClock, FaUndo, FaCheckCircle, FaEye } from "react-icons/fa";
+import { FaClock, FaUndo, FaCheckCircle, FaEye, FaPuzzlePiece } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
+import PageHeader from "../../components/PageHeader/PageHeader";
 import { puzzleAPI, competitionAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
 import CompetitionLeaderboard from "../../components/CompetitionLeaderboard/CompetitionLeaderboard";
-// import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer"; // REMOVED: Car race component
+import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer";
 import styles from "./PuzzlePage.module.css";
 
 function PuzzlePage() {
@@ -18,8 +19,8 @@ function PuzzlePage() {
   const location = useLocation();
   const navigator = useNavigate();
   const { user } = useAuth();
-  const { participateInCompetition, disconnectFromCompetition } =
-    useLiveCompetition(); // Destructure disconnect
+  const { participateInCompetition, disconnectFromCompetition, getLeaderboard } =
+    useLiveCompetition(); // Destructure disconnect and getLeaderboard
 
   // State
   const [competitionData, setCompetitionData] = useState(null);
@@ -254,6 +255,12 @@ function PuzzlePage() {
                 // All puzzles are solved, stay on current or go to first
                 setCurrentPuzzleIndex(0);
               }
+
+              // Fetch leaderboard to populate racing animation
+              console.log('Fetching leaderboard for racing animation');
+              setTimeout(() => {
+                getLeaderboard();
+              }, 500); // Small delay to ensure socket is connected
             }
 
           } catch (err) {
@@ -669,45 +676,99 @@ function PuzzlePage() {
     <div className={styles.container}>
       <Toaster position="top-right" />
 
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerLeft}>
-          <button className={styles.backBtn} onClick={() => navigate(-1)}>
-            ← Back
-          </button>
-          <div className={styles.titleInfo}>
-            <h1>{competitionData ? competitionData.name : "Daily Training"}</h1>
-          </div>
-        </div>
-
-        <div className={styles.headerRight}>
-          <div className={styles.puzzleProgress}>
-            Puzzle {currentPuzzleIndex + 1} / {puzzles.length}
-          </div>
-          {isLiveCompetition && !isReviewMode && (
-            <div className={styles.liveIndicator}>
-              <span className={styles.liveStatus}>🟢 LIVE COMPETITION</span>
-            </div>
-          )}
-          {isReviewMode && (
-            <div className={styles.liveIndicator}>
-              <span className={styles.liveStatus} style={{ backgroundColor: '#4a5568' }}>Review Mode</span>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Page Header */}
+      <PageHeader
+        title={competitionData ? competitionData.name : "Daily Training"}
+        subtitle={`Puzzle ${currentPuzzleIndex + 1} of ${puzzles.length}`}
+        icon={<FaPuzzlePiece />}
+        showBackButton
+        onBack={() => navigate(-1)}
+        actions={
+          <>
+            {isLiveCompetition && !isReviewMode && (
+              <div className={styles.liveIndicator}>
+                <span className={styles.liveStatus}>🟢 LIVE</span>
+              </div>
+            )}
+            {isReviewMode && (
+              <div className={styles.liveIndicator}>
+                <span className={styles.reviewStatus}>Review Mode</span>
+              </div>
+            )}
+          </>
+        }
+      />
 
       {/* Main Content - 3 Column Layout */}
       <div className={styles.mainContent}>
         {/* Left Panel - Stats (Only in Competition) */}
         {competitionData ? (
           <div className={styles.leftPanel}>
+            {/* Puzzle Information Card */}
+            <div className={styles.puzzleInfoCard}>
+              <h2 className={styles.puzzleCardTitle}>
+                {currentPuzzle?.title || "Chess Puzzle"}
+              </h2>
+              {currentPuzzle?.description && (
+                <p className={styles.puzzleDescription}>
+                  {currentPuzzle.description}
+                </p>
+              )}
+
+              {/* To Move Indicator - Highlighted */}
+              {currentPuzzle && (
+                <div className={styles.toMoveSection}>
+                  <div className={styles.toMoveLabel}>Turn to Move:</div>
+                  <div className={styles.toMoveIndicator}>
+                    <div
+                      className={`${styles.colorDot} ${currentPuzzle.fen.split(" ")[1] === "w"
+                        ? styles.whiteDot
+                        : styles.blackDot
+                        }`}
+                    ></div>
+                    <span className={styles.toMoveText}>
+                      {currentPuzzle.fen.split(" ")[1] === "w"
+                        ? "White"
+                        : "Black"}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Level and Rating */}
+              {currentPuzzle && (
+                <div className={styles.puzzleMetadata}>
+                  <div className={styles.metadataItem}>
+                    <span className={styles.metadataLabel}>Level:</span>
+                    <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
+                  </div>
+                  <div className={styles.metadataItem}>
+                    <span className={styles.metadataLabel}>Rating:</span>
+                    <span className={styles.metadataValue}>{currentPuzzle.rating || 400}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Review Mode Button */}
+              {isReviewMode && (
+                <button
+                  className={`${styles.actionBtn} ${styles.btnPrimary}`}
+                  onClick={() => setShowSolution(!showSolution)}
+                  style={{ width: "100%", marginTop: "0.5rem" }}
+                >
+                  <FaEye />
+                  {showSolution ? "Hide Solution" : "View Solution"}
+                </button>
+              )}
+            </div>
+
+            {/* Stats Card */}
             <div className={styles.statCard}>
               <div className={styles.timerDisplay}>
                 <FaClock className={styles.timerIcon} />
                 <div className={styles.statLabel}>Time Left</div>
                 <div className={styles.timerBadge}>
-                  {isReviewMode ? "Unlimited" : formatTime(timeLeft)}
+                  {isReviewMode ? "∞" : formatTime(timeLeft)}
                 </div>
               </div>
 
@@ -724,17 +785,6 @@ function PuzzlePage() {
                 </div>
               </div>
             </div>
-
-            {/* REMOVED: Current Status section
-            <div className={styles.statCard} style={{ textAlign: "center" }}>
-              <div className={styles.statLabel}>Current Status</div>
-              <div
-                style={{ fontSize: "1.2rem", color: "#fff", marginTop: "10px" }}
-              >
-                Compete Mode
-              </div>
-            </div>
-            */}
 
             {/* Submit Competition Button - Only for Live Competitions */}
             {isLiveCompetition && !isReviewMode && (
@@ -759,51 +809,8 @@ function PuzzlePage() {
           </div>
         )}
 
-        {/* Center Panel - Board */}
+        {/* Center Panel - Board Only */}
         <div className={styles.boardArea}>
-          <div className={styles.puzzleInfoBar}>
-            <div className={styles.topTitleArea}>
-              <h2 className={styles.puzzleTitle}>
-                {currentPuzzle?.title || "Chess Puzzle"}
-              </h2>
-              {currentPuzzle?.description && (
-                <span className={styles.puzzleSubtitle}>
-                  {currentPuzzle.description}
-                </span>
-              )}
-            </div>
-            {currentPuzzle && (
-              <div className={styles.puzzleToMove}>
-                <div
-                  className={`${styles.colorIndicator} ${currentPuzzle.fen.split(" ")[1] === "w"
-                    ? styles.white
-                    : styles.black
-                    }`}
-                ></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <span className={styles.moveText}>
-                    {currentPuzzle.fen.split(" ")[1] === "w"
-                      ? "White to Move"
-                      : "Black to Move"}
-                  </span>
-                  <span style={{ fontSize: '0.8rem', color: '#a0aec0' }}>
-                    Level {currentPuzzle.level} | Rating {currentPuzzle.rating}
-                  </span>
-                </div>
-                {isReviewMode && (
-                  <button
-                    className={styles.actionBtn}
-                    style={{ marginLeft: '10px', padding: '4px 8px', fontSize: '0.8rem' }}
-                    onClick={() => setShowSolution(!showSolution)}
-                  >
-                    <FaEye style={{ marginRight: '5px' }} />
-                    {showSolution ? "Hide Solution" : "View Solution"}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
           <div className={styles.boardWrapper}>
             {puzzles.length > 0 && currentPuzzle ? (
               <ChessBoard
@@ -921,6 +928,11 @@ function PuzzlePage() {
             </div>
             */}
           </div>
+
+          {/* Live Racing Animation - Only for Live Competitions */}
+          {isLiveCompetition && !isReviewMode && (
+            <PuzzleRacer />
+          )}
         </div>
       </div>
 

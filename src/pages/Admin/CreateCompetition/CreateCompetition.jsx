@@ -56,7 +56,7 @@ function CreateCompetition() {
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
-    limit: 20, // Reduced limit for table view to fit screen better
+    limit: 10, // Show 10 puzzles per page
     totalRecords: 0,
   });
 
@@ -118,6 +118,29 @@ function CreateCompetition() {
         return [...prev, puzzle];
       }
     });
+  };
+
+  // Select all puzzles on current page only
+  const handleSelectAllPage = () => {
+    const currentPagePuzzles = viewMode === 'library' ? puzzles : selectedPuzzles;
+    const allSelected = currentPagePuzzles.every(puzzle =>
+      selectedPuzzles.some(p => p._id === puzzle._id)
+    );
+
+    if (allSelected) {
+      // Deselect all puzzles on current page
+      setSelectedPuzzles(prev =>
+        prev.filter(p => !currentPagePuzzles.some(cp => cp._id === p._id))
+      );
+    } else {
+      // Select all puzzles on current page
+      setSelectedPuzzles(prev => {
+        const newSelections = currentPagePuzzles.filter(
+          puzzle => !prev.some(p => p._id === puzzle._id)
+        );
+        return [...prev, ...newSelections];
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -316,7 +339,22 @@ function CreateCompetition() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th width="50">Select</th>
+                  <th width="50">
+                    <button
+                      type="button"
+                      className={styles.selectAllBtn}
+                      onClick={handleSelectAllPage}
+                      title="Select all puzzles on this page"
+                    >
+                      {(() => {
+                        const currentPagePuzzles = viewMode === 'library' ? puzzles : selectedPuzzles;
+                        const allSelected = currentPagePuzzles.length > 0 && currentPagePuzzles.every(puzzle =>
+                          selectedPuzzles.some(p => p._id === puzzle._id)
+                        );
+                        return allSelected ? <FaCheckCircle /> : <div className={styles.emptyCheckbox}></div>;
+                      })()}
+                    </button>
+                  </th>
                   <th>Puzzle Title / ID</th>
                   <th>Category</th>
                   <th>Difficulty</th>

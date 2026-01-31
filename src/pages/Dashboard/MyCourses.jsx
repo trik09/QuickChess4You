@@ -1,4 +1,6 @@
 import React from 'react';
+import { FaGraduationCap } from 'react-icons/fa';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import styles from './DashboardPages.module.css';
 
 const MyCourses = () => {
@@ -8,10 +10,11 @@ const MyCourses = () => {
 
     return (
         <div className={styles.pageContainer}>
-            <header className={styles.pageHeader}>
-                <h1>My Courses</h1>
-                <p>Continue your learning journey</p>
-            </header>
+            <PageHeader
+                title="My Courses"
+                subtitle="Continue your learning journey"
+                icon={<FaGraduationCap />}
+            />
 
             <div className={styles.coursesGrid}>
                 {courses.map(course => (

@@ -23,13 +23,13 @@ import blackQueen from '../../../assets/pieces/blackqueen.svg';
 import blackKing from '../../../assets/pieces/blackking.svg';
 
 const LEVEL_RANGES = {
-  1: { easy: [400, 570], medium: [570, 740], hard: [740, 910] },
-  2: { easy: [910, 1080], medium: [1080, 1250], hard: [1250, 1420] },
-  3: { easy: [1420, 1590], medium: [1590, 1760], hard: [1760, 1930] },
-  4: { easy: [1930, 2100], medium: [2100, 2270], hard: [2270, 2440] },
-  5: { easy: [2440, 2610], medium: [2610, 2780], hard: [2780, 2950] },
-  6: { easy: [2950, 3120], medium: [3120, 3290], hard: [3290, 3460] },
-  7: { easy: [3460, 3630], medium: [3630, 3800], hard: [3800, 4000] }
+  1: { easy: [300, 450], medium: [450, 600], hard: [600, 750] },
+  2: { easy: [750, 900], medium: [900, 1050], hard: [1050, 1200] },
+  3: { easy: [1200, 1350], medium: [1350, 1500], hard: [1500, 1650] },
+  4: { easy: [1650, 1800], medium: [1800, 1950], hard: [1950, 2100] },
+  5: { easy: [2100, 2250], medium: [2250, 2400], hard: [2400, 2550] },
+  6: { easy: [2550, 2700], medium: [2700, 2850], hard: [2850, 3000] },
+  7: { easy: [3000, 3160], medium: [3160, 3330], hard: [3330, 3500] }
 };
 
 function EditPuzzle() {
@@ -203,6 +203,33 @@ function EditPuzzle() {
   const handleFENChange = (value) => {
     setFormData({ ...formData, fen: value });
     validateFEN(value);
+  };
+
+  // Logic to determine Level and Difficulty from Rating
+  const determineLevelAndDifficulty = (rating) => {
+    const r = Number(rating);
+    for (const [lvl, ranges] of Object.entries(LEVEL_RANGES)) {
+      if (r >= ranges.easy[0] && r <= ranges.hard[1]) {
+        // EditPuzzle uses Capitalized difficulty in state
+        if (r <= ranges.easy[1]) return { level: Number(lvl), difficulty: 'Easy' };
+        if (r <= ranges.medium[1]) return { level: Number(lvl), difficulty: 'Medium' };
+        return { level: Number(lvl), difficulty: 'Hard' };
+      }
+    }
+    // Fallback if out of bounds
+    if (r < 300) return { level: 1, difficulty: 'Easy' };
+    if (r > 3500) return { level: 7, difficulty: 'Hard' };
+    return { level: 1, difficulty: 'Medium' };
+  };
+
+  const handleRatingChange = (newRating) => {
+    const { level, difficulty } = determineLevelAndDifficulty(newRating);
+    setFormData(prev => ({
+      ...prev,
+      rating: newRating,
+      level: level,
+      difficulty: difficulty
+    }));
   };
 
 
@@ -630,45 +657,60 @@ function EditPuzzle() {
                 {categories.map((cat) => <option key={cat._id} value={cat.name}>{cat.title}</option>)}
               </select>
             </div>
-            <div className={styles.formGroup}>
-              <label>Difficulty *</label>
-              <select value={formData.difficulty} onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}>
-                <option>Easy</option> <option>Medium</option> <option>Hard</option>
-              </select>
-            </div>
+            {/* Reordered: Rating -> Level -> Difficulty */}
+            <div className={styles.formGroup} style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ color: '#2d3748', fontWeight: '600' }}>Rating (300 - 3500) *</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <input
+                    type="number"
+                    min="300"
+                    max="3500"
+                    required
+                    value={formData.rating}
+                    onChange={(e) => handleRatingChange(e.target.value)}
+                    style={{ border: '2px solid #4a5568', fontSize: '1.1em' }}
+                  />
+                  <small style={{ color: '#4a5568' }}>
+                    Entering rating automatically selects the appropriate Level and Difficulty.
+                  </small>
+                </div>
+              </div>
 
-            <div className={styles.formGroup}>
-              <label>Level (1-7) *</label>
-              <select
-                required
-                value={formData.level}
-                onChange={(e) => {
-                  const newLevel = Number(e.target.value);
-                  setFormData(prev => ({ ...prev, level: newLevel }));
-                }}
-              >
-                {[1, 2, 3, 4, 5, 6, 7].map(l => (
-                  <option key={l} value={l}>Level {l}</option>
-                ))}
-              </select>
-            </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.9em' }}>Level (Auto)</label>
+                  <select
+                    required
+                    value={formData.level}
+                    disabled
+                    style={{ background: '#edf2f7', cursor: 'not-allowed' }}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7].map(l => (
+                      <option key={l} value={l}>Level {l}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className={styles.formGroup}>
-              <label>Rating *</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  value={formData.rating}
-                  onChange={(e) => setFormData(prev => ({ ...prev, rating: e.target.value }))}
-                />
-                <small style={{ color: '#718096' }}>
-                  Recommended for Level {formData.level} ({formData.difficulty}):
-                  {LEVEL_RANGES[formData.level] && LEVEL_RANGES[formData.level][formData.difficulty.toLowerCase()]
-                    ? ` ${LEVEL_RANGES[formData.level][formData.difficulty.toLowerCase()][0]} - ${LEVEL_RANGES[formData.level][formData.difficulty.toLowerCase()][1]}`
-                    : ' N/A'}
-                </small>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.9em' }}>Difficulty (Auto)</label>
+                  <select
+                    required
+                    value={formData.difficulty}
+                    disabled
+                    style={{ background: '#edf2f7', cursor: 'not-allowed' }}
+                  >
+                    <option>Easy</option>
+                    <option>Medium</option>
+                    <option>Hard</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '10px', fontSize: '0.85em', color: '#718096', fontStyle: 'italic' }}>
+                Current Range: {LEVEL_RANGES[formData.level]?.[formData.difficulty.toLowerCase()]
+                  ? `${LEVEL_RANGES[formData.level][formData.difficulty.toLowerCase()][0]} - ${LEVEL_RANGES[formData.level][formData.difficulty.toLowerCase()][1]}`
+                  : 'N/A'}
               </div>
             </div>
             <div className={styles.formGroup}>

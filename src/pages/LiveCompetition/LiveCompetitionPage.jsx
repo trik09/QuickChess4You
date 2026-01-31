@@ -4,6 +4,7 @@ import { useLiveCompetition } from '../../contexts/LiveCompetitionContext';
 import { competitionAPI } from '../../services/api';
 import LiveLeaderboard from '../../components/LiveCompetition/LiveLeaderboard';
 import CompetitionTimer from '../../components/LiveCompetition/CompetitionTimer';
+import PuzzleRacer from '../../components/PuzzleRacer/PuzzleRacer';
 import toast from 'react-hot-toast';
 import styles from './LiveCompetitionPage.module.css';
 
@@ -316,6 +317,9 @@ const LiveCompetitionPage = () => {
             </div>
           )}
 
+          {/* Live Racing Animation */}
+          <PuzzleRacer />
+
           <div className={styles['puzzles-section']}>
             <h3>Competition Puzzles</h3>
             <div className={styles['puzzles-grid']}>
@@ -332,19 +336,19 @@ const LiveCompetitionPage = () => {
                   <div className={styles['puzzle-number']}>#{index + 1}</div>
                   <div className={styles['puzzle-title']}>{puzzle.title}</div>
                   <div className={styles['puzzle-difficulty']}>{puzzle.difficulty}</div>
-                  
+
                   {puzzle.isSolved && (
                     <div className={styles['solved-indicator']}>
                       ✅ +{puzzle.solvedData?.scoreEarned || 0} pts
                     </div>
                   )}
-                  
+
                   {puzzle.isFailed && (
                     <div className={styles['failed-indicator']}>
                       ❌ Failed
                     </div>
                   )}
-                  
+
                   {puzzle.status === 'in_progress' && (
                     <div className={styles['in-progress-indicator']}>
                       🔄 In Progress

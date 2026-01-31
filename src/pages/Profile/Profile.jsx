@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authAPI } from '../../services/api';
-import { 
-  FaChessPawn, FaTrophy, FaChartLine, FaFire, 
-  FaCog, FaHistory, FaMedal, FaEdit, FaCamera, 
-  FaEnvelope, FaCalendarAlt, FaTimes 
+import {
+  FaChessPawn, FaTrophy, FaChartLine, FaFire,
+  FaCog, FaHistory, FaMedal, FaEdit, FaCamera,
+  FaEnvelope, FaCalendarAlt, FaTimes
 } from 'react-icons/fa';
 import styles from './Profile.module.css';
 
@@ -77,9 +77,9 @@ function Profile() {
   // Stats Logic
   const stats = {
     puzzlesSolved: userData.statistics?.puzzlesSolved || 0,
-    accuracy: 87, 
-    currentStreak: 12, 
-    bestStreak: 28, 
+    accuracy: 87,
+    currentStreak: 12,
+    bestStreak: 28,
     totalGames: (userData.wins || 0) + (userData.losses || 0) + (userData.draws || 0),
     wins: userData.wins || 0,
     draws: userData.draws || 0,
@@ -115,16 +115,16 @@ function Profile() {
 
   return (
     <div className={styles.container}>
-      
+
       {/* --- HERO SECTION --- */}
       <div className={styles.heroBanner}></div>
-      
+
       <div className={styles.contentWrapper}>
-        
+
         {/* Profile Card (Overlaps Banner) */}
         <div className={styles.profileHeaderCard}>
           <div className={styles.avatarWrapper}>
-            <div 
+            <div
               className={`${styles.avatar} ${getAvatarUrl(userData.avatar) ? styles.clickable : ''}`}
               onClick={() => getAvatarUrl(userData.avatar) && setShowAvatarModal(true)}
             >
@@ -142,7 +142,7 @@ function Profile() {
               <h1>{userData.name || 'Chess Player'}</h1>
               <span className={styles.userHandle}>@{userData.username || 'username'}</span>
             </div>
-            
+
             <div className={styles.badges}>
               <span className={styles.badgeGold}>
                 <FaTrophy className={styles.badgeIcon} /> {getRank(userData.rating || 1200)}
@@ -192,25 +192,25 @@ function Profile() {
 
         {/* --- TABS NAVIGATION --- */}
         <div className={styles.tabsContainer}>
-          <button 
+          <button
             className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
             onClick={() => setActiveTab('overview')}
           >
             <FaChartLine /> Overview
           </button>
-          <button 
+          <button
             className={`${styles.tab} ${activeTab === 'activity' ? styles.active : ''}`}
             onClick={() => setActiveTab('activity')}
           >
             <FaHistory /> Activity
           </button>
-          <button 
+          <button
             className={`${styles.tab} ${activeTab === 'achievements' ? styles.active : ''}`}
             onClick={() => setActiveTab('achievements')}
           >
             <FaMedal /> Achievements
           </button>
-          <button 
+          <button
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
             onClick={() => setActiveTab('settings')}
           >
@@ -220,29 +220,29 @@ function Profile() {
 
         {/* --- TAB CONTENT AREA --- */}
         <div className={styles.tabContent}>
-          
+
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <div className={styles.overviewLayout}>
               <div className={styles.contentCard}>
                 <h3 className={styles.cardTitle}>Match Performance</h3>
                 <div className={styles.winLossBar}>
-                  <div className={styles.barSegment} style={{flex: stats.wins || 1, background: '#4CAF50'}}></div>
-                  <div className={styles.barSegment} style={{flex: stats.draws || 1, background: '#9E9E9E'}}></div>
-                  <div className={styles.barSegment} style={{flex: stats.losses || 1, background: '#F44336'}}></div>
+                  <div className={styles.barSegment} style={{ flex: stats.wins || 1, background: '#4CAF50' }}></div>
+                  <div className={styles.barSegment} style={{ flex: stats.draws || 1, background: '#9E9E9E' }}></div>
+                  <div className={styles.barSegment} style={{ flex: stats.losses || 1, background: '#F44336' }}></div>
                 </div>
                 <div className={styles.statsRow}>
                   <div className={styles.statItem}>
                     <span className={styles.label}>Wins</span>
-                    <span className={styles.val} style={{color: '#4CAF50'}}>{stats.wins}</span>
+                    <span className={styles.val} style={{ color: '#4CAF50' }}>{stats.wins}</span>
                   </div>
                   <div className={styles.statItem}>
                     <span className={styles.label}>Draws</span>
-                    <span className={styles.val} style={{color: '#9E9E9E'}}>{stats.draws}</span>
+                    <span className={styles.val} style={{ color: '#9E9E9E' }}>{stats.draws}</span>
                   </div>
                   <div className={styles.statItem}>
                     <span className={styles.label}>Losses</span>
-                    <span className={styles.val} style={{color: '#F44336'}}>{stats.losses}</span>
+                    <span className={styles.val} style={{ color: '#F44336' }}>{stats.losses}</span>
                   </div>
                 </div>
               </div>
@@ -312,26 +312,37 @@ function Profile() {
 
           {/* SETTINGS TAB */}
           {activeTab === 'settings' && (
-             <div className={styles.contentCard}>
-               <h3 className={styles.cardTitle}>Account Data</h3>
-               <div className={styles.formGrid}>
-                 <div className={styles.formGroup}>
-                   <label>Display Name</label>
-                   <input type="text" value={userData.name || ''} disabled />
-                 </div>
-                 <div className={styles.formGroup}>
-                   <label>Username</label>
-                   <input type="text" value={userData.username || ''} disabled />
-                 </div>
-                 <div className={styles.formGroup}>
-                   <label>Email Address</label>
-                   <input type="email" value={userData.email || ''} disabled />
-                 </div>
-                 <button className={styles.primaryBtn} onClick={() => navigate('/profile/edit')}>
+            <div className={styles.contentCard}>
+              <h3 className={styles.cardTitle}>Account Data</h3>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label>Display Name</label>
+                  <input type="text" value={userData.name || ''} disabled />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Username</label>
+                  <input type="text" value={userData.username || ''} disabled />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Email Address</label>
+                  <input type="email" value={userData.email || ''} disabled />
+                </div>
+                <div className={styles.buttonGroup}>
+                  <button className={styles.primaryBtn} onClick={() => navigate('/profile/edit')}>
                     Edit Information
-                 </button>
-               </div>
-             </div>
+                  </button>
+                  <button
+                    className={styles.logoutBtn}
+                    onClick={() => {
+                      if (logout) logout();
+                      navigate('/');
+                    }}
+                  >
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

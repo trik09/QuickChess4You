@@ -316,6 +316,36 @@
   color: #d97706;
 }
 
+/* Select All Button */
+.selectAllBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97706;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.selectAllBtn:hover {
+  transform: scale(1.1);
+}
+
+.emptyCheckbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.selectAllBtn:hover .emptyCheckbox {
+  border-color: #d97706;
+}
+
 /* Cell Contents */
 .puzzleTitle {
   font-weight: 600;

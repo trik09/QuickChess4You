@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { competitionAPI } from "../../services/api";
+import PageHeader from "../../components/PageHeader/PageHeader";
 import styles from "./Dashboard.module.css";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -135,13 +136,11 @@ function Dashboard() {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        <div className={styles.header}>
-          <div className={styles.headerText}>
-            <h1>Puzzle Arena</h1>
-            <p>Compete in real-time chess puzzle battles</p>
-          </div>
-          {/* Optional: Add a "Create" button or stats here in the future */}
-        </div>
+        <PageHeader
+          title="Puzzle Arena"
+          subtitle="Compete in real-time chess puzzle battles"
+          icon={<FaTrophy />}
+        />
 
         {/* Filter Tabs */}
         <div className={styles.tabsContainer}>

@@ -78,15 +78,15 @@ export const liveCompetitionAPI = {
   submitSolution: async (competitionId, puzzleId, solution, timeSpent, boardPosition = null, moveHistory = []) => {
     const userToken = localStorage.getItem("token");
     const body = { solution, timeSpent };
-    
+
     if (boardPosition) {
       body.boardPosition = boardPosition;
     }
-    
+
     if (moveHistory && moveHistory.length > 0) {
       body.moveHistory = moveHistory;
     }
-    
+
     return apiRequest(
       `/live-competition/${competitionId}/puzzles/${puzzleId}/submit`,
       {
@@ -109,6 +109,16 @@ export const liveCompetitionAPI = {
       `/live-competition/${competitionId}/lobby-state`,
       { method: "GET" },
       token
+    );
+  },
+
+  // Check for active participation
+  getActiveParticipation: async () => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      `/live-competition/user/active-participation`,
+      { method: "GET" },
+      userToken
     );
   },
 

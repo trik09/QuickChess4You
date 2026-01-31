@@ -9,14 +9,17 @@ import {
     FaTrophy,
     FaGraduationCap,
     FaPuzzlePiece,
-    FaHistory
+    FaHistory,
+    FaCog
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
+import ThemeModal from '../../components/ThemeModal/ThemeModal';
 import styles from './StudentLayout.module.css';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 
 const StudentLayout = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -90,6 +93,16 @@ const StudentLayout = () => {
                         <span className={styles.navIcon}><FaUser /></span>
                         {!isSidebarCollapsed && <span className={styles.navLabel}>Profile</span>}
                     </NavLink>
+
+                    {/* Settings Button */}
+                    <button
+                        className={styles.navItem}
+                        onClick={() => setIsThemeModalOpen(true)}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
+                    >
+                        <span className={styles.navIcon}><FaCog /></span>
+                        {!isSidebarCollapsed && <span className={styles.navLabel}>Settings</span>}
+                    </button>
                 </nav>
 
                 <div className={styles.sidebarFooter}>
@@ -104,9 +117,6 @@ const StudentLayout = () => {
                         {!isSidebarCollapsed && (
                             <div className={styles.userDetails}>
                                 <div className={styles.userName}>{user?.name || 'Player'}</div>
-                                <button onClick={handleLogout} className={styles.logoutBtn}>
-                                    <FaSignOutAlt /> Logout
-                                </button>
                             </div>
                         )}
                     </div>
@@ -134,6 +144,9 @@ const StudentLayout = () => {
                     </NavLink>
                 ))}
             </nav>
+
+            {/* Theme Modal */}
+            <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
         </div>
     );
 };

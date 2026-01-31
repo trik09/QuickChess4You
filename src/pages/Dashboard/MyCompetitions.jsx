@@ -1,4 +1,6 @@
 import React from 'react';
+import { FaTrophy } from 'react-icons/fa';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import styles from './DashboardPages.module.css';
 
 const MyCompetitions = () => {
@@ -10,10 +12,11 @@ const MyCompetitions = () => {
 
     return (
         <div className={styles.pageContainer}>
-            <header className={styles.pageHeader}>
-                <h1>My Competitions</h1>
-                <p>Track your tournament performance and history</p>
-            </header>
+            <PageHeader
+                title="My Competitions"
+                subtitle="Track your tournament performance and history"
+                icon={<FaTrophy />}
+            />
 
             <div className={styles.contentGrid}>
                 {competitions.length > 0 ? (
