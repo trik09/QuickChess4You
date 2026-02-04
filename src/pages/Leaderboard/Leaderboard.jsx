@@ -163,80 +163,82 @@ function Leaderboard() {
                 <FaTrophy /> TOP CHAMPIONS
               </h2>
 
-              <div className={styles.podium}>
-                {/* 2nd Place */}
-                <div className={`${styles.podiumPlace} ${styles.second}`}>
-                  <div className={styles.podiumAvatarContainer}>
-                    <div className={styles.avatarCircle}>
-                      {top3[1] ? top3[1].username?.[0]?.toUpperCase() : '?'}
-                    </div>
-                    {top3[1] && <div className={`${styles.medalIcon} ${styles.medal2}`}><FaMedal /></div>}
-                  </div>
-                  <div className={styles.podiumName}>{top3[1]?.username || 'Empty'}</div>
-                  <div className={styles.podiumScore}>{top3[1]?.score || 0} PTS</div>
-                  <div className={styles.podiumBar}>
-                    {top3[1] && (
-                      <div className={styles.barDetails}>
-                        <span>{calculateAccuracy(top3[1].puzzlesSolved, totalPuzzles)}% ACC</span>
-                        <span>{formatTime(top3[1].timeSpent)}</span>
+              <div className={styles.podiumContent}>
+                <div className={styles.podium}>
+                  {/* 2nd Place */}
+                  <div className={`${styles.podiumPlace} ${styles.second}`}>
+                    <div className={styles.podiumAvatarContainer}>
+                      <div className={styles.avatarCircle}>
+                        {top3[1] ? top3[1].username?.[0]?.toUpperCase() : '?'}
                       </div>
-                    )}
+                      {top3[1] && <div className={`${styles.medalIcon} ${styles.medal2}`}><FaMedal /></div>}
+                    </div>
+                    <div className={styles.podiumName}>{top3[1]?.username || 'Empty'}</div>
+                    <div className={styles.podiumScore}>{top3[1]?.score || 0} PTS</div>
+                    <div className={styles.podiumBar}>
+                      {top3[1] && (
+                        <div className={styles.barDetails}>
+                          <span>{calculateAccuracy(top3[1].puzzlesSolved, totalPuzzles)}% ACC</span>
+                          <span>{formatTime(top3[1].timeSpent)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 1st Place */}
+                  <div className={`${styles.podiumPlace} ${styles.first}`}>
+                    <div className={styles.podiumAvatarContainer}>
+                      <FaCrown className={styles.crownIcon} />
+                      <div className={styles.avatarCircle}>
+                        {top3[0] ? top3[0].username?.[0]?.toUpperCase() : '?'}
+                      </div>
+                      {top3[0] && <div className={`${styles.medalIcon} ${styles.medal1}`}><FaMedal /></div>}
+                    </div>
+                    <div className={styles.podiumName}>{top3[0]?.username || 'Winner'}</div>
+                    <div className={styles.podiumScore}>{top3[0]?.score || 0} PTS</div>
+                    <div className={styles.podiumBar}>
+                      {top3[0] && (
+                        <div className={styles.barDetails}>
+                          <span>{calculateAccuracy(top3[0].puzzlesSolved, totalPuzzles)}% ACC</span>
+                          <span>{formatTime(top3[0].timeSpent)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3rd Place */}
+                  <div className={`${styles.podiumPlace} ${styles.third}`}>
+                    <div className={styles.podiumAvatarContainer}>
+                      <div className={styles.avatarCircle}>
+                        {top3[2] ? top3[2].username?.[0]?.toUpperCase() : '?'}
+                      </div>
+                      {top3[2] && <div className={`${styles.medalIcon} ${styles.medal3}`}><FaMedal /></div>}
+                    </div>
+                    <div className={styles.podiumName}>{top3[2]?.username || 'Empty'}</div>
+                    <div className={styles.podiumScore}>{top3[2]?.score || 0} PTS</div>
+                    <div className={styles.podiumBar}>
+                      {top3[2] && (
+                        <div className={styles.barDetails}>
+                          <span>{calculateAccuracy(top3[2].puzzlesSolved, totalPuzzles)}% ACC</span>
+                          <span>{formatTime(top3[2].timeSpent)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* 1st Place */}
-                <div className={`${styles.podiumPlace} ${styles.first}`}>
-                  <div className={styles.podiumAvatarContainer}>
-                    <FaCrown className={styles.crownIcon} />
-                    <div className={styles.avatarCircle}>
-                      {top3[0] ? top3[0].username?.[0]?.toUpperCase() : '?'}
+                {/* Stats Highlights (Info Cards) */}
+                <div className={styles.infoCards}>
+                  <div className={styles.infoCard}>
+                    <div className={styles.cardIcon}>
+                      <FaBolt />
                     </div>
-                    {top3[0] && <div className={`${styles.medalIcon} ${styles.medal1}`}><FaMedal /></div>}
-                  </div>
-                  <div className={styles.podiumName}>{top3[0]?.username || 'Winner'}</div>
-                  <div className={styles.podiumScore}>{top3[0]?.score || 0} PTS</div>
-                  <div className={styles.podiumBar}>
-                    {top3[0] && (
-                      <div className={styles.barDetails}>
-                        <span>{calculateAccuracy(top3[0].puzzlesSolved, totalPuzzles)}% ACC</span>
-                        <span>{formatTime(top3[0].timeSpent)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 3rd Place */}
-                <div className={`${styles.podiumPlace} ${styles.third}`}>
-                  <div className={styles.podiumAvatarContainer}>
-                    <div className={styles.avatarCircle}>
-                      {top3[2] ? top3[2].username?.[0]?.toUpperCase() : '?'}
+                    <div className={styles.cardContent}>
+                      <h4>Fastest Solver</h4>
+                      <p>
+                        {[...leaderboard].sort((a, b) => (a.timeSpent || 999999) - (b.timeSpent || 999999))[0]?.username || 'N/A'}
+                      </p>
                     </div>
-                    {top3[2] && <div className={`${styles.medalIcon} ${styles.medal3}`}><FaMedal /></div>}
-                  </div>
-                  <div className={styles.podiumName}>{top3[2]?.username || 'Empty'}</div>
-                  <div className={styles.podiumScore}>{top3[2]?.score || 0} PTS</div>
-                  <div className={styles.podiumBar}>
-                    {top3[2] && (
-                      <div className={styles.barDetails}>
-                        <span>{calculateAccuracy(top3[2].puzzlesSolved, totalPuzzles)}% ACC</span>
-                        <span>{formatTime(top3[2].timeSpent)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats Highlights (Info Cards) */}
-              <div className={styles.infoCards}>
-                <div className={styles.infoCard}>
-                  <div className={styles.cardIcon}>
-                    <FaBolt />
-                  </div>
-                  <div className={styles.cardContent}>
-                    <h4>Fastest Solver</h4>
-                    <p>
-                      {[...leaderboard].sort((a, b) => (a.timeSpent || 999999) - (b.timeSpent || 999999))[0]?.username || 'N/A'}
-                    </p>
                   </div>
                 </div>
               </div>
