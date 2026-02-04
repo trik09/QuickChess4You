@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaClock, FaUndo, FaCheckCircle, FaEye, FaPuzzlePiece } from "react-icons/fa";
+import { FaClock, FaUndo, FaCheckCircle, FaEye, FaPuzzlePiece, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
@@ -26,6 +26,7 @@ function PuzzlePage() {
   const [competitionData, setCompetitionData] = useState(null);
   const [puzzles, setPuzzles] = useState([]);
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
+  const [currentFrame, setCurrentFrame] = useState(0); // For pagination (0 = 1-10, 1 = 11-20, etc.)
   const [loading, setLoading] = useState(true);
   const [solving, setSolving] = useState(false);
   const [isLiveCompetition, setIsLiveCompetition] = useState(false);
@@ -858,60 +859,103 @@ function PuzzlePage() {
           <div className={styles.controlCard}>
             <div className={styles.controlHeader}>Puzzle Navigation</div>
 
-            <div className={styles.navGrid}>
-              {puzzles.map((puzzle, index) => {
-                const pid = puzzle.id || puzzle._id;
-                const status = puzzleStatuses[pid];
+            {/* Pagination Info */}
+            {Math.ceil(puzzles.length / 10) > 1 && (
+              <div className={styles.paginationInfo}>
+                Page {currentFrame + 1} of {Math.ceil(puzzles.length / 10)}
+              </div>
+            )}
 
-                return (
-                  <div
-                    key={pid}
-                    className={`
+            <div className={styles.navGrid}>
+              {puzzles
+                .slice(currentFrame * 10, (currentFrame + 1) * 10)
+                .map((puzzle, localIndex) => {
+                  const index = currentFrame * 10 + localIndex; // Calculate real index
+                  const pid = puzzle.id || puzzle._id;
+                  const status = puzzleStatuses[pid];
+
+                  return (
+                    <div
+                      key={pid}
+                      className={`
                         ${styles.navItem} 
                         ${currentPuzzleIndex === index ? styles.active : ""}
                         ${status === "success" ? styles.success : ""}
                         ${status === "failed" ? styles.danger : ""}
                       `}
-                    onClick={() => {
-                      if (!solving) {
-                        setCurrentPuzzleIndex(index);
-                        if (status === "success") {
-                          toast.info("Puzzle already solved!");
-                        } else if (status === "failed") {
-                          toast.info("Puzzle failed - you can view but not interact!");
+                      onClick={() => {
+                        if (!solving) {
+                          setCurrentPuzzleIndex(index);
+                          if (status === "success") {
+                            toast.info("Puzzle already solved!");
+                          } else if (status === "failed") {
+                            toast.info("Puzzle failed - you can view but not interact!");
+                          }
                         }
-                      }
-                    }}
-                    style={{
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {status === "success" ? <FaCheckCircle /> : index + 1}
-                  </div>
-                );
-              })}
+                      }}
+                      style={{
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {status === "success" ? <FaCheckCircle /> : index + 1}
+                    </div>
+                  );
+                })}
             </div>
 
             <div className={styles.navControls}>
+              {/* Previous Frame Button */}
               <button
                 className={styles.navArrow}
-                onClick={() =>
-                  setCurrentPuzzleIndex(Math.max(0, currentPuzzleIndex - 1))
-                }
+                onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))}
+                disabled={currentFrame === 0}
+                title="Previous Page"
+              >
+                <FaAngleDoubleLeft />
+              </button>
+
+              {/* Previous Puzzle Button */}
+              <button
+                className={styles.navArrow}
+                onClick={() => {
+                  const newIndex = Math.max(0, currentPuzzleIndex - 1);
+                  setCurrentPuzzleIndex(newIndex);
+                  // Auto-switch frame if moving to previous page
+                  if (newIndex < currentFrame * 10) {
+                    setCurrentFrame(Math.max(0, currentFrame - 1));
+                  }
+                }}
                 disabled={currentPuzzleIndex === 0}
+                title="Previous Puzzle"
               >
                 ←
               </button>
+
+              {/* Next Puzzle Button */}
               <button
                 className={styles.navArrow}
-                onClick={() =>
-                  setCurrentPuzzleIndex(
-                    Math.min(puzzles.length - 1, currentPuzzleIndex + 1)
-                  )
-                }
+                onClick={() => {
+                  const newIndex = Math.min(puzzles.length - 1, currentPuzzleIndex + 1);
+                  setCurrentPuzzleIndex(newIndex);
+                  // Auto-switch frame if moving to next page
+                  if (newIndex >= (currentFrame + 1) * 10) {
+                    setCurrentFrame(currentFrame + 1);
+                  }
+                }}
                 disabled={currentPuzzleIndex === puzzles.length - 1}
+                title="Next Puzzle"
               >
                 →
+              </button>
+
+              {/* Next Frame Button */}
+              <button
+                className={styles.navArrow}
+                onClick={() => setCurrentFrame(Math.min(Math.ceil(puzzles.length / 10) - 1, currentFrame + 1))}
+                disabled={currentFrame >= Math.ceil(puzzles.length / 10) - 1}
+                title="Next Page"
+              >
+                <FaAngleDoubleRight />
               </button>
             </div>
 

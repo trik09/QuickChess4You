@@ -1,18 +1,51 @@
 /* ============================================
-   PUZZLE RACER CONTAINER
+   PUZZLE RACER CONTAINER (UNIVERSE THEME)
    ============================================ */
 .puzzle-racer-container {
     width: 100%;
-    background: linear-gradient(135deg, rgba(38, 36, 33, 0.95) 0%, rgba(28, 26, 23, 0.95) 100%);
-    border: 2px solid rgba(181, 136, 99, 0.3);
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 20px;
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 24px;
     box-shadow:
-        0 8px 16px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        inset 0 0 20px rgba(74, 144, 226, 0.05);
     position: relative;
     overflow: hidden;
+}
+
+/* Stars Animation Background */
+.stars,
+.twinkling {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.stars {
+    background: #000 url('https://image.ibb.co/mjny8x/stars.png') repeat top center;
+    z-index: 0;
+}
+
+.twinkling {
+    background: transparent url('https://image.ibb.co/ir1DEx/twinkling.png') repeat top center;
+    z-index: 1;
+    animation: move-twink-back 200s linear infinite;
+    opacity: 0.5;
+}
+
+@keyframes move-twink-back {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -10000px 5000px;
+    }
 }
 
 /* ============================================
@@ -22,264 +55,230 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(181, 136, 99, 0.2);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 5;
 }
 
 .racer-header h4 {
     margin: 0;
-    color: #e0e0e0;
-    font-size: 1rem;
-    font-weight: 600;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #fff, #a2c2e0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .race-icon {
-    font-size: 1.2rem;
-    animation: bounce 1s ease-in-out infinite;
+    font-size: 1.4rem;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }
 
 .boost-indicator {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     animation: rocketBoost 0.5s ease-in-out infinite;
 }
 
 .race-info {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #999;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #8fa3b8;
 }
 
 .puzzle-count {
-    background: rgba(181, 136, 99, 0.2);
-    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
     border-radius: 4px;
-    font-weight: 500;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .finish-flag-icon {
-    color: #b58863;
-    font-size: 1rem;
+    color: #4a90e2;
+    font-size: 1.1rem;
+    filter: drop-shadow(0 0 5px #4a90e2);
 }
 
 /* ============================================
-   RACING TRACK
+   RACING TRACK (SPACE)
    ============================================ */
 .racer-track {
     position: relative;
     width: 100%;
-    min-height: 180px;
-    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
-    border-radius: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    padding: 8px 0;
-    overflow: visible;
-
-    /* Animated road effect */
-    background-image:
-        repeating-linear-gradient(90deg,
-            transparent,
-            transparent 30px,
-            rgba(255, 255, 255, 0.1) 30px,
-            rgba(255, 255, 255, 0.1) 35px);
-    animation: scrollRoad 2s linear infinite;
-}
-
-.racer-track.boosting {
-    animation: scrollRoad 0.3s linear infinite, trackGlow 0.5s ease-in-out;
-    box-shadow:
-        0 0 20px rgba(181, 136, 99, 0.5),
-        inset 0 0 20px rgba(181, 136, 99, 0.2);
+    min-height: 160px;
+    border-radius: 12px;
+    padding: 10px 0;
+    overflow: hidden;
+    z-index: 5;
+    /* No bg here, parent has universe bg */
 }
 
 /* ============================================
-   RACER RUNNER (DOTS)
+   RACER ROW & DOTS
    ============================================ */
+.racer-row {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+/* Trail Line */
+.racer-trail {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 100%);
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 10;
+    border-radius: 2px;
+}
+
+.current-user-row .racer-trail {
+    background: linear-gradient(90deg, rgba(74, 144, 226, 0) 0%, rgba(74, 144, 226, 0.6) 100%);
+    height: 4px;
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.4);
+}
+
+/* Dot Wrapper */
 .racer-runner-wrapper {
     position: absolute;
-    /* top is set inline by component */
     transform: translate(-50%, -50%);
-    /* Center dot on line */
     transition: left 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    /* Smooth movement */
-    z-index: 10;
+    z-index: 20;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+/* The Dot itself */
 .racer-dot {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background-color: var(--racer-color, #ccc);
-    border: 2px solid rgba(0, 0, 0, 0.3);
+    background-color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 12px;
-    font-weight: 800;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
     position: relative;
-    z-index: 2;
+    z-index: 22;
 }
 
-/* Rank Colors */
+.dot-rank {
+    font-size: 10px;
+    font-weight: 800;
+    color: #1a1a1a;
+    position: absolute;
+    line-height: 1;
+}
+
+/* Rank Specific Styles */
 .racer-runner-wrapper.rank-1 .racer-dot {
-    --racer-color: #ffd700;
-    color: #000;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    background-color: #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    transform: scale(1.2);
 }
 
 .racer-runner-wrapper.rank-2 .racer-dot {
-    --racer-color: #c0c0c0;
-    color: #000;
+    background-color: #C0C0C0;
+    box-shadow: 0 0 12px rgba(192, 192, 192, 0.8);
 }
 
 .racer-runner-wrapper.rank-3 .racer-dot {
-    --racer-color: #cd7f32;
+    background-color: #CD7F32;
+    box-shadow: 0 0 12px rgba(205, 127, 50, 0.8);
 }
 
 .racer-runner-wrapper.current-user .racer-dot {
-    --racer-color: #b58863;
-    border: 2px solid white;
-    transform: scale(1.2);
-    box-shadow: 0 0 12px rgba(181, 136, 99, 0.8);
+    background-color: #4A90E2;
+    /* Blue for user */
+    box-shadow: 0 0 20px rgba(74, 144, 226, 1);
+    border: 2px solid #fff;
+    width: 22px;
+    height: 22px;
 }
 
-/* Username and Stats Labels */
-.racer-username {
+.racer-runner-wrapper.current-user .dot-rank {
+    color: #fff;
+}
+
+/* Tooltip Info */
+.racer-info-tooltip {
     position: absolute;
-    top: -20px;
+    top: -28px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 4px 8px;
+    border-radius: 4px;
     font-size: 0.75rem;
-    color: #ccc;
     white-space: nowrap;
-    text-shadow: 0 1px 2px black;
-    opacity: 0.9;
-    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.racer-stats {
-    position: absolute;
-    bottom: -18px;
-    font-size: 0.7rem;
-    color: #aaa;
-    white-space: nowrap;
-}
-
-.current-user .racer-username {
-    color: #b58863;
-    font-weight: bold;
-    font-size: 0.8rem;
+.racer-runner-wrapper:hover .racer-info-tooltip,
+.racer-runner-wrapper.current-user .racer-info-tooltip {
     opacity: 1;
 }
 
-.finish-line {
+.racer-username {
+    color: #fff;
+    font-weight: 600;
+}
+
+.racer-score {
+    color: #aaa;
+    font-size: 0.7rem;
+}
+
+.current-user .racer-username {
+    color: #4A90E2;
+}
+
+/* Finish Portal */
+.finish-portal {
     position: absolute;
-    right: 20px;
+    right: 0;
     top: 0;
     bottom: 0;
-    width: 6px;
-    background-image:
-        repeating-linear-gradient(0deg,
-            #fff,
-            #fff 10px,
-            #000 10px,
-            #000 20px);
-    z-index: 1;
+    width: 4px;
+    background: linear-gradient(180deg, transparent, #4A90E2, #fff, #4A90E2, transparent);
+    box-shadow: 0 0 15px #4A90E2;
+    z-index: 15;
     opacity: 0.8;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-}
-
-/* Track Lanes */
-.track-lane {
-    position: absolute;
-    left: 40px;
-    /* Start after rank markers */
-    right: 20px;
-    height: 40px;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-    width: calc(100% - 60px);
-}
-
-.lane-marker {
-    position: absolute;
-    left: -32px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    text-align: center;
-    font-size: 0.85rem;
-    color: #666;
-    font-weight: 500;
-}
-
-.medal {
-    font-size: 1.1rem;
-}
-
-.rank-1 .medal {
-    text-shadow: 0 0 5px gold;
-}
-
-.rank-2 .medal {
-    text-shadow: 0 0 5px silver;
-}
-
-.rank-3 .medal {
-    text-shadow: 0 0 5px #cd7f32;
 }
 
 /* Waiting Message */
 .waiting-message {
-    color: #888;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.4);
     font-style: italic;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 8px 16px;
-    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 20;
 }
 
 /* ANIMATIONS */
-@keyframes scrollRoad {
-    from {
-        background-position: 0 0;
-    }
-
-    to {
-        background-position: -30px 0;
-    }
-}
-
-@keyframes trackGlow {
-
-    0%,
-    100% {
-        box-shadow: 0 0 20px rgba(181, 136, 99, 0.5);
-    }
-
-    50% {
-        box-shadow: 0 0 40px rgba(181, 136, 99, 0.8);
-    }
-}
-
-@keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-3px);
-    }
-}
-
 @keyframes rocketBoost {
     0% {
         transform: scale(1) translate(0, 0);

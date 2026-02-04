@@ -636,9 +636,30 @@
   box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
 }
 
+
+.paginationInfo {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #b58863;
+  opacity: 0.9;
+}
+
+[data-theme="light"] .paginationInfo {
+  color: #8b6242;
+}
+
+[data-theme="dark"] .paginationInfo {
+  color: #d4a373;
+}
+
 .navControls {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  /* Center the controls */
+  gap: 0.5rem;
+  /* Add gap between buttons */
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid transparent;
@@ -655,14 +676,17 @@
 .navArrow {
   background: transparent;
   border: 2px solid transparent;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 36px;
+  /* Slightly smaller to fit more buttons */
+  height: 36px;
+  border-radius: 8px;
+  /* Square with rounded corners looks better for rows */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  font-size: 1rem;
 }
 
 [data-theme="light"] .navArrow {

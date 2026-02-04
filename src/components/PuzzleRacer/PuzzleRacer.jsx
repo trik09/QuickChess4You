@@ -103,13 +103,13 @@ const PuzzleRacer = () => {
         // 2. Sort by Rank
         const sorted = [...activeRacers].sort((a, b) => a.rank - b.rank);
 
-        // 3. Top 5 Logic
-        const top5 = sorted.slice(0, 5);
-        const currentUserInTop5 = top5.find(p => p.userId === currentUserId || (user && p.username === user.username));
+        // 3. Top 3 Logic
+        const top3 = sorted.slice(0, 3);
+        const currentUserInTop3 = top3.find(p => p.userId === currentUserId || (user && p.username === user.username));
 
-        let displayList = [...top5];
+        let displayList = [...top3];
 
-        if (currentUserId && !currentUserInTop5) {
+        if (currentUserId && !currentUserInTop3) {
             const currentUserEntry = sorted.find(p => p.userId === currentUserId || (user && p.username === user.username));
             if (currentUserEntry) {
                 displayList.push(currentUserEntry);
@@ -162,8 +162,12 @@ const PuzzleRacer = () => {
                 </div>
             </div>
 
-            <div className={`racer-track ${isBoosting ? 'boosting' : ''}`} style={{ height: `${Math.max(180, racers.length * 40)}px` }}>
-                <div className="finish-line"></div>
+            {/* Universe Effect Background Layers */}
+            <div className="stars"></div>
+            <div className="twinkling"></div>
+
+            <div className={`racer-track ${isBoosting ? 'boosting' : ''}`} style={{ height: `${Math.max(160, racers.length * 45)}px` }}>
+                <div className="finish-portal"></div>
 
                 {racers.length === 0 && (
                     <div className="waiting-message">Waiting for racers...</div>
@@ -172,43 +176,34 @@ const PuzzleRacer = () => {
                 {racers.map((racer, index) => {
                     const isCurrentUser = user && (racer.userId === user.id || racer.userId === user._id || racer.username === user.username);
                     const progress = getProgress(racer.puzzlesSolved || 0);
-                    const racerColor = getRacerColor(racer.rank, isCurrentUser);
+                    // Use index for vertical position, but rank for color
 
                     return (
                         <div
                             key={racer.userId || racer.username}
-                            className="track-lane"
-                            style={{ top: `${index * 40}px` }}
+                            className={`racer-row ${isCurrentUser ? 'current-user-row' : ''}`}
+                            style={{ top: `${index * 45 + 20}px` }}
                         >
-                            {/* Lane number/rank indicator */}
-                            <div className="lane-marker">
-                                {racer.rank <= 3 ? (
-                                    <span className={`medal rank-${racer.rank}`}>
-                                        {racer.rank === 1 ? '🥇' : racer.rank === 2 ? '🥈' : '🥉'}
-                                    </span>
-                                ) : (
-                                    <span className="rank-number">#{racer.rank}</span>
-                                )}
-                            </div>
-
-                            {/* Running character (Dot) */}
+                            {/* Running Character (Dot) */}
                             <div
                                 className={`racer-runner-wrapper ${isCurrentUser ? 'current-user' : ''} rank-${racer.rank}`}
                                 style={{
-                                    left: `calc(40px + ${progress}% * 0.85)`, // Start after lane marker, scale to finish line
-                                    top: '50%'
+                                    left: `calc(40px + ${progress}% * 0.85)`,
+                                    top: '0'
                                 }}
                             >
                                 <div className="racer-dot">
-                                    {racer.rank}
+                                    <span className="dot-rank">{racer.rank}</span>
                                 </div>
-                                <span className="racer-username">
-                                    {isCurrentUser ? 'You' : racer.username}
-                                </span>
-                                <span className="racer-stats">
-                                    {racer.puzzlesSolved}/{totalPuzzles}
-                                </span>
+
+                                <div className="racer-info-tooltip">
+                                    <span className="racer-username">{isCurrentUser ? 'You' : racer.username}</span>
+                                    <span className="racer-score">{racer.puzzlesSolved}/{totalPuzzles}</span>
+                                </div>
                             </div>
+
+                            {/* Connection Line (Trail) */}
+                            <div className="racer-trail" style={{ width: `calc(40px + ${progress}% * 0.85)` }}></div>
                         </div>
                     );
                 })}
