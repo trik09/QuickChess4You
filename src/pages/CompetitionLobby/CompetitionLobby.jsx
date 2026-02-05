@@ -49,6 +49,7 @@ const CompetitionLobby = () => {
   // serverTime state removed to prevent re-renders
   const [isJoinProcessing, setIsJoinProcessing] = useState(false);
   const timeOffsetRef = useRef(0);
+  const hasAutoRedirectedRef = useRef(false); // Track if we've already auto-redirected
 
   // Access Code Modal State
   const [showCodeModal, setShowCodeModal] = useState(false);
@@ -69,16 +70,17 @@ const CompetitionLobby = () => {
         if (res.success) {
           setCompetitionState(res.competitionState);
           setParticipants(res.leaderboard);
+
+          // Auto-navigate to puzzle page ONLY if user is JOINED and we haven't auto-redirected yet
+          if (!hasAutoRedirectedRef.current && (res.participantState === "JOINED" || res.participantState === "PLAYING")) {
+            hasAutoRedirectedRef.current = true; // Mark that we've redirected
+            toast.success("Competition Started! Redirecting...");
+            setTimeout(() => {
+              navigate(`/competition/${id}/puzzle`);
+            }, 1500);
+          }
         }
       });
-
-      // Auto-navigate to puzzle page ONLY if user is JOINED
-      if (participantState === "JOINED" || participantState === "PLAYING") {
-        toast.success("Competition Started! Redirecting...");
-        setTimeout(() => {
-          navigate(`/competition/${id}/puzzle`);
-        }, 1500);
-      }
     };
 
     const onCompetitionEnded = (data) => {
@@ -209,6 +211,15 @@ const CompetitionLobby = () => {
         // silently update
         if (res.success && res.competitionState === "LIVE") {
           setCompetitionState("LIVE");
+
+          // Auto-redirect if user is joined and we haven't already redirected
+          if (!hasAutoRedirectedRef.current && (res.participantState === "JOINED" || res.participantState === "PLAYING")) {
+            hasAutoRedirectedRef.current = true; // Mark that we've redirected
+            toast.success("Competition Started! Redirecting...");
+            setTimeout(() => {
+              navigate(`/competition/${id}/puzzle`);
+            }, 1500);
+          }
         }
       }).catch(err => console.error(err));
     }

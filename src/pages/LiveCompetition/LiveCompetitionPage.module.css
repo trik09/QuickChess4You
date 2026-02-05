@@ -482,28 +482,40 @@
         max-height: 300px;
     }
 }
+
 /* Competition Header */
 .competition-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    padding: 20px;
+    padding: 15px 20px;
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    gap: 20px;
 }
 
 .header-left {
     display: flex;
     align-items: center;
-    gap: 20px;
+    flex: 0 0 auto;
 }
 
-.header-left h1 {
+.header-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.header-center h1 {
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     color: var(--primary-color);
+    text-align: center;
 }
 
 .connection-indicator {
@@ -515,7 +527,7 @@
 .indicator {
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
 }
 
@@ -532,6 +544,7 @@
 .header-actions {
     display: flex;
     gap: 10px;
+    flex: 0 0 auto;
 }
 
 .toggle-leaderboard-btn,
@@ -543,6 +556,7 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
+    font-size: 0.9rem;
 }
 
 .toggle-leaderboard-btn:hover,
@@ -578,7 +592,7 @@
     flex: 1;
 }
 
-.left-panel {
+.main-area {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -588,6 +602,18 @@
 .right-panel {
     width: 350px;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Race Section Below Board */
+.race-section {
+    width: 100%;
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Participant Stats */
@@ -600,36 +626,51 @@
 
 .participant-stats h3 {
     margin: 0 0 15px 0;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--primary-color);
+    font-weight: 600;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .stat-item {
     text-align: center;
-    padding: 15px;
+    padding: 12px;
     background: var(--background-secondary);
     border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
 }
 
 .stat-value {
     display: block;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 5px;
 }
 
 .stat-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Leaderboard Container */
+.leaderboard-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    flex: 1;
 }
 
 /* Puzzles Section */
@@ -841,11 +882,11 @@
     .competition-content {
         flex-direction: column;
     }
-    
+
     .right-panel {
         width: 100%;
     }
-    
+
     .puzzles-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
@@ -857,20 +898,20 @@
         gap: 15px;
         text-align: center;
     }
-    
+
     .header-actions {
         width: 100%;
         justify-content: center;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .puzzles-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .puzzle-solving-interface {
         height: auto;
         min-height: 100vh;

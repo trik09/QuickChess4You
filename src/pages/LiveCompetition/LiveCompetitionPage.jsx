@@ -250,6 +250,11 @@ const LiveCompetitionPage = () => {
     <div className={styles['live-competition-page']}>
       <div className={styles['competition-header']}>
         <div className={styles['header-left']}>
+          {/* Timer moved to top-left */}
+          <CompetitionTimer />
+        </div>
+
+        <div className={styles['header-center']}>
           <h1>{competition?.name}</h1>
           <div className={styles['connection-indicator']}>
             <span className={`${styles.indicator} ${isConnected ? styles.connected : styles.disconnected}`}>
@@ -290,36 +295,8 @@ const LiveCompetitionPage = () => {
       )}
 
       <div className={styles['competition-content']}>
-        <div className={styles['left-panel']}>
-          <CompetitionTimer />
-
-          {participant && (
-            <div className={styles['participant-stats']}>
-              <h3>Your Progress</h3>
-              <div className={styles['stats-grid']}>
-                <div className={styles['stat-item']}>
-                  <span className={styles['stat-value']}>{participant.score}</span>
-                  <span className={styles['stat-label']}>Score</span>
-                </div>
-                <div className={styles['stat-item']}>
-                  <span className={styles['stat-value']}>
-                    {getSolvedPuzzlesCount()}/{getTotalPuzzlesCount()}
-                  </span>
-                  <span className={styles['stat-label']}>Puzzles Solved</span>
-                </div>
-                <div className={styles['stat-item']}>
-                  <span className={styles['stat-value']}>
-                    {Math.floor(participant.timeSpent / 60)}m
-                  </span>
-                  <span className={styles['stat-label']}>Time</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Live Racing Animation */}
-          <PuzzleRacer />
-
+        <div className={styles['main-area']}>
+          {/* Puzzles Grid Section */}
           <div className={styles['puzzles-section']}>
             <h3>Competition Puzzles</h3>
             <div className={styles['puzzles-grid']}>
@@ -358,11 +335,43 @@ const LiveCompetitionPage = () => {
               ))}
             </div>
           </div>
+
+          {/* Live Racing Animation - Below Board */}
+          <div className={styles['race-section']}>
+            <PuzzleRacer />
+          </div>
         </div>
 
-        {showLeaderboard && (
+        {/* Right Sidebar - Puzzle Details/Stats */}
+        {participant && (
           <div className={styles['right-panel']}>
-            <LiveLeaderboard />
+            <div className={styles['participant-stats']}>
+              <h3>Your Progress</h3>
+              <div className={styles['stats-grid']}>
+                <div className={styles['stat-item']}>
+                  <span className={styles['stat-value']}>{participant.score}</span>
+                  <span className={styles['stat-label']}>Score</span>
+                </div>
+                <div className={styles['stat-item']}>
+                  <span className={styles['stat-value']}>
+                    {getSolvedPuzzlesCount()}/{getTotalPuzzlesCount()}
+                  </span>
+                  <span className={styles['stat-label']}>Puzzles Solved</span>
+                </div>
+                <div className={styles['stat-item']}>
+                  <span className={styles['stat-value']}>
+                    {Math.floor(participant.timeSpent / 60)}m
+                  </span>
+                  <span className={styles['stat-label']}>Time</span>
+                </div>
+              </div>
+            </div>
+
+            {showLeaderboard && (
+              <div className={styles['leaderboard-container']}>
+                <LiveLeaderboard />
+              </div>
+            )}
           </div>
         )}
       </div>
