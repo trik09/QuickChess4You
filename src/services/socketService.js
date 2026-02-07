@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 
 class SocketService {
   constructor() {
@@ -10,60 +10,73 @@ class SocketService {
 
   // Connect to Socket.IO server
   connect(competitionData) {
-    const token = localStorage.getItem('token');
+    return new Promise((resolve, reject) => {
+      try {
+        const token = localStorage.getItem("token");
 
-    if (!token) {
-      throw new Error('Authentication token required');
-    }
+        if (!token) {
+          return reject(new Error("Authentication token required"));
+        }
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
+        // If already connected, just return success
+        if (this.socket && this.isConnected) {
+          this.joinCompetition(competitionData);
+          return resolve(this.socket);
+        }
 
-    this.socket = io(socketUrl, {
-      auth: {
-        token: token
-      },
-      transports: ['websocket', 'polling']
+        const socketUrl =
+          import.meta.env.VITE_SOCKET_URL || "http://localhost:4000";
+
+        this.socket = io(socketUrl, {
+          auth: {
+            token: token,
+          },
+          transports: ["websocket", "polling"],
+        });
+
+        this.competitionId = competitionData.competition.id;
+
+        // Connection event handlers
+        this.socket.on("connect", () => {
+          console.log("Connected to Socket.IO server:", this.socket.id);
+          this.isConnected = true;
+
+          // Join competition room
+          this.joinCompetition(competitionData);
+          resolve(this.socket);
+        });
+
+        this.socket.on("disconnect", (reason) => {
+          console.log("Disconnected from Socket.IO server:", reason);
+          this.isConnected = false;
+        });
+
+        this.socket.on("connect_error", (error) => {
+          console.error("Socket connection error:", error);
+          this.isConnected = false;
+          reject(error);
+        });
+
+        // Competition-specific event handlers
+        this.setupCompetitionListeners();
+      } catch (error) {
+        reject(error);
+      }
     });
-
-    this.competitionId = competitionData.competition.id;
-
-    // Connection event handlers
-    this.socket.on('connect', () => {
-      console.log('Connected to Socket.IO server:', this.socket.id);
-      this.isConnected = true;
-
-      // Join competition room
-      this.joinCompetition(competitionData);
-    });
-
-    this.socket.on('disconnect', (reason) => {
-      console.log('Disconnected from Socket.IO server:', reason);
-      this.isConnected = false;
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-      this.isConnected = false;
-    });
-
-    // Competition-specific event handlers
-    this.setupCompetitionListeners();
-
-    return this.socket;
   }
 
   // Join competition room
   joinCompetition(competitionData) {
     if (!this.socket || !this.isConnected) {
-      console.error('Socket not connected');
+      console.error("Socket not connected");
       return;
     }
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    this.socket.emit('joinCompetition', {
+    this.socket.emit("joinCompetition", {
       competitionId: competitionData.competition.id,
-      username: user.username || user.name || 'Anonymous'
+      username: user.username || user.name || "Anonymous",
     });
 
     console.log(`Joining competition: ${competitionData.competition.name}`);
@@ -74,39 +87,39 @@ class SocketService {
     if (!this.socket) return;
 
     // Leaderboard updates
-    this.socket.on('leaderboardUpdate', (leaderboard) => {
-      console.log('Leaderboard updated:', leaderboard);
-      this.emit('leaderboardUpdate', leaderboard);
+    this.socket.on("leaderboardUpdate", (leaderboard) => {
+      console.log("Leaderboard updated:", leaderboard);
+      this.emit("leaderboardUpdate", leaderboard);
     });
 
     // Competition ended
-    this.socket.on('competitionEnded', (finalResults) => {
-      console.log('Competition ended:', finalResults);
-      this.emit('competitionEnded', finalResults);
+    this.socket.on("competitionEnded", (finalResults) => {
+      console.log("Competition ended:", finalResults);
+      this.emit("competitionEnded", finalResults);
     });
 
     // Participant joined
-    this.socket.on('participantJoined', (data) => {
-      console.log('New participant joined:', data);
-      this.emit('participantJoined', data);
+    this.socket.on("participantJoined", (data) => {
+      console.log("New participant joined:", data);
+      this.emit("participantJoined", data);
     });
 
     // Competition started
-    this.socket.on('competitionStarted', (data) => {
-      console.log('Competition started:', data);
-      this.emit('competitionStarted', data);
+    this.socket.on("competitionStarted", (data) => {
+      console.log("Competition started:", data);
+      this.emit("competitionStarted", data);
     });
 
     // Competition Joined (Initial Data & Time Sync)
-    this.socket.on('competitionJoined', (data) => {
-      console.log('Joined competition:', data);
-      this.emit('competitionJoined', data);
+    this.socket.on("competitionJoined", (data) => {
+      console.log("Joined competition:", data);
+      this.emit("competitionJoined", data);
     });
 
     // Error handling
-    this.socket.on('error', (error) => {
-      console.error('Socket error:', error);
-      this.emit('error', error);
+    this.socket.on("error", (error) => {
+      console.error("Socket error:", error);
+      this.emit("error", error);
     });
   }
 
@@ -132,11 +145,11 @@ class SocketService {
   // Emit event to listeners
   emit(event, data) {
     if (this.listeners.has(event)) {
-      this.listeners.get(event).forEach(callback => {
+      this.listeners.get(event).forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
-          console.error('Error in event listener:', error);
+          console.error("Error in event listener:", error);
         }
       });
     }
@@ -145,8 +158,8 @@ class SocketService {
   // Refresh leaderboard manually
   refreshLeaderboard() {
     if (this.socket && this.isConnected && this.competitionId) {
-      this.socket.emit('refreshLeaderboard', {
-        competitionId: this.competitionId
+      this.socket.emit("refreshLeaderboard", {
+        competitionId: this.competitionId,
       });
     }
   }
@@ -159,7 +172,7 @@ class SocketService {
       this.isConnected = false;
       this.competitionId = null;
       this.listeners.clear();
-      console.log('Socket disconnected');
+      console.log("Socket disconnected");
     }
   }
 
@@ -168,7 +181,7 @@ class SocketService {
     return {
       isConnected: this.isConnected,
       competitionId: this.competitionId,
-      socketId: this.socket?.id || null
+      socketId: this.socket?.id || null,
     };
   }
 }

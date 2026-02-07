@@ -88,7 +88,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchCompetitions();
-  }, [fetchCompetitions]);
+  }, [fetchCompetitions, activeTab]);
 
   useEffect(() => {
     if (activeTab === "All") {

@@ -27,7 +27,7 @@ import Gallery from "./pages/Gallery/Gallery";
 
 // Admin Imports
 import CapturePuzzle from "./pages/Learn/CapturePuzzle";
-import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
+//import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
 
 import AdminLogin from "./pages/Admin/AdminLogin/AdminLogin";
 import AdminDashboard from "./pages/Admin/AdminDashboard/AdminDashboard";
@@ -68,7 +68,7 @@ function App() {
               {/* LANDING PAGE LAYOUT (Public) */}
               <Route element={<LandingLayout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                {/* <Route path="/privacy-policy" element={<PrivacyPolicy />} /> */}
                 <Route path="/learn/capture" element={<CapturePuzzle />} />
                 <Route path="/gallery" element={<Gallery />} />
                 {/* Keep these valid for direct links, or handle in Home as sections */}
