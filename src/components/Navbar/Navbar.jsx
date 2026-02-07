@@ -45,7 +45,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
 
     } else {
       gsap.to(menuRef.current, {
-        x: '100%',
+        x: '-100%',
         duration: 0.4,
         ease: "power3.in",
       });
@@ -56,6 +56,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
 
   const handleLogout = () => {
     logout();
+    setIsOpen(false);
     navigate("/");
   };
 
@@ -72,65 +73,121 @@ function Navbar({ onLoginClick, onSignupClick }) {
     { name: "Puzzle Arena", to: "/puzzle" },
   ];
 
+  // Logic to split links for Desktop view
+  const midpoint = Math.ceil(menuLinks.length / 2);
+  const leftLinks = menuLinks.slice(0, midpoint);
+  const rightLinks = menuLinks.slice(midpoint);
+
   return (
     <>
       <nav className={styles.navbar} ref={containerRef}>
         <div className={styles.container}>
-          {/* LOGO */}
-          <Link to="/" className={styles.logo}>
-            <img src={logo} alt="Quick Chess" className={styles.logoImg} />
-          </Link>
 
-          {/* DESKTOP MENU (Hidden on Mobile) */}
-          <div className={styles.desktopMenu}>
-            <ul className={styles.navLinks}>
-              {menuLinks.map((link, index) => (
-                <li key={index}>
-                  {link.to ? <Link to={link.to}>{link.name}</Link> : <a href={link.href}>{link.name}</a>}
-                </li>
-              ))}
-            </ul>
-
-            <div className={styles.authSection}>
-              <button
-                className={styles.settingsBtn}
-                onClick={() => setIsThemeModalOpen(true)}
-                title="Customize Board"
-              >
-                <BsGear />
-              </button>
-
-              {isAuthenticated ? (
-                <div className={styles.userProfile}>
-                  <div className={styles.userInfo} onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-                    <div className={styles.avatar}>
-                      {user?.avatar ? <img src={user.avatar} alt="User" /> : (user?.username?.[0]?.toUpperCase() || "U")}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.authButtons}>
-                  <button className={styles.loginBtn} onClick={onLoginClick}>Log In</button>
-                  <button className={styles.signupBtn} onClick={onSignupClick}>Sign Up</button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* MOBILE HAMBURGER */}
-          <button className={styles.hamburger} onClick={toggleMenu} aria-label="Open menu">
+          {/* MOBILE HAMBURGER (Left) */}
+          <button
+            className={styles.hamburger}
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+            aria-expanded={isOpen}
+          >
             <span></span>
             <span></span>
             <span></span>
           </button>
+
+          {/* LEFT NAV (Desktop) */}
+          <div className={styles.navLeft}>
+            <ul className={styles.navLinks}>
+              {leftLinks.map((link, index) => (
+                <li key={index}>
+                  {link.to ? (
+                    <Link to={link.to}>{link.name}</Link>
+                  ) : (
+                    <a href={link.href}>{link.name}</a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* CENTER LOGO */}
+          <div className={styles.logoContainer}>
+            <div className={styles.logoBadge}>
+              <Link to="/" className={styles.logoLink} aria-label="Quick Chess Home">
+                <img src={logo} alt="Quick Chess Logo" className={styles.logoImg} />
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT NAV (Desktop) */}
+          <div className={styles.navRight}>
+            <ul className={styles.navLinks}>
+              {rightLinks.map((link, index) => (
+                <li key={index + midpoint}>
+                  {link.to ? (
+                    <Link to={link.to}>{link.name}</Link>
+                  ) : (
+                    <a href={link.href}>{link.name}</a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* AUTH & SETTINGS (Absolute Right) */}
+          <div className={styles.authSection}>
+            <button
+              className={styles.settingsBtn}
+              onClick={() => setIsThemeModalOpen(true)}
+              aria-label="Customize board theme"
+              title="Customize Board"
+            >
+              <BsGear />
+            </button>
+
+            {isAuthenticated ? (
+              <div className={styles.userProfile}>
+                <button
+                  className={styles.userInfo}
+                  onClick={() => navigate('/dashboard')}
+                  aria-label="Go to dashboard"
+                >
+                  <div className={styles.avatar}>
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt={`${user.username}'s avatar`} />
+                    ) : (
+                      user?.username?.[0]?.toUpperCase() || "U"
+                    )}
+                  </div>
+                </button>
+              </div>
+            ) : (
+              <div className={styles.authButtons}>
+                <button className={styles.loginBtn} onClick={onLoginClick}>
+                  LOG IN
+                </button>
+                <button className={styles.signupBtn} onClick={onSignupClick}>
+                  SIGN UP
+                </button>
+              </div>
+            )}
+          </div>
+
         </div>
       </nav>
 
-      {/* MOBILE MENU OVERLAY (LimelQ Style) */}
+      {/* MOBILE MENU OVERLAY */}
+      {isOpen && <div className={styles.overlay} onClick={() => setIsOpen(false)} />}
+
       <div className={styles.mobileMenuWrapper} ref={menuRef}>
         <div className={styles.mobileHeader}>
-          <Link to="/" className={styles.mobileLogo} onClick={() => setIsOpen(false)}>
-            <img src={logo} alt="Quick Chess" />
+          <Link
+            to="/"
+            className={styles.mobileLogo}
+            onClick={() => setIsOpen(false)}
+            aria-label="Quick Chess Home"
+          >
+            <img src={logo} alt="Quick Chess Logo" />
           </Link>
 
           <div className={styles.mobileHeaderControls}>
@@ -140,11 +197,16 @@ function Navbar({ onLoginClick, onSignupClick }) {
                 setIsThemeModalOpen(true);
                 setIsOpen(false);
               }}
+              aria-label="Customize board theme"
               title="Customize Board"
             >
               <BsGear size={20} />
             </button>
-            <button className={styles.closeBtn} onClick={() => setIsOpen(false)}>
+            <button
+              className={styles.closeBtn}
+              onClick={() => setIsOpen(false)}
+              aria-label="Close menu"
+            >
               <BsX size={32} />
             </button>
           </div>
@@ -153,11 +215,19 @@ function Navbar({ onLoginClick, onSignupClick }) {
         <div className={styles.mobileContent}>
           <ul className={styles.mobileLinks}>
             {menuLinks.map((link, index) => (
-              <li key={index} ref={el => linksRef.current[index] = el} className={styles.mobileLinkItem}>
+              <li
+                key={index}
+                ref={el => linksRef.current[index] = el}
+                className={styles.mobileLinkItem}
+              >
                 {link.to ? (
-                  <Link to={link.to} onClick={() => setIsOpen(false)}>{link.name}</Link>
+                  <Link to={link.to} onClick={() => setIsOpen(false)}>
+                    {link.name}
+                  </Link>
                 ) : (
-                  <a href={link.href} onClick={() => setIsOpen(false)}>{link.name}</a>
+                  <a href={link.href} onClick={() => setIsOpen(false)}>
+                    {link.name}
+                  </a>
                 )}
               </li>
             ))}
@@ -167,13 +237,33 @@ function Navbar({ onLoginClick, onSignupClick }) {
         <div className={styles.mobileFooter} ref={footerRef}>
           {isAuthenticated ? (
             <div className={styles.mobileAuth}>
-              <span className={styles.mobileUsername}>Hi, {user?.name || "Player"}</span>
-              <button className={styles.mobileLogoutBtn} onClick={handleLogout}>Log out</button>
+              <span className={styles.mobileUsername}>
+                Hi, {user?.name || user?.username || "Player"}
+              </span>
+              <button className={styles.mobileLogoutBtn} onClick={handleLogout}>
+                Log Out
+              </button>
             </div>
           ) : (
             <div className={styles.mobileAuth}>
-              <button className={styles.mobileLoginBtn} onClick={() => { onLoginClick(); setIsOpen(false); }}>Log in</button>
-              <button className={styles.callCtaBtn} onClick={() => { onSignupClick(); setIsOpen(false); }}>Sign Up <span className="arrow">→</span></button>
+              <button
+                className={styles.mobileLoginBtn}
+                onClick={() => {
+                  onLoginClick();
+                  setIsOpen(false);
+                }}
+              >
+                Log In
+              </button>
+              <button
+                className={styles.callCtaBtn}
+                onClick={() => {
+                  onSignupClick();
+                  setIsOpen(false);
+                }}
+              >
+                Sign Up <span className={styles.arrow}>→</span>
+              </button>
             </div>
           )}
         </div>

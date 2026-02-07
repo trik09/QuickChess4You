@@ -1,5 +1,5 @@
 .aboutWrapper {
-  padding: 100px 20px;
+  padding: 100px 5%;
   background: linear-gradient(180deg, var(--bg-light) 0%, rgba(181, 136, 99, 0.05) 100%);
   position: relative;
   overflow: hidden;
@@ -16,7 +16,15 @@
   text-align: center;
   max-width: 800px;
   margin: 0 auto 80px;
-  animation: fadeUp 0.8s ease-out forwards;
+}
+
+/* Add scroll animation delay for staggered effect */
+.header .title {
+  animation: fadeUp 0.8s ease-out 0.2s both;
+}
+
+.header .subtitle {
+  animation: fadeUp 0.8s ease-out 0.4s both;
 }
 
 .title {
@@ -24,6 +32,7 @@
   font-weight: 800;
   margin-bottom: 20px;
   background: linear-gradient(135deg, var(--text-heading), var(--primary));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -64,7 +73,8 @@
 
 .statCard {
   background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(181, 136, 99, 0.2);
   padding: 30px;
   border-radius: 20px;
@@ -80,8 +90,8 @@
 
 .statCard:hover {
   transform: translateY(-10px);
-  border-color: var(--primary);
-  box-shadow: 0 20px 40px rgba(181, 136, 99, 0.15);
+  border-color: var(--brand-accent);
+  box-shadow: 0 20px 40px rgba(251, 191, 36, 0.2);
 }
 
 .statIcon {

@@ -1,5 +1,5 @@
 .coachingWrapper {
-  padding: 100px 20px;
+  padding: 100px 5%;
   background: linear-gradient(180deg, var(--bg-light) 0%, rgba(181, 136, 99, 0.05) 100%);
   position: relative;
 }

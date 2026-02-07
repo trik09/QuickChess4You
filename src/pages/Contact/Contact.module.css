@@ -2,7 +2,7 @@
   background: #0a0a0a;
   /* Deep black/dark bg */
   color: #ffffff;
-  padding: 80px 40px 0;
+  padding: 80px 5% 0;
   min-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
 }
 
 .container {
-  max-width: 1400px;
+  max-width: 1280px;
   margin: 0 auto;
   width: 100%;
   flex: 1;
@@ -194,12 +194,14 @@
   letter-spacing: -0.05em;
   margin: 0;
   background: linear-gradient(to bottom, #ffffff, rgba(255, 255, 255, 0.5));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 :global([data-theme='light']) .brandTitle {
   background: linear-gradient(to bottom, #000000, rgba(0, 0, 0, 0.5));
+  background-clip: text;
   -webkit-background-clip: text;
 }
 
@@ -246,7 +248,7 @@
 
 @media (max-width: 768px) {
   .contactWrapper {
-    padding: 60px 20px 0;
+    padding: 60px 5% 0;
   }
 
   .emailLink {

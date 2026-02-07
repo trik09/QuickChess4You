@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaClock, FaUndo, FaCheckCircle, FaEye, FaPuzzlePiece, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
+import { FaClock, FaCheckCircle, FaPuzzlePiece, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
@@ -8,8 +8,7 @@ import PageHeader from "../../components/PageHeader/PageHeader";
 import { puzzleAPI, competitionAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { useAuth } from "../../contexts/AuthContext";
-import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
-import CompetitionLeaderboard from "../../components/CompetitionLeaderboard/CompetitionLeaderboard";
+import { useLiveCompetition } from "../../contexts/LiveCompetitionContext";
 import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer";
 import styles from "./PuzzlePage.module.css";
 
@@ -17,10 +16,9 @@ function PuzzlePage() {
   const { id: paramCompetitionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const navigator = useNavigate();
   const { user } = useAuth();
   const { participateInCompetition, disconnectFromCompetition, getLeaderboard } =
-    useLiveCompetition(); // Destructure disconnect and getLeaderboard
+    useLiveCompetition();
 
   // State
   const [competitionData, setCompetitionData] = useState(null);
@@ -40,7 +38,6 @@ function PuzzlePage() {
   const [timeLeft, setTimeLeft] = useState(0); // in seconds
   const [score, setScore] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0);
-  const [solvedPuzzles, setSolvedPuzzles] = useState([]); // Array of solved puzzle IDs
   const [startTime, setStartTime] = useState(Date.now());
 
   // Submission Modal State
@@ -256,12 +253,6 @@ function PuzzlePage() {
                 // All puzzles are solved, stay on current or go to first
                 setCurrentPuzzleIndex(0);
               }
-
-              // Fetch leaderboard to populate racing animation
-              console.log('Fetching leaderboard for racing animation');
-              setTimeout(() => {
-                getLeaderboard();
-              }, 500); // Small delay to ensure socket is connected
             }
 
           } catch (err) {
@@ -699,70 +690,11 @@ function PuzzlePage() {
         }
       />
 
-      {/* Main Content - 3 Column Layout */}
+      {/* Main Content - New Grid Layout: Timer/Submit Left, Board Center, Info/Nav Right, Race Bottom */}
       <div className={styles.mainContent}>
-        {/* Left Panel - Stats (Only in Competition) */}
-        {competitionData ? (
-          <div className={styles.leftPanel}>
-            {/* Puzzle Information Card */}
-            <div className={styles.puzzleInfoCard}>
-              <h2 className={styles.puzzleCardTitle}>
-                {currentPuzzle?.title || "Chess Puzzle"}
-              </h2>
-              {currentPuzzle?.description && (
-                <p className={styles.puzzleDescription}>
-                  {currentPuzzle.description}
-                </p>
-              )}
-
-              {/* To Move Indicator - Highlighted */}
-              {currentPuzzle && (
-                <div className={styles.toMoveSection}>
-                  <div className={styles.toMoveLabel}>Turn to Move:</div>
-                  <div className={styles.toMoveIndicator}>
-                    <div
-                      className={`${styles.colorDot} ${currentPuzzle.fen.split(" ")[1] === "w"
-                        ? styles.whiteDot
-                        : styles.blackDot
-                        }`}
-                    ></div>
-                    <span className={styles.toMoveText}>
-                      {currentPuzzle.fen.split(" ")[1] === "w"
-                        ? "White"
-                        : "Black"}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Level and Rating */}
-              {currentPuzzle && (
-                <div className={styles.puzzleMetadata}>
-                  <div className={styles.metadataItem}>
-                    <span className={styles.metadataLabel}>Level:</span>
-                    <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
-                  </div>
-                  <div className={styles.metadataItem}>
-                    <span className={styles.metadataLabel}>Rating:</span>
-                    <span className={styles.metadataValue}>{currentPuzzle.rating || 400}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Review Mode Button */}
-              {isReviewMode && (
-                <button
-                  className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                  onClick={() => setShowSolution(!showSolution)}
-                  style={{ width: "100%", marginTop: "0.5rem" }}
-                >
-                  <FaEye />
-                  {showSolution ? "Hide Solution" : "View Solution"}
-                </button>
-              )}
-            </div>
-
-            {/* Stats Card */}
+        {/* Timer Card - Top Left */}
+        {competitionData && (
+          <div className={styles.timerCard}>
             <div className={styles.statCard}>
               <div className={styles.timerDisplay}>
                 <FaClock className={styles.timerIcon} />
@@ -785,37 +717,29 @@ function PuzzlePage() {
                 </div>
               </div>
             </div>
-
-            {/* Submit Competition Button - Only for Live Competitions */}
-            {isLiveCompetition && !isReviewMode && (
-              <div className={styles.statCard} style={{ textAlign: "center" }}>
-                <button
-                  className={`${styles.actionBtn} ${styles.btnSubmit}`}
-                  onClick={() => setShowSubmitModal(true)}
-                  disabled={submitting}
-                  style={{ width: "100%", fontSize: "1rem", padding: "12px" }}
-                >
-                  Submit
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div
-            className={styles.leftPanel}
-            style={{ visibility: "hidden", pointerEvents: "none" }}
-          >
-            {/* Placeholder to keep layout consistent if needed, or we can remove it */}
           </div>
         )}
 
-        {/* Center Panel - Board Only */}
+        {/* Submit Card - Bottom Left */}
+        {competitionData && isLiveCompetition && !isReviewMode && (
+          <div className={styles.submitCard}>
+            <button
+              className={`${styles.actionBtn} ${styles.btnSubmit}`}
+              onClick={() => setShowSubmitModal(true)}
+              disabled={submitting}
+              style={{ width: "100%", fontSize: "1rem", padding: "12px" }}
+            >
+              Submit Competition
+            </button>
+          </div>
+        )}
+
+        {/* Board Area - Center */}
         <div className={styles.boardArea}>
           <div className={styles.boardWrapper}>
             {puzzles.length > 0 && currentPuzzle ? (
               <ChessBoard
-                key={`${currentPuzzle.id || currentPuzzle._id
-                  }-${currentPuzzleIndex}`} // Force re-render on puzzle change
+                key={`${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}`}
                 fen={currentPuzzle.fen}
                 solution={currentPuzzle.solution}
                 alternativeSolutions={currentPuzzle.alternativeSolutions}
@@ -843,140 +767,142 @@ function PuzzlePage() {
               <div className={styles.loading}>No Puzzles Available</div>
             )}
           </div>
-
-          {/* REMOVED: Car Race Visualization
-          {isLiveCompetition && <PuzzleRacer />}
-          */}
-
-          {/* Moved Title/Description to Top, kept here only if needed for extra info */}
         </div>
 
-        {/* Right Panel - Navigation & Controls */}
-        <div className={styles.rightPanel}>
-          {/* Show Competition Leaderboard only if it's a competition */}
+        {/* Puzzle Info Panel - Top Right */}
+        {competitionData && currentPuzzle && (
+          <div className={styles.puzzleInfoPanel}>
+            <div className={styles.puzzleInfoCard}>
+              <h2 className={styles.puzzleCardTitle}>
+                {currentPuzzle.title || "Chess Puzzle"}
+              </h2>
+              {currentPuzzle.description && (
+                <p className={styles.puzzleDescription}>
+                  {currentPuzzle.description}
+                </p>
+              )}
 
-          {/* Regular Navigation Controls */}
-          <div className={styles.controlCard}>
-            <div className={styles.controlHeader}>Puzzle Navigation</div>
-
-            {/* Pagination Info */}
-            {Math.ceil(puzzles.length / 10) > 1 && (
-              <div className={styles.paginationInfo}>
-                Page {currentFrame + 1} of {Math.ceil(puzzles.length / 10)}
+              {/* Level and Rating */}
+              <div className={styles.puzzleMetadata}>
+                <div className={styles.metadataItem}>
+                  <span className={styles.metadataLabel}>Level:</span>
+                  <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
+                </div>
+                <div className={styles.metadataItem}>
+                  <span className={styles.metadataLabel}>Rating:</span>
+                  <span className={styles.metadataValue}>{currentPuzzle.rating || 400}</span>
+                </div>
               </div>
-            )}
-
-            <div className={styles.navGrid}>
-              {puzzles
-                .slice(currentFrame * 10, (currentFrame + 1) * 10)
-                .map((puzzle, localIndex) => {
-                  const index = currentFrame * 10 + localIndex; // Calculate real index
-                  const pid = puzzle.id || puzzle._id;
-                  const status = puzzleStatuses[pid];
-
-                  return (
-                    <div
-                      key={pid}
-                      className={`
-                        ${styles.navItem} 
-                        ${currentPuzzleIndex === index ? styles.active : ""}
-                        ${status === "success" ? styles.success : ""}
-                        ${status === "failed" ? styles.danger : ""}
-                      `}
-                      onClick={() => {
-                        if (!solving) {
-                          setCurrentPuzzleIndex(index);
-                          if (status === "success") {
-                            toast.info("Puzzle already solved!");
-                          } else if (status === "failed") {
-                            toast.info("Puzzle failed - you can view but not interact!");
-                          }
-                        }
-                      }}
-                      style={{
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {status === "success" ? <FaCheckCircle /> : index + 1}
-                    </div>
-                  );
-                })}
             </div>
-
-            <div className={styles.navControls}>
-              {/* Previous Frame Button */}
-              <button
-                className={styles.navArrow}
-                onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))}
-                disabled={currentFrame === 0}
-                title="Previous Page"
-              >
-                <FaAngleDoubleLeft />
-              </button>
-
-              {/* Previous Puzzle Button */}
-              <button
-                className={styles.navArrow}
-                onClick={() => {
-                  const newIndex = Math.max(0, currentPuzzleIndex - 1);
-                  setCurrentPuzzleIndex(newIndex);
-                  // Auto-switch frame if moving to previous page
-                  if (newIndex < currentFrame * 10) {
-                    setCurrentFrame(Math.max(0, currentFrame - 1));
-                  }
-                }}
-                disabled={currentPuzzleIndex === 0}
-                title="Previous Puzzle"
-              >
-                ←
-              </button>
-
-              {/* Next Puzzle Button */}
-              <button
-                className={styles.navArrow}
-                onClick={() => {
-                  const newIndex = Math.min(puzzles.length - 1, currentPuzzleIndex + 1);
-                  setCurrentPuzzleIndex(newIndex);
-                  // Auto-switch frame if moving to next page
-                  if (newIndex >= (currentFrame + 1) * 10) {
-                    setCurrentFrame(currentFrame + 1);
-                  }
-                }}
-                disabled={currentPuzzleIndex === puzzles.length - 1}
-                title="Next Puzzle"
-              >
-                →
-              </button>
-
-              {/* Next Frame Button */}
-              <button
-                className={styles.navArrow}
-                onClick={() => setCurrentFrame(Math.min(Math.ceil(puzzles.length / 10) - 1, currentFrame + 1))}
-                disabled={currentFrame >= Math.ceil(puzzles.length / 10) - 1}
-                title="Next Page"
-              >
-                <FaAngleDoubleRight />
-              </button>
-            </div>
-
-            {/* REMOVED: Exit Session button
-            <div className={styles.controls}>
-              <button
-                className={styles.actionBtn}
-                style={{ marginTop: "10px", fontSize: "0.8rem" }}
-                onClick={() => navigate("/")}
-              >
-                Exit Session
-              </button>
-            </div>
-            */}
           </div>
+        )}
 
-          {/* Live Racing Animation - Only for Live Competitions */}
-          {isLiveCompetition && !isReviewMode && (
+        {/* Puzzle Navigation Panel - Bottom Right */}
+        {competitionData && (
+          <div className={styles.puzzleNavPanel}>
+            <div className={styles.controlCard}>
+              <div className={styles.controlHeader}>Puzzle Navigation</div>
+
+              {Math.ceil(puzzles.length / 10) > 1 && (
+                <div className={styles.paginationInfo}>
+                  Page {currentFrame + 1} of {Math.ceil(puzzles.length / 10)}
+                </div>
+              )}
+
+              <div className={styles.navGrid}>
+                {puzzles
+                  .slice(currentFrame * 10, (currentFrame + 1) * 10)
+                  .map((puzzle, localIndex) => {
+                    const index = currentFrame * 10 + localIndex;
+                    const pid = puzzle.id || puzzle._id;
+                    const status = puzzleStatuses[pid];
+
+                    return (
+                      <div
+                        key={pid}
+                        className={`
+                          ${styles.navItem} 
+                          ${currentPuzzleIndex === index ? styles.active : ""}
+                          ${status === "success" ? styles.success : ""}
+                          ${status === "failed" ? styles.danger : ""}
+                        `}
+                        onClick={() => {
+                          if (!solving) {
+                            setCurrentPuzzleIndex(index);
+                            if (status === "success") {
+                              toast.info("Puzzle already solved!");
+                            } else if (status === "failed") {
+                              toast.info("Puzzle failed - you can view but not interact!");
+                            }
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {status === "success" ? <FaCheckCircle /> : index + 1}
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <div className={styles.navControls}>
+                <button
+                  className={styles.navArrow}
+                  onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))}
+                  disabled={currentFrame === 0}
+                  title="Previous Page"
+                >
+                  <FaAngleDoubleLeft />
+                </button>
+
+                <button
+                  className={styles.navArrow}
+                  onClick={() => {
+                    const newIndex = Math.max(0, currentPuzzleIndex - 1);
+                    setCurrentPuzzleIndex(newIndex);
+                    if (newIndex < currentFrame * 10) {
+                      setCurrentFrame(Math.max(0, currentFrame - 1));
+                    }
+                  }}
+                  disabled={currentPuzzleIndex === 0}
+                  title="Previous Puzzle"
+                >
+                  ←
+                </button>
+
+                <button
+                  className={styles.navArrow}
+                  onClick={() => {
+                    const newIndex = Math.min(puzzles.length - 1, currentPuzzleIndex + 1);
+                    setCurrentPuzzleIndex(newIndex);
+                    if (newIndex >= (currentFrame + 1) * 10) {
+                      setCurrentFrame(currentFrame + 1);
+                    }
+                  }}
+                  disabled={currentPuzzleIndex === puzzles.length - 1}
+                  title="Next Puzzle"
+                >
+                  →
+                </button>
+
+                <button
+                  className={styles.navArrow}
+                  onClick={() => setCurrentFrame(Math.min(Math.ceil(puzzles.length / 10) - 1, currentFrame + 1))}
+                  disabled={currentFrame >= Math.ceil(puzzles.length / 10) - 1}
+                  title="Next Page"
+                >
+                  <FaAngleDoubleRight />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Race Container - Full Width Bottom */}
+        {isLiveCompetition && !isReviewMode && (
+          <div className={styles.raceContainer}>
             <PuzzleRacer />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Submission Confirmation Modal */}

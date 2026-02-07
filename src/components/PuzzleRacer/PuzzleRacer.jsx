@@ -9,6 +9,18 @@ const PuzzleRacer = () => {
     const { user } = useAuth();
     const [isBoosting, setIsBoosting] = useState(false);
     const [prevScore, setPrevScore] = useState(0);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+    // Mark as loaded once we have competition data
+    useEffect(() => {
+        if (competition) {
+            // Small delay to ensure smooth rendering
+            const timer = setTimeout(() => {
+                setIsInitialLoad(false);
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [competition]);
 
     // Always render container
     // Show at least user's dot if we have participant data
@@ -28,6 +40,23 @@ const PuzzleRacer = () => {
         );
     }
 
+    // Show loading state briefly on initial load
+    if (isInitialLoad) {
+        return (
+            <div className="puzzle-racer-container">
+                <div className="racer-header">
+                    <h4>
+                        <span className="race-icon">🏃</span>
+                        Live Race Progress
+                    </h4>
+                </div>
+                <div className="racer-track" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="waiting-message">Initializing race...</div>
+                </div>
+            </div>
+        );
+    }
+
 
     // Detect score increase to trigger boost animation
     useEffect(() => {
@@ -42,25 +71,6 @@ const PuzzleRacer = () => {
             setPrevScore(participant.score);
         }
     }, [participant, prevScore]);
-
-    // Fetch leaderboard aggressively
-    const { getLeaderboard } = useLiveCompetition();
-    useEffect(() => {
-        if (competition) {
-            console.log('PuzzleRacer: Competition loaded, fetching leaderboard immediately');
-            getLeaderboard();
-
-            // Poll for leaderboard every 2 seconds if empty
-            const interval = setInterval(() => {
-                if (!leaderboard || leaderboard.length === 0) {
-                    console.log('PuzzleRacer: Leaderboard empty, refetching...');
-                    getLeaderboard();
-                }
-            }, 2000);
-
-            return () => clearInterval(interval);
-        }
-    }, [competition, leaderboard, getLeaderboard]);
 
     const totalPuzzles = useMemo(() => {
         if (competition.puzzles && competition.puzzles.length) return competition.puzzles.length;

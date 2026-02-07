@@ -44,6 +44,10 @@ export const LiveCompetitionProvider = ({ children }) => {
           // Try to load competition puzzles to restore state
           await loadCompetitionPuzzles(competitionId);
           console.log('Competition state restored successfully');
+          
+          // Fetch leaderboard immediately on initialization
+          console.log('Fetching initial leaderboard on mount');
+          await getLeaderboard(competitionId);
         } catch (error) {
           console.error('Failed to restore competition state:', error);
           // This is expected if user hasn't participated yet
@@ -113,6 +117,10 @@ export const LiveCompetitionProvider = ({ children }) => {
       // Load competition puzzles
       await loadCompetitionPuzzles(competitionId);
 
+      // Fetch initial leaderboard immediately with competition ID
+      console.log('Fetching initial leaderboard data');
+      await getLeaderboard(competitionId);
+
       toast.success(`Successfully joined ${response.competition.name}!`);
 
       return response;
@@ -125,7 +133,8 @@ export const LiveCompetitionProvider = ({ children }) => {
           !error.message.toLowerCase().includes('participating') &&
           !error.message.toLowerCase().includes('invalid access code')) {
         setError(error.message);
-        toast.error(error.message);
+        // Don't show toast during initialization to avoid spam
+        console.log('Participation error:', error.message);
       } else {
         // For access code errors during refresh, just log silently
         console.log('Participation error (silent):', error.message);
@@ -412,13 +421,19 @@ export const LiveCompetitionProvider = ({ children }) => {
   };
 
   // Get leaderboard via REST API (fallback)
-  const getLeaderboard = async () => {
+  const getLeaderboard = async (competitionIdOverride = null) => {
     try {
-      if (!competition) return;
+      const compId = competitionIdOverride || competition?.id;
+      if (!compId) {
+        console.log('No competition ID available for leaderboard fetch');
+        return;
+      }
 
-      const response = await liveCompetitionAPI.getLeaderboard(competition.id);
+      console.log('Fetching leaderboard for competition:', compId);
+      const response = await liveCompetitionAPI.getLeaderboard(compId);
 
       if (response.success) {
+        console.log('Leaderboard fetched successfully:', response.leaderboard.length, 'entries');
         setLeaderboard(response.leaderboard);
         setLastUpdate(new Date());
       }

@@ -1,5 +1,5 @@
 .pricingWrapper {
-  padding: 100px 20px;
+  padding: 100px 5%;
   background: var(--bg-white);
   /* Contrast with potential light bg of surrounding sections */
   position: relative;
@@ -321,7 +321,7 @@
 
 @media (max-width: 768px) {
   .pricingWrapper {
-    padding: 60px 20px;
+    padding: 60px 5%;
   }
 
   .title {

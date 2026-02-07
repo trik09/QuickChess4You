@@ -70,25 +70,61 @@
 /* --- MAIN LAYOUT --- */
 .mainContent {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto minmax(260px, 1fr);
-  gap: 2rem;
+  grid-template-areas:
+    "timer board puzzleInfo"
+    "submit board puzzleNav"
+    "race race race";
+  grid-template-columns: 220px 1fr 300px;
+  grid-template-rows: auto auto auto;
+  gap: 1.5rem;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
   padding: 1rem 2rem;
   align-items: start;
-  justify-content: center;
+}
+
+.timerCard {
+  grid-area: timer;
+  display: flex;
+  flex-direction: column;
+}
+
+.submitCard {
+  grid-area: submit;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.boardArea {
+  grid-area: board;
+  justify-self: center;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.puzzleInfoPanel {
+  grid-area: puzzleInfo;
+  display: flex;
+  flex-direction: column;
+}
+
+.puzzleNavPanel {
+  grid-area: puzzleNav;
+  display: flex;
+  flex-direction: column;
+}
+
+.raceContainer {
+  grid-area: race;
+  width: 100%;
+  margin-top: 1rem;
 }
 
 /* --- PANELS --- */
-.leftPanel,
-.rightPanel {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
 .statCard,
 .controlCard {
   border-radius: 14px;
@@ -982,13 +1018,9 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .mainContent {
+    grid-template-columns: 200px 1fr 280px;
     padding: 1rem;
     gap: 1rem;
-  }
-
-  .leftPanel,
-  .rightPanel {
-    width: 220px;
   }
 
   .timerBadge {
@@ -998,21 +1030,18 @@
 
 @media (max-width: 1024px) {
   .mainContent {
-    grid-template-columns: 1fr;
+    grid-template-areas:
+      "timer timer"
+      "board board"
+      "puzzleInfo puzzleNav"
+      "submit submit"
+      "race race";
+    grid-template-columns: 1fr 1fr;
     max-width: 700px;
   }
 
   .boardArea {
-    order: 1;
     width: 100%;
-  }
-
-  .leftPanel {
-    order: 2;
-  }
-
-  .rightPanel {
-    order: 3;
   }
 
   .boardWrapper {
@@ -1026,6 +1055,17 @@
 }
 
 @media (max-width: 768px) {
+  .mainContent {
+    grid-template-areas:
+      "timer"
+      "board"
+      "puzzleInfo"
+      "puzzleNav"
+      "submit"
+      "race";
+    grid-template-columns: 1fr;
+  }
+
   .liveIndicator {
     display: none;
   }

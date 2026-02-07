@@ -79,7 +79,7 @@
 }
 
 .linksSection ul li a:hover {
-    color: var(--primary);
+    color: var(--brand-accent);
     transform: translateX(5px);
 }
 
