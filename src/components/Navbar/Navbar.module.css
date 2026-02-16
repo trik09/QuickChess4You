@@ -24,7 +24,6 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Scrolled State (Optional: trigger via JS if you want it to shrink) */
 /* Scrolled State */
 .container {
   width: 100%;
@@ -33,7 +32,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 1rem;
+  /* Reduced padding from 2rem to 1rem for more space */
   height: 100%;
   position: relative;
   /* Needed for absolute logo positioning */
@@ -55,23 +55,31 @@
     align-items: center;
   }
 
+  .navLeft {
+    justify-content: flex-start;
+    /* Align left nav items to start */
+  }
+
   .navRight {
     justify-content: flex-end;
-    margin-right: 2rem;
+    margin-right: 0;
+    /* Removed unnecessary margin */
     /* Space for auth section */
   }
 }
 
 .navLinks {
   display: flex;
-  gap: 2.5rem;
+  gap: 1.5rem;
+  /* Reduced gap from 2.5rem to 1.5rem to prevent overlap */
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .navLinks li a {
-  font-size: 1rem;
+  font-size: 0.9rem;
+  /* Slightly reduced font size */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -80,6 +88,8 @@
   text-decoration: none;
   transition: color 0.3s ease;
   position: relative;
+  white-space: nowrap;
+  /* Prevent wrapping */
 }
 
 :global(html[data-theme='dark']) .navLinks li a {
@@ -156,22 +166,31 @@
 @media (min-width: 1024px) {
   .logoContainer {
     position: absolute;
-    left: 47%;
+    left: 50%;
+    /* center exactly */
     transform: translateX(-50%);
     top: 0;
     margin-right: 0;
     order: initial;
     z-index: 100;
+    width: auto;
+    /* Ensure it doesn't take full width */
+    max-width: 200px;
+    /* Constrain width */
+    justify-content: center;
   }
 
   .logoBadge {
     background: white;
-    padding: 12px 30px;
-    border-radius: 0 0 24px 24px;
+    padding: 8px 20px;
+    /* Reduced padding from 12px 30px */
+    border-radius: 0 0 20px 20px;
+    /* Adjusted radius */
     box-shadow: 0 10px 30px rgba(181, 135, 99, 0.4), 0 0 0 1px rgba(181, 135, 99, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     margin-top: -5px;
-    height: 110px;
+    height: 90px;
+    /* Reduced height from 110px */
   }
 
   :global(html[data-theme='dark']) .logoBadge {
@@ -185,8 +204,8 @@
   }
 
   .logoImg {
-    height: 60px;
-    /* Desktop Size */
+    height: 50px;
+    /* Reduced specific desktop size from 60px */
   }
 }
 
@@ -194,7 +213,24 @@
 .authSection {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  /* Reduced gap from 1.5rem */
+  margin-left: 1rem;
+  /* Add some margin from nav links */
+}
+
+.authButtons {
+  display: none;
+  /* Hide by default on mobile */
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .authButtons {
+    display: flex;
+    /* Show on tablet/desktop */
+  }
 }
 
 .settingsBtn {
@@ -203,8 +239,8 @@
   color: #4a4a4a;
   font-size: 1.4rem;
   cursor: pointer;
-  display: none;
-  /* Hidden on mobile by default */
+  display: flex;
+  /* Keep visible on mobile too for now, or match design requirements */
   transition: color 0.3s, transform 0.5s ease;
 }
 
@@ -218,12 +254,6 @@
   filter: drop-shadow(0 0 5px rgba(181, 135, 99, 0.5));
 }
 
-@media (min-width: 1024px) {
-  .settingsBtn {
-    display: flex;
-    /* Restore visibility on desktop */
-  }
-}
 
 /* User Profile - Gaming Aesthetic */
 .userProfile {
@@ -289,6 +319,7 @@
   font-size: 0.85rem;
   cursor: pointer;
   transition: opacity 0.3s;
+  white-space: nowrap;
 }
 
 :global(html[data-theme='dark']) .loginBtn {
@@ -298,7 +329,8 @@
 .signupBtn {
   background: #000000;
   color: #ffffff;
-  padding: 0.8rem 1.6rem;
+  padding: 0.6rem 1.2rem;
+  /* Reduced padding slightly */
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.85rem;
@@ -306,6 +338,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
 :global(html[data-theme='dark']) .signupBtn {
@@ -332,7 +365,8 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
+  /* Reduced margin */
   z-index: 101;
 }
 
@@ -375,15 +409,12 @@
   background: rgba(10, 10, 10, 0.98);
 }
 
-/* 1. Mobile Header: Logo Left, Icons Right */
 .mobileHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  /* Matches main navbar padding roughly */
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  /* Subtle separator */
 }
 
 :global(html[data-theme='dark']) .mobileHeader {
