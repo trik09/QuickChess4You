@@ -189,6 +189,37 @@
   transform: translateY(0);
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--gray);
+}
+
+.divider span {
+  padding: 0 15px;
+}
+
+.googleBtnContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.googleBtnContainer>div {
+  width: 100%;
+}
+
+
 .socialButtons {
   display: flex;
   gap: 12px;
@@ -262,7 +293,7 @@
     max-width: 400px;
     padding: 30px;
   }
-  
+
   .title {
     font-size: 30px;
   }
@@ -272,28 +303,28 @@
   .container {
     background: var(--white);
   }
-  
+
   .rightSection {
     display: none;
   }
-  
+
   .leftSection {
     flex: 1;
   }
-  
+
   .formContainer {
     padding: 20px;
   }
-  
+
   .logo {
     top: 20px;
     left: 20px;
   }
-  
+
   .title {
     font-size: 28px;
   }
-  
+
   .subtitle {
     font-size: 14px;
   }

@@ -24,7 +24,8 @@ function PuzzlePage() {
   const [competitionData, setCompetitionData] = useState(null);
   const [puzzles, setPuzzles] = useState([]);
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
-  const [currentFrame, setCurrentFrame] = useState(0); // For pagination (0 = 1-10, 1 = 11-20, etc.)
+  const [currentFrame, setCurrentFrame] = useState(0); // For pagination (0 = 1-20, 1 = 21-40, etc.)
+  const ITEMS_PER_PAGE = 20;
   const [loading, setLoading] = useState(true);
   const [solving, setSolving] = useState(false);
   const [isLiveCompetition, setIsLiveCompetition] = useState(false);
@@ -339,7 +340,7 @@ function PuzzlePage() {
         const data = await puzzleAPI.getAll();
         const normalized = data
           .filter((p) => p.fen && (p.solutionMoves?.length || p.kidsConfig))
-          .slice(0, 5) // Limit to 5 puzzles as per user request
+
           .map((p, i) => ({
             id: p._id,
             index: i + 1,
@@ -803,17 +804,17 @@ function PuzzlePage() {
             <div className={styles.controlCard}>
               <div className={styles.controlHeader}>Puzzle Navigation</div>
 
-              {Math.ceil(puzzles.length / 10) > 1 && (
+              {Math.ceil(puzzles.length / ITEMS_PER_PAGE) > 1 && (
                 <div className={styles.paginationInfo}>
-                  Page {currentFrame + 1} of {Math.ceil(puzzles.length / 10)}
+                  Page {currentFrame + 1} of {Math.ceil(puzzles.length / ITEMS_PER_PAGE)}
                 </div>
               )}
 
               <div className={styles.navGrid}>
                 {puzzles
-                  .slice(currentFrame * 10, (currentFrame + 1) * 10)
+                  .slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE)
                   .map((puzzle, localIndex) => {
-                    const index = currentFrame * 10 + localIndex;
+                    const index = currentFrame * ITEMS_PER_PAGE + localIndex;
                     const pid = puzzle.id || puzzle._id;
                     const status = puzzleStatuses[pid];
 
@@ -844,29 +845,22 @@ function PuzzlePage() {
                   })}
               </div>
 
-              <div className={styles.navControls}>
-                <button
-                  className={styles.navArrow}
-                  onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))}
-                  disabled={currentFrame === 0}
-                  title="Previous Page"
-                >
-                  <FaAngleDoubleLeft />
-                </button>
-
+              {/* Puzzle Navigation Buttons */}
+              <div className={styles.navControls} style={{ marginBottom: '10px' }}>
                 <button
                   className={styles.navArrow}
                   onClick={() => {
                     const newIndex = Math.max(0, currentPuzzleIndex - 1);
                     setCurrentPuzzleIndex(newIndex);
-                    if (newIndex < currentFrame * 10) {
+                    if (newIndex < currentFrame * ITEMS_PER_PAGE) {
                       setCurrentFrame(Math.max(0, currentFrame - 1));
                     }
                   }}
                   disabled={currentPuzzleIndex === 0}
                   title="Previous Puzzle"
+                  style={{ flex: 1 }} // Make them wide
                 >
-                  ←
+                  ← Prev Puzzle
                 </button>
 
                 <button
@@ -874,25 +868,88 @@ function PuzzlePage() {
                   onClick={() => {
                     const newIndex = Math.min(puzzles.length - 1, currentPuzzleIndex + 1);
                     setCurrentPuzzleIndex(newIndex);
-                    if (newIndex >= (currentFrame + 1) * 10) {
+                    if (newIndex >= (currentFrame + 1) * ITEMS_PER_PAGE) {
                       setCurrentFrame(currentFrame + 1);
                     }
                   }}
                   disabled={currentPuzzleIndex === puzzles.length - 1}
                   title="Next Puzzle"
+                  style={{ flex: 1 }} // Make them wide
                 >
-                  →
-                </button>
-
-                <button
-                  className={styles.navArrow}
-                  onClick={() => setCurrentFrame(Math.min(Math.ceil(puzzles.length / 10) - 1, currentFrame + 1))}
-                  disabled={currentFrame >= Math.ceil(puzzles.length / 10) - 1}
-                  title="Next Page"
-                >
-                  <FaAngleDoubleRight />
+                  Next Puzzle →
                 </button>
               </div>
+
+              {/* Professional Numbered Pagination */}
+              {Math.ceil(puzzles.length / ITEMS_PER_PAGE) > 1 && (
+                <div className={styles.paginationContainer}>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setCurrentFrame(0)}
+                    disabled={currentFrame === 0}
+                    title="First Page"
+                  >
+                    «
+                  </button>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))}
+                    disabled={currentFrame === 0}
+                    title="Previous Page"
+                  >
+                    ‹
+                  </button>
+
+                  {(() => {
+                    const totalPages = Math.ceil(puzzles.length / ITEMS_PER_PAGE);
+                    const visiblePages = [];
+
+                    const addPage = (i) => visiblePages.push(
+                      <button
+                        key={i}
+                        className={`${styles.pageBtn} ${currentFrame === i ? styles.activePage : ''}`}
+                        onClick={() => setCurrentFrame(i)}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                    const addEllipsis = (key) => visiblePages.push(<span key={key} style={{ padding: '0 4px', color: '#888' }}>...</span>);
+
+                    if (totalPages <= 7) {
+                      for (let i = 0; i < totalPages; i++) addPage(i);
+                    } else {
+                      addPage(0);
+                      if (currentFrame > 2) addEllipsis('e1');
+
+                      const start = Math.max(1, currentFrame - 1);
+                      const end = Math.min(totalPages - 2, currentFrame + 1);
+
+                      for (let i = start; i <= end; i++) addPage(i);
+
+                      if (currentFrame < totalPages - 3) addEllipsis('e2');
+                      addPage(totalPages - 1);
+                    }
+                    return visiblePages;
+                  })()}
+
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setCurrentFrame(Math.min(Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1, currentFrame + 1))}
+                    disabled={currentFrame >= Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1}
+                    title="Next Page"
+                  >
+                    ›
+                  </button>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() => setCurrentFrame(Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1)}
+                    disabled={currentFrame >= Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1}
+                    title="Last Page"
+                  >
+                    »
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

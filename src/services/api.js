@@ -145,6 +145,14 @@ export const authAPI = {
     });
   },
 
+  // Google OAuth authentication
+  googleAuth: async (credential) => {
+    return apiRequest("/user/google-auth", {
+      method: "POST",
+      body: JSON.stringify({ credential }),
+    });
+  },
+
   // Get current user data
   getCurrentUser: async () => {
     const userToken = localStorage.getItem("token");

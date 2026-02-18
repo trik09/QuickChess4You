@@ -204,8 +204,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modalContent {
@@ -219,8 +224,15 @@
 }
 
 @keyframes slideUp {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modalHeader {
@@ -335,16 +347,71 @@
   .filters {
     flex-direction: column;
   }
-  
+
   .searchInput {
     width: 100%;
   }
-  
+
   .tableContainer {
     overflow-x: auto;
   }
-  
+
   .confirmActions {
     flex-direction: column;
   }
+}
+
+/* Pagination Styles */
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.paginationInfo {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.pageBtn {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  color: #555;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #f5f5f5;
+  color: #333;
+  border-color: #d2b561;
+}
+
+.pageBtn.activePage {
+  background: linear-gradient(135deg, #d2b561 0%, #b58863 100%) !important;
+  color: #ffffff !important;
+  border-color: #b58863 !important;
+  box-shadow: 0 4px 10px rgba(210, 181, 97, 0.3);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f9f9f9;
 }

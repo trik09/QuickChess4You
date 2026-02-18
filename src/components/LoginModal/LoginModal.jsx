@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../contexts/AuthContext';
 import { authAPI } from '../../services/api';
 import styles from './LoginModal.module.css';
@@ -248,6 +249,31 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
     } else {
       handleLogin(e);
     }
+  };
+
+  // Google OAuth handlers
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const response = await authAPI.googleAuth(credentialResponse.credential);
+      login(response.user, response.token, response.atoken);
+      setSuccess('Login successful! Redirecting...');
+      setTimeout(() => {
+        onClose();
+        navigate('/');
+      }, 1500);
+    } catch (err) {
+      setError(err.message || 'Google login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google login failed. Please try again.');
   };
 
   const handleForgotPassword = async (e) => {
@@ -536,21 +562,26 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
               </button>
             )}
 
-            <div className={styles.divider}>
-              <span className={styles.dividerText}>or continue with</span>
-            </div>
+            {!isOTPMode && !isResetMode && !isSignupOTPMode && (
+              <>
+                <div className={styles.divider}>
+                  <span className={styles.dividerText}>or continue with</span>
+                </div>
 
-            <div className={styles.socialButtons}>
-              <button type="button" className={styles.socialBtn}>
-                <span className={styles.googleIcon}>G</span>
-              </button>
-              <button type="button" className={styles.socialBtn}>
-                <FaFacebookF className={styles.fbIcon} />
-              </button>
-              <button type="button" className={styles.socialBtn}>
-                <FaInstagram className={styles.igIcon} />
-              </button>
-            </div>
+                <div className={styles.googleBtnContainer}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="outline"
+                    size="large"
+                    width="100%"
+                    text={isSignUp ? 'signup_with' : 'signin_with'}
+                    ux_mode="popup"
+                    use_fedcm_for_prompt={false}
+                  />
+                </div>
+              </>
+            )}
 
             <p className={styles.switchText}>
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}

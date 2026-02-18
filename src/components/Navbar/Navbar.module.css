@@ -26,73 +26,79 @@
 
 /* Scrolled State (Optional: trigger via JS if you want it to shrink) */
 /* Scrolled State */
+/* --- Layout & Alignment --- */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
+  /* Increased max-width for better spacing */
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   height: 100%;
   position: relative;
-  /* Needed for absolute logo positioning */
 }
 
-/* --- Desktop Layout Splits --- */
-.navLeft,
-.navRight {
-  flex: 1;
+/* 1. Logo (Left) */
+.logoContainer {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 102;
+  /* Above mobile menu if needed */
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 48px;
+  /* Good size for both mobile/desktop */
+  width: auto;
+  display: block;
+}
+
+/* 2. Navigation Links (Center - Desktop Only) */
+.navLinks {
   display: none;
-  /* Hidden on mobile */
+  /* Hidden on Mobile */
 }
 
 @media (min-width: 1024px) {
-
-  .navLeft,
-  .navRight {
+  .navLinks {
     display: flex;
     align-items: center;
+    gap: 2.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
-
-  .navRight {
-    justify-content: flex-end;
-    margin-right: 2rem;
-    /* Space for auth section */
-  }
-}
-
-.navLinks {
-  display: flex;
-  gap: 2.5rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 .navLinks li a {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #4a4a4a;
-  /* Light mode text */
   text-decoration: none;
   transition: color 0.3s ease;
   position: relative;
+  white-space: nowrap;
 }
 
 :global(html[data-theme='dark']) .navLinks li a {
-  color: #ffffff;
-  /* Dark mode text */
+  color: #e0e0e0;
 }
 
 .navLinks li a:hover {
   color: rgb(181, 135, 99);
-  /* Theme Color */
 }
 
-/* Interactive underline indicator */
+/* Underline Effect */
 .navLinks li a::before {
   content: '';
   position: absolute;
@@ -101,111 +107,51 @@
   width: 0;
   height: 2px;
   background: rgb(181, 135, 99);
-  /* Theme Color */
   transition: all 0.3s ease;
   transform: translateX(-50%);
-  box-shadow: 0 0 8px rgba(181, 135, 99, 0.15);
 }
 
 .navLinks li a:hover::before {
   width: 100%;
 }
 
-/* --- Logo Styling (Hanging Design) --- */
-/* --- Logo Styling --- */
-/* MOBILE DEFAULT: Standard Left Alignment */
-.logoContainer {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  z-index: 10;
-  order: -1;
-  /* Force to left on mobile */
-  margin-right: auto;
-  /* Push others to right */
-}
-
-.logoBadge {
-  background: transparent;
-  padding: 0;
-  box-shadow: none;
-  border: none;
-  height: auto;
-  display: flex;
-  align-items: center;
-}
-
-:global(html[data-theme='dark']) .logoBadge {
-  background: transparent;
-  box-shadow: none;
-}
-
-.logoBadge:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-.logoImg {
-  height: 40px;
-  /* Mobile Friendly Size */
-  width: auto;
-  display: block;
-}
-
-/* DESKTOP: Hanging Design (Strictly overridden) */
-@media (min-width: 1024px) {
-  .logoContainer {
-    position: absolute;
-    left: 47%;
-    transform: translateX(-50%);
-    top: 0;
-    margin-right: 0;
-    order: initial;
-    z-index: 100;
-  }
-
-  .logoBadge {
-    background: white;
-    padding: 12px 30px;
-    border-radius: 0 0 24px 24px;
-    box-shadow: 0 10px 30px rgba(181, 135, 99, 0.4), 0 0 0 1px rgba(181, 135, 99, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin-top: -5px;
-    height: 110px;
-  }
-
-  :global(html[data-theme='dark']) .logoBadge {
-    background: #111;
-    box-shadow: 0 15px 40px rgba(181, 135, 99, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-
-  .logoBadge:hover {
-    transform: translateY(2px);
-    box-shadow: 0 15px 40px rgba(181, 135, 99, 0.6);
-  }
-
-  .logoImg {
-    height: 60px;
-    /* Desktop Size */
-  }
-}
-
-/* --- Auth & Buttons --- */
-.authSection {
+/* 3. Right Section (Auth + Mobile Toggle) */
+.rightSection {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
+/* Auth Section - Desktop Only */
+.authSection {
+  display: none;
+  /* Hidden on Mobile < 1024px */
+}
+
+@media (min-width: 1024px) {
+  .authSection {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Settings Button */
 .settingsBtn {
   background: none;
   border: none;
   color: #4a4a4a;
   font-size: 1.4rem;
   cursor: pointer;
-  display: none;
-  /* Hidden on mobile by default */
   transition: color 0.3s, transform 0.5s ease;
+  padding: 0;
+  display: flex;
 }
 
 :global(html[data-theme='dark']) .settingsBtn {
@@ -215,72 +161,10 @@
 .settingsBtn:hover {
   color: rgb(181, 135, 99);
   transform: rotate(45deg);
-  filter: drop-shadow(0 0 5px rgba(181, 135, 99, 0.5));
 }
 
-@media (min-width: 1024px) {
-  .settingsBtn {
-    display: flex;
-    /* Restore visibility on desktop */
-  }
-}
 
-/* User Profile - Gaming Aesthetic */
-.userProfile {
-  position: relative;
-}
-
-.userInfo {
-  background: rgba(181, 135, 99, 0.1);
-  border: 1px solid rgba(181, 135, 99, 0.3);
-  padding: 4px;
-  border-radius: 50px;
-  /* Pill shape */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(181, 135, 99, 0);
-
-  /* Size override if needed */
-  width: 45px;
-  height: 45px;
-}
-
-:global(html[data-theme='dark']) .userInfo {
-  background: rgba(181, 135, 99, 0.15);
-  border-color: rgba(181, 135, 99, 0.4);
-}
-
-.userInfo:hover {
-  background: rgba(181, 135, 99, 0.2);
-  border-color: rgb(181, 135, 99);
-  box-shadow: 0 0 15px rgba(181, 135, 99, 0.6);
-  /* Glowing gaming effect */
-  transform: scale(1.05);
-}
-
-.avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
+/* Login & Signup Buttons */
 .loginBtn {
   background: none;
   border: none;
@@ -288,24 +172,31 @@
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: opacity 0.3s;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
 }
 
 :global(html[data-theme='dark']) .loginBtn {
   color: #ffffff;
 }
 
+.loginBtn:hover {
+  opacity: 0.7;
+}
+
 .signupBtn {
   background: #000000;
   color: #ffffff;
-  padding: 0.8rem 1.6rem;
-  border-radius: 12px;
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  /* Clean rounded corners */
   font-weight: 700;
   font-size: 0.85rem;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
 :global(html[data-theme='dark']) .signupBtn {
@@ -315,25 +206,21 @@
 
 .signupBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(181, 135, 99, 0.25);
-  filter: brightness(1.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* --- Mobile Menu & Hamburger --- */
-
-/* Hamburger Button */
+/* Hamburger - Mobile Only */
 .hamburger {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: space-between;
   width: 28px;
   height: 20px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-left: 1rem;
-  z-index: 101;
+  z-index: 103;
 }
 
 .hamburger span {
@@ -348,7 +235,6 @@
   background: #ffffff;
 }
 
-/* Hide Hamburger on Desktop */
 @media (min-width: 1024px) {
   .hamburger {
     display: none;

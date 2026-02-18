@@ -19,6 +19,10 @@ function PuzzleList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+
   const handlePreview = (puzzle) => {
     setSelectedPuzzle(puzzle);
     setShowPreview(true);
@@ -198,6 +202,17 @@ function PuzzleList() {
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory, filterDifficulty]);
+
+  // Get current page items
+  const paginatedPuzzles = filteredPuzzles.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const columns = [
     { key: 'id', label: 'ID', width: '80px', render: (id) => `#${id}` },
     { key: 'title', label: 'Title' },
@@ -294,7 +309,7 @@ function PuzzleList() {
 
       <DataTable
         columns={columns}
-        data={filteredPuzzles}
+        data={paginatedPuzzles}
         actions={(puzzle) => (
           <>
             <IconButton
@@ -319,6 +334,83 @@ function PuzzleList() {
         )}
         emptyMessage="No puzzles found"
       />
+
+      {/* Pagination Controls */}
+      {filteredPuzzles.length > ITEMS_PER_PAGE && (
+        <>
+          <div className={styles.paginationInfo}>
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
+            {Math.min(currentPage * ITEMS_PER_PAGE, filteredPuzzles.length)} of{' '}
+            {filteredPuzzles.length} entries
+          </div>
+          <div className={styles.paginationContainer}>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              title="First Page"
+            >
+              «
+            </button>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              title="Previous Page"
+            >
+              ‹
+            </button>
+
+            {(() => {
+              const totalPages = Math.ceil(filteredPuzzles.length / ITEMS_PER_PAGE);
+              const visiblePages = [];
+              const addPage = (i) => visiblePages.push(
+                <button
+                  key={i}
+                  className={`${styles.pageBtn} ${currentPage === i ? styles.activePage : ''}`}
+                  onClick={() => setCurrentPage(i)}
+                >
+                  {i}
+                </button>
+              );
+              const addEllipsis = (key) => visiblePages.push(<span key={key} style={{ padding: '0 4px', color: '#888' }}>...</span>);
+
+              if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) addPage(i);
+              } else {
+                addPage(1);
+                if (currentPage > 3) addEllipsis('e1');
+
+                const start = Math.max(2, currentPage - 1);
+                const end = Math.min(totalPages - 1, currentPage + 1);
+
+                for (let i = start; i <= end; i++) addPage(i);
+
+                if (currentPage < totalPages - 2) addEllipsis('e2');
+                addPage(totalPages);
+              }
+              return visiblePages;
+            })()}
+
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredPuzzles.length / ITEMS_PER_PAGE)))}
+              disabled={currentPage === Math.ceil(filteredPuzzles.length / ITEMS_PER_PAGE)}
+              title="Next Page"
+            >
+              ›
+            </button>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage(Math.ceil(filteredPuzzles.length / ITEMS_PER_PAGE))}
+              disabled={currentPage === Math.ceil(filteredPuzzles.length / ITEMS_PER_PAGE)}
+              title="Last Page"
+            >
+              »
+            </button>
+          </div>
+        </>
+      )}
 
       {showPreview && selectedPuzzle && (
         <div className={styles.modal} onClick={() => setShowPreview(false)}>

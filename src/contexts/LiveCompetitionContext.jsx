@@ -50,6 +50,24 @@ export const LiveCompetitionProvider = ({ children }) => {
           // Fetch leaderboard immediately on initialization
           console.log("Fetching initial leaderboard on mount");
           await getLeaderboard(competitionId);
+
+          // AUTO-RECONNECT SOCKET on page refresh if user is already a participant
+          // This ensures real-time updates continue after refresh
+          const token = localStorage.getItem("token");
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          if (token && user && !socketService.isConnected) {
+            console.log("[LiveComp] Auto-reconnecting socket after page refresh");
+            try {
+              const compData = { competition: { id: competitionId, name: "" } };
+              await socketService.connect(compData);
+              setIsConnected(true);
+              setupSocketListeners();
+              console.log("[LiveComp] Socket reconnected successfully");
+            } catch (sockErr) {
+              console.error("[LiveComp] Socket reconnect failed:", sockErr.message);
+              // Not critical — REST polling will cover us
+            }
+          }
         } catch (error) {
           console.error("Failed to restore competition state:", error);
           // This is expected if user hasn't participated yet
@@ -158,15 +176,26 @@ export const LiveCompetitionProvider = ({ children }) => {
 
   // Setup socket event listeners
   const setupSocketListeners = () => {
-    // Leaderboard updates
+    // Leaderboard updates (full replacement)
     socketService.on("leaderboardUpdate", (newLeaderboard) => {
+      console.log('[LiveComp] Socket: leaderboardUpdate, entries:', newLeaderboard?.length);
       setLeaderboard(newLeaderboard);
       setLastUpdate(new Date());
+    });
 
-      // Show brief notification for leaderboard updates
-      if (newLeaderboard.length > 0) {
-        toast.success("Leaderboard updated!", { duration: 2000 });
-      }
+    // Live score update (incremental — merge single player's score)
+    socketService.on("liveScoreUpdate", (data) => {
+      console.log('[LiveComp] Socket: liveScoreUpdate', data.username, data.score);
+      setLeaderboard(prev => {
+        const updated = prev.map(entry =>
+          entry.userId === data.userId?.toString() || entry.userId === data.userId
+            ? { ...entry, score: data.score, puzzlesSolved: data.puzzlesSolved, timeSpent: data.timeSpent, status: data.status }
+            : entry
+        );
+        // Re-sort by score descending, then time ascending
+        return updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
+      });
+      setLastUpdate(new Date());
     });
 
     // Competition ended
@@ -178,11 +207,12 @@ export const LiveCompetitionProvider = ({ children }) => {
       // Disconnect socket after competition ends
       setTimeout(() => {
         disconnectFromCompetition();
-      }, 10000); // Disconnect after 10 seconds
+      }, 10000);
     });
 
     // Participant joined
     socketService.on("participantJoined", (data) => {
+      console.log('[LiveComp] Socket: participantJoined', data.username);
       toast(`${data.username} joined the competition!`, {
         icon: "👋",
         duration: 3000,
@@ -299,10 +329,10 @@ export const LiveCompetitionProvider = ({ children }) => {
               puzzle.solvedData ||
               (storedState?.status === "solved"
                 ? {
-                    scoreEarned: storedState.scoreEarned,
-                    timeSpent: storedState.timeSpent,
-                    solvedAt: storedState.solvedAt,
-                  }
+                  scoreEarned: storedState.scoreEarned,
+                  timeSpent: storedState.timeSpent,
+                  solvedAt: storedState.solvedAt,
+                }
                 : null),
           };
         });
@@ -404,19 +434,19 @@ export const LiveCompetitionProvider = ({ children }) => {
           prev.map((puzzle) =>
             puzzle._id === puzzleId
               ? {
-                  ...puzzle,
-                  status: puzzleStatus,
-                  isSolved: isCorrect,
-                  isFailed: !isCorrect,
-                  isLocked: true,
-                  solvedData: isCorrect
-                    ? {
-                        scoreEarned: response.scoreEarned,
-                        timeSpent,
-                        solvedAt: new Date(),
-                      }
-                    : null,
-                }
+                ...puzzle,
+                status: puzzleStatus,
+                isSolved: isCorrect,
+                isFailed: !isCorrect,
+                isLocked: true,
+                solvedData: isCorrect
+                  ? {
+                    scoreEarned: response.scoreEarned,
+                    timeSpent,
+                    solvedAt: new Date(),
+                  }
+                  : null,
+              }
               : puzzle,
           ),
         );
@@ -452,6 +482,11 @@ export const LiveCompetitionProvider = ({ children }) => {
           toast.error("Incorrect solution. Puzzle is now locked.", {
             duration: 4000,
           });
+        }
+
+        // Immediately fetch fresh leaderboard for instant local feedback
+        if (competition?.id) {
+          getLeaderboard(competition.id);
         }
 
         return response;
@@ -495,6 +530,22 @@ export const LiveCompetitionProvider = ({ children }) => {
       console.error("Failed to fetch leaderboard:", error);
     }
   };
+
+  // Periodic leaderboard sync as safety net (every 15 seconds while live)
+  useEffect(() => {
+    if (!competition?.id || competitionEnded) return;
+
+    // Only poll if competition is live
+    const isLive = competition.status === 'LIVE' || competition.status === 'live';
+    if (!isLive) return;
+
+    const syncInterval = setInterval(() => {
+      console.log('[LiveComp] Periodic leaderboard sync');
+      getLeaderboard(competition.id);
+    }, 5000);
+
+    return () => clearInterval(syncInterval);
+  }, [competition?.id, competition?.status, competitionEnded]);
 
   // Disconnect from competition
   const disconnectFromCompetition = () => {

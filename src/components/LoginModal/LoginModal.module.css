@@ -16,8 +16,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
@@ -41,6 +46,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -294,6 +300,17 @@
   height: 1.1rem;
 }
 
+.googleBtnContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.googleBtnContainer>div {
+  width: 100%;
+}
+
 .switchText {
   text-align: center;
   color: #6b7280;
@@ -323,7 +340,7 @@
   .overlay {
     padding: 12px;
   }
-  
+
   .modal {
     padding: 18px;
     max-width: 350px;
@@ -427,36 +444,36 @@
   .modal {
     max-height: calc(100vh - 16px);
   }
-  
+
   .modalHeader {
     margin-bottom: 12px;
   }
-  
+
   .logo {
     margin-bottom: 6px;
   }
-  
+
   .logoIcon {
     font-size: 1.8rem;
   }
-  
+
   .title {
     font-size: 1.2rem;
     margin-bottom: 4px;
   }
-  
+
   .subtitle {
     font-size: 0.75rem;
   }
-  
+
   .form {
     gap: 8px;
   }
-  
+
   .divider {
     margin: 10px 0;
   }
-  
+
   .switchText {
     margin-top: 10px;
   }
@@ -467,32 +484,32 @@
   .logoIcon {
     font-size: 1.5rem;
   }
-  
+
   .title {
     font-size: 1.1rem;
   }
-  
+
   .modalHeader {
     margin-bottom: 10px;
   }
-  
+
   .form {
     gap: 6px;
   }
-  
+
   .input {
     padding: 8px 10px;
   }
-  
+
   .submitBtn {
     padding: 8px;
   }
-  
+
   .socialBtn {
     width: 30px;
     height: 30px;
   }
-  
+
   .divider {
     margin: 8px 0;
   }

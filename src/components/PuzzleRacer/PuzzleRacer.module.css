@@ -1,0 +1,1155 @@
+/* ============================================================
+   PUZZLE GALAXY — REALISTIC SOLAR SYSTEM
+   PuzzleRacer.module.css
+   ============================================================ */
+
+/* ── Container ── */
+.container {
+    width: 100%;
+    min-height: 320px;
+    background:
+        radial-gradient(ellipse 80% 90% at 92% 50%, #1a2a50 0%, #0c1628 30%, #060c18 60%, #020509 100%);
+    border: 1px solid rgba(80, 140, 255, 0.1);
+    border-radius: 20px;
+    padding: 18px 22px 16px;
+    margin-top: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 16px 56px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 0 80px rgba(20, 60, 160, 0.05);
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+}
+
+/* ── Nebula Layers ── */
+.nebula1 {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 50% at 80% 40%, rgba(80, 60, 200, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 95% 70%, rgba(200, 80, 40, 0.06) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.nebula2 {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 50% 40% at 15% 60%, rgba(20, 80, 180, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 50% at 50% 20%, rgba(80, 200, 240, 0.04) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.nebula3 {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 30% at 70% 80%, rgba(160, 60, 200, 0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Stars ── */
+.stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 5% 10%, rgba(255, 255, 255, 0.85), transparent),
+        radial-gradient(1px 1px at 14% 82%, rgba(255, 255, 255, 0.65), transparent),
+        radial-gradient(1.5px 1.5px at 28% 25%, rgba(200, 225, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 42% 6%, rgba(255, 255, 255, 0.55), transparent),
+        radial-gradient(1px 1px at 54% 68%, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1.5px 1.5px at 68% 15%, rgba(200, 225, 255, 0.65), transparent),
+        radial-gradient(1px 1px at 10% 48%, rgba(255, 255, 255, 0.4), transparent),
+        radial-gradient(1px 1px at 76% 90%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 22% 95%, rgba(200, 225, 255, 0.5), transparent),
+        radial-gradient(1.5px 1.5px at 60% 38%, rgba(255, 255, 255, 0.4), transparent),
+        radial-gradient(1px 1px at 3% 34%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 74% 6%, rgba(200, 225, 255, 0.75), transparent),
+        radial-gradient(1px 1px at 47% 74%, rgba(255, 255, 255, 0.45), transparent),
+        radial-gradient(1px 1px at 88% 48%, rgba(200, 225, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 18% 30%, rgba(255, 255, 255, 0.55), transparent),
+        radial-gradient(1px 1px at 35% 58%, rgba(200, 225, 255, 0.35), transparent),
+        radial-gradient(1px 1px at 51% 88%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 92% 12%, rgba(255, 255, 255, 0.65), transparent),
+        radial-gradient(1px 1px at 8% 72%, rgba(200, 225, 255, 0.45), transparent),
+        radial-gradient(1px 1px at 83% 58%, rgba(255, 255, 255, 0.38), transparent),
+        radial-gradient(1px 1px at 37% 42%, rgba(180, 220, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 62% 55%, rgba(255, 255, 255, 0.3), transparent),
+        radial-gradient(1px 1px at 20% 15%, rgba(220, 240, 255, 0.55), transparent),
+        radial-gradient(1px 1px at 78% 75%, rgba(255, 255, 255, 0.45), transparent);
+    animation: twinkle 9s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.starsDeep {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(0.8px 0.8px at 33% 18%, rgba(255, 255, 255, 0.35), transparent),
+        radial-gradient(0.8px 0.8px at 72% 32%, rgba(200, 225, 255, 0.3), transparent),
+        radial-gradient(0.8px 0.8px at 16% 64%, rgba(255, 255, 255, 0.25), transparent),
+        radial-gradient(0.8px 0.8px at 89% 22%, rgba(200, 225, 255, 0.3), transparent),
+        radial-gradient(0.8px 0.8px at 44% 86%, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(0.8px 0.8px at 57% 12%, rgba(200, 225, 255, 0.28), transparent),
+        radial-gradient(0.8px 0.8px at 25% 50%, rgba(255, 255, 255, 0.22), transparent),
+        radial-gradient(0.8px 0.8px at 67% 80%, rgba(200, 225, 255, 0.25), transparent),
+        radial-gradient(0.8px 0.8px at 82% 44%, rgba(255, 255, 255, 0.18), transparent),
+        radial-gradient(0.8px 0.8px at 48% 33%, rgba(200, 225, 255, 0.2), transparent);
+    animation: twinkle 12s ease-in-out infinite alternate-reverse;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.45;
+    }
+
+    40% {
+        opacity: 0.9;
+    }
+
+    70% {
+        opacity: 0.65;
+    }
+
+    100% {
+        opacity: 0.55;
+    }
+}
+
+/* ── Header ── */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(100, 160, 255, 0.08);
+    position: relative;
+    z-index: 10;
+}
+
+.title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: linear-gradient(100deg, #ffd580 0%, #ff9f45 45%, #e86060 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.titleIcon {
+    -webkit-text-fill-color: initial;
+    font-size: 1.15rem;
+}
+
+.headerMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.puzzleBadge {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #8fa8c8;
+    background: rgba(100, 160, 255, 0.08);
+    border: 1px solid rgba(100, 160, 255, 0.12);
+    padding: 3px 11px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+
+.moreBadge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: #70ccff;
+    background: rgba(80, 190, 255, 0.08);
+    border: 1px solid rgba(80, 190, 255, 0.14);
+    padding: 3px 11px;
+    border-radius: 20px;
+}
+
+/* ── Scene ── */
+.scene {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 280px;
+    padding: 10px 0;
+    z-index: 5;
+}
+
+/* ── Orbit SVG ── */
+.orbitSvg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ── Planets Area ── */
+.planetsArea {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1;
+    position: relative;
+    z-index: 5;
+    padding: 20px 0 8px 8px;
+    align-items: center;
+}
+
+/* ── Planet Slot ── */
+.planetSlot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    min-width: 48px;
+    flex-shrink: 0;
+    cursor: default;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.planetSlot:hover {
+    transform: translateY(-5px) scale(1.04);
+    z-index: 20;
+}
+
+.planetSlotEmpty {
+    opacity: 0.85;
+}
+
+/* Orbit indicator dot */
+.orbitDot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: blur(1px);
+    opacity: 0.5;
+}
+
+/* ── Planet Wrapper (holds ring behind + orb + ring front) ── */
+.planetWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Planet Orb ── */
+.planetOrb {
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    transition: box-shadow 0.3s ease;
+}
+
+.planetOrbYou {
+    outline: 2px solid rgba(100, 200, 255, 0.45);
+    outline-offset: 3px;
+}
+
+/* ── Terminator (dark shadow half) ── */
+.terminator {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(ellipse 90% 100% at 78% 50%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ── Specular highlight ── */
+.specular {
+    position: absolute;
+    top: 12%;
+    left: 16%;
+    width: 28%;
+    height: 18%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.45) 0%, transparent 70%);
+    pointer-events: none;
+    filter: blur(0.5px);
+}
+
+/* ── Surface Features ── */
+.jupiterBands {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+    background: repeating-linear-gradient(180deg,
+            transparent 0%, transparent 10%,
+            rgba(140, 70, 25, 0.3) 11%, rgba(170, 95, 38, 0.22) 16%, transparent 17%,
+            transparent 26%, rgba(130, 60, 20, 0.28) 27%, rgba(165, 90, 35, 0.18) 32%, transparent 33%,
+            transparent 42%, rgba(145, 75, 28, 0.3) 43%, rgba(175, 100, 40, 0.2) 49%, transparent 50%,
+            transparent 59%, rgba(135, 65, 22, 0.26) 60%, rgba(162, 88, 36, 0.16) 65%, transparent 66%,
+            transparent 75%, rgba(148, 78, 30, 0.28) 76%, rgba(178, 103, 42, 0.18) 81%, transparent 82%);
+}
+
+.earthLand1 {
+    position: absolute;
+    top: 18%;
+    left: 14%;
+    width: 32%;
+    height: 36%;
+    background: rgba(34, 165, 55, 0.55);
+    border-radius: 50% 32% 45% 38%;
+    filter: blur(1px);
+    pointer-events: none;
+}
+
+.earthLand2 {
+    position: absolute;
+    top: 48%;
+    left: 56%;
+    width: 22%;
+    height: 26%;
+    background: rgba(42, 150, 50, 0.5);
+    border-radius: 38% 48% 32% 46%;
+    filter: blur(0.8px);
+    pointer-events: none;
+}
+
+.earthLand3 {
+    position: absolute;
+    top: 62%;
+    left: 20%;
+    width: 18%;
+    height: 20%;
+    background: rgba(30, 140, 45, 0.42);
+    border-radius: 44% 36% 50% 30%;
+    filter: blur(0.8px);
+    pointer-events: none;
+}
+
+.atmosphere {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid rgba(120, 200, 255, 0.12);
+    pointer-events: none;
+}
+
+.polarCap {
+    position: absolute;
+    top: 4%;
+    left: 25%;
+    width: 50%;
+    height: 22%;
+    background: rgba(240, 248, 255, 0.55);
+    border-radius: 50% 50% 40% 40%;
+    filter: blur(1.5px);
+    pointer-events: none;
+}
+
+.crater1 {
+    position: absolute;
+    top: 25%;
+    left: 30%;
+    width: 22%;
+    height: 18%;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+}
+
+.crater2 {
+    position: absolute;
+    top: 55%;
+    left: 55%;
+    width: 16%;
+    height: 14%;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.12);
+    pointer-events: none;
+}
+
+.greatRedSpot {
+    position: absolute;
+    top: 52%;
+    left: 55%;
+    width: 26%;
+    height: 16%;
+    background: radial-gradient(ellipse, rgba(180, 50, 20, 0.7) 0%, rgba(200, 70, 30, 0.4) 55%, transparent 75%);
+    border-radius: 50%;
+    filter: blur(0.5px);
+    pointer-events: none;
+}
+
+.neptuneStorm {
+    position: absolute;
+    top: 40%;
+    left: 30%;
+    width: 28%;
+    height: 20%;
+    background: radial-gradient(ellipse, rgba(10, 20, 160, 0.8) 0%, rgba(20, 40, 200, 0.4) 60%, transparent 80%);
+    border-radius: 50%;
+    filter: blur(0.8px);
+    pointer-events: none;
+}
+
+.venusCloud {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(ellipse 80% 60% at 50% 45%, rgba(255, 245, 200, 0.35) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ── Saturn Rings ── */
+.saturnRingBack,
+.saturnRingFront {
+    position: absolute;
+    width: 190%;
+    height: 26px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotateX(28deg);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.saturnRingBack {
+    background: linear-gradient(180deg,
+            transparent 22%,
+            rgba(210, 170, 255, 0.22) 28%,
+            rgba(230, 195, 255, 0.38) 36%,
+            rgba(215, 185, 245, 0.28) 44%,
+            rgba(195, 215, 230, 0.22) 52%,
+            rgba(230, 215, 185, 0.18) 62%,
+            rgba(250, 230, 200, 0.12) 70%,
+            transparent 78%);
+    z-index: 0;
+    clip-path: inset(50% 0 0 0);
+}
+
+.saturnRingFront {
+    background: linear-gradient(180deg,
+            transparent 22%,
+            rgba(210, 170, 255, 0.28) 28%,
+            rgba(235, 200, 255, 0.5) 36%,
+            rgba(220, 190, 250, 0.38) 44%,
+            rgba(198, 218, 235, 0.3) 52%,
+            rgba(235, 220, 190, 0.24) 62%,
+            rgba(252, 235, 205, 0.15) 70%,
+            transparent 78%);
+    z-index: 10;
+    clip-path: inset(0 0 50% 0);
+    box-shadow: 0 2px 8px rgba(190, 150, 220, 0.2);
+}
+
+/* ── YOU halo ── */
+.youHalo {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(100, 200, 255, 0.3);
+    animation: haloBreath 2.5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 15;
+}
+
+@keyframes haloBreath {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(100, 200, 255, 0.25);
+        opacity: 0.8;
+    }
+
+    50% {
+        box-shadow: 0 0 16px rgba(100, 200, 255, 0.55);
+        opacity: 1;
+    }
+}
+
+/* ── Floating Animations ── */
+.float1 {
+    animation: pf1 7.5s ease-in-out infinite;
+}
+
+.float2 {
+    animation: pf2 8.2s ease-in-out infinite;
+}
+
+.float3 {
+    animation: pf3 6.8s ease-in-out infinite;
+}
+
+.float4 {
+    animation: pf4 7.0s ease-in-out infinite;
+}
+
+.float5 {
+    animation: pf5 8.5s ease-in-out infinite;
+}
+
+.float6 {
+    animation: pf6 7.8s ease-in-out infinite;
+}
+
+.float7 {
+    animation: pf7 6.5s ease-in-out infinite;
+}
+
+.float8 {
+    animation: pf8 8.0s ease-in-out infinite;
+}
+
+@keyframes pf1 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(-5px)
+    }
+}
+
+@keyframes pf2 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(4px)
+    }
+}
+
+@keyframes pf3 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    40% {
+        transform: translateY(-6px)
+    }
+
+    80% {
+        transform: translateY(2px)
+    }
+}
+
+@keyframes pf4 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(-4px)
+    }
+}
+
+@keyframes pf5 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    30% {
+        transform: translateY(5px)
+    }
+
+    70% {
+        transform: translateY(-3px)
+    }
+}
+
+@keyframes pf6 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(-5px)
+    }
+}
+
+@keyframes pf7 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    40% {
+        transform: translateY(4px)
+    }
+
+    80% {
+        transform: translateY(-2.5px)
+    }
+}
+
+@keyframes pf8 {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(4px)
+    }
+}
+
+/* ── Planet Labels ── */
+.planetLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-height: 30px;
+}
+
+.playerName {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #c8d8ee;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 62px;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+.playerNameYou {
+    color: #80ccff;
+    text-shadow: 0 0 10px rgba(80, 180, 255, 0.5), 0 1px 5px rgba(0, 0, 0, 0.7);
+}
+
+.playerScore {
+    font-size: 0.52rem;
+    font-weight: 600;
+    color: rgba(180, 210, 240, 0.42);
+    letter-spacing: 0.3px;
+}
+
+.planetName {
+    font-size: 0.57rem;
+    font-weight: 500;
+    color: rgba(180, 200, 230, 0.28);
+    font-style: italic;
+    letter-spacing: 0.3px;
+}
+
+/* ============================================================
+   SUN — Right Side
+   ============================================================ */
+.sunRegion {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 5;
+    padding: 0 10px 0 20px;
+}
+
+.sunOuterGlow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 280px;
+    height: 280px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            rgba(255, 120, 20, 0.07) 0%,
+            rgba(255, 90, 10, 0.04) 35%,
+            transparent 65%);
+    pointer-events: none;
+    animation: outerGlowPulse 5s ease-in-out infinite;
+}
+
+.sunMidGlow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 195px;
+    height: 195px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            rgba(255, 160, 40, 0.15) 0%,
+            rgba(255, 130, 20, 0.07) 45%,
+            transparent 70%);
+    pointer-events: none;
+    animation: midGlowPulse 3.8s ease-in-out infinite;
+}
+
+.sunCorona {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 148px;
+    height: 148px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            rgba(255, 200, 80, 0.18) 0%,
+            rgba(255, 160, 40, 0.1) 40%,
+            rgba(255, 100, 20, 0.04) 65%,
+            transparent 80%);
+    pointer-events: none;
+    animation: coronaPulse 3.2s ease-in-out infinite;
+    z-index: 2;
+}
+
+/* Flare rays */
+.sunFlares {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 130px;
+    height: 130px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 2;
+    animation: sunRotate 60s linear infinite;
+}
+
+.sunFlares::before,
+.sunFlares::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(from 0deg,
+            transparent 0deg,
+            rgba(255, 180, 50, 0.05) 2deg,
+            transparent 5deg,
+            transparent 10deg);
+}
+
+.sunFlares::after {
+    transform: rotate(7deg);
+    opacity: 0.7;
+}
+
+.sunBody {
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 36%,
+            #fff9e8 0%,
+            #ffd84a 18%,
+            #ff9900 42%,
+            #e06000 65%,
+            #c04000 82%,
+            #952800 100%);
+    box-shadow:
+        0 0 30px rgba(255, 160, 20, 0.7),
+        0 0 60px rgba(255, 130, 10, 0.45),
+        0 0 100px rgba(255, 90, 0, 0.25),
+        0 0 150px rgba(255, 60, 0, 0.1),
+        inset 0 0 20px rgba(255, 220, 100, 0.35),
+        inset -8px -8px 25px rgba(150, 40, 0, 0.4);
+    animation: sunPulse 4s ease-in-out infinite, sunFloat 9s ease-in-out infinite;
+    position: relative;
+    z-index: 3;
+    overflow: hidden;
+}
+
+.sunSurface {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 25% 20%, rgba(255, 255, 220, 0.2) 0%, transparent 35%),
+        radial-gradient(circle at 70% 70%, rgba(180, 60, 0, 0.3) 0%, transparent 45%);
+    pointer-events: none;
+}
+
+.sunGranules {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    opacity: 0.2;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+.crown {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.35rem;
+    filter: drop-shadow(0 0 10px rgba(255, 220, 0, 0.8));
+    animation: crownBob 2.8s ease-in-out infinite;
+    z-index: 10;
+    pointer-events: none;
+}
+
+@keyframes sunPulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 30px rgba(255, 160, 20, 0.7),
+            0 0 60px rgba(255, 130, 10, 0.45),
+            0 0 100px rgba(255, 90, 0, 0.25),
+            inset 0 0 20px rgba(255, 220, 100, 0.35),
+            inset -8px -8px 25px rgba(150, 40, 0, 0.4);
+    }
+
+    50% {
+        box-shadow:
+            0 0 42px rgba(255, 160, 20, 0.88),
+            0 0 80px rgba(255, 130, 10, 0.6),
+            0 0 130px rgba(255, 90, 0, 0.35),
+            inset 0 0 28px rgba(255, 220, 100, 0.45),
+            inset -8px -8px 25px rgba(150, 40, 0, 0.4);
+    }
+}
+
+@keyframes sunFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes coronaPulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.07);
+    }
+}
+
+@keyframes midGlowPulse {
+
+    0%,
+    100% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes outerGlowPulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1.04);
+    }
+}
+
+@keyframes sunRotate {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@keyframes crownBob {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+/* Sun label */
+.sunLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    gap: 2px;
+    z-index: 5;
+    position: relative;
+}
+
+.sunName {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #ffd060;
+    text-shadow: 0 0 14px rgba(255, 210, 80, 0.55), 0 1px 4px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 115px;
+    text-align: center;
+    letter-spacing: 0.4px;
+}
+
+.sunScore {
+    font-size: 0.63rem;
+    font-weight: 600;
+    color: rgba(255, 200, 80, 0.5);
+}
+
+.sunWaiting {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.22);
+    font-style: italic;
+    margin-top: 8px;
+}
+
+/* ============================================================
+   YOU card (outside top slots)
+   ============================================================ */
+.youCard {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 10;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: rgba(80, 160, 255, 0.05);
+    border: 1px solid rgba(80, 160, 255, 0.14);
+    border-radius: 12px;
+    animation: youCardFloat 3s ease-in-out infinite;
+    overflow: hidden;
+}
+
+.youCardGlow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 10% 50%, rgba(80, 160, 255, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.youCardDot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #60b8ff 0%, #1050c0 65%, transparent 100%);
+    box-shadow: 0 0 10px rgba(80, 180, 255, 0.8), 0 0 22px rgba(80, 180, 255, 0.35);
+    animation: dotPulse 2.2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+.youCardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.youCardName {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #80ccff;
+    text-shadow: 0 0 8px rgba(80, 180, 255, 0.45);
+}
+
+.youCardRank {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: rgba(130, 190, 248, 0.6);
+}
+
+@keyframes youCardFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes dotPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(80, 180, 255, 0.8), 0 0 22px rgba(80, 180, 255, 0.35);
+    }
+
+    50% {
+        box-shadow: 0 0 16px rgba(80, 180, 255, 1), 0 0 32px rgba(80, 180, 255, 0.5);
+    }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+    .planetsArea {
+        gap: 10px;
+        padding-left: 4px;
+    }
+
+    .planetSlot {
+        min-width: 38px;
+    }
+
+    .sunBody {
+        width: 80px;
+        height: 80px;
+    }
+
+    .sunCorona {
+        width: 122px;
+        height: 122px;
+    }
+
+    .sunOuterGlow {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+@media (max-width: 680px) {
+    .container {
+        padding: 14px 12px 12px;
+        border-radius: 16px;
+    }
+
+    .scene {
+        flex-direction: column-reverse;
+        min-height: auto;
+        gap: 14px;
+        padding: 8px 0;
+    }
+
+    .sunRegion {
+        flex-direction: row;
+        gap: 14px;
+        padding: 8px 14px;
+        background: rgba(255, 140, 10, 0.04);
+        border-radius: 14px;
+        border: 1px solid rgba(255, 140, 10, 0.08);
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sunBody {
+        width: 54px;
+        height: 54px;
+    }
+
+    .sunCorona {
+        width: 82px;
+        height: 82px;
+    }
+
+    .sunOuterGlow {
+        width: 110px;
+        height: 110px;
+    }
+
+    .crown {
+        font-size: 1rem;
+        top: -4px;
+    }
+
+    .sunLabel {
+        margin-top: 0;
+        align-items: flex-start;
+    }
+
+    .planetsArea {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        padding: 4px;
+    }
+
+    .planetSlot {
+        min-width: 36px;
+    }
+
+    .playerName {
+        font-size: 0.56rem;
+        max-width: 48px;
+    }
+}
+
+@media (max-width: 420px) {
+    .planetsArea {
+        gap: 7px;
+    }
+
+    .planetSlot {
+        min-width: 30px;
+    }
+
+    .playerName {
+        font-size: 0.5rem;
+        max-width: 38px;
+    }
+
+    .playerScore {
+        font-size: 0.46rem;
+    }
+
+    .sunBody {
+        width: 46px;
+        height: 46px;
+    }
+}

@@ -88,8 +88,14 @@ class SocketService {
 
     // Leaderboard updates
     this.socket.on("leaderboardUpdate", (leaderboard) => {
-      console.log("Leaderboard updated:", leaderboard);
+      console.log("Leaderboard updated:", leaderboard?.length, "entries");
       this.emit("leaderboardUpdate", leaderboard);
+    });
+
+    // Live score update (individual player)
+    this.socket.on("liveScoreUpdate", (data) => {
+      console.log("Live score update:", data?.username, data?.score);
+      this.emit("liveScoreUpdate", data);
     });
 
     // Competition ended

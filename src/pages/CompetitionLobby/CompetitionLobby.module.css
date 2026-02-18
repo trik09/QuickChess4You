@@ -477,48 +477,57 @@
 }
 
 .pageHeader {
-    background: var(--bg-card);
-    border-radius: 16px;
-    padding: 2.5rem;
-    margin-bottom: 2.5rem;
-    box-shadow: var(--shadow-lg);
+    background: var(--accent-gold-gradient);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid var(--border-color);
+    border: none;
+    box-shadow: none;
     position: relative;
-    overflow: hidden;
+    color: white;
 }
 
-.pageHeader::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent-gold), var(--trophy-gold), var(--accent-gold));
+.pageHeader .pageTitle {
+    color: white;
+}
+
+.pageHeader .metaItem {
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    border: none;
+}
+
+.statusEnded {
+    background: rgba(16, 185, 129, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .pageTitle {
-    font-size: 3rem;
-    font-weight: 800;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 1rem 0;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0;
+    text-transform: none;
+    /* Normal casing */
 }
 
 [data-theme="light"] .pageTitle {
     color: #111827;
-    background: none;
-    -webkit-text-fill-color: initial;
 }
 
 [data-theme="dark"] .pageTitle {
-    background: linear-gradient(to right, #ffffff, #cbd5e1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #f1f5f9;
 }
 
 .competitionMeta {
@@ -543,29 +552,36 @@
 /* Podium & Stats Layout */
 .mainContent {
     display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    grid-template-columns: 320px 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
     align-items: start;
 }
 
 .podiumSection {
     background: var(--bg-card);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: 12px;
+    padding: 1.5rem;
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.podiumSection .sectionTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .podium {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 12px;
-    margin: 2rem 0;
-    height: 320px;
+    gap: 8px;
+    margin: 1rem 0;
+    height: 240px;
 }
 
 .podiumPlace {
@@ -645,85 +661,87 @@
     overflow: hidden;
 }
 
-/* Podium styling specifics */
+/* Podium styling - Clean, modern, minimal colors */
 .second .podiumBar {
-    background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
-    box-shadow: 0 0 15px rgba(148, 163, 184, 0.4);
-    height: 120px;
+    background: #94a3b8;
+    height: 90px;
+    border-radius: 6px 6px 0 0;
 }
 
 [data-theme="dark"] .second .podiumBar {
-    background: linear-gradient(to bottom, #94a3b8, #475569);
+    background: #475569;
 }
 
 .second .avatarCircle {
-    border-color: var(--trophy-silver);
-    background: #f1f5f9;
+    border-color: #94a3b8;
+    background: #e2e8f0;
     color: #475569;
+    width: 48px;
+    height: 48px;
+    font-size: 1.1rem;
 }
 
 [data-theme="dark"] .second .avatarCircle {
-    background: #1e293b;
-    color: white;
+    background: #334155;
+    color: #cbd5e1;
 }
 
 .first .podiumBar {
-    background: linear-gradient(to bottom, #fcd34d, #d97706);
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
-    height: 160px;
+    background: #fbbf24;
+    height: 120px;
+    border-radius: 6px 6px 0 0;
 }
 
 [data-theme="dark"] .first .podiumBar {
-    background: linear-gradient(to bottom, #fbbf24, #b45309);
+    background: #d97706;
 }
 
 .first .avatarCircle {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
-    border-color: var(--trophy-gold);
-    background: #fffbeb;
+    width: 56px;
+    height: 56px;
+    font-size: 1.3rem;
+    border-color: #fbbf24;
+    background: #fef3c7;
     color: #92400e;
 }
 
 [data-theme="dark"] .first .avatarCircle {
-    background: #451a03;
-    color: white;
+    background: #78350f;
+    color: #fef3c7;
 }
 
 .third .podiumBar {
-    background: linear-gradient(to bottom, #fdba74, #ea580c);
-    box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
-    height: 90px;
+    background: #d97706;
+    height: 70px;
+    border-radius: 6px 6px 0 0;
 }
 
 [data-theme="dark"] .third .podiumBar {
-    background: linear-gradient(to bottom, #d97706, #7c2d12);
+    background: #92400e;
 }
 
 .third .avatarCircle {
-    border-color: var(--trophy-bronze);
-    background: #fff7ed;
+    border-color: #d97706;
+    background: #ffedd5;
     color: #9a3412;
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
 }
 
 [data-theme="dark"] .third .avatarCircle {
-    background: #2a1b15;
-    color: white;
+    background: #431407;
+    color: #fed7aa;
 }
 
 .barDetails {
-    padding: 1rem 0.5rem;
+    padding: 0.5rem;
     text-align: center;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.7rem;
+    font-weight: 600;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    color: rgba(0, 0, 0, 0.7);
-}
-
-[data-theme="dark"] .barDetails {
+    gap: 2px;
     color: rgba(255, 255, 255, 0.9);
 }
 

@@ -5,7 +5,7 @@ import { authAPI } from '../../services/api';
 import {
   FaChessPawn, FaTrophy, FaChartLine, FaFire,
   FaCog, FaHistory, FaMedal, FaEdit, FaCamera,
-  FaEnvelope, FaCalendarAlt, FaTimes
+  FaEnvelope, FaCalendarAlt, FaTimes, FaSignOutAlt
 } from 'react-icons/fa';
 import styles from './Profile.module.css';
 
@@ -20,7 +20,7 @@ const getAvatarUrl = (avatarPath) => {
 
 function Profile() {
   const navigate = useNavigate();
-  const { user: contextUser, userLogin } = useAuth();
+  const { user: contextUser, userLogin, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -153,9 +153,20 @@ function Profile() {
             </div>
           </div>
 
-          <button className={styles.editBtn} onClick={() => navigate('/profile/edit')}>
-            <FaEdit /> <span>Edit Profile</span>
-          </button>
+          <div className={styles.headerActions}>
+            <button className={styles.editBtn} onClick={() => navigate('/profile/edit')}>
+              <FaEdit /> <span>Edit</span>
+            </button>
+            <button
+              className={styles.headerLogoutBtn}
+              onClick={() => {
+                if (logout) logout();
+                navigate('/');
+              }}
+            >
+              <FaSignOutAlt /> <span>Logout</span>
+            </button>
+          </div>
         </div>
 
         {/* --- STATS GRID --- */}

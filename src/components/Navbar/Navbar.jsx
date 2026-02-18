@@ -73,104 +73,83 @@ function Navbar({ onLoginClick, onSignupClick }) {
     { name: "Puzzle Arena", to: "/puzzle" },
   ];
 
-  // Logic to split links for Desktop view
-  const midpoint = Math.ceil(menuLinks.length / 2);
-  const leftLinks = menuLinks.slice(0, midpoint);
-  const rightLinks = menuLinks.slice(midpoint);
-
   return (
     <>
       <nav className={styles.navbar} ref={containerRef}>
         <div className={styles.container}>
 
-          {/* MOBILE HAMBURGER (Left) */}
-          <button
-            className={styles.hamburger}
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-            aria-expanded={isOpen}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-
-          {/* LEFT NAV (Desktop) */}
-          <div className={styles.navLeft}>
-            <ul className={styles.navLinks}>
-              {leftLinks.map((link, index) => (
-                <li key={index}>
-                  {link.to ? (
-                    <Link to={link.to}>{link.name}</Link>
-                  ) : (
-                    <a href={link.href}>{link.name}</a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* CENTER LOGO */}
+          {/* 1. LOGO (Left) */}
           <div className={styles.logoContainer}>
-            <div className={styles.logoBadge}>
-              <Link to="/" className={styles.logoLink} aria-label="Quick Chess Home">
-                <img src={logo} alt="Quick Chess Logo" className={styles.logoImg} />
-              </Link>
+            <Link to="/" className={styles.logoLink} aria-label="Quick Chess Home">
+              <img src={logo} alt="Quick Chess Logo" className={styles.logoImg} />
+            </Link>
+          </div>
+
+          {/* 2. CENTER NAV (Desktop Only) */}
+          <ul className={styles.navLinks}>
+            {menuLinks.map((link, index) => (
+              <li key={index}>
+                {link.to ? (
+                  <Link to={link.to}>{link.name}</Link>
+                ) : (
+                  <a href={link.href}>{link.name}</a>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* 3. AUTH & ACTIONS (Right) */}
+          <div className={styles.rightSection}>
+            {/* Desktop Auth Buttons */}
+            <div className={styles.authSection}>
+              <button
+                className={styles.settingsBtn}
+                onClick={() => setIsThemeModalOpen(true)}
+                aria-label="Customize board theme"
+                title="Customize Board"
+              >
+                <BsGear />
+              </button>
+
+              {isAuthenticated ? (
+                <div className={styles.userProfile}>
+                  <button
+                    className={styles.userInfo}
+                    onClick={() => navigate('/dashboard')}
+                    aria-label="Go to dashboard"
+                  >
+                    <div className={styles.avatar}>
+                      {user?.avatar ? (
+                        <img src={user.avatar} alt={`${user.username}'s avatar`} />
+                      ) : (
+                        user?.username?.[0]?.toUpperCase() || "U"
+                      )}
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.authButtons}>
+                  <button className={styles.loginBtn} onClick={onLoginClick}>
+                    LOG IN
+                  </button>
+                  <button className={styles.signupBtn} onClick={onSignupClick}>
+                    SIGN UP
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* RIGHT NAV (Desktop) */}
-          <div className={styles.navRight}>
-            <ul className={styles.navLinks}>
-              {rightLinks.map((link, index) => (
-                <li key={index + midpoint}>
-                  {link.to ? (
-                    <Link to={link.to}>{link.name}</Link>
-                  ) : (
-                    <a href={link.href}>{link.name}</a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* AUTH & SETTINGS (Absolute Right) */}
-          <div className={styles.authSection}>
+            {/* Mobile Hamburger */}
             <button
-              className={styles.settingsBtn}
-              onClick={() => setIsThemeModalOpen(true)}
-              aria-label="Customize board theme"
-              title="Customize Board"
+              className={styles.hamburger}
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+              aria-expanded={isOpen}
             >
-              <BsGear />
+              <span></span>
+              <span></span>
+              <span></span>
             </button>
-
-            {isAuthenticated ? (
-              <div className={styles.userProfile}>
-                <button
-                  className={styles.userInfo}
-                  onClick={() => navigate('/dashboard')}
-                  aria-label="Go to dashboard"
-                >
-                  <div className={styles.avatar}>
-                    {user?.avatar ? (
-                      <img src={user.avatar} alt={`${user.username}'s avatar`} />
-                    ) : (
-                      user?.username?.[0]?.toUpperCase() || "U"
-                    )}
-                  </div>
-                </button>
-              </div>
-            ) : (
-              <div className={styles.authButtons}>
-                <button className={styles.loginBtn} onClick={onLoginClick}>
-                  LOG IN
-                </button>
-                <button className={styles.signupBtn} onClick={onSignupClick}>
-                  SIGN UP
-                </button>
-              </div>
-            )}
           </div>
 
         </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from "../../contexts/AuthContext"
 import { authAPI } from '../../services/api';
 import styles from './Login.module.css';
@@ -60,6 +61,36 @@ function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ---------------- GOOGLE LOGIN ----------------
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const response = await authAPI.googleAuth(credentialResponse.credential);
+
+      // Save user token + user data into context
+      userLogin(response.user, response.token);
+
+      setSuccess('Login successful! Redirecting...');
+      setTimeout(() => navigate('/'), 1500);
+    } catch (err) {
+      setError(err.message || 'Google login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google login failed. Please try again.');
+  };
+
+  // missing function to handle forgot password
+  const handleForgotPassword = () => {
+    handleSendOTP({ preventDefault: () => { } });
   };
 
   // ---------------- SEND OTP ----------------
@@ -269,6 +300,27 @@ function Login() {
                     ? "Verify OTP"
                     : "Log in"}
             </button>
+
+            {!isOTPMode && !isResetMode && (
+              <>
+                <div className={styles.divider}>
+                  <span>or continue with</span>
+                </div>
+
+                <div className={styles.googleBtnContainer}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="outline"
+                    size="large"
+                    width="100%"
+                    text="signin_with"
+                    ux_mode="popup"
+                    use_fedcm_for_prompt={false}
+                  />
+                </div>
+              </>
+            )}
           </form>
         </div>
       </div>

@@ -19,6 +19,15 @@ const apiRequest = async (endpoint, options = {}, token = null) => {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
+    // Handle 401 Unauthorized (Token expired or user invalid)
+    if (response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Force redirect to login/home
+      window.location.href = "/";
+      throw new Error("Session expired. Please login again.");
+    }
+
     let data;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
