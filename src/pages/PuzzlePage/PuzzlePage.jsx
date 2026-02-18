@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { FaClock, FaCheckCircle, FaPuzzlePiece, FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
+import {
+  FaClock,
+  FaCheckCircle,
+  FaPuzzlePiece,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+} from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
@@ -17,8 +23,13 @@ function PuzzlePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { participateInCompetition, disconnectFromCompetition, getLeaderboard } =
-    useLiveCompetition();
+  const {
+    participateInCompetition,
+    disconnectFromCompetition,
+    getLeaderboard,
+    leaderboard,
+    getCurrentUserRank,
+  } = useLiveCompetition();
 
   // State
   const [competitionData, setCompetitionData] = useState(null);
@@ -60,17 +71,17 @@ function PuzzlePage() {
       };
 
       // Attach
-      import("../../services/socketService").then(module => {
+      import("../../services/socketService").then((module) => {
         const socketService = module.default;
         socketService.on("competitionEnded", onCompetitionEnded);
       });
 
       return () => {
-        import("../../services/socketService").then(module => {
+        import("../../services/socketService").then((module) => {
           const socketService = module.default;
           socketService.off("competitionEnded", onCompetitionEnded);
         });
-      }
+      };
     }
   }, [isLiveCompetition, paramCompetitionId, navigate]);
 
@@ -165,9 +176,11 @@ function PuzzlePage() {
             if (savedState) {
               try {
                 const parsed = JSON.parse(savedState);
-                hasValidState = parsed.puzzleStatuses && Object.keys(parsed.puzzleStatuses).length > 0;
+                hasValidState =
+                  parsed.puzzleStatuses &&
+                  Object.keys(parsed.puzzleStatuses).length > 0;
               } catch (e) {
-                console.error('Error parsing saved state:', e);
+                console.error("Error parsing saved state:", e);
               }
             }
 
@@ -175,17 +188,26 @@ function PuzzlePage() {
             let participationResponse = null;
             if (!hasValidState) {
               try {
-                participationResponse = await participateInCompetition(paramCompetitionId, user.username || user.name);
+                participationResponse = await participateInCompetition(
+                  paramCompetitionId,
+                  user.username || user.name,
+                );
               } catch (participationError) {
                 // Silent handling of participation errors during initialization
-                console.log('Participation error (continuing with fallback):', participationError.message);
+                console.log(
+                  "Participation error (continuing with fallback):",
+                  participationError.message,
+                );
               }
             } else {
-              console.log('Using existing valid state, skipping participation call');
+              console.log(
+                "Using existing valid state, skipping participation call",
+              );
             }
 
             // Fetch DETAILED puzzles with user's solved status
-            const puzzleRes = await liveCompetitionAPI.getPuzzles(paramCompetitionId);
+            const puzzleRes =
+              await liveCompetitionAPI.getPuzzles(paramCompetitionId);
 
             if (puzzleRes.success) {
               // Update Puzzles with IsSolved status
@@ -193,11 +215,13 @@ function PuzzlePage() {
                 id: p._id,
                 _id: p._id,
                 index: index + 1,
-                fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                fen:
+                  p.fen ||
+                  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 solution: p.solutionMoves || [],
                 alternativeSolutions: p.alternativeSolutions || [],
                 title: p.title || `Puzzle ${index + 1}`,
-                type: p.type === "kids" ? "Kids" : (p.title || "Puzzle"),
+                type: p.type === "kids" ? "Kids" : p.title || "Puzzle",
                 difficulty: p.difficulty || "medium",
                 description: p.description || "",
                 kidsConfig: p.kidsConfig,
@@ -206,21 +230,21 @@ function PuzzlePage() {
                 rating: p.rating || 400,
                 isSolved: p.isSolved,
                 isFailed: p.isFailed,
-                status: p.status
+                status: p.status,
               }));
               setPuzzles(normalized);
 
               // Update Statuses map from server data
               const statuses = {};
-              normalized.forEach(p => {
-                if (p.isSolved || p.status === 'solved') {
-                  statuses[p.id] = 'success';
-                } else if (p.isFailed || p.status === 'failed') {
-                  statuses[p.id] = 'failed';
+              normalized.forEach((p) => {
+                if (p.isSolved || p.status === "solved") {
+                  statuses[p.id] = "success";
+                } else if (p.isFailed || p.status === "failed") {
+                  statuses[p.id] = "failed";
                 }
               });
 
-              console.log('Setting puzzle statuses from server:', statuses);
+              console.log("Setting puzzle statuses from server:", statuses);
               setPuzzleStatuses(statuses);
 
               // Restore board states from localStorage and merge with server data
@@ -230,13 +254,22 @@ function PuzzlePage() {
                 try {
                   const parsed = JSON.parse(savedState);
                   // Merge server statuses with localStorage statuses
-                  const mergedStatuses = { ...parsed.puzzleStatuses, ...statuses };
+                  const mergedStatuses = {
+                    ...parsed.puzzleStatuses,
+                    ...statuses,
+                  };
                   setPuzzleStatuses(mergedStatuses);
                   setPuzzleBoardStates(parsed.puzzleBoardStates || {});
-                  console.log('Merged puzzle statuses (server + localStorage):', mergedStatuses);
-                  console.log('Restored board states from localStorage:', parsed.puzzleBoardStates);
+                  console.log(
+                    "Merged puzzle statuses (server + localStorage):",
+                    mergedStatuses,
+                  );
+                  console.log(
+                    "Restored board states from localStorage:",
+                    parsed.puzzleBoardStates,
+                  );
                 } catch (e) {
-                  console.error('Error parsing saved state:', e);
+                  console.error("Error parsing saved state:", e);
                 }
               }
 
@@ -247,7 +280,10 @@ function PuzzlePage() {
               }
 
               // Find first unsolved puzzle
-              const firstUnsolved = normalized.findIndex(p => !p.isSolved && p.status !== 'solved' && p.status !== 'failed');
+              const firstUnsolved = normalized.findIndex(
+                (p) =>
+                  !p.isSolved && p.status !== "solved" && p.status !== "failed",
+              );
               if (firstUnsolved !== -1) {
                 setCurrentPuzzleIndex(firstUnsolved);
               } else {
@@ -255,7 +291,6 @@ function PuzzlePage() {
                 setCurrentPuzzleIndex(0);
               }
             }
-
           } catch (err) {
             console.error("Error syncing live competition data", err);
             // Silent error handling during initialization - no toast errors
@@ -266,18 +301,20 @@ function PuzzlePage() {
                 id: p._id,
                 _id: p._id,
                 index: index + 1,
-                fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                fen:
+                  p.fen ||
+                  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                 solution: p.solutionMoves || [],
                 alternativeSolutions: p.alternativeSolutions || [],
                 title: p.title || `Puzzle ${index + 1}`,
-                type: p.type === "kids" ? "Kids" : (p.title || "Puzzle"),
+                type: p.type === "kids" ? "Kids" : p.title || "Puzzle",
                 difficulty: p.difficulty || "medium",
                 description: p.description || "",
                 kidsConfig: p.kidsConfig,
                 puzzleType: p.type || "normal",
                 isSolved: false,
                 isFailed: false,
-                status: 'unsolved'
+                status: "unsolved",
               }));
               setPuzzles(normalized);
 
@@ -294,14 +331,14 @@ function PuzzlePage() {
                   if (parsed.currentPuzzleIndex !== undefined) {
                     setCurrentPuzzleIndex(parsed.currentPuzzleIndex);
                   }
-                  console.log('Restored complete state from localStorage:', {
+                  console.log("Restored complete state from localStorage:", {
                     statuses: parsed.puzzleStatuses,
                     score: parsed.score,
                     solvedCount: parsed.solvedCount,
-                    currentIndex: parsed.currentPuzzleIndex
+                    currentIndex: parsed.currentPuzzleIndex,
                   });
                 } catch (e) {
-                  console.error('Error parsing saved state:', e);
+                  console.error("Error parsing saved state:", e);
                 }
               }
             }
@@ -309,14 +346,19 @@ function PuzzlePage() {
         }
 
         // If Puzzles not loaded yet (fallback or non-live or review mode)
-        if (puzzles.length === 0 && ((!isLive && !reviewMode) || puzzles.length === 0)) {
+        if (
+          puzzles.length === 0 &&
+          ((!isLive && !reviewMode) || puzzles.length === 0)
+        ) {
           // Load Basic Puzzles
           if (comp.puzzles && comp.puzzles.length > 0) {
             const normalized = comp.puzzles.map((p, index) => ({
               id: p._id,
               _id: p._id,
               index: index + 1,
-              fen: p.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+              fen:
+                p.fen ||
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
               solution: p.solutionMoves || [],
               alternativeSolutions: p.alternativeSolutions || [],
               title: p.title,
@@ -334,7 +376,6 @@ function PuzzlePage() {
         if (!reviewMode) {
           startTimer();
         }
-
       } else {
         // Casual Mode (Dashboard link)
         const data = await puzzleAPI.getAll();
@@ -352,7 +393,7 @@ function PuzzlePage() {
             kidsConfig: p.kidsConfig,
             puzzleType: p.type,
             level: p.level || 1,
-            rating: p.rating || 400
+            rating: p.rating || 400,
           }));
         setPuzzles(normalized);
 
@@ -379,7 +420,7 @@ function PuzzlePage() {
       isLoadedRef.current = true;
 
       // Only navigate away for critical errors, not initialization issues
-      if (error.message && error.message.includes('critical')) {
+      if (error.message && error.message.includes("critical")) {
         setTimeout(() => {
           if (paramCompetitionId) {
             navigate(`/competition/${paramCompetitionId}/lobby`);
@@ -435,9 +476,10 @@ function PuzzlePage() {
 
     // Use passed winning moves or fallback to default solution
     // If winningMoves is an array of strings (SAN), use it.
-    const solutionToSend = (Array.isArray(winningMoves) && winningMoves.length > 0)
-      ? winningMoves
-      : currentPuzzle.solution;
+    const solutionToSend =
+      Array.isArray(winningMoves) && winningMoves.length > 0
+        ? winningMoves
+        : currentPuzzle.solution;
 
     // Check if already solved
     if (puzzleStatuses[currentPuzzle.id] === "success") return;
@@ -480,7 +522,7 @@ function PuzzlePage() {
             competitionData._id,
             currentPuzzle.id,
             solutionToSend,
-            timeTaken
+            timeTaken,
           );
 
           if (res && res.success && res.scoreEarned) {
@@ -492,7 +534,7 @@ function PuzzlePage() {
             }));
             setScore((prev) => prev + res.scoreEarned);
             toast.success(
-              `Correct! +${res.scoreEarned} points! Leaderboard updated!`
+              `Correct! +${res.scoreEarned} points! Leaderboard updated!`,
             );
           } else {
             toast.error(res?.message || "Solution validation failed");
@@ -504,7 +546,7 @@ function PuzzlePage() {
             competitionData._id,
             currentPuzzle.id,
             solutionToSend,
-            timeTaken
+            timeTaken,
           );
 
           if (res.points) {
@@ -581,13 +623,13 @@ function PuzzlePage() {
         const res = await liveCompetitionAPI.submitSolution(
           competitionData._id,
           currentPuzzle.id,
-          ['wrong', 'move'], // Send wrong moves
-          timeTaken
+          ["wrong", "move"], // Send wrong moves
+          timeTaken,
         );
 
-        console.log('Failed attempt submitted to backend:', res);
+        console.log("Failed attempt submitted to backend:", res);
       } catch (error) {
-        console.error('Failed to submit wrong move:', error);
+        console.error("Failed to submit wrong move:", error);
       } finally {
         setSolving(false);
       }
@@ -622,7 +664,7 @@ function PuzzlePage() {
       setSubmitting(true);
 
       const response = await liveCompetitionAPI.submitCompetition(
-        competitionData._id
+        competitionData._id,
       );
 
       if (response.success) {
@@ -732,6 +774,18 @@ function PuzzlePage() {
             >
               Submit Competition
             </button>
+
+            {/* Real-time Rank Info */}
+            <div className={styles.rankCard}>
+              <div className={styles.rankTitle}>Your Current Rank</div>
+              <div className={styles.rankValue}>
+                #{getCurrentUserRank() || "-"}
+                <span className={styles.rankTotal}>
+                  {" "}
+                  / {leaderboard.length}
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -750,17 +804,21 @@ function PuzzlePage() {
                 onWrongMove={handleWrongMove}
                 onBoardStateChange={(fen, moveHistory) => {
                   const puzzleId = currentPuzzle.id || currentPuzzle._id;
-                  setPuzzleBoardStates(prev => ({
+                  setPuzzleBoardStates((prev) => ({
                     ...prev,
-                    [puzzleId]: { fen, moveHistory }
+                    [puzzleId]: { fen, moveHistory },
                   }));
                 }}
-                savedBoardState={puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]}
+                savedBoardState={
+                  puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]
+                }
                 interactive={
                   !solving &&
-                  (isReviewMode || (
-                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "success" &&
-                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "failed"))
+                  (isReviewMode ||
+                    (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
+                      "success" &&
+                      puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
+                        "failed"))
                 }
                 showSolution={showSolution}
               />
@@ -787,11 +845,15 @@ function PuzzlePage() {
               <div className={styles.puzzleMetadata}>
                 <div className={styles.metadataItem}>
                   <span className={styles.metadataLabel}>Level:</span>
-                  <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
+                  <span className={styles.metadataValue}>
+                    {currentPuzzle.level || 1}
+                  </span>
                 </div>
                 <div className={styles.metadataItem}>
                   <span className={styles.metadataLabel}>Rating:</span>
-                  <span className={styles.metadataValue}>{currentPuzzle.rating || 400}</span>
+                  <span className={styles.metadataValue}>
+                    {currentPuzzle.rating || 400}
+                  </span>
                 </div>
               </div>
             </div>
@@ -806,13 +868,17 @@ function PuzzlePage() {
 
               {Math.ceil(puzzles.length / ITEMS_PER_PAGE) > 1 && (
                 <div className={styles.paginationInfo}>
-                  Page {currentFrame + 1} of {Math.ceil(puzzles.length / ITEMS_PER_PAGE)}
+                  Page {currentFrame + 1} of{" "}
+                  {Math.ceil(puzzles.length / ITEMS_PER_PAGE)}
                 </div>
               )}
 
               <div className={styles.navGrid}>
                 {puzzles
-                  .slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE)
+                  .slice(
+                    currentFrame * ITEMS_PER_PAGE,
+                    (currentFrame + 1) * ITEMS_PER_PAGE,
+                  )
                   .map((puzzle, localIndex) => {
                     const index = currentFrame * ITEMS_PER_PAGE + localIndex;
                     const pid = puzzle.id || puzzle._id;
@@ -833,11 +899,13 @@ function PuzzlePage() {
                             if (status === "success") {
                               toast.info("Puzzle already solved!");
                             } else if (status === "failed") {
-                              toast.info("Puzzle failed - you can view but not interact!");
+                              toast.info(
+                                "Puzzle failed - you can view but not interact!",
+                              );
                             }
                           }
                         }}
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: "pointer" }}
                       >
                         {status === "success" ? <FaCheckCircle /> : index + 1}
                       </div>
@@ -846,7 +914,10 @@ function PuzzlePage() {
               </div>
 
               {/* Puzzle Navigation Buttons */}
-              <div className={styles.navControls} style={{ marginBottom: '10px' }}>
+              <div
+                className={styles.navControls}
+                style={{ marginBottom: "10px" }}
+              >
                 <button
                   className={styles.navArrow}
                   onClick={() => {
@@ -866,7 +937,10 @@ function PuzzlePage() {
                 <button
                   className={styles.navArrow}
                   onClick={() => {
-                    const newIndex = Math.min(puzzles.length - 1, currentPuzzleIndex + 1);
+                    const newIndex = Math.min(
+                      puzzles.length - 1,
+                      currentPuzzleIndex + 1,
+                    );
                     setCurrentPuzzleIndex(newIndex);
                     if (newIndex >= (currentFrame + 1) * ITEMS_PER_PAGE) {
                       setCurrentFrame(currentFrame + 1);
@@ -893,7 +967,9 @@ function PuzzlePage() {
                   </button>
                   <button
                     className={styles.pageBtn}
-                    onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))}
+                    onClick={() =>
+                      setCurrentFrame(Math.max(0, currentFrame - 1))
+                    }
                     disabled={currentFrame === 0}
                     title="Previous Page"
                   >
@@ -901,32 +977,43 @@ function PuzzlePage() {
                   </button>
 
                   {(() => {
-                    const totalPages = Math.ceil(puzzles.length / ITEMS_PER_PAGE);
+                    const totalPages = Math.ceil(
+                      puzzles.length / ITEMS_PER_PAGE,
+                    );
                     const visiblePages = [];
 
-                    const addPage = (i) => visiblePages.push(
-                      <button
-                        key={i}
-                        className={`${styles.pageBtn} ${currentFrame === i ? styles.activePage : ''}`}
-                        onClick={() => setCurrentFrame(i)}
-                      >
-                        {i + 1}
-                      </button>
-                    );
-                    const addEllipsis = (key) => visiblePages.push(<span key={key} style={{ padding: '0 4px', color: '#888' }}>...</span>);
+                    const addPage = (i) =>
+                      visiblePages.push(
+                        <button
+                          key={i}
+                          className={`${styles.pageBtn} ${currentFrame === i ? styles.activePage : ""}`}
+                          onClick={() => setCurrentFrame(i)}
+                        >
+                          {i + 1}
+                        </button>,
+                      );
+                    const addEllipsis = (key) =>
+                      visiblePages.push(
+                        <span
+                          key={key}
+                          style={{ padding: "0 4px", color: "#888" }}
+                        >
+                          ...
+                        </span>,
+                      );
 
                     if (totalPages <= 7) {
                       for (let i = 0; i < totalPages; i++) addPage(i);
                     } else {
                       addPage(0);
-                      if (currentFrame > 2) addEllipsis('e1');
+                      if (currentFrame > 2) addEllipsis("e1");
 
                       const start = Math.max(1, currentFrame - 1);
                       const end = Math.min(totalPages - 2, currentFrame + 1);
 
                       for (let i = start; i <= end; i++) addPage(i);
 
-                      if (currentFrame < totalPages - 3) addEllipsis('e2');
+                      if (currentFrame < totalPages - 3) addEllipsis("e2");
                       addPage(totalPages - 1);
                     }
                     return visiblePages;
@@ -934,16 +1021,33 @@ function PuzzlePage() {
 
                   <button
                     className={styles.pageBtn}
-                    onClick={() => setCurrentFrame(Math.min(Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1, currentFrame + 1))}
-                    disabled={currentFrame >= Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1}
+                    onClick={() =>
+                      setCurrentFrame(
+                        Math.min(
+                          Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1,
+                          currentFrame + 1,
+                        ),
+                      )
+                    }
+                    disabled={
+                      currentFrame >=
+                      Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1
+                    }
                     title="Next Page"
                   >
                     ›
                   </button>
                   <button
                     className={styles.pageBtn}
-                    onClick={() => setCurrentFrame(Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1)}
-                    disabled={currentFrame >= Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1}
+                    onClick={() =>
+                      setCurrentFrame(
+                        Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1,
+                      )
+                    }
+                    disabled={
+                      currentFrame >=
+                      Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1
+                    }
                     title="Last Page"
                   >
                     »

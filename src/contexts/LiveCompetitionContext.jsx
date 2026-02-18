@@ -56,15 +56,24 @@ export const LiveCompetitionProvider = ({ children }) => {
           const token = localStorage.getItem("token");
           const user = JSON.parse(localStorage.getItem("user") || "{}");
           if (token && user && !socketService.isConnected) {
-            console.log("[LiveComp] Auto-reconnecting socket after page refresh");
+            console.log(
+              "[LiveComp] Auto-reconnecting socket after page refresh",
+            );
             try {
               const compData = { competition: { id: competitionId, name: "" } };
               await socketService.connect(compData);
               setIsConnected(true);
               setupSocketListeners();
+              socketService.emit("joinCompetition", {
+                competitionId,
+              });
+
               console.log("[LiveComp] Socket reconnected successfully");
             } catch (sockErr) {
-              console.error("[LiveComp] Socket reconnect failed:", sockErr.message);
+              console.error(
+                "[LiveComp] Socket reconnect failed:",
+                sockErr.message,
+              );
               // Not critical — REST polling will cover us
             }
           }
@@ -142,6 +151,10 @@ export const LiveCompetitionProvider = ({ children }) => {
       // Setup socket event listeners
       setupSocketListeners();
 
+      socketService.emit("joinCompetition", {
+        competitionId,
+      });
+
       // Load competition puzzles
       await loadCompetitionPuzzles(competitionId);
 
@@ -178,22 +191,38 @@ export const LiveCompetitionProvider = ({ children }) => {
   const setupSocketListeners = () => {
     // Leaderboard updates (full replacement)
     socketService.on("leaderboardUpdate", (newLeaderboard) => {
-      console.log('[LiveComp] Socket: leaderboardUpdate, entries:', newLeaderboard?.length);
+      console.log(
+        "[LiveComp] Socket: leaderboardUpdate, entries:",
+        newLeaderboard?.length,
+      );
       setLeaderboard(newLeaderboard);
       setLastUpdate(new Date());
     });
 
     // Live score update (incremental — merge single player's score)
     socketService.on("liveScoreUpdate", (data) => {
-      console.log('[LiveComp] Socket: liveScoreUpdate', data.username, data.score);
-      setLeaderboard(prev => {
-        const updated = prev.map(entry =>
-          entry.userId === data.userId?.toString() || entry.userId === data.userId
-            ? { ...entry, score: data.score, puzzlesSolved: data.puzzlesSolved, timeSpent: data.timeSpent, status: data.status }
-            : entry
+      console.log(
+        "[LiveComp] Socket: liveScoreUpdate",
+        data.username,
+        data.score,
+      );
+      setLeaderboard((prev) => {
+        const updated = prev.map((entry) =>
+          entry.userId === data.userId?.toString() ||
+          entry.userId === data.userId
+            ? {
+                ...entry,
+                score: data.score,
+                puzzlesSolved: data.puzzlesSolved,
+                timeSpent: data.timeSpent,
+                status: data.status,
+              }
+            : entry,
         );
         // Re-sort by score descending, then time ascending
-        return updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
+        return updated.sort(
+          (a, b) => b.score - a.score || a.timeSpent - b.timeSpent,
+        );
       });
       setLastUpdate(new Date());
     });
@@ -212,7 +241,7 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     // Participant joined
     socketService.on("participantJoined", (data) => {
-      console.log('[LiveComp] Socket: participantJoined', data.username);
+      console.log("[LiveComp] Socket: participantJoined", data.username);
       toast(`${data.username} joined the competition!`, {
         icon: "👋",
         duration: 3000,
@@ -329,10 +358,10 @@ export const LiveCompetitionProvider = ({ children }) => {
               puzzle.solvedData ||
               (storedState?.status === "solved"
                 ? {
-                  scoreEarned: storedState.scoreEarned,
-                  timeSpent: storedState.timeSpent,
-                  solvedAt: storedState.solvedAt,
-                }
+                    scoreEarned: storedState.scoreEarned,
+                    timeSpent: storedState.timeSpent,
+                    solvedAt: storedState.solvedAt,
+                  }
                 : null),
           };
         });
@@ -434,19 +463,19 @@ export const LiveCompetitionProvider = ({ children }) => {
           prev.map((puzzle) =>
             puzzle._id === puzzleId
               ? {
-                ...puzzle,
-                status: puzzleStatus,
-                isSolved: isCorrect,
-                isFailed: !isCorrect,
-                isLocked: true,
-                solvedData: isCorrect
-                  ? {
-                    scoreEarned: response.scoreEarned,
-                    timeSpent,
-                    solvedAt: new Date(),
-                  }
-                  : null,
-              }
+                  ...puzzle,
+                  status: puzzleStatus,
+                  isSolved: isCorrect,
+                  isFailed: !isCorrect,
+                  isLocked: true,
+                  solvedData: isCorrect
+                    ? {
+                        scoreEarned: response.scoreEarned,
+                        timeSpent,
+                        solvedAt: new Date(),
+                      }
+                    : null,
+                }
               : puzzle,
           ),
         );
@@ -536,11 +565,12 @@ export const LiveCompetitionProvider = ({ children }) => {
     if (!competition?.id || competitionEnded) return;
 
     // Only poll if competition is live
-    const isLive = competition.status === 'LIVE' || competition.status === 'live';
+    const isLive =
+      competition.status === "LIVE" || competition.status === "live";
     if (!isLive) return;
 
     const syncInterval = setInterval(() => {
-      console.log('[LiveComp] Periodic leaderboard sync');
+      console.log("[LiveComp] Periodic leaderboard sync");
       getLeaderboard(competition.id);
     }, 5000);
 
@@ -565,7 +595,10 @@ export const LiveCompetitionProvider = ({ children }) => {
   const getCurrentUserRank = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const userEntry = leaderboard.find(
-      (entry) => entry.userId === user.id || entry.username === user.username,
+      (entry) =>
+        (user.id && entry.userId === user.id) ||
+        (user._id && entry.userId === user._id) ||
+        entry.username === user.username,
     );
     return userEntry ? userEntry.rank : null;
   };
