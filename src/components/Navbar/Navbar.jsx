@@ -170,6 +170,35 @@ function Navbar({ onLoginClick, onSignupClick }) {
           </Link>
 
           <div className={styles.mobileHeaderControls}>
+            {isAuthenticated ? (
+              <button
+                className={styles.mobileProfileBtn}
+                onClick={() => {
+                  navigate('/dashboard');
+                  setIsOpen(false);
+                }}
+                aria-label="Go to dashboard"
+                title="Profile"
+              >
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={`${user.username}'s avatar`} className={styles.mobileProfileImg} />
+                ) : (
+                  <BsPersonCircle size={22} />
+                )}
+              </button>
+            ) : (
+              <button
+                className={styles.mobileProfileBtn}
+                onClick={() => {
+                  onLoginClick();
+                  setIsOpen(false);
+                }}
+                aria-label="Log in"
+                title="Log In"
+              >
+                <BsPersonCircle size={22} />
+              </button>
+            )}
             <button
               className={styles.mobileThemeBtn}
               onClick={() => {

@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './Courses.module.css';
 import { FaChessKnight, FaChessRook, FaChessQueen, FaClock, FaStar, FaArrowRight } from 'react-icons/fa';
 import { PiBookOpenText, PiVideo, PiPencilCircle, PiChartBar } from 'react-icons/pi';
+import SectionHeading from '../../components/SectionHeading/SectionHeading';
 
 function Courses() {
   const courses = [
@@ -44,7 +45,7 @@ function Courses() {
     <section className={styles.coursesWrapper}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Featured Courses</h2>
+          <SectionHeading title="Featured Courses" />
           <p className={styles.subtitle}>
             Structured learning paths designed by grandmasters to take you from beginner to master.
           </p>
@@ -89,7 +90,7 @@ function Courses() {
 
         <div className={styles.featuresWrapper}>
           <div className={styles.header} style={{ marginBottom: '60px' }}>
-            <h3 className={styles.title} style={{ fontSize: '2.5rem' }}>Why Join Our Courses?</h3>
+            <SectionHeading title="Why Join Our Courses?" />
           </div>
           <div className={styles.featuresGrid}>
             <div className={styles.featureItem}>

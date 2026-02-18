@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './Pricing.module.css';
 import { FaCheck, FaTimes, FaPlus } from 'react-icons/fa';
+import SectionHeading from '../../components/SectionHeading/SectionHeading';
 
 function Pricing() {
   const [activeFaq, setActiveFaq] = useState(0);
@@ -78,7 +79,7 @@ function Pricing() {
     <section className={styles.pricingWrapper}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Simple, Transparent Pricing</h2>
+          <SectionHeading title="Simple, Transparent Pricing" />
           <p className={styles.subtitle}>
             Choose the plan that best fits your chess journey.
           </p>
@@ -129,7 +130,7 @@ function Pricing() {
         </div>
 
         <div className={styles.faqSection}>
-          <h3>Frequently<br />Asked Questions</h3>
+          <SectionHeading title="Frequently Asked Questions" center={false} />
           <div className={styles.faqGrid}>
             {faqs.map((faq, index) => (
               <div

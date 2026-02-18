@@ -72,7 +72,7 @@
     align-items: center;
     justify-content: center;
     /* Reduced padding for better fit */
-    padding: 100px 5% 60px;
+    padding: 96px 5% 64px;
     background: var(--bg-primary);
     overflow: hidden;
 }
@@ -674,22 +674,18 @@
 .imageGrid {
     position: absolute;
     bottom: -30px;
-    /* Closer to video */
     left: -20px;
-    /* Offset for asymmetry */
     right: auto;
     display: flex;
-    /* Flex instead of grid for tighter control */
     gap: 1rem;
     padding: 0;
 }
 
 .imageCard {
     position: relative;
-    width: 160px;
-    height: 120px;
-    /* Reduced height */
-    border-radius: 12px;
+    width: 200px;
+    height: 150px;
+    border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--border-medium);
     box-shadow: var(--shadow-md);
@@ -945,12 +941,30 @@
 /* Mobile Large */
 @media (max-width: 768px) {
     .heroWrapper {
-        padding: 100px 1.5rem 60px;
+        padding: 96px 5% 48px;
         min-height: auto;
     }
 
     .container {
         gap: 3rem;
+        text-align: left;
+    }
+
+    .heroContent {
+        align-items: flex-start;
+    }
+
+    .badge,
+    .trustRow {
+        margin: 0;
+    }
+
+    .statsRow {
+        justify-content: flex-start;
+    }
+
+    .heroSubtitle {
+        text-align: left;
     }
 
     .titlePrimary,
@@ -993,11 +1007,16 @@
     .imageGrid {
         position: relative;
         bottom: 0;
+        left: 0;
+        right: 0;
         margin-top: 1rem;
         padding: 0;
+        width: 100%;
     }
 
     .imageCard {
+        flex: 1;
+        width: auto;
         height: 160px;
     }
 
@@ -1063,7 +1082,9 @@
     }
 
     .imageCard {
-        height: 120px;
+        flex: 1;
+        width: auto;
+        height: 140px;
         border-radius: 12px;
     }
 

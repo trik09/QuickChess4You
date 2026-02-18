@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './About.module.css';
 import { FaChess, FaTrophy, FaUsers, FaGraduationCap } from 'react-icons/fa';
+import SectionHeading from '../../components/SectionHeading/SectionHeading';
 import { PiMedal, PiLightbulb, PiStrategy, PiTrophy, PiGlobe } from 'react-icons/pi';
 
 function About() {
@@ -19,7 +20,7 @@ function About() {
         {/* Mission & Stats */}
         <div className={styles.missionSection}>
           <div className={styles.missionContent}>
-            <h3>Our Mission</h3>
+            <SectionHeading title="Our Mission" center={false} />
             <p>
               At Quick Chess For You, we believe that chess is more than just a game—it's a tool for developing critical thinking,
               strategic planning, and mental discipline. Our mission is to make high-quality chess education accessible to everyone,

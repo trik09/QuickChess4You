@@ -1,5 +1,5 @@
 .coursesWrapper {
-  padding: 100px 5%;
+  padding: 96px 5%;
   background: var(--bg-light);
   position: relative;
 }
@@ -11,7 +11,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: 80px;
+  margin-bottom: 64px;
 }
 
 .title {
@@ -32,8 +32,8 @@
 .coursesGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 40px;
-  margin-bottom: 100px;
+  gap: 32px;
+  margin-bottom: 96px;
 }
 
 .courseCard {
@@ -56,7 +56,7 @@
 }
 
 .cardHeader {
-  padding: 30px;
+  padding: 32px;
   background: linear-gradient(135deg, rgba(181, 136, 99, 0.1), rgba(181, 136, 99, 0.05));
   border-bottom: 1px solid var(--border-light);
   position: relative;
@@ -103,7 +103,7 @@
 }
 
 .cardBody {
-  padding: 30px;
+  padding: 32px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -196,22 +196,22 @@
   padding: 0;
   border: none;
   box-shadow: none;
-  margin-top: 120px;
+  margin-top: 96px;
 }
 
 .featuresGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 30px;
-  margin-top: 60px;
+  gap: 32px;
+  margin-top: 48px;
 }
 
 .featureItem {
   background: var(--bg-white);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 40px 30px;
-  border-radius: 20px;
+  padding: 32px;
+  border-radius: 24px;
   text-align: left;
   transition: all 0.3s ease;
   border: 1px solid var(--border-color);
@@ -276,6 +276,16 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .header {
+    text-align: left;
+    margin-bottom: 40px;
+  }
+
+  .subtitle {
+    text-align: left;
+    margin: 0;
+  }
+
   .title {
     font-size: 2.25rem;
   }

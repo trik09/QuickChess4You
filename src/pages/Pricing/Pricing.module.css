@@ -1,5 +1,5 @@
 .pricingWrapper {
-  padding: 100px 5%;
+  padding: 96px 5%;
   background: var(--bg-white);
   /* Contrast with potential light bg of surrounding sections */
   position: relative;
@@ -12,7 +12,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: 80px;
+  margin-bottom: 64px;
 }
 
 .title {
@@ -30,15 +30,15 @@
 .pricingGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
+  gap: 32px;
   align-items: flex-start;
-  margin-bottom: 80px;
+  margin-bottom: 96px;
 }
 
 .priceCard {
   background: var(--bg-white);
   border-radius: 24px;
-  padding: 40px;
+  padding: 32px;
   border: 1px solid var(--border-color);
   position: relative;
   transition: all 0.3s ease;
@@ -321,7 +321,16 @@
 
 @media (max-width: 768px) {
   .pricingWrapper {
-    padding: 60px 5%;
+    padding: 48px 5%;
+  }
+
+  .header {
+    text-align: left;
+    margin-bottom: 40px;
+  }
+
+  .subtitle {
+    text-align: left;
   }
 
   .title {

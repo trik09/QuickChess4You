@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Coaching.module.css';
 import { FaVideo, FaCalendar, FaChartLine, FaUsers } from 'react-icons/fa';
+import SectionHeading from '../../components/SectionHeading/SectionHeading';
 
 function Coaching() {
   const coaches = [
@@ -23,7 +24,7 @@ function Coaching() {
     <section className={styles.coachingWrapper}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2 className={styles.title}>Personalized Mastery</h2>
+          <SectionHeading title="Personalized Mastery" />
           <p className={styles.subtitle}>
             Accelerate your growth with one-on-one guidance from experienced chess mentors.
           </p>
@@ -61,7 +62,7 @@ function Coaching() {
         </div>
 
         <div className={styles.coachesSection}>
-          <h3 className={styles.title} style={{ fontSize: '2rem' }}>Meet Your Mentor</h3>
+          <SectionHeading title="Meet Your Mentor" />
 
           <div className={styles.coachesGrid}>
             {coaches.map((coach, index) => (

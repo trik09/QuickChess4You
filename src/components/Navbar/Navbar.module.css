@@ -328,6 +328,7 @@
 }
 
 /* Reset Button Styles for Icons */
+.mobileProfileBtn,
 .mobileThemeBtn,
 .closeBtn {
   background: none;
@@ -341,11 +342,20 @@
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
+.mobileProfileImg {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+:global(html[data-theme='dark']) .mobileProfileBtn,
 :global(html[data-theme='dark']) .mobileThemeBtn,
 :global(html[data-theme='dark']) .closeBtn {
   color: #e5e5e5;
 }
 
+.mobileProfileBtn:hover,
 .mobileThemeBtn:hover,
 .closeBtn:hover {
   color: rgb(181, 135, 99);
