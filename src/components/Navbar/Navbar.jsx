@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BsGear, BsX } from "react-icons/bs";
+import { BsGear, BsX, BsPersonCircle } from "react-icons/bs";
 import { useAuth } from "../../contexts/AuthContext";
 import ThemeModal from "../ThemeModal/ThemeModal";
 import styles from "./Navbar.module.css";
@@ -122,7 +122,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
                       {user?.avatar ? (
                         <img src={user.avatar} alt={`${user.username}'s avatar`} />
                       ) : (
-                        user?.username?.[0]?.toUpperCase() || "U"
+                        <BsPersonCircle className={styles.profileIcon} />
                       )}
                     </div>
                   </button>

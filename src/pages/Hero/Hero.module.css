@@ -928,7 +928,8 @@
         justify-content: center;
     }
 
-    .ctaGroup {
+    .ctaGroup,
+    .ctaGroupRight {
         justify-content: center;
     }
 
@@ -962,17 +963,16 @@
     }
 
     .statsRow {
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: center;
         gap: 1.5rem;
         padding: 1rem 0;
     }
 
-    .statDivider {
-        display: none;
-    }
-
-    .ctaGroup {
+    .ctaGroup,
+    .ctaGroupRight {
         flex-direction: column;
+        align-items: center;
         width: 100%;
     }
 

@@ -163,6 +163,43 @@
   transform: rotate(45deg);
 }
 
+/* User Avatar / Profile Icon */
+.userInfo {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profileIcon {
+  font-size: 1.75rem;
+  color: #4a4a4a;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+:global(html[data-theme='dark']) .profileIcon {
+  color: #a0a0a0;
+}
+
+.profileIcon:hover {
+  color: rgb(181, 135, 99);
+  transform: scale(1.1);
+}
 
 /* Login & Signup Buttons */
 .loginBtn {

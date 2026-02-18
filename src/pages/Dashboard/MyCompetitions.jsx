@@ -21,32 +21,34 @@ const MyCompetitions = () => {
             <div className={styles.contentGrid}>
                 {competitions.length > 0 ? (
                     <div className={styles.card}>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th>Event Name</th>
-                                    <th>Date</th>
-                                    <th>Rank</th>
-                                    <th>Score</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {competitions.map(comp => (
-                                    <tr key={comp.id}>
-                                        <td>{comp.name}</td>
-                                        <td>{comp.date}</td>
-                                        <td>{comp.rank}</td>
-                                        <td>{comp.score}</td>
-                                        <td>
-                                            <span className={`${styles.statusBadge} ${styles[comp.status.toLowerCase()]}`}>
-                                                {comp.status}
-                                            </span>
-                                        </td>
+                        <div className={styles.tableWrapper}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Event Name</th>
+                                        <th>Date</th>
+                                        <th>Rank</th>
+                                        <th>Score</th>
+                                        <th>Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {competitions.map(comp => (
+                                        <tr key={comp.id}>
+                                            <td>{comp.name}</td>
+                                            <td>{comp.date}</td>
+                                            <td>{comp.rank}</td>
+                                            <td>{comp.score}</td>
+                                            <td>
+                                                <span className={`${styles.statusBadge} ${styles[comp.status.toLowerCase()]}`}>
+                                                    {comp.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ) : (
                     <div className={styles.emptyState}>

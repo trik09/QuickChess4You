@@ -26,6 +26,11 @@
     border: 1px solid var(--border-color);
 }
 
+.tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;

@@ -35,32 +35,34 @@ const PuzzleHistory = () => {
             </div>
 
             <div className={styles.card}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Theme</th>
-                            <th>Rating</th>
-                            <th>Result</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {history.map(item => (
-                            <tr key={item.id}>
-                                <td>{item.theme}</td>
-                                <td>{item.rating}</td>
-                                <td>
-                                    <span className={item.result === 'Solved' ? styles.textSuccess : styles.textDanger}>
-                                        {item.result}
-                                    </span>
-                                </td>
-                                <td>{item.date}</td>
-                                <td><button className={styles.linkBtn}>Review</button></td>
+                <div className={styles.tableWrapper}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th>Theme</th>
+                                <th>Rating</th>
+                                <th>Result</th>
+                                <th>Date</th>
+                                <th>Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {history.map(item => (
+                                <tr key={item.id}>
+                                    <td>{item.theme}</td>
+                                    <td>{item.rating}</td>
+                                    <td>
+                                        <span className={item.result === 'Solved' ? styles.textSuccess : styles.textDanger}>
+                                            {item.result}
+                                        </span>
+                                    </td>
+                                    <td>{item.date}</td>
+                                    <td><button className={styles.linkBtn}>Review</button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
