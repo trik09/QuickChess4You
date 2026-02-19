@@ -370,7 +370,15 @@
 }
 
 @media (max-width: 600px) {
+
+  /* Existing 600px query content */
   .awardIcon {
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
   }
 }
