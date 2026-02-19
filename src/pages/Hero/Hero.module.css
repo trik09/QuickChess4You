@@ -163,7 +163,7 @@
 .heroContent {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 0.8rem;
     max-width: 600px;
 }
 
@@ -289,7 +289,7 @@
     color: var(--text-secondary);
     font-weight: 400;
     max-width: 500px;
-    margin-top: 1rem;
+    /* margin-top: 1rem; */
 }
 
 .highlight {
@@ -381,7 +381,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3.5rem;
+    gap: 2rem;
     /* Space between visual and buttons */
     width: 100%;
 }
@@ -392,7 +392,7 @@
     justify-content: start;
     gap: 1.5rem;
     width: 100%;
-    margin-top: 1rem;
+    /* margin-top: 1rem; */
     z-index: 20;
     /* Ensure above loose elements */
 }
@@ -946,7 +946,7 @@
     }
 
     .container {
-        gap: 3rem;
+        gap: 2rem;
         text-align: left;
     }
 
@@ -1028,7 +1028,7 @@
 /* Mobile Small */
 @media (max-width: 480px) {
     .heroWrapper {
-        padding: 90px 1rem 40px;
+        padding: 90px 1rem 24px;
     }
 
     .titlePrimary,

@@ -47,9 +47,9 @@
 .missionSection {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
+  gap: 24px;
   align-items: center;
-  margin-bottom: 96px;
+  margin-bottom: 24px;
 }
 
 .missionContent h3 {

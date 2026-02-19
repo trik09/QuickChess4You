@@ -32,7 +32,7 @@
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 32px;
   align-items: flex-start;
-  margin-bottom: 96px;
+  margin-bottom: 24px;
 }
 
 .priceCard {
