@@ -29,6 +29,7 @@ function PuzzlePage() {
     getLeaderboard,
     leaderboard,
     getCurrentUserRank,
+    ensureSocketConnection,
   } = useLiveCompetition();
 
   // State
@@ -36,7 +37,7 @@ function PuzzlePage() {
   const [puzzles, setPuzzles] = useState([]);
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0); // For pagination (0 = 1-20, 1 = 21-40, etc.)
-  const ITEMS_PER_PAGE = 20;
+  const ITEMS_PER_PAGE = 10;
   const [loading, setLoading] = useState(true);
   const [solving, setSolving] = useState(false);
   const [isLiveCompetition, setIsLiveCompetition] = useState(false);
@@ -205,6 +206,10 @@ function PuzzlePage() {
               );
             }
 
+            // Immediately explicitly fetch the leaderboard so rank is available
+            getLeaderboard(paramCompetitionId);
+            ensureSocketConnection(paramCompetitionId);
+
             // Fetch DETAILED puzzles with user's solved status
             const puzzleRes =
               await liveCompetitionAPI.getPuzzles(paramCompetitionId);
@@ -228,10 +233,12 @@ function PuzzlePage() {
                 puzzleType: p.type || "normal",
                 level: p.level || 1,
                 rating: p.rating || 400,
+                firstMoveBy: p.firstMoveBy || 'human',
                 isSolved: p.isSolved,
                 isFailed: p.isFailed,
                 status: p.status,
               }));
+              console.log("Normalized puzzles from API:", normalized.map(n => ({ id: n.id, title: n.title, firstMoveBy: n.firstMoveBy })));
               setPuzzles(normalized);
 
               // Update Statuses map from server data
@@ -312,6 +319,7 @@ function PuzzlePage() {
                 description: p.description || "",
                 kidsConfig: p.kidsConfig,
                 puzzleType: p.type || "normal",
+                firstMoveBy: p.firstMoveBy || 'human',
                 isSolved: false,
                 isFailed: false,
                 status: "unsolved",
@@ -394,6 +402,7 @@ function PuzzlePage() {
             puzzleType: p.type,
             level: p.level || 1,
             rating: p.rating || 400,
+            firstMoveBy: p.firstMoveBy || 'human',
           }));
         setPuzzles(normalized);
 
@@ -739,6 +748,8 @@ function PuzzlePage() {
         {competitionData && (
           <div className={styles.timerCard}>
             <div className={styles.statCard}>
+              {/* Turn Indicator */}
+
               <div className={styles.timerDisplay}>
                 <FaClock className={styles.timerIcon} />
                 <div className={styles.statLabel}>Time Left</div>
@@ -775,15 +786,40 @@ function PuzzlePage() {
               Submit Competition
             </button>
 
-            {/* Real-time Rank Info */}
+            {/* Real-time Rank Card */}
             <div className={styles.rankCard}>
-              <div className={styles.rankTitle}>Your Current Rank</div>
-              <div className={styles.rankValue}>
-                #{getCurrentUserRank() || "-"}
-                <span className={styles.rankTotal}>
-                  {" "}
-                  / {leaderboard.length}
-                </span>
+              <div className={styles.rankHeader}>
+                <span className={styles.rankTrophy}>♟️</span>
+                <span className={styles.rankTitle}>Your Rank</span>
+                <span className={styles.rankTrophy}>♟️</span>
+
+              </div>
+              <div className={styles.rankBody}>
+                <div className={styles.rankNumber}>
+                  #{getCurrentUserRank() || "–"}
+                </div>
+                {/* <div className={styles.rankDivider}></div> */}
+                {/* <div className={styles.rankMeta}>
+                  <div className={styles.rankMetaItem}>
+                    <span className={styles.rankMetaValue}>{Math.round(score)}</span>
+                    <span className={styles.rankMetaLabel}>Pts</span>
+                  </div>
+                  <div className={styles.rankMetaItem}>
+                    <span className={styles.rankMetaValue}>{solvedCount}</span>
+                    <span className={styles.rankMetaLabel}>Solved</span>
+                  </div>
+                </div> */}
+              </div>
+              <div className={styles.rankFooter}>
+                <div className={styles.rankProgressBar}>
+                  <div
+                    className={styles.rankProgressFill}
+                    style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }}
+                  ></div>
+                </div>
+                <div className={styles.rankParticipants}>
+                  {leaderboard.length} participant{leaderboard.length !== 1 ? 's' : ''}
+                </div>
               </div>
             </div>
           </div>
@@ -800,6 +836,7 @@ function PuzzlePage() {
                 alternativeSolutions={currentPuzzle.alternativeSolutions}
                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                 kidsConfig={currentPuzzle.kidsConfig}
+                firstMoveBy={currentPuzzle.firstMoveBy || 'human'}
                 onPuzzleSolved={handlePuzzleSolved}
                 onWrongMove={handleWrongMove}
                 onBoardStateChange={(fen, moveHistory) => {
@@ -818,7 +855,7 @@ function PuzzlePage() {
                     (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
                       "success" &&
                       puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
-                        "failed"))
+                      "failed"))
                 }
                 showSolution={showSolution}
               />
@@ -841,7 +878,7 @@ function PuzzlePage() {
                 </p>
               )}
 
-              {/* Level and Rating */}
+              {/* Level and Difficulty */}
               <div className={styles.puzzleMetadata}>
                 <div className={styles.metadataItem}>
                   <span className={styles.metadataLabel}>Level:</span>
@@ -850,9 +887,9 @@ function PuzzlePage() {
                   </span>
                 </div>
                 <div className={styles.metadataItem}>
-                  <span className={styles.metadataLabel}>Rating:</span>
-                  <span className={styles.metadataValue}>
-                    {currentPuzzle.rating || 400}
+                  <span className={styles.metadataLabel}>Difficulty:</span>
+                  <span className={styles.metadataValue} style={{ textTransform: 'capitalize' }}>
+                    {currentPuzzle.difficulty || 'Medium'}
                   </span>
                 </div>
               </div>
@@ -931,7 +968,7 @@ function PuzzlePage() {
                   title="Previous Puzzle"
                   style={{ flex: 1 }} // Make them wide
                 >
-                  ← Prev Puzzle
+                  ← Prev
                 </button>
 
                 <button
@@ -950,7 +987,7 @@ function PuzzlePage() {
                   title="Next Puzzle"
                   style={{ flex: 1 }} // Make them wide
                 >
-                  Next Puzzle →
+                  Next  →
                 </button>
               </div>
 
@@ -984,13 +1021,13 @@ function PuzzlePage() {
 
                     const addPage = (i) =>
                       visiblePages.push(
-                        <button
-                          key={i}
-                          className={`${styles.pageBtn} ${currentFrame === i ? styles.activePage : ""}`}
-                          onClick={() => setCurrentFrame(i)}
-                        >
-                          {i + 1}
-                        </button>,
+                        // <button
+                        //   key={i}
+                        //   className={`${styles.pageBtn} ${currentFrame === i ? styles.activePage : ""}`}
+                        //   onClick={() => setCurrentFrame(i)}
+                        // >
+                        //   {i + 1}
+                        // </button>,
                       );
                     const addEllipsis = (key) =>
                       visiblePages.push(

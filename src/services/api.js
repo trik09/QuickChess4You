@@ -291,6 +291,18 @@ export const adminAPI = {
     );
   },
 
+  // Delete ALL puzzles
+  deleteAllPuzzles: async () => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      "/puzzle/delete-all-puzzles",
+      {
+        method: "DELETE",
+      },
+      adminToken
+    );
+  },
+
   // Import puzzles from Lichess
   importFromLichess: async (count = 50) => {
     const adminToken = localStorage.getItem("atoken");

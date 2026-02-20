@@ -163,24 +163,32 @@ function DailyTrainingPage() {
                         )}
 
                         {/* To Move Indicator - Highlighted */}
-                        {currentPuzzle && (
-                            <div className={styles.toMoveSection}>
-                                <div className={styles.toMoveLabel}>Turn to Move:</div>
-                                <div className={styles.toMoveIndicator}>
-                                    <div
-                                        className={`${styles.colorDot} ${currentPuzzle.fen.split(" ")[1] === "w"
-                                            ? styles.whiteDot
-                                            : styles.blackDot
-                                            }`}
-                                    ></div>
-                                    <span className={styles.toMoveText}>
-                                        {currentPuzzle.fen.split(" ")[1] === "w"
-                                            ? "White"
-                                            : "Black"}
-                                    </span>
+                        {currentPuzzle && (() => {
+                            const fenTurn = currentPuzzle.fen.split(" ")[1]; // 'w' or 'b' from FEN
+                            const isComputerFirst = currentPuzzle.firstMoveBy === 'computer';
+                            // If computer goes first, student plays the opposite color
+                            const studentColor = isComputerFirst
+                                ? (fenTurn === 'w' ? 'b' : 'w')
+                                : fenTurn;
+                            return (
+                                <div className={styles.toMoveSection}>
+                                    <div className={styles.toMoveLabel}>
+                                        {isComputerFirst ? 'You Play As:' : 'Turn to Move:'}
+                                    </div>
+                                    <div className={styles.toMoveIndicator}>
+                                        <div
+                                            className={`${styles.colorDot} ${studentColor === "w"
+                                                ? styles.whiteDot
+                                                : styles.blackDot
+                                                }`}
+                                        ></div>
+                                        <span className={styles.toMoveText}>
+                                            {studentColor === "w" ? "White" : "Black"}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
 
                         {/* Level and Rating */}
                         {currentPuzzle && (
@@ -239,10 +247,11 @@ function DailyTrainingPage() {
                             <ChessBoard
                                 key={`${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}`}
                                 fen={currentPuzzle.fen}
-                                solution={currentPuzzle.solution}
+                                solution={currentPuzzle.solution || currentPuzzle.solutionMoves}
                                 alternativeSolutions={currentPuzzle.alternativeSolutions}
                                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                                 kidsConfig={currentPuzzle.kidsConfig}
+                                firstMoveBy={currentPuzzle.firstMoveBy || 'human'}
                                 onPuzzleSolved={handlePuzzleSolved}
                                 onWrongMove={handleWrongMove}
                                 onBoardStateChange={(fen, moveHistory) => {

@@ -89,8 +89,10 @@ const CompetitionLobby = () => {
       if (data && data.leaderboard) {
         setParticipants(data.leaderboard);
       }
-      // DON'T navigate - lobby will convert to leaderboard view
-      toast.success("Competition Ended! Calculating final rankings...");
+      toast.success("Competition Ended! Redirecting to Leaderboard...");
+      setTimeout(() => {
+        navigate(`/leaderboard/${id}`);
+      }, 1500);
     };
 
     const onLeaderboardUpdate = (leaderboard) => {
@@ -150,8 +152,11 @@ const CompetitionLobby = () => {
     }
   }, [liveLeaderboard, isConnected]);
 
-  // NO auto-redirect when competition ends - lobby converts to leaderboard view
-
+  useEffect(() => {
+    if (competitionState === "ENDED") {
+      navigate(`/leaderboard/${id}`, { replace: true });
+    }
+  }, [competitionState, id, navigate]);
   // Main Load Effect
   useEffect(() => {
     async function loadLobby() {
@@ -239,8 +244,9 @@ const CompetitionLobby = () => {
     if (diff <= 0) {
       if (competitionState === "UPCOMING") {
         setTimeLeft("Starting...");
-      } else {
+      } else if (competitionState === "ENDED") {
         setTimeLeft("Competition Ended!");
+        navigate(`/leaderboard/${id}`);
       }
       return;
     }
@@ -376,203 +382,12 @@ const CompetitionLobby = () => {
   if (loading) return <div className={styles.loadingContainer}>Loading...</div>;
   if (error) return <div className={styles.errorContainer}>{error}</div>;
 
-  // ENHANCED LEADERBOARD VIEW FOR ENDED COMPETITIONS
+  // IF competition state is ENDED, the useEffect above will redirect the user.
+  // In the split second before redirect, we can show a brief loading or transition message.
   if (competitionState === "ENDED") {
-    const top3 = participants.slice(0, 3);
-    const totalPuzzles = competition?.totalPuzzles || competition?.puzzles?.length || 20;
-
-    // Stats for static display
-    const averageAccuracy = participants.length > 0
-      ? Math.round(participants.reduce((acc, curr) => acc + (calculateAccuracy(curr.puzzlesSolved, totalPuzzles)), 0) / participants.length)
-      : 0;
-
     return (
-      <div className={styles.leaderboardPage}>
-        {/* Page Header */}
-        <div className={styles.pageHeader}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.pageTitle}>{competition?.title || competition?.name}</h1>
-            <div className={styles.competitionMeta}>
-              <span className={styles.metaItem}>
-                <FaClock /> {competition?.duration} MIN
-              </span>
-              <span className={styles.metaItem}>
-                <FaUserCircle /> {participants.length} PLAYERS
-              </span>
-              <span className={styles.statusEnded}>
-                ✅ COMPLETED
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content: Podium + Leaderboard */}
-        <div className={styles.mainContent}>
-          {/* Left Side: Podium Display */}
-          <div className={styles.podiumSection}>
-            <h2 className={styles.sectionTitle}>
-              <FaTrophy /> TOP CHAMPIONS
-            </h2>
-
-            <div className={styles.podium}>
-              {/* 2nd Place */}
-              <div className={`${styles.podiumPlace} ${styles.second}`}>
-                <div className={styles.podiumAvatarContainer}>
-                  <div className={styles.avatarCircle}>
-                    {top3[1] ? top3[1].username?.[0]?.toUpperCase() : '?'}
-                  </div>
-                  {top3[1] && <div className={`${styles.medalIcon} ${styles.medal2}`}><FaMedal /></div>}
-                </div>
-                <div className={styles.podiumName}>{top3[1]?.username || 'Empty'}</div>
-                <div className={styles.podiumScore}>{top3[1]?.score || 0} PTS</div>
-                <div className={styles.podiumBar}>
-                  {top3[1] && (
-                    <div className={styles.barDetails}>
-                      <span>{calculateAccuracy(top3[1].puzzlesSolved, totalPuzzles)}% ACC</span>
-                      <span>{formatTime(top3[1].timeSpent)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 1st Place */}
-              <div className={`${styles.podiumPlace} ${styles.first}`}>
-                <div className={styles.podiumAvatarContainer}>
-                  <FaCrown className={styles.crownIcon} />
-                  <div className={styles.avatarCircle}>
-                    {top3[0] ? top3[0].username?.[0]?.toUpperCase() : '?'}
-                  </div>
-                  {top3[0] && <div className={`${styles.medalIcon} ${styles.medal1}`}><FaMedal /></div>}
-                </div>
-                <div className={styles.podiumName}>{top3[0]?.username || 'Winner'}</div>
-                <div className={styles.podiumScore}>{top3[0]?.score || 0} PTS</div>
-                <div className={styles.podiumBar}>
-                  {top3[0] && (
-                    <div className={styles.barDetails}>
-                      <span>{calculateAccuracy(top3[0].puzzlesSolved, totalPuzzles)}% ACC</span>
-                      <span>{formatTime(top3[0].timeSpent)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 3rd Place */}
-              <div className={`${styles.podiumPlace} ${styles.third}`}>
-                <div className={styles.podiumAvatarContainer}>
-                  <div className={styles.avatarCircle}>
-                    {top3[2] ? top3[2].username?.[0]?.toUpperCase() : '?'}
-                  </div>
-                  {top3[2] && <div className={`${styles.medalIcon} ${styles.medal3}`}><FaMedal /></div>}
-                </div>
-                <div className={styles.podiumName}>{top3[2]?.username || 'Empty'}</div>
-                <div className={styles.podiumScore}>{top3[2]?.score || 0} PTS</div>
-                <div className={styles.podiumBar}>
-                  {top3[2] && (
-                    <div className={styles.barDetails}>
-                      <span>{calculateAccuracy(top3[2].puzzlesSolved, totalPuzzles)}% ACC</span>
-                      <span>{formatTime(top3[2].timeSpent)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Highlights (Info Cards) */}
-            <div className={styles.infoCards}>
-              <div className={styles.infoCard}>
-                <div className={styles.cardIcon}>
-                  <FaBolt />
-                </div>
-                <div className={styles.cardContent}>
-                  <h4>Fastest Solver</h4>
-                  <p>
-                    {participants.sort((a, b) => (a.timeSpent || 999999) - (b.timeSpent || 999999))[0]?.username || 'N/A'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Extra Static Stats Section */}
-            <div className={styles.staticStatsGrid}>
-              <div className={styles.staticStatCard}>
-                <span className={styles.staticStatLabel}>Avg Accuracy</span>
-                <span className={styles.staticStatValue}>{averageAccuracy}%</span>
-                <span className={styles.staticStatTrend}><FaArrowUp /> +2.4% vs Avg</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Full Leaderboard Table */}
-          <div className={styles.tableContainer}>
-            <div className={styles.tableContainerHeader}>
-              <div className={styles.tableTitle}>
-                <FaChartLine /> FULL RANKINGS
-              </div>
-              <div className={styles.tableSubTitle}>
-                Showing 1-{participants.length} of {participants.length}
-              </div>
-            </div>
-
-            <div className={styles.tableHeader}>
-              <span>Rank</span>
-              <span>Player</span>
-              <span>Score</span>
-              <span>Acc</span>
-              <span className={styles.alignRight}>Time</span>
-              <span className={styles.alignRight}>Progress</span>
-            </div>
-
-            <div className={styles.tableBody}>
-              {participants.map((p, idx) => (
-                <div
-                  key={idx}
-                  className={`${styles.tableRow} ${p.userId === user?.id ? styles.currentUser : ''}`}
-                >
-                  <div className={styles.rankCol}>
-                    {idx === 0 && <FaTrophy className={styles.medal1} />}
-                    {idx === 1 && <FaMedal className={styles.medal2} />}
-                    {idx === 2 && <FaMedal className={styles.medal3} />}
-                    {idx > 2 && `#${idx + 1}`}
-                  </div>
-
-                  <div className={styles.playerCol}>
-                    <div className={styles.playerAvatarSmall}>
-                      {p.username?.[0]?.toUpperCase()}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ lineHeight: 1 }}>{p.username || p.name}</span>
-                      {p.userId === user?.id && <span className={styles.youTag}>YOU</span>}
-                    </div>
-                  </div>
-
-                  <div className={styles.scoreCol}>
-                    {p.score || 0}
-                  </div>
-
-                  <div className={styles.accuracyVal}>
-                    {calculateAccuracy(p.puzzlesSolved, totalPuzzles)}%
-                  </div>
-
-                  <div className={`${styles.timeCol} ${styles.alignRight}`}>
-                    {formatTime(p.timeSpent)}
-                  </div>
-
-                  <div className={styles.alignRight} style={{ paddingLeft: '1rem' }}>
-                    {/* Accuracy Bar as Progress */}
-                    <div className={styles.accuracyWrapper}>
-                      <div className={styles.accuracyBg}>
-                        <div
-                          className={styles.accuracyFill}
-                          style={{ width: `${calculateAccuracy(p.puzzlesSolved, totalPuzzles)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className={styles.loadingContainer}>
+        <h2>Redirecting to Leaderboard...</h2>
       </div>
     );
   }
@@ -686,62 +501,114 @@ const CompetitionLobby = () => {
         </div>
       </div>
 
-      {/* Participants Card */}
-      <div className={`${styles.lobbyCard} ${styles.participantsCard}`}>
-        <h2 className={styles.sectionTitle}>
-          Participants ({participants.length})
-        </h2>
-        <div className={styles.tableResponsive}>
-          <table className={styles.participantsTable}>
-            <thead>
-              <tr>
-                <th className={styles.thRank}>Rank</th>
-                <th className={styles.thPlayer}>Player</th>
-                <th className={styles.thStatus}>Status</th>
-                <th className={styles.thPuzzles}>Score</th>
-                <th className={styles.thTime}>Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {participants.length > 0 ? (
-                participants.map((p, idx) => (
-                  <tr
-                    key={idx}
-                    className={`${p.userId === user?.id ? styles.rowHighlight : ""}`}
-                  >
-                    <td className={styles.tdRank}>#{idx + 1}</td>
-                    <td className={styles.tdPlayer}>
-                      <div className={styles.playerInfo}>
-                        {p.userId === user?.id ? (
-                          <span className={`${styles.playerAvatar} ${styles.self}`}>You</span>
-                        ) : (
-                          <span className={styles.playerAvatar}>
-                            <FaUserCircle />
+      {/* Main Content Split Layout */}
+      <div className={styles.lobbyMainContent}>
+        {/* Participants Card */}
+        <div className={`${styles.lobbyCard} ${styles.participantsCard}`}>
+          <h2 className={styles.sectionTitle}>
+            Participants ({participants.length})
+          </h2>
+          <div className={styles.tableResponsive}>
+            <table className={styles.participantsTable}>
+              <thead>
+                <tr>
+                  <th className={styles.thRank}>Rank</th>
+                  <th className={styles.thPlayer}>Player</th>
+                  <th className={styles.thStatus}>Status</th>
+                  <th className={styles.thPuzzles}>Score</th>
+                  <th className={styles.thTime}>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.length > 0 ? (
+                  participants.map((p, idx) => (
+                    <tr
+                      key={idx}
+                      className={`${p.userId === user?.id ? styles.rowHighlight : ""}`}
+                    >
+                      <td className={styles.tdRank}>#{idx + 1}</td>
+                      <td className={styles.tdPlayer}>
+                        <div className={styles.playerInfo}>
+                          {p.userId === user?.id ? (
+                            <span className={`${styles.playerAvatar} ${styles.self}`}>You</span>
+                          ) : (
+                            <span className={styles.playerAvatar}>
+                              <FaUserCircle />
+                            </span>
+                          )}
+                          <span className={styles.playerName}>
+                            {p.username || p.name || "User"}
                           </span>
-                        )}
-                        <span className={styles.playerName}>
-                          {p.username || p.name || "User"}
+                        </div>
+                      </td>
+                      <td className={styles.tdStatus}>
+                        <span className={`${styles.statusBadge} ${styles[getStatus(p).toLowerCase()] || styles.defaultStatus}`}>
+                          {getStatus(p)}
                         </span>
-                      </div>
-                    </td>
-                    <td className={styles.tdStatus}>{getStatus(p)}</td>
-                    <td className={styles.tdPuzzles}>
-                      <strong>{p.puzzlesSolved || 0}</strong> / {competition?.totalPuzzles || competition?.puzzles?.length || 0}
-                    </td>
-                    <td className={styles.tdTime}>
-                      {p.timeSpent ? formatTime(p.timeSpent) : "--"}
+                      </td>
+                      <td className={styles.tdPuzzles}>
+                        <div className={styles.scoreContainer}>
+                          <span className={styles.scoreHighlight}>{p.puzzlesSolved || 0}</span>
+                          <span className={styles.scoreSeparator}>/</span>
+                          <span className={styles.scoreTotal}>{competition?.totalPuzzles || competition?.puzzles?.length || 0}</span>
+                        </div>
+                      </td>
+                      <td className={styles.tdTime}>
+                        <span className={styles.timeBadge}>
+                          {p.timeSpent ? formatTime(p.timeSpent) : "--:--"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className={styles.emptyRow}>
+                      No participants yet.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className={styles.emptyRow}>
-                    No participants yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Rules Card */}
+        <div className={`${styles.lobbyCard} ${styles.rulesCard}`}>
+          <h2 className={styles.sectionTitle}>
+            <FaFire className={styles.titleIcon} /> Rules & Guidelines
+          </h2>
+          <ul className={styles.rulesList}>
+            <li>
+              <div className={styles.ruleIconWrapper}>
+                <FaCheckCircle className={styles.ruleIcon} />
+              </div>
+              <span><strong>Stable Connection:</strong> Ensure a stable internet connection before joining.</span>
+            </li>
+            <li>
+              <div className={styles.ruleIconWrapper}>
+                <FaClock className={styles.ruleIcon} />
+              </div>
+              <span><strong>Time Management:</strong> Keep an eye on the timer; solve puzzles within the duration.</span>
+            </li>
+            <li>
+              <div className={styles.ruleIconWrapper}>
+                <FaBolt className={styles.ruleIcon} />
+              </div>
+              <span><strong>Scoring System:</strong> Points consider both accuracy and speed of solving.</span>
+            </li>
+            <li>
+              <div className={styles.ruleIconWrapper}>
+                <FaUserCircle className={styles.ruleIcon} />
+              </div>
+              <span><strong>Fair Play:</strong> Use of external engines or outside help is strictly prohibited.</span>
+            </li>
+            <li>
+              <div className={styles.ruleIconWrapper}>
+                <FaTrophy className={styles.ruleIcon} />
+              </div>
+              <span><strong>Leaderboard:</strong> Top players will be featured on the podium at the end.</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div >

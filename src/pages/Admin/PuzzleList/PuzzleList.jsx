@@ -29,6 +29,7 @@ function PuzzleList() {
   };
 
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
 
   const handleDelete = (puzzle) => {
     setDeleteConfirm(puzzle);
@@ -114,6 +115,22 @@ function PuzzleList() {
       alert(err.message || 'Failed to delete puzzle');
     } finally {
       setDeleteConfirm(null);
+    }
+  };
+
+  const confirmDeleteAll = async () => {
+    try {
+      setIsLoading(true);
+      const result = await adminAPI.deleteAllPuzzles();
+      setPuzzles([]);
+      setCurrentPage(1);
+      alert(result.message || 'All puzzles deleted successfully!');
+    } catch (err) {
+      console.error('Failed to delete all puzzles:', err);
+      alert(err.message || 'Failed to delete all puzzles');
+    } finally {
+      setDeleteAllConfirm(false);
+      setIsLoading(false);
     }
   };
 
@@ -277,6 +294,14 @@ function PuzzleList() {
             </Button>
             <Button to="/admin/puzzles/create" icon={FaChess}>
               Create Puzzle
+            </Button>
+            <Button
+              variant="danger"
+              icon={FaTrash}
+              onClick={() => setDeleteAllConfirm(true)}
+              disabled={puzzles.length === 0}
+            >
+              Delete All
             </Button>
           </div>
         }
@@ -457,6 +482,29 @@ function PuzzleList() {
               </Button>
               <Button variant="danger" icon={FaTrash} onClick={confirmDelete}>
                 Delete Puzzle
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteAllConfirm && (
+        <div className={styles.modal} onClick={() => setDeleteAllConfirm(false)}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.confirmHeader}>
+              <FaTrash className={styles.dangerIcon} />
+              <h3>Delete All Puzzles</h3>
+            </div>
+            <div className={styles.confirmBody}>
+              <p>Are you sure you want to delete <strong>ALL {puzzles.length} puzzles</strong>?</p>
+              <p className={styles.warningText}>This action cannot be undone. All puzzle data will be permanently removed.</p>
+            </div>
+            <div className={styles.confirmActions}>
+              <Button variant="secondary" onClick={() => setDeleteAllConfirm(false)}>
+                Cancel
+              </Button>
+              <Button variant="danger" icon={FaTrash} onClick={confirmDeleteAll}>
+                Delete All Puzzles
               </Button>
             </div>
           </div>

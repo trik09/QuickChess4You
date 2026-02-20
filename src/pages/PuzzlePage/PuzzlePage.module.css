@@ -71,13 +71,13 @@
 .mainContent {
   display: grid;
   grid-template-areas:
-    "timer board puzzleInfo"
-    "submit board puzzleNav"
+    "timer board puzzleNav"
+    "submit board puzzleInfo"
     "race race race";
-  grid-template-columns: 220px 1fr 300px;
+  grid-template-columns: minmax(240px, 1fr) minmax(auto, 70vh) minmax(280px, 1fr);
   grid-template-rows: auto auto auto;
   gap: 1.5rem;
-  max-width: 1600px;
+  max-width: 1800px;
   width: 100%;
   margin: 0 auto;
   padding: 1rem 2rem;
@@ -88,6 +88,18 @@
   grid-area: timer;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+.turnIndicator {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .submitCard {
@@ -95,6 +107,8 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  margin-top: -90px;
+  /* Removed negative margin for better flow */
 }
 
 .boardArea {
@@ -170,11 +184,11 @@
 }
 
 .puzzleCardTitle {
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 600;
   margin: 0 0 0.75rem 0;
   line-height: 1.3;
-  color: #b58863;
+  color: #ffffff;
 }
 
 .puzzleDescription {
@@ -670,6 +684,214 @@
   background: linear-gradient(45deg, #ff5252, #e53935) !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
+}
+
+/* --- RANK CARD --- */
+.rankCard {
+  margin-top: 1rem;
+  border-radius: 14px;
+  padding: 1rem;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Light Mode Rank Card */
+[data-theme="light"] .rankCard {
+  background: linear-gradient(145deg, #fffbf0 0%, #fff7e6 50%, #fef3d6 100%);
+  border-color: #e5c07b;
+  box-shadow: 0 4px 16px rgba(181, 136, 99, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Dark Mode Rank Card */
+[data-theme="dark"] .rankCard {
+  background: linear-gradient(145deg, #1f1a14 0%, #1a1510 50%, #211c15 100%);
+  border-color: rgba(212, 163, 115, 0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(212, 163, 115, 0.08);
+}
+
+.rankHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  justify-content: center;
+}
+
+.rankTrophy {
+  font-size: 1.3rem;
+  filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.5));
+  animation: trophyGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes trophyGlow {
+  0% {
+    filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.3));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.7));
+  }
+}
+
+.rankTitle {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+[data-theme="light"] .rankTitle {
+  color: #8b6242;
+}
+
+[data-theme="dark"] .rankTitle {
+  color: #d4a373;
+}
+
+.rankBody {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rankNumber {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, #d4a373 0%, #b58863 40%, #e8c9a0 60%, #b58863 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rankShimmer 3s ease-in-out infinite;
+}
+
+@keyframes rankShimmer {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.rankDivider {
+  width: 2px;
+  height: 36px;
+  border-radius: 1px;
+}
+
+[data-theme="light"] .rankDivider {
+  background: linear-gradient(to bottom, transparent, #d4a373, transparent);
+}
+
+[data-theme="dark"] .rankDivider {
+  background: linear-gradient(to bottom, transparent, rgba(212, 163, 115, 0.4), transparent);
+}
+
+.rankMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rankMetaItem {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.rankMetaValue {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+[data-theme="light"] .rankMetaValue {
+  color: #2d2520;
+}
+
+[data-theme="dark"] .rankMetaValue {
+  color: #f5f0eb;
+}
+
+.rankMetaLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+[data-theme="light"] .rankMetaLabel {
+  color: #8b6242;
+}
+
+[data-theme="dark"] .rankMetaLabel {
+  color: #a88b6e;
+}
+
+.rankFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rankProgressBar {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+[data-theme="light"] .rankProgressBar {
+  background: #e5d5c5;
+}
+
+[data-theme="dark"] .rankProgressBar {
+  background: rgba(58, 48, 40, 0.6);
+}
+
+.rankProgressFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #d4a373, #b58863, #d4a373);
+  background-size: 200% 100%;
+  animation: progressShimmer 2s ease-in-out infinite;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+@keyframes progressShimmer {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.rankParticipants {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-align: right;
+}
+
+[data-theme="light"] .rankParticipants {
+  color: #8b6242;
+}
+
+[data-theme="dark"] .rankParticipants {
+  color: #7a6a5a;
 }
 
 

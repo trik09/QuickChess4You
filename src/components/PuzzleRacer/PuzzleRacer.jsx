@@ -38,28 +38,32 @@ const PuzzleRacer = () => {
     let displayList = [];
 
     if (leaderboard?.length > 0) {
-      displayList = [...leaderboard].sort((a, b) => (a.rank || 999) - (b.rank || 999));
+      // Map leaderboard to immediately reflect local participant updates for the current user
+      displayList = leaderboard.map((p) => {
+        if (currentUserId && (p.userId === currentUserId || p.username === user?.username)) {
+          return {
+            ...p,
+            score: Math.max(p.score || 0, participant?.score || 0),
+            puzzlesSolved: Math.max(p.puzzlesSolved || 0, participant?.puzzlesSolved || 0),
+          };
+        }
+        return p;
+      });
+      displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
     }
 
     if (currentUserId) {
       const inList = displayList.find(
         (p) => p.userId === currentUserId || p.username === user?.username
       );
-      if (!inList) {
-        const fromLb = leaderboard?.find(
-          (p) => p.userId === currentUserId || p.username === user?.username
-        );
-        if (fromLb) {
-          displayList.push(fromLb);
-        } else if (user) {
-          displayList.push({
-            userId: currentUserId,
-            username: user.username || user.name || "You",
-            rank: 999,
-            score: participant?.score || 0,
-            puzzlesSolved: participant?.puzzlesSolved || 0,
-          });
-        }
+      if (!inList && user) {
+        displayList.push({
+          userId: currentUserId,
+          username: user.username || user.name || "You",
+          rank: 999,
+          score: participant?.score || 0,
+          puzzlesSolved: participant?.puzzlesSolved || 0,
+        });
       }
     }
 
@@ -78,11 +82,18 @@ const PuzzleRacer = () => {
 
   // Sun = rank 1, planets = ranks 2-9
   const sunRacer = racers[0] || null;
-  const planetSlots = PLANET_DATA.map((planet, i) => ({
-    planet,
-    racer: racers[i + 1] || null,
-    rank: i + 2,
-  }));
+  const planetSlots = PLANET_DATA.map((planet, i) => {
+    // We want Rank 2 (racers[1]) to be at Mercury (last index) roughly
+    // So we map in reverse order:
+    // i=7 (Mercury) -> racer 1 (Rank 2)
+    // i=0 (Neptune) -> racer 8 (Rank 9)
+    const racerIndex = PLANET_DATA.length - i;
+    return {
+      planet,
+      racer: racers[racerIndex] || null,
+      rank: racerIndex + 1,
+    };
+  });
 
   const currentUserInSlots = racers.slice(0, VISIBLE_SLOTS).some(
     (r) => r && (r.userId === currentUserId || r.username === user?.username)

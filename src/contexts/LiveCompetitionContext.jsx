@@ -63,7 +63,6 @@ export const LiveCompetitionProvider = ({ children }) => {
               const compData = { competition: { id: competitionId, name: "" } };
               await socketService.connect(compData);
               setIsConnected(true);
-              setupSocketListeners();
               socketService.emit("joinCompetition", {
                 competitionId,
               });
@@ -88,6 +87,90 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     initializeState();
   }, []); // Run once on mount
+
+  // ALWAYS listen to socket events for real-time capabilities
+  useEffect(() => {
+    const handleLeaderboardUpdate = (newLeaderboard) => {
+      console.log("[LiveComp] Socket: leaderboardUpdate, entries:", newLeaderboard?.length);
+      setLeaderboard(newLeaderboard);
+      setLastUpdate(new Date());
+    };
+
+    const handleLiveScoreUpdate = (data) => {
+      console.log("[LiveComp] Socket: liveScoreUpdate", data.username, data.score);
+      setLeaderboard((prev) => {
+        const updated = prev.map((entry) =>
+          entry.userId === data.userId?.toString() || entry.userId === data.userId
+            ? {
+              ...entry,
+              score: data.score,
+              puzzlesSolved: data.puzzlesSolved,
+              timeSpent: data.timeSpent,
+              status: data.status,
+            }
+            : entry
+        );
+        return updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
+      });
+      setLastUpdate(new Date());
+    };
+
+    const handleCompetitionEnded = (finalResults) => {
+      setCompetitionEnded(true);
+      setLeaderboard(finalResults.finalLeaderboard);
+      toast.success(finalResults.message, { duration: 5000 });
+      setTimeout(() => disconnectFromCompetition(), 10000);
+    };
+
+    const handleParticipantJoined = (data) => {
+      console.log("[LiveComp] Socket: participantJoined", data.username);
+      // Removed toast to decrease noise
+    };
+
+    const handleParticipantSubmitted = (data) => {
+      toast(`${data.username} submitted their solution!`, { icon: "🏁", duration: 3000 });
+    };
+
+    const handleError = (error) => {
+      console.error("Socket error state:", error);
+      setError(error.message);
+    };
+
+    socketService.on("leaderboardUpdate", handleLeaderboardUpdate);
+    socketService.on("liveScoreUpdate", handleLiveScoreUpdate);
+    socketService.on("competitionEnded", handleCompetitionEnded);
+    socketService.on("participantJoined", handleParticipantJoined);
+    socketService.on("participantSubmitted", handleParticipantSubmitted);
+    socketService.on("error", handleError);
+
+    return () => {
+      socketService.off("leaderboardUpdate", handleLeaderboardUpdate);
+      socketService.off("liveScoreUpdate", handleLiveScoreUpdate);
+      socketService.off("competitionEnded", handleCompetitionEnded);
+      socketService.off("participantJoined", handleParticipantJoined);
+      socketService.off("participantSubmitted", handleParticipantSubmitted);
+      socketService.off("error", handleError);
+    };
+  }, []);
+
+  const ensureSocketConnection = async (competitionId) => {
+    if (!competitionId) return;
+
+    if (!socketService.isConnected) {
+      try {
+        console.log(`[LiveComp] ensureSocketConnection: Manually connecting socket for ${competitionId}`);
+        const compData = { competition: { id: competitionId, name: "" } };
+        await socketService.connect(compData);
+        setIsConnected(true);
+        socketService.emit("joinCompetition", { competitionId });
+      } catch (err) {
+        console.error(`[LiveComp] ensureSocketConnection: Failed`, err);
+      }
+    } else {
+      socketService.emit("joinCompetition", { competitionId });
+      setIsConnected(true);
+    }
+  };
 
   // Participate in competition
   const participateInCompetition = async (competitionId, username) => {
@@ -148,9 +231,6 @@ export const LiveCompetitionProvider = ({ children }) => {
       setTotalPuzzleCount(response.competition.puzzles?.length || 0); // Set total puzzle count
       setIsConnected(true);
 
-      // Setup socket event listeners
-      setupSocketListeners();
-
       socketService.emit("joinCompetition", {
         competitionId,
       });
@@ -187,82 +267,7 @@ export const LiveCompetitionProvider = ({ children }) => {
     }
   };
 
-  // Setup socket event listeners
-  const setupSocketListeners = () => {
-    // Leaderboard updates (full replacement)
-    socketService.on("leaderboardUpdate", (newLeaderboard) => {
-      console.log(
-        "[LiveComp] Socket: leaderboardUpdate, entries:",
-        newLeaderboard?.length,
-      );
-      setLeaderboard(newLeaderboard);
-      setLastUpdate(new Date());
-    });
-
-    // Live score update (incremental — merge single player's score)
-    socketService.on("liveScoreUpdate", (data) => {
-      console.log(
-        "[LiveComp] Socket: liveScoreUpdate",
-        data.username,
-        data.score,
-      );
-      setLeaderboard((prev) => {
-        const updated = prev.map((entry) =>
-          entry.userId === data.userId?.toString() ||
-          entry.userId === data.userId
-            ? {
-                ...entry,
-                score: data.score,
-                puzzlesSolved: data.puzzlesSolved,
-                timeSpent: data.timeSpent,
-                status: data.status,
-              }
-            : entry,
-        );
-        // Re-sort by score descending, then time ascending
-        return updated.sort(
-          (a, b) => b.score - a.score || a.timeSpent - b.timeSpent,
-        );
-      });
-      setLastUpdate(new Date());
-    });
-
-    // Competition ended
-    socketService.on("competitionEnded", (finalResults) => {
-      setCompetitionEnded(true);
-      setLeaderboard(finalResults.finalLeaderboard);
-      toast.success(finalResults.message, { duration: 5000 });
-
-      // Disconnect socket after competition ends
-      setTimeout(() => {
-        disconnectFromCompetition();
-      }, 10000);
-    });
-
-    // Participant joined
-    socketService.on("participantJoined", (data) => {
-      console.log("[LiveComp] Socket: participantJoined", data.username);
-      toast(`${data.username} joined the competition!`, {
-        icon: "👋",
-        duration: 3000,
-      });
-    });
-
-    // Participant submitted
-    socketService.on("participantSubmitted", (data) => {
-      toast(`${data.username} submitted their solution!`, {
-        icon: "🏁",
-        duration: 3000,
-      });
-    });
-
-    // Error handling
-    socketService.on("error", (error) => {
-      console.error("Socket error:", error);
-      setError(error.message);
-      toast.error(error.message);
-    });
-  };
+  // Setup socket event listeners handled in persistent useEffect
 
   // Load competition puzzles - can be called manually with competitionId
   const loadCompetitionPuzzles = async (competitionId) => {
@@ -358,10 +363,10 @@ export const LiveCompetitionProvider = ({ children }) => {
               puzzle.solvedData ||
               (storedState?.status === "solved"
                 ? {
-                    scoreEarned: storedState.scoreEarned,
-                    timeSpent: storedState.timeSpent,
-                    solvedAt: storedState.solvedAt,
-                  }
+                  scoreEarned: storedState.scoreEarned,
+                  timeSpent: storedState.timeSpent,
+                  solvedAt: storedState.solvedAt,
+                }
                 : null),
           };
         });
@@ -463,19 +468,19 @@ export const LiveCompetitionProvider = ({ children }) => {
           prev.map((puzzle) =>
             puzzle._id === puzzleId
               ? {
-                  ...puzzle,
-                  status: puzzleStatus,
-                  isSolved: isCorrect,
-                  isFailed: !isCorrect,
-                  isLocked: true,
-                  solvedData: isCorrect
-                    ? {
-                        scoreEarned: response.scoreEarned,
-                        timeSpent,
-                        solvedAt: new Date(),
-                      }
-                    : null,
-                }
+                ...puzzle,
+                status: puzzleStatus,
+                isSolved: isCorrect,
+                isFailed: !isCorrect,
+                isLocked: true,
+                solvedData: isCorrect
+                  ? {
+                    scoreEarned: response.scoreEarned,
+                    timeSpent,
+                    solvedAt: new Date(),
+                  }
+                  : null,
+              }
               : puzzle,
           ),
         );
@@ -708,6 +713,8 @@ export const LiveCompetitionProvider = ({ children }) => {
     getTotalPuzzlesCount,
     isCompetitionActive,
     getTimeRemaining,
+
+    ensureSocketConnection, // Explicit socket ensuring
 
     // Board position management
     saveBoardPosition,

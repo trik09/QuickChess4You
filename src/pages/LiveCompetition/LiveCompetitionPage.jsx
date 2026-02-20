@@ -28,7 +28,8 @@ const LiveCompetitionPage = () => {
     saveBoardPosition,
     getBoardPosition,
     isPuzzleLocked,
-    loadCompetitionPuzzles
+    loadCompetitionPuzzles,
+    ensureSocketConnection
   } = useLiveCompetition();
 
   const [competitionData, setCompetitionData] = useState(null);
@@ -43,7 +44,9 @@ const LiveCompetitionPage = () => {
     loadCompetitionData();
     // Also try to load puzzle states if user is already participating
     if (id) {
-      loadCompetitionPuzzles(id).catch(error => {
+      loadCompetitionPuzzles(id).then(() => {
+        ensureSocketConnection(id);
+      }).catch(error => {
         console.log('User not participating yet:', error.message);
       });
     }

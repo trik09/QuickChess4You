@@ -110,7 +110,7 @@ const playSound = (type) => {
 }
 
 
-function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSolved, onWrongMove, onBoardStateChange, savedBoardState, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false }) {
+function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSolved, onWrongMove, onBoardStateChange, savedBoardState, puzzleType = 'normal', kidsConfig = null, interactive = true, showSolution = false, firstMoveBy = 'human' }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(new Chess(fen));
 
@@ -126,7 +126,8 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
   const [feedback, setFeedback] = useState(null);
   const [solutionIndex, setSolutionIndex] = useState(0);
   const [initialFen, setInitialFen] = useState(fen);
-  const [userColor, setUserColor] = useState('w'); // 'w' or 'b'
+  const [userColor, setUserColor] = useState('w');
+  const [computerFirstMovePlayed, setComputerFirstMovePlayed] = useState(false);
 
   const [normalizedSolution, setNormalizedSolution] = useState([]);
   const [allNormalizedPaths, setAllNormalizedPaths] = useState([]);
@@ -164,9 +165,15 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
     setInitialFen(fen);
     setPromotionPending(null);
 
-    // Determine user color based on FEN side to move
+    // Determine user color based on FEN side to move and first move configuration
     const turn = newGame.turn();
-    setUserColor(turn);
+    let calculatedColor = turn;
+    if (firstMoveBy === 'computer' && puzzleType === 'normal') {
+      // If computer moves first, user plays the OTHER side
+      calculatedColor = turn === 'w' ? 'b' : 'w';
+    }
+    console.log("ChessBoard Mount Calc:", { fen, turn, firstMoveBy, puzzleType, calculatedColor });
+    setUserColor(calculatedColor);
 
     // Initialize Kids Mode stuff
     setCapturedTargets([]);
@@ -210,7 +217,67 @@ function ChessBoard({ fen, solution = [], alternativeSolutions = [], onPuzzleSol
       setAllNormalizedPaths(allPaths);
       setValidPathIndices(allPaths.map((_, i) => i)); // All valid initially
     }
-  }, [fen, solution, alternativeSolutions, puzzleType, kidsConfig]);
+
+    // Reset computer first move flag
+    setComputerFirstMovePlayed(false);
+  }, [fen, solution, alternativeSolutions, puzzleType, kidsConfig, firstMoveBy]);
+
+  const onBoardStateChangeRef = useRef(onBoardStateChange);
+  useEffect(() => {
+    onBoardStateChangeRef.current = onBoardStateChange;
+  }, [onBoardStateChange]);
+
+  // Auto-play first solution move when firstMoveBy === 'computer'
+  useEffect(() => {
+    // Determine if it's the initial state (either no saved state or it aligns with initial FEN)
+    const isInitialState = !savedBoardState || savedBoardState.fen === initialFen;
+
+    if (firstMoveBy === 'computer' && puzzleType === 'normal' && !computerFirstMovePlayed && isInitialState && normalizedSolution.length > 0) {
+
+      const timer = setTimeout(() => {
+        try {
+          const firstSolutionMove = normalizedSolution[0];
+          if (!firstSolutionMove) return;
+
+          // Instead of mutating state `game` directly which can cause sync issues,
+          // create a fresh instance from the initial fen.
+          const tempGame = new Chess(initialFen);
+          const result = tempGame.move(firstSolutionMove);
+
+          if (result) {
+            playSound(result.san.includes('x') ? 'capture' : 'move');
+            setMoveHistory([result.san]);
+            setLastMove({ from: result.from, to: result.to });
+
+            // Human plays the resulting turn side
+            setUserColor(tempGame.turn());
+
+            setGame(new Chess(tempGame.fen()));
+            setSolutionIndex(1); // Human starts from index 1 (second move in solution)
+            setComputerFirstMovePlayed(true);
+
+            // Forcefully notify parent that a move was played by the computer, so state is saved
+            // and we don't replay the computer move infinitely on reload
+            if (onBoardStateChangeRef.current) {
+              onBoardStateChangeRef.current(tempGame.fen(), [result.san]);
+            }
+
+          } else {
+            console.warn('Auto-play move failed (invalid or wrong turn). FEN:', game.fen(), 'Move:', firstSolutionMove);
+            setComputerFirstMovePlayed(true);
+          }
+        } catch (e) {
+          console.error('Failed to auto-play first solution move:', e);
+          setComputerFirstMovePlayed(true);
+        }
+      }, 800); // 800ms gives the user time to see the initial board before the computer moves
+
+      return () => clearTimeout(timer);
+    } else if (firstMoveBy !== 'computer') {
+      setComputerFirstMovePlayed(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstMoveBy, computerFirstMovePlayed, puzzleType, savedBoardState, normalizedSolution, initialFen]);
 
   // Restore saved board state if available
   useEffect(() => {

@@ -70,6 +70,9 @@ function CreatePuzzle() {
   const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // First Move control: 'human' (default) or 'computer'
+  const [firstMoveBy, setFirstMoveBy] = useState('human');
+
   // Fetch categories on mount
   useEffect(() => {
     fetchCategories();
@@ -268,7 +271,8 @@ function CreatePuzzle() {
         description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join("\n\n"),
         type: 'normal',
         level: Number(formData.level),
-        rating: Number(formData.rating)
+        initialMove: undefined,
+        firstMoveBy
       };
       submitPayload(payload);
 
@@ -481,14 +485,30 @@ function CreatePuzzle() {
       }
     }
 
-    const rows = [8, 7, 6, 5, 4, 3, 2, 1];
+    const previewUserColor = (() => {
+      try {
+        const chess = new Chess(formData.fen);
+        const turn = chess.turn();
+        if (firstMoveBy === 'computer' && puzzleType === 'normal') {
+          return turn === 'w' ? 'b' : 'w';
+        }
+        return turn;
+      } catch (e) { return 'w'; }
+    })();
+
+    const ranks = previewUserColor === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
+    const files = previewUserColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
 
     return (
       <div className={`${styles.chessboard} ${puzzleType === 'kids' || setupMode === 'manual' ? styles.interactiveBoard : ''}`}>
-        {board.map((row, r) => (
-          <div key={r} className={styles.row}>
-            {rows[r] && row.map((sq, c) => {
-              const squareName = `${String.fromCharCode(97 + c)}${8 - r}`;
+        {ranks.map((rank, rankIndex) => (
+          <div key={rank} className={styles.row}>
+            {files.map((file, fileIndex) => {
+              const squareName = `${file}${rank}`;
+              const r = 8 - parseInt(rank);
+              const c = file.charCodeAt(0) - 97;
+
+              const sq = board[r] ? board[r][c] : null;
               const isLight = (r + c) % 2 === 0;
 
               let content = null;
@@ -528,22 +548,22 @@ function CreatePuzzle() {
                   {content}
 
                   {/* Rank Label (Left side) */}
-                  {c === 0 && (
+                  {fileIndex === 0 && (
                     <div
                       className={styles.rankLabel}
                       style={{ color: isLight ? '#b58863' : '#f0d9b5' }}
                     >
-                      {8 - r}
+                      {rank}
                     </div>
                   )}
 
                   {/* File Label (Bottom side) */}
-                  {r === 7 && (
+                  {rankIndex === 7 && (
                     <div
                       className={styles.fileLabel}
                       style={{ color: isLight ? '#b58863' : '#f0d9b5' }}
                     >
-                      {String.fromCharCode(97 + c)}
+                      {file}
                     </div>
                   )}
                 </div>
@@ -745,6 +765,24 @@ function CreatePuzzle() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* First Move Toggle */}
+                <div className={styles.formGroup} style={{ background: '#f0f7ff', padding: '15px', borderRadius: '8px', border: '1px solid #b3d4fc' }}>
+                  <label style={{ fontWeight: '600', color: '#1a56db', marginBottom: '8px', display: 'block' }}>First Move By</label>
+                  <div className={styles.toggleBtns} style={{ marginBottom: '10px' }}>
+                    <button type="button" className={firstMoveBy === 'human' ? styles.active : ''} onClick={() => setFirstMoveBy('human')}>👤 Human</button>
+                    <button type="button" className={firstMoveBy === 'computer' ? styles.active : ''} onClick={() => setFirstMoveBy('computer')}>🤖 Computer</button>
+                  </div>
+                  {firstMoveBy === 'computer' ? (
+                    <small style={{ color: '#4a5568', fontStyle: 'italic' }}>
+                      Computer plays the 1st move automatically, then the student plays the 2nd move, and so on.
+                    </small>
+                  ) : (
+                    <small style={{ color: '#4a5568', fontStyle: 'italic' }}>
+                      Student plays the 1st move, computer responds with the 2nd, and so on (default).
+                    </small>
+                  )}
                 </div>
               </>
             )}

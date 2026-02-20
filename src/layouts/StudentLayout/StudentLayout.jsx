@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import {
     FaUser,
-    FaSignOutAlt,
     FaChevronLeft,
     FaChevronRight,
     FaThLarge,
-    FaTrophy,
     FaGraduationCap,
     FaPuzzlePiece,
-    FaHistory,
     FaCog
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,18 +20,58 @@ const StudentLayout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    // Primary Navigation (Bottom Bar on Mobile / Sidebar on Desktop)
-    const navItems = [
+    const openSettings = () => setIsThemeModalOpen(true);
+
+    // Desktop Sidebar Navigation: Arena first
+    const sidebarNavItems = [
         { path: '/Dashboard', label: 'Arena', icon: <FaThLarge /> },
-        { path: '/Dashboard/competitions', label: 'Compete', icon: <FaTrophy /> },
-        { path: '/puzzle', label: 'Play', icon: <FaPuzzlePiece />, isSpecial: true }, // Special styling for Play
+        { path: '/puzzle', label: 'Play', icon: <FaPuzzlePiece /> },
         { path: '/Dashboard/courses', label: 'Learn', icon: <FaGraduationCap /> },
-        { path: '/Dashboard/puzzles', label: 'History', icon: <FaHistory /> },
+        { path: '/profile', label: 'Profile', icon: <FaUser /> },
+        { label: 'Settings', icon: <FaCog />, action: openSettings },
+    ];
+
+    // Mobile Bottom Nav: Arena in the center as the special raised button
+    const mobileNavItems = [
+        { path: '/puzzle', label: 'Play', icon: <FaPuzzlePiece /> },
+        { path: '/Dashboard/courses', label: 'Learn', icon: <FaGraduationCap /> },
+        { path: '/Dashboard', label: 'Arena', icon: <FaThLarge />, isSpecial: true },
+        { path: '/profile', label: 'Profile', icon: <FaUser /> },
+        { label: 'Settings', icon: <FaCog />, action: openSettings },
     ];
 
     const handleLogout = () => {
         if (logout) logout();
         navigate('/');
+    };
+
+    // Renders a nav item as either a NavLink (if it has a path) or a button (if it has an action)
+    const renderNavItem = (item, styleClasses) => {
+        if (item.action) {
+            return (
+                <button
+                    key={item.label}
+                    className={styleClasses.base}
+                    onClick={item.action}
+                >
+                    <span className={styleClasses.icon}>{item.icon}</span>
+                    {styleClasses.showLabel && <span className={styleClasses.labelClass}>{item.label}</span>}
+                </button>
+            );
+        }
+        return (
+            <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/Dashboard'}
+                className={({ isActive }) =>
+                    `${styleClasses.base} ${isActive ? styleClasses.active : ''} ${item.isSpecial ? (styleClasses.special || '') : ''}`
+                }
+            >
+                <span className={styleClasses.icon}>{item.icon}</span>
+                {styleClasses.showLabel && <span className={styleClasses.labelClass}>{item.label}</span>}
+            </NavLink>
+        );
     };
 
     return (
@@ -72,37 +109,15 @@ const StudentLayout = () => {
                 </div>
 
                 <nav className={styles.navLinks}>
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            end={item.path === '/Dashboard'}
-                            className={({ isActive }) =>
-                                `${styles.navItem} ${isActive ? styles.active : ''}`
-                            }
-                        >
-                            <span className={styles.navIcon}>{item.icon}</span>
-                            {!isSidebarCollapsed && <span className={styles.navLabel}>{item.label}</span>}
-                        </NavLink>
-                    ))}
-
-                    <div className={styles.separator} />
-
-                    {/* Desktop Specific Profile Links */}
-                    <NavLink to="/profile" className={styles.navItem}>
-                        <span className={styles.navIcon}><FaUser /></span>
-                        {!isSidebarCollapsed && <span className={styles.navLabel}>Profile</span>}
-                    </NavLink>
-
-                    {/* Settings Button */}
-                    <button
-                        className={styles.navItem}
-                        onClick={() => setIsThemeModalOpen(true)}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
-                    >
-                        <span className={styles.navIcon}><FaCog /></span>
-                        {!isSidebarCollapsed && <span className={styles.navLabel}>Settings</span>}
-                    </button>
+                    {sidebarNavItems.map((item) =>
+                        renderNavItem(item, {
+                            base: styles.navItem,
+                            active: styles.active,
+                            icon: styles.navIcon,
+                            labelClass: styles.navLabel,
+                            showLabel: !isSidebarCollapsed,
+                        })
+                    )}
                 </nav>
 
                 <div className={styles.sidebarFooter}>
@@ -130,19 +145,16 @@ const StudentLayout = () => {
 
             {/* --- MOBILE: Bottom Navigation Bar --- */}
             <nav className={styles.bottomNav}>
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        end={item.path === '/Dashboard'}
-                        className={({ isActive }) =>
-                            `${styles.bottomNavItem} ${isActive ? styles.bottomNavActive : ''} ${item.isSpecial ? styles.specialNavItem : ''}`
-                        }
-                    >
-                        <span className={styles.bottomNavIcon}>{item.icon}</span>
-                        <span className={styles.bottomNavLabel}>{item.label}</span>
-                    </NavLink>
-                ))}
+                {mobileNavItems.map((item) =>
+                    renderNavItem(item, {
+                        base: styles.bottomNavItem,
+                        active: styles.bottomNavActive,
+                        special: styles.specialNavItem,
+                        icon: styles.bottomNavIcon,
+                        labelClass: styles.bottomNavLabel,
+                        showLabel: true,
+                    })
+                )}
             </nav>
 
             {/* Theme Modal */}
@@ -152,3 +164,5 @@ const StudentLayout = () => {
 };
 
 export default StudentLayout;
+
+

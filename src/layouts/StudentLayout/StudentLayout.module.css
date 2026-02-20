@@ -163,7 +163,15 @@
     border-radius: 10px;
     position: relative;
     overflow: hidden;
+    /* Button reset for action items */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
 }
+
 
 /* Light Mode Nav Item */
 [data-theme="light"] .navItem {
@@ -504,7 +512,14 @@
         height: 100%;
         transition: all 0.2s ease;
         position: relative;
+        /* Button reset for action items */
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        padding: 0;
     }
+
 
     [data-theme="light"] .bottomNavItem {
         color: #8b6242;
