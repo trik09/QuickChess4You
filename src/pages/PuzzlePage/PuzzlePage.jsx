@@ -30,6 +30,7 @@ function PuzzlePage() {
     leaderboard,
     getCurrentUserRank,
     ensureSocketConnection,
+    updateParticipant,
   } = useLiveCompetition();
 
   // State
@@ -38,6 +39,9 @@ function PuzzlePage() {
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0); // For pagination (0 = 1-20, 1 = 21-40, etc.)
   const ITEMS_PER_PAGE = 10;
+
+  // Chapter state
+  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [solving, setSolving] = useState(false);
   const [isLiveCompetition, setIsLiveCompetition] = useState(false);
@@ -238,7 +242,6 @@ function PuzzlePage() {
                 isFailed: p.isFailed,
                 status: p.status,
               }));
-              console.log("Normalized puzzles from API:", normalized.map(n => ({ id: n.id, title: n.title, firstMoveBy: n.firstMoveBy })));
               setPuzzles(normalized);
 
               // Update Statuses map from server data
@@ -284,6 +287,11 @@ function PuzzlePage() {
               if (puzzleRes.participant) {
                 setScore(puzzleRes.participant.score);
                 setSolvedCount(puzzleRes.participant.puzzlesSolved);
+                // Immediately sync into context so PuzzleRacer shows correct score on first load (no refresh needed)
+                updateParticipant({
+                  score: puzzleRes.participant.score,
+                  puzzlesSolved: puzzleRes.participant.puzzlesSolved,
+                });
               }
 
               // Find first unsolved puzzle
@@ -542,6 +550,11 @@ function PuzzlePage() {
               [currentPuzzle.id]: "success",
             }));
             setScore((prev) => prev + res.scoreEarned);
+            // *** Instantly sync to LiveCompetitionContext so PuzzleRacer updates ***
+            updateParticipant({
+              puzzlesSolved: solvedCount + 1,
+              score: score + res.scoreEarned,
+            });
             toast.success(
               `Correct! +${res.scoreEarned} points! Leaderboard updated!`,
             );
@@ -722,7 +735,16 @@ function PuzzlePage() {
       {/* Page Header */}
       <PageHeader
         title={competitionData ? competitionData.name : "Daily Training"}
-        subtitle={`Puzzle ${currentPuzzleIndex + 1} of ${puzzles.length}`}
+        subtitle={(() => {
+          const chapters = competitionData?.chapters;
+          if (chapters && chapters.length > 0) {
+            const chPuzzleIds = chapters[activeChapterIndex]?.puzzleIds || [];
+            const chPuzzles = puzzles.filter(p => chPuzzleIds.includes(p._id || p.id));
+            const chIdx = chPuzzles.findIndex(p => (p._id || p.id) === (puzzles[currentPuzzleIndex]?._id || puzzles[currentPuzzleIndex]?.id));
+            return `Puzzle ${chIdx + 1} of ${chPuzzles.length} · ${chapters[activeChapterIndex]?.name || ''}`;
+          }
+          return `Puzzle ${currentPuzzleIndex + 1} of ${puzzles.length}`;
+        })()}
         icon={<FaPuzzlePiece />}
         showBackButton
         onBack={() => navigate(-1)}
@@ -836,7 +858,7 @@ function PuzzlePage() {
                 alternativeSolutions={currentPuzzle.alternativeSolutions}
                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                 kidsConfig={currentPuzzle.kidsConfig}
-                firstMoveBy={currentPuzzle.firstMoveBy || 'human'}
+                firstMoveBy={currentPuzzle.firstMoveBy}
                 onPuzzleSolved={handlePuzzleSolved}
                 onWrongMove={handleWrongMove}
                 onBoardStateChange={(fen, moveHistory) => {
@@ -865,232 +887,206 @@ function PuzzlePage() {
           </div>
         </div>
 
-        {/* Puzzle Info Panel - Top Right */}
+        {/* Puzzle Info Card - Right Panel Top */}
         {competitionData && currentPuzzle && (
           <div className={styles.puzzleInfoPanel}>
+            {/* Category badge above card */}
+            {currentPuzzle.category && (
+              <div className={styles.categoryBadge}>
+                <span className={styles.categoryDot} />
+                {currentPuzzle.category}
+              </div>
+            )}
             <div className={styles.puzzleInfoCard}>
-              <h2 className={styles.puzzleCardTitle}>
-                {currentPuzzle.title || "Chess Puzzle"}
-              </h2>
-              {currentPuzzle.description && (
-                <p className={styles.puzzleDescription}>
-                  {currentPuzzle.description}
-                </p>
-              )}
+              {/* Left: King Icon */}
+              <div className={styles.puzzleKingIcon}>♚</div>
+              {/* Right: Info */}
+              <div className={styles.puzzleInfoRight}>
+                <h2 className={styles.puzzleCardTitle}>
+                  {currentPuzzle.title || 'Chess Puzzle'}
+                </h2>
+                <div className={styles.puzzleMetadata}>
+                  <div className={styles.metadataItem}>
+                    <span className={styles.metadataLabel}>Level</span>
+                    <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
+                  </div>
+                  <div className={styles.metadataDivider} />
+                  <div className={styles.metadataItem}>
+                    <span className={styles.metadataLabel}>Difficulty</span>
+                    <span className={`${styles.metadataValue} ${styles['diff_' + (currentPuzzle.difficulty || 'medium').toLowerCase()]}`}>
+                      {currentPuzzle.difficulty || 'Medium'}
+                    </span>
+                  </div>
+                </div>
 
-              {/* Level and Difficulty */}
-              <div className={styles.puzzleMetadata}>
-                <div className={styles.metadataItem}>
-                  <span className={styles.metadataLabel}>Level:</span>
-                  <span className={styles.metadataValue}>
-                    {currentPuzzle.level || 1}
-                  </span>
-                </div>
-                <div className={styles.metadataItem}>
-                  <span className={styles.metadataLabel}>Difficulty:</span>
-                  <span className={styles.metadataValue} style={{ textTransform: 'capitalize' }}>
-                    {currentPuzzle.difficulty || 'Medium'}
-                  </span>
-                </div>
+                {/* Turn indicator — now inside info card */}
+                {(() => {
+                  const fenTurn = currentPuzzle.fen?.split(' ')[1];
+                  const userColor = fenTurn === 'w' ? 'b' : 'w';
+                  return (
+                    <div className={`${styles.turnPillInline} ${userColor === 'w' ? styles.turnWhite : styles.turnBlack}`}>
+                      <span className={`${styles.turnDot} ${userColor === 'w' ? styles.dotWhite : styles.dotBlack}`} />
+                      {userColor === 'w' ? 'White to play' : 'Black to play'}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
         )}
 
-        {/* Puzzle Navigation Panel - Bottom Right */}
+        {/* Puzzle Navigation Panel - Right */}
         {competitionData && (
           <div className={styles.puzzleNavPanel}>
+
+            {/* ---- Chapter Tabs --- */}
+            {competitionData.chapters && competitionData.chapters.length > 0 && (
+              <div className={styles.chapterTabBar}>
+                {competitionData.chapters.map((chapter, idx) => {
+                  const chPuzzleIds = (chapter.puzzleIds || []).map(id => id.toString());
+                  const chPuzzles = puzzles.filter(p => chPuzzleIds.includes((p._id || p.id).toString()));
+                  const solvedCount = chPuzzles.filter(p => puzzleStatuses[(p.id || p._id).toString()] === 'success').length;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`${styles.chapterTab} ${activeChapterIndex === idx ? styles.chapterTabActive : ''}`}
+                      onClick={() => {
+                        setActiveChapterIndex(idx);
+                        // ALWAYS reset frame to 0 when switching chapters
+                        setCurrentFrame(0);
+                        // Jump to first puzzle of this chapter if any
+                        if (chPuzzles.length > 0) {
+                          const firstPuzzleId = (chPuzzles[0]._id || chPuzzles[0].id).toString();
+                          const globalIdx = puzzles.findIndex(p => (p._id || p.id).toString() === firstPuzzleId);
+                          if (globalIdx !== -1) {
+                            setCurrentPuzzleIndex(globalIdx);
+                          }
+                        }
+                      }}
+                    >
+                      <span className={styles.chapterTabName}>{chapter.name}</span>
+                      <span className={styles.chapterTabBadge}>
+                        {solvedCount}/{chPuzzles.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className={styles.controlCard}>
-              <div className={styles.controlHeader}>Puzzle Navigation</div>
+              {/* Compute chapter-scoped puzzle list ONCE for all nav elements */}
+              {(() => {
+                const chapterData = competitionData?.chapters;
+                let navPuzzles = puzzles;
+                if (chapterData && chapterData.length > 0) {
+                  const chPuzzleIds = (chapterData[activeChapterIndex]?.puzzleIds || []).map(id => id.toString());
+                  navPuzzles = puzzles.filter(p => chPuzzleIds.includes((p._id || p.id).toString()));
+                }
+                const totalPages = Math.ceil(navPuzzles.length / ITEMS_PER_PAGE);
+                // Current puzzle's position within this chapter
+                const currentPuzzleId = (puzzles[currentPuzzleIndex]?._id || puzzles[currentPuzzleIndex]?.id)?.toString();
+                const chapterCurrentIndex = navPuzzles.findIndex(
+                  p => (p._id || p.id).toString() === currentPuzzleId
+                );
 
-              {Math.ceil(puzzles.length / ITEMS_PER_PAGE) > 1 && (
-                <div className={styles.paginationInfo}>
-                  Page {currentFrame + 1} of{" "}
-                  {Math.ceil(puzzles.length / ITEMS_PER_PAGE)}
-                </div>
-              )}
+                return (
+                  <>
+                    {/* Page counter */}
+                    {totalPages > 1 && (
+                      <div className={styles.paginationInfo}>
+                        Page {currentFrame + 1} of {totalPages}
+                      </div>
+                    )}
 
-              <div className={styles.navGrid}>
-                {puzzles
-                  .slice(
-                    currentFrame * ITEMS_PER_PAGE,
-                    (currentFrame + 1) * ITEMS_PER_PAGE,
-                  )
-                  .map((puzzle, localIndex) => {
-                    const index = currentFrame * ITEMS_PER_PAGE + localIndex;
-                    const pid = puzzle.id || puzzle._id;
-                    const status = puzzleStatuses[pid];
+                    {/* Nav grid — chapter puzzles only */}
+                    <div className={styles.navGrid}>
+                      {navPuzzles
+                        .slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE)
+                        .map((puzzle, localIndex) => {
+                          const globalIndex = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
+                          const chapterIndex = currentFrame * ITEMS_PER_PAGE + localIndex; // position in chapter
+                          const pid = puzzle.id || puzzle._id;
+                          const status = puzzleStatuses[pid];
+                          return (
+                            <div
+                              key={pid}
+                              className={`
+                                ${styles.navItem}
+                                ${chapterCurrentIndex === chapterIndex ? styles.active : ''}
+                                ${status === 'success' ? styles.success : ''}
+                                ${status === 'failed' ? styles.danger : ''}
+                              `}
+                              onClick={() => {
+                                if (!solving) {
+                                  setCurrentPuzzleIndex(globalIndex);
+                                  if (status === 'success') toast.info('Puzzle already solved!');
+                                  else if (status === 'failed') toast.info('Puzzle failed - you can view but not interact!');
+                                }
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              {status === 'success' ? <FaCheckCircle /> : chapterIndex + 1}
+                            </div>
+                          );
+                        })
+                      }
+                    </div>
 
-                    return (
-                      <div
-                        key={pid}
-                        className={`
-                          ${styles.navItem} 
-                          ${currentPuzzleIndex === index ? styles.active : ""}
-                          ${status === "success" ? styles.success : ""}
-                          ${status === "failed" ? styles.danger : ""}
-                        `}
+                    {/* Prev / Next within chapter */}
+                    <div className={styles.navControls} style={{ marginBottom: '10px' }}>
+                      <button
+                        className={styles.navArrow}
                         onClick={() => {
-                          if (!solving) {
-                            setCurrentPuzzleIndex(index);
-                            if (status === "success") {
-                              toast.info("Puzzle already solved!");
-                            } else if (status === "failed") {
-                              toast.info(
-                                "Puzzle failed - you can view but not interact!",
-                              );
+                          const newChIdx = Math.max(0, chapterCurrentIndex - 1);
+                          const newGlobalIdx = puzzles.findIndex(p => (p._id || p.id) === (navPuzzles[newChIdx]?._id || navPuzzles[newChIdx]?.id));
+                          if (newGlobalIdx !== -1) {
+                            setCurrentPuzzleIndex(newGlobalIdx);
+                            if (newChIdx < currentFrame * ITEMS_PER_PAGE) {
+                              setCurrentFrame(Math.max(0, currentFrame - 1));
                             }
                           }
                         }}
-                        style={{ cursor: "pointer" }}
+                        disabled={chapterCurrentIndex <= 0}
+                        title="Previous Puzzle"
+                        style={{ flex: 1 }}
                       >
-                        {status === "success" ? <FaCheckCircle /> : index + 1}
+                        ← Prev
+                      </button>
+
+                      <button
+                        className={styles.navArrow}
+                        onClick={() => {
+                          const newChIdx = Math.min(navPuzzles.length - 1, chapterCurrentIndex + 1);
+                          const newGlobalIdx = puzzles.findIndex(p => (p._id || p.id) === (navPuzzles[newChIdx]?._id || navPuzzles[newChIdx]?.id));
+                          if (newGlobalIdx !== -1) {
+                            setCurrentPuzzleIndex(newGlobalIdx);
+                            if (newChIdx >= (currentFrame + 1) * ITEMS_PER_PAGE) {
+                              setCurrentFrame(currentFrame + 1);
+                            }
+                          }
+                        }}
+                        disabled={chapterCurrentIndex >= navPuzzles.length - 1}
+                        title="Next Puzzle"
+                        style={{ flex: 1 }}
+                      >
+                        Next →
+                      </button>
+                    </div>
+
+                    {/* Frame pagination — only shown if >1 page */}
+                    {totalPages > 1 && (
+                      <div className={styles.paginationContainer}>
+                        <button className={styles.pageBtn} onClick={() => setCurrentFrame(0)} disabled={currentFrame === 0} title="First Page">«</button>
+                        <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))} disabled={currentFrame === 0} title="Previous Page">‹</button>
+                        <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.min(totalPages - 1, currentFrame + 1))} disabled={currentFrame >= totalPages - 1} title="Next Page">›</button>
+                        <button className={styles.pageBtn} onClick={() => setCurrentFrame(totalPages - 1)} disabled={currentFrame >= totalPages - 1} title="Last Page">»</button>
                       </div>
-                    );
-                  })}
-              </div>
-
-              {/* Puzzle Navigation Buttons */}
-              <div
-                className={styles.navControls}
-                style={{ marginBottom: "10px" }}
-              >
-                <button
-                  className={styles.navArrow}
-                  onClick={() => {
-                    const newIndex = Math.max(0, currentPuzzleIndex - 1);
-                    setCurrentPuzzleIndex(newIndex);
-                    if (newIndex < currentFrame * ITEMS_PER_PAGE) {
-                      setCurrentFrame(Math.max(0, currentFrame - 1));
-                    }
-                  }}
-                  disabled={currentPuzzleIndex === 0}
-                  title="Previous Puzzle"
-                  style={{ flex: 1 }} // Make them wide
-                >
-                  ← Prev
-                </button>
-
-                <button
-                  className={styles.navArrow}
-                  onClick={() => {
-                    const newIndex = Math.min(
-                      puzzles.length - 1,
-                      currentPuzzleIndex + 1,
-                    );
-                    setCurrentPuzzleIndex(newIndex);
-                    if (newIndex >= (currentFrame + 1) * ITEMS_PER_PAGE) {
-                      setCurrentFrame(currentFrame + 1);
-                    }
-                  }}
-                  disabled={currentPuzzleIndex === puzzles.length - 1}
-                  title="Next Puzzle"
-                  style={{ flex: 1 }} // Make them wide
-                >
-                  Next  →
-                </button>
-              </div>
-
-              {/* Professional Numbered Pagination */}
-              {Math.ceil(puzzles.length / ITEMS_PER_PAGE) > 1 && (
-                <div className={styles.paginationContainer}>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() => setCurrentFrame(0)}
-                    disabled={currentFrame === 0}
-                    title="First Page"
-                  >
-                    «
-                  </button>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() =>
-                      setCurrentFrame(Math.max(0, currentFrame - 1))
-                    }
-                    disabled={currentFrame === 0}
-                    title="Previous Page"
-                  >
-                    ‹
-                  </button>
-
-                  {(() => {
-                    const totalPages = Math.ceil(
-                      puzzles.length / ITEMS_PER_PAGE,
-                    );
-                    const visiblePages = [];
-
-                    const addPage = (i) =>
-                      visiblePages.push(
-                        // <button
-                        //   key={i}
-                        //   className={`${styles.pageBtn} ${currentFrame === i ? styles.activePage : ""}`}
-                        //   onClick={() => setCurrentFrame(i)}
-                        // >
-                        //   {i + 1}
-                        // </button>,
-                      );
-                    const addEllipsis = (key) =>
-                      visiblePages.push(
-                        <span
-                          key={key}
-                          style={{ padding: "0 4px", color: "#888" }}
-                        >
-                          ...
-                        </span>,
-                      );
-
-                    if (totalPages <= 7) {
-                      for (let i = 0; i < totalPages; i++) addPage(i);
-                    } else {
-                      addPage(0);
-                      if (currentFrame > 2) addEllipsis("e1");
-
-                      const start = Math.max(1, currentFrame - 1);
-                      const end = Math.min(totalPages - 2, currentFrame + 1);
-
-                      for (let i = start; i <= end; i++) addPage(i);
-
-                      if (currentFrame < totalPages - 3) addEllipsis("e2");
-                      addPage(totalPages - 1);
-                    }
-                    return visiblePages;
-                  })()}
-
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() =>
-                      setCurrentFrame(
-                        Math.min(
-                          Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1,
-                          currentFrame + 1,
-                        ),
-                      )
-                    }
-                    disabled={
-                      currentFrame >=
-                      Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1
-                    }
-                    title="Next Page"
-                  >
-                    ›
-                  </button>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() =>
-                      setCurrentFrame(
-                        Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1,
-                      )
-                    }
-                    disabled={
-                      currentFrame >=
-                      Math.ceil(puzzles.length / ITEMS_PER_PAGE) - 1
-                    }
-                    title="Last Page"
-                  >
-                    »
-                  </button>
-                </div>
-              )}
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}

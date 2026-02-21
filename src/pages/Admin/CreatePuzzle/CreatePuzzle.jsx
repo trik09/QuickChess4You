@@ -489,10 +489,8 @@ function CreatePuzzle() {
       try {
         const chess = new Chess(formData.fen);
         const turn = chess.turn();
-        if (firstMoveBy === 'computer' && puzzleType === 'normal') {
-          return turn === 'w' ? 'b' : 'w';
-        }
-        return turn;
+        // Computer always plays first - user plays the OPPOSITE side
+        return turn === 'w' ? 'b' : 'w';
       } catch (e) { return 'w'; }
     })();
 
@@ -767,23 +765,6 @@ function CreatePuzzle() {
                   </div>
                 </div>
 
-                {/* First Move Toggle */}
-                <div className={styles.formGroup} style={{ background: '#f0f7ff', padding: '15px', borderRadius: '8px', border: '1px solid #b3d4fc' }}>
-                  <label style={{ fontWeight: '600', color: '#1a56db', marginBottom: '8px', display: 'block' }}>First Move By</label>
-                  <div className={styles.toggleBtns} style={{ marginBottom: '10px' }}>
-                    <button type="button" className={firstMoveBy === 'human' ? styles.active : ''} onClick={() => setFirstMoveBy('human')}>👤 Human</button>
-                    <button type="button" className={firstMoveBy === 'computer' ? styles.active : ''} onClick={() => setFirstMoveBy('computer')}>🤖 Computer</button>
-                  </div>
-                  {firstMoveBy === 'computer' ? (
-                    <small style={{ color: '#4a5568', fontStyle: 'italic' }}>
-                      Computer plays the 1st move automatically, then the student plays the 2nd move, and so on.
-                    </small>
-                  ) : (
-                    <small style={{ color: '#4a5568', fontStyle: 'italic' }}>
-                      Student plays the 1st move, computer responds with the 2nd, and so on (default).
-                    </small>
-                  )}
-                </div>
               </>
             )}
 

@@ -672,6 +672,14 @@ export const LiveCompetitionProvider = ({ children }) => {
     return puzzleStateManager.isPuzzleLocked(competition.id, puzzleId);
   };
 
+  // Allow external components (e.g. PuzzlePage) to directly update participant
+  const updateParticipant = (newData) => {
+    setParticipant((prev) => ({
+      ...(prev || {}),
+      ...newData,
+    }));
+  };
+
   // Debug function to check localStorage
   const debugLocalStorage = (competitionId) => {
     const state = puzzleStateManager.getCompetitionState(competitionId);
@@ -706,6 +714,7 @@ export const LiveCompetitionProvider = ({ children }) => {
     getLeaderboard,
     disconnectFromCompetition,
     loadCompetitionPuzzles, // Expose for manual loading
+    updateParticipant, // Allow PuzzlePage to instantly sync participant data
 
     // Computed values
     getCurrentUserRank,

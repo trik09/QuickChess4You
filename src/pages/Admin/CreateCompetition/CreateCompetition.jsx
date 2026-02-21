@@ -1,26 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaTrophy,
   FaClock,
   FaUsers,
-  FaCalendar,
-  FaChess,
-  FaSearch,
-  FaFilter,
   FaPlus,
   FaChevronLeft,
   FaChevronRight,
   FaEye,
   FaCheckCircle,
   FaTimesCircle,
-  FaSortAmountDown,
-  FaLock
+  FaLock,
+  FaBookOpen,
+  FaTrash,
+  FaSearch
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import styles from "./CreateCompetition.module.css";
 import ChessBoard from "../../../components/ChessBoard/ChessBoard";
 import { competitionAPI } from "../../../services/api";
+
+// Generate unique id
+const genId = () => Math.random().toString(36).slice(2, 9);
+
+// Chapter accent colors (cycles through these)
+const CHAPTER_COLORS = [
+  "#d97706", // gold
+  "#7c3aed", // purple
+  "#0891b2", // cyan
+  "#16a34a", // green
+  "#db2777", // pink
+  "#ea580c", // orange
+];
 
 function CreateCompetition() {
   const navigate = useNavigate();
@@ -36,12 +47,18 @@ function CreateCompetition() {
 
   // Puzzle State
   const [puzzles, setPuzzles] = useState([]);
-  const [selectedPuzzles, setSelectedPuzzles] = useState([]);
   const [loadingPuzzles, setLoadingPuzzles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewPuzzle, setPreviewPuzzle] = useState(null);
 
-  // View State (Toggle between All Library and Just Selected)
+  // Chapter State
+  const [chapters, setChapters] = useState([]); // [{ id, name, puzzleIds: [] }]
+  const [activeChapterId, setActiveChapterId] = useState(null);
+  const [showChapterModal, setShowChapterModal] = useState(false);
+  const [newChapterName, setNewChapterName] = useState("");
+  const chapterInputRef = useRef(null);
+
+  // View State
   const [viewMode, setViewMode] = useState("library"); // 'library' or 'selected'
 
   // Filters
@@ -56,23 +73,29 @@ function CreateCompetition() {
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
-    limit: 10, // Show 10 puzzles per page
+    limit: 10,
     totalRecords: 0,
   });
 
-  // Options for Dropdowns
+  // Filter Options
   const [filterOptions, setFilterOptions] = useState({
     categories: [],
     difficulties: [],
     types: [],
   });
 
-  // Fetch puzzles on load and filter change
   useEffect(() => {
     if (viewMode === 'library') {
       fetchPuzzles();
     }
   }, [filters, pagination.current, viewMode]);
+
+  // Focus chapter name input when modal opens
+  useEffect(() => {
+    if (showChapterModal && chapterInputRef.current) {
+      setTimeout(() => chapterInputRef.current?.focus(), 50);
+    }
+  }, [showChapterModal]);
 
   const fetchPuzzles = async () => {
     setLoadingPuzzles(true);
@@ -82,22 +105,13 @@ function CreateCompetition() {
         page: pagination.current,
         limit: pagination.limit,
       };
-
       const response = await competitionAPI.getPuzzlesForCompetition(params);
-
       if (response.success) {
         setPuzzles(response.data);
-        setPagination((prev) => ({
-          ...prev,
-          ...response.pagination,
-        }));
-
-        if (response.filters) {
-          setFilterOptions(response.filters);
-        }
+        setPagination((prev) => ({ ...prev, ...response.pagination }));
+        if (response.filters) setFilterOptions(response.filters);
       }
     } catch (error) {
-      console.error("Failed to fetch puzzles:", error);
       toast.error("Failed to load puzzles");
     } finally {
       setLoadingPuzzles(false);
@@ -109,38 +123,99 @@ function CreateCompetition() {
     setPagination((prev) => ({ ...prev, current: 1 }));
   };
 
-  const handlePuzzleToggle = (puzzle) => {
-    setSelectedPuzzles((prev) => {
-      const isSelected = prev.some((p) => p._id === puzzle._id);
-      if (isSelected) {
-        return prev.filter((p) => p._id !== puzzle._id);
-      } else {
-        return [...prev, puzzle];
-      }
-    });
+  // --- Chapter helpers ---
+  const getChapterForPuzzle = (puzzleId) => {
+    return chapters.find(ch => ch.puzzleIds.includes(puzzleId)) || null;
   };
 
-  // Select all puzzles on current page only
-  const handleSelectAllPage = () => {
-    const currentPagePuzzles = viewMode === 'library' ? puzzles : selectedPuzzles;
-    const allSelected = currentPagePuzzles.every(puzzle =>
-      selectedPuzzles.some(p => p._id === puzzle._id)
-    );
+  const getChapterColor = (chapterId) => {
+    const idx = chapters.findIndex(ch => ch.id === chapterId);
+    return CHAPTER_COLORS[idx % CHAPTER_COLORS.length];
+  };
 
-    if (allSelected) {
-      // Deselect all puzzles on current page
-      setSelectedPuzzles(prev =>
-        prev.filter(p => !currentPagePuzzles.some(cp => cp._id === p._id))
-      );
-    } else {
-      // Select all puzzles on current page
-      setSelectedPuzzles(prev => {
-        const newSelections = currentPagePuzzles.filter(
-          puzzle => !prev.some(p => p._id === puzzle._id)
-        );
-        return [...prev, ...newSelections];
-      });
+  // All puzzles that are assigned to any chapter (flat)
+  const allAssignedPuzzleIds = chapters.flatMap(ch => ch.puzzleIds);
+  const selectedPuzzles = puzzles.filter(p => allAssignedPuzzleIds.includes(p._id));
+
+  // --- Chapter CRUD ---
+  const handleAddChapter = () => {
+    const name = newChapterName.trim();
+    if (!name) {
+      toast.error("Please enter a chapter name");
+      return;
     }
+    const newChapter = { id: genId(), name, puzzleIds: [] };
+    setChapters(prev => [...prev, newChapter]);
+    setActiveChapterId(newChapter.id);
+    setNewChapterName("");
+    setShowChapterModal(false);
+    toast.success(`Chapter "${name}" created!`);
+  };
+
+  const handleDeleteChapter = (chapterId, e) => {
+    e.stopPropagation();
+    setChapters(prev => prev.filter(ch => ch.id !== chapterId));
+    if (activeChapterId === chapterId) {
+      const remaining = chapters.filter(ch => ch.id !== chapterId);
+      setActiveChapterId(remaining.length > 0 ? remaining[0].id : null);
+    }
+  };
+
+  // --- Puzzle toggle in active chapter ---
+  const handlePuzzleToggle = (puzzle) => {
+    if (chapters.length === 0) {
+      toast.error("Please create a chapter first before selecting puzzles!");
+      return;
+    }
+    if (!activeChapterId) {
+      toast.error("Please select a chapter first!");
+      return;
+    }
+
+    const puzzleId = puzzle._id;
+    const ownerChapter = getChapterForPuzzle(puzzleId);
+
+    if (ownerChapter && ownerChapter.id !== activeChapterId) {
+      // Already in another chapter – do nothing (it's disabled)
+      return;
+    }
+
+    setChapters(prev => prev.map(ch => {
+      if (ch.id !== activeChapterId) return ch;
+      const alreadyIn = ch.puzzleIds.includes(puzzleId);
+      return {
+        ...ch,
+        puzzleIds: alreadyIn
+          ? ch.puzzleIds.filter(id => id !== puzzleId)
+          : [...ch.puzzleIds, puzzleId]
+      };
+    }));
+  };
+
+  const handleSelectAllPage = () => {
+    if (chapters.length === 0 || !activeChapterId) {
+      toast.error("Please create / select a chapter first!");
+      return;
+    }
+    const currentPagePuzzles = viewMode === 'library' ? puzzles : selectedPuzzles;
+    // Only consider puzzles that are free or in the active chapter
+    const eligible = currentPagePuzzles.filter(p => {
+      const owner = getChapterForPuzzle(p._id);
+      return !owner || owner.id === activeChapterId;
+    });
+
+    const activeChapter = chapters.find(ch => ch.id === activeChapterId);
+    const allSelected = eligible.length > 0 && eligible.every(p => activeChapter.puzzleIds.includes(p._id));
+
+    setChapters(prev => prev.map(ch => {
+      if (ch.id !== activeChapterId) return ch;
+      if (allSelected) {
+        return { ...ch, puzzleIds: ch.puzzleIds.filter(id => !eligible.some(p => p._id === id)) };
+      } else {
+        const toAdd = eligible.filter(p => !ch.puzzleIds.includes(p._id)).map(p => p._id);
+        return { ...ch, puzzleIds: [...ch.puzzleIds, ...toAdd] };
+      }
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -148,7 +223,15 @@ function CreateCompetition() {
 
     if (!formData.name.trim()) return toast.error("Enter competition name");
     if (!formData.startTime) return toast.error("Select start time");
-    if (selectedPuzzles.length === 0) return toast.error("Select at least one puzzle");
+
+    const totalPuzzles = chapters.flatMap(ch => ch.puzzleIds);
+
+    if (chapters.length === 0) {
+      return toast.error("Please create at least one chapter and add puzzles to it");
+    }
+    if (totalPuzzles.length === 0) {
+      return toast.error("Please add at least one puzzle to a chapter");
+    }
 
     setIsSubmitting(true);
     try {
@@ -157,7 +240,8 @@ function CreateCompetition() {
         startTime: new Date(formData.startTime).toISOString(),
         duration: parseInt(formData.duration),
         maxParticipants: parseInt(formData.maxParticipants) || 0,
-        puzzles: selectedPuzzles.map((p) => p._id),
+        puzzles: totalPuzzles, // flat array for backward compat
+        chapters: chapters.map(ch => ({ name: ch.name, puzzleIds: ch.puzzleIds })),
       };
 
       await competitionAPI.createCompetition(competitionData);
@@ -170,8 +254,19 @@ function CreateCompetition() {
     }
   };
 
-  // Decide what data to show in table
   const tableData = viewMode === 'selected' ? selectedPuzzles : puzzles;
+
+  // Check select-all state
+  const getSelectAllState = () => {
+    const currentPagePuzzles = viewMode === 'library' ? puzzles : selectedPuzzles;
+    const eligible = currentPagePuzzles.filter(p => {
+      const owner = getChapterForPuzzle(p._id);
+      return !owner || owner.id === activeChapterId;
+    });
+    const activeChapter = chapters.find(ch => ch.id === activeChapterId);
+    if (!activeChapter || eligible.length === 0) return false;
+    return eligible.every(p => activeChapter.puzzleIds.includes(p._id));
+  };
 
   return (
     <div className={styles.container}>
@@ -181,7 +276,7 @@ function CreateCompetition() {
       <div className={styles.header}>
         <div>
           <h1>Create Competition</h1>
-          <p>Configure details and select puzzles</p>
+          <p>Configure details and organize puzzles into chapters</p>
         </div>
         <button className={styles.cancelBtn} onClick={() => navigate("/admin/competitions")}>
           <FaTimesCircle /> Cancel
@@ -190,7 +285,7 @@ function CreateCompetition() {
 
       <form onSubmit={handleSubmit} className={styles.mainLayout}>
 
-        {/* --- Section 1: Competition Details (Compact Grid) --- */}
+        {/* --- Section 1: Basic Details --- */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <FaTrophy className={styles.iconGold} />
@@ -270,8 +365,75 @@ function CreateCompetition() {
           </div>
         </div>
 
-        {/* --- Section 2: Puzzle Management (Table View) --- */}
+        {/* --- Section 2: Chapters + Puzzle Management --- */}
         <div className={`${styles.card} ${styles.tableCard}`}>
+
+          {/* Chapter Bar */}
+          <div className={styles.chapterSection}>
+            <div className={styles.chapterSectionHeader}>
+              <div className={styles.chapterSectionLeft}>
+                <FaBookOpen className={styles.chapterSectionIcon} />
+                <span className={styles.chapterSectionTitle}>Chapters</span>
+                <span className={styles.chapterSectionHint}>
+                  {chapters.length === 0
+                    ? "Create chapters to organize your puzzles"
+                    : `${chapters.length} chapter${chapters.length !== 1 ? 's' : ''} · ${allAssignedPuzzleIds.length} puzzle${allAssignedPuzzleIds.length !== 1 ? 's' : ''} assigned`}
+                </span>
+              </div>
+              <button
+                type="button"
+                className={styles.addChapterBtn}
+                onClick={() => setShowChapterModal(true)}
+              >
+                <FaPlus /> Add Chapter
+              </button>
+            </div>
+
+            {/* Chapter Bubbles */}
+            {chapters.length > 0 && (
+              <div className={styles.chapterBubbleBar}>
+                {chapters.map((ch, idx) => {
+                  const color = CHAPTER_COLORS[idx % CHAPTER_COLORS.length];
+                  const isActive = activeChapterId === ch.id;
+                  return (
+                    <div
+                      key={ch.id}
+                      className={`${styles.chapterBubble} ${isActive ? styles.chapterBubbleActive : ''}`}
+                      style={isActive ? { '--ch-color': color, borderColor: color } : { '--ch-color': color }}
+                      onClick={() => setActiveChapterId(ch.id)}
+                    >
+                      <span
+                        className={styles.chapterDotIndicator}
+                        style={{ background: color }}
+                      />
+                      <span className={styles.chapterBubbleName}>{ch.name}</span>
+                      <span
+                        className={styles.chapterBubbleCount}
+                        style={isActive ? { background: color } : {}}
+                      >
+                        {ch.puzzleIds.length}
+                      </span>
+                      <button
+                        type="button"
+                        className={styles.chapterDeleteBtn}
+                        onClick={(e) => handleDeleteChapter(ch.id, e)}
+                        title="Delete chapter"
+                      >
+                        <FaTimesCircle />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Instruction banner when no chapter selected */}
+            {chapters.length > 0 && !activeChapterId && (
+              <div className={styles.chapterInstruction}>
+                👆 Click a chapter bubble above to select it, then pick puzzles below
+              </div>
+            )}
+          </div>
 
           {/* Toolbar */}
           <div className={styles.toolbar}>
@@ -306,7 +468,6 @@ function CreateCompetition() {
             </div>
 
             <div className={styles.toolbarRight}>
-              {/* Toggle between Library and Selected */}
               <div className={styles.viewToggle}>
                 <button
                   type="button"
@@ -320,7 +481,7 @@ function CreateCompetition() {
                   className={viewMode === 'selected' ? styles.activeView : ''}
                   onClick={() => setViewMode('selected')}
                 >
-                  Selected ({selectedPuzzles.length})
+                  Assigned ({allAssignedPuzzleIds.length})
                 </button>
               </div>
 
@@ -334,6 +495,18 @@ function CreateCompetition() {
             </div>
           </div>
 
+          {/* Active chapter indicator strip */}
+          {activeChapterId && (() => {
+            const ch = chapters.find(c => c.id === activeChapterId);
+            const color = getChapterColor(activeChapterId);
+            return (
+              <div className={styles.activeChapterStrip} style={{ borderLeftColor: color }}>
+                <span className={styles.activeChapterDot} style={{ background: color }} />
+                <span>Adding puzzles to: <strong>{ch?.name}</strong></span>
+              </div>
+            );
+          })()}
+
           {/* Data Table */}
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
@@ -344,51 +517,57 @@ function CreateCompetition() {
                       type="button"
                       className={styles.selectAllBtn}
                       onClick={handleSelectAllPage}
-                      title="Select all puzzles on this page"
+                      title="Select all eligible puzzles on this page"
+                      disabled={!activeChapterId}
                     >
-                      {(() => {
-                        const currentPagePuzzles = viewMode === 'library' ? puzzles : selectedPuzzles;
-                        const allSelected = currentPagePuzzles.length > 0 && currentPagePuzzles.every(puzzle =>
-                          selectedPuzzles.some(p => p._id === puzzle._id)
-                        );
-                        return allSelected ? <FaCheckCircle /> : <div className={styles.emptyCheckbox}></div>;
-                      })()}
+                      {getSelectAllState() ? <FaCheckCircle /> : <div className={styles.emptyCheckbox} />}
                     </button>
                   </th>
                   <th>Puzzle Title / ID</th>
                   <th>Category</th>
                   <th>Difficulty</th>
                   <th>Type</th>
+                  <th width="100">Chapter</th>
                   <th width="80">Preview</th>
                 </tr>
               </thead>
               <tbody>
                 {loadingPuzzles ? (
                   <tr>
-                    <td colSpan="6" className={styles.loadingCell}>
-                      <div className={styles.spinner}></div> Loading library...
+                    <td colSpan="7" className={styles.loadingCell}>
+                      <div className={styles.spinner} /> Loading library...
                     </td>
                   </tr>
                 ) : tableData.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className={styles.emptyCell}>
+                    <td colSpan="7" className={styles.emptyCell}>
                       {viewMode === 'selected'
-                        ? "No puzzles selected yet."
+                        ? "No puzzles assigned to any chapter yet."
                         : "No puzzles found matching filters."}
                     </td>
                   </tr>
                 ) : (
                   tableData.map((puzzle) => {
-                    const isSelected = selectedPuzzles.some(p => p._id === puzzle._id);
+                    const ownerChapter = getChapterForPuzzle(puzzle._id);
+                    const isInActiveChapter = ownerChapter && ownerChapter.id === activeChapterId;
+                    const isInOtherChapter = ownerChapter && ownerChapter.id !== activeChapterId;
+                    const isSelected = !!ownerChapter;
+                    const chapterColor = ownerChapter ? getChapterColor(ownerChapter.id) : null;
+
                     return (
                       <tr
                         key={puzzle._id}
-                        className={isSelected ? styles.selectedRow : ''}
-                        onClick={() => handlePuzzleToggle(puzzle)}
+                        className={`
+                          ${isInActiveChapter ? styles.selectedRow : ''}
+                          ${isInOtherChapter ? styles.disabledRow : ''}
+                        `}
+                        onClick={() => !isInOtherChapter && handlePuzzleToggle(puzzle)}
+                        style={{ cursor: isInOtherChapter ? 'not-allowed' : 'pointer' }}
                       >
                         <td className={styles.checkCell}>
-                          <div className={`${styles.checkbox} ${isSelected ? styles.checked : ''}`}>
-                            {isSelected && <FaCheckCircle />}
+                          <div className={`${styles.checkbox} ${isInActiveChapter ? styles.checked : ''}`}
+                            style={isInActiveChapter ? { borderColor: chapterColor, color: chapterColor } : {}}>
+                            {isInActiveChapter && <FaCheckCircle />}
                           </div>
                         </td>
                         <td>
@@ -404,6 +583,18 @@ function CreateCompetition() {
                           </span>
                         </td>
                         <td><span className={styles.typeText}>{puzzle.type}</span></td>
+                        <td>
+                          {ownerChapter ? (
+                            <span
+                              className={styles.chapterPill}
+                              style={{ background: chapterColor + '20', color: chapterColor, borderColor: chapterColor + '60' }}
+                            >
+                              {ownerChapter.name}
+                            </span>
+                          ) : (
+                            <span className={styles.unassignedText}>—</span>
+                          )}
+                        </td>
                         <td>
                           <button
                             type="button"
@@ -424,7 +615,7 @@ function CreateCompetition() {
             </table>
           </div>
 
-          {/* Pagination (Only show if in library view) */}
+          {/* Pagination */}
           {viewMode === 'library' && !loadingPuzzles && (
             <div className={styles.pagination}>
               <span>Showing {tableData.length} of {pagination.totalRecords}</span>
@@ -449,19 +640,19 @@ function CreateCompetition() {
           )}
         </div>
 
-        {/* --- Footer Sticky Action Bar --- */}
+        {/* --- Footer --- */}
         <div className={styles.stickyFooter}>
           <div className={styles.footerInfo}>
             <span className={styles.selectionCount}>
-              {selectedPuzzles.length} Puzzles Selected
+              {allAssignedPuzzleIds.length} Puzzles · {chapters.length} Chapters
             </span>
-            <small>Make sure to cover different difficulty levels</small>
+            <small>Organize puzzles into chapters for a structured competition</small>
           </div>
           <div className={styles.footerActions}>
             <button
               type="submit"
               className={styles.submitBtn}
-              disabled={isSubmitting || selectedPuzzles.length === 0}
+              disabled={isSubmitting || allAssignedPuzzleIds.length === 0}
             >
               {isSubmitting ? "Creating..." : "Create Competition"}
             </button>
@@ -470,7 +661,49 @@ function CreateCompetition() {
 
       </form>
 
-      {/* Preview Modal */}
+      {/* --- Chapter Name Modal --- */}
+      {showChapterModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowChapterModal(false)}>
+          <div className={styles.chapterModalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.chapterModalHeader}>
+              <FaBookOpen className={styles.chapterModalIcon} />
+              <h4>New Chapter</h4>
+            </div>
+            <p className={styles.chapterModalDesc}>
+              Give this chapter a descriptive name so students can navigate your puzzles easily.
+            </p>
+            <input
+              ref={chapterInputRef}
+              type="text"
+              className={styles.chapterNameInput}
+              placeholder="e.g. Opening Tactics, Endgame Practice..."
+              value={newChapterName}
+              onChange={e => setNewChapterName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddChapter()}
+              maxLength={40}
+            />
+            <div className={styles.chapterModalActions}>
+              <button
+                type="button"
+                className={styles.chapterModalCancel}
+                onClick={() => { setShowChapterModal(false); setNewChapterName(""); }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.chapterModalCreate}
+                onClick={handleAddChapter}
+                disabled={!newChapterName.trim()}
+              >
+                <FaPlus /> Create Chapter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Preview Modal --- */}
       {previewPuzzle && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -479,7 +712,6 @@ function CreateCompetition() {
               <button onClick={() => setPreviewPuzzle(null)}><FaTimesCircle /></button>
             </div>
             <div className={styles.boardContainer}>
-              {/* Use pointer-events none to make board read-only */}
               <div style={{ pointerEvents: 'none' }}>
                 <ChessBoard
                   fen={previewPuzzle.fen}
@@ -498,8 +730,12 @@ function CreateCompetition() {
                   handlePuzzleToggle(previewPuzzle);
                   setPreviewPuzzle(null);
                 }}
+                disabled={(() => {
+                  const owner = getChapterForPuzzle(previewPuzzle._id);
+                  return owner && owner.id !== activeChapterId;
+                })()}
               >
-                {selectedPuzzles.some(p => p._id === previewPuzzle._id) ? "Remove" : "Select Puzzle"}
+                {getChapterForPuzzle(previewPuzzle._id)?.id === activeChapterId ? "Remove from Chapter" : "Add to Chapter"}
               </button>
             </div>
           </div>

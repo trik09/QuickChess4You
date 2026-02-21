@@ -131,7 +131,7 @@
     z-index: 5;
     display: flex;
     align-items: center;
-    min-height: 260px;
+    min-height: 220px;
     padding: 15px 0;
 }
 
@@ -228,12 +228,12 @@
    ======================================== */
 .planets-lineup {
     display: flex;
-    align-items: flex-end;
-    gap: 20px;
+    align-items: center;
+    gap: 4px;
     flex: 1;
     z-index: 5;
     position: relative;
-    padding: 20px 0 10px 10px;
+    padding: 10px 4px 10px 10px;
     justify-content: space-around;
 }
 
@@ -909,4 +909,48 @@
         width: 44px;
         height: 44px;
     }
+}
+
+/* ---- "you" planet highlight ---- */
+.planet-orb-you {
+    outline: 2px solid rgba(100, 200, 255, 0.55);
+    outline-offset: 3px;
+}
+
+/* ---- per-planet solved progress bar ---- */
+.planet-progress-wrap {
+    width: 90%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0px;
+}
+
+.planet-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- crown badge on planet ---- */
+.planet-crown {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+    animation: crownBob 2.5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* ---- "You" score highlight ---- */
+.planet-slot-score.score-you {
+    color: #81d4fa;
+    font-weight: 700;
+    font-size: 0.62rem;
+    text-shadow: 0 0 6px rgba(100, 181, 246, 0.5);
 }

@@ -259,6 +259,13 @@ function Leaderboard() {
                   </div>
                 </div>
               </div>
+
+              {/* Fastest Solver Banner */}
+              {fastestSolver && (
+                <div className={styles.fastestBanner}>
+                  <FaBolt /> FASTEST SOLVER: {fastestSolver.username}
+                </div>
+              )}
             </div>
 
             {/* Stats Cards */}
@@ -295,13 +302,13 @@ function Leaderboard() {
 
           {/* RIGHT: Full Rankings */}
           <div className={styles.rankingsPanel}>
-            <div className={styles.rankingsHeader}>
+            <div className={styles.rankingsPanelHeader}>
               <div className={styles.rankingsTitle}>
-                <FaChartLine /> FULL RANKINGS
+                <FaChartLine /> Full Ranking
               </div>
-              <span className={styles.rankingsCount}>
+              <div className={styles.rankingsCount}>
                 {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''}
-              </span>
+              </div>
             </div>
 
             <div className={styles.rankingsList}>

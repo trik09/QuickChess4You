@@ -24,51 +24,29 @@ const VISIBLE_SLOTS = 9; // 1 sun + 8 planets
    COMPONENT
 ======================================================== */
 const PuzzleRacer = () => {
-  const { leaderboard, competition, participant } = useLiveCompetition();
+  const { leaderboard, competition, participant, puzzles: contextPuzzles, getSolvedPuzzlesCount } = useLiveCompetition();
   const { user } = useAuth();
 
   const totalPuzzles = useMemo(() => {
     if (competition?.puzzles?.length) return competition.puzzles.length;
+    if (contextPuzzles?.length) return contextPuzzles.length;
     return 10;
-  }, [competition]);
+  }, [competition, contextPuzzles]);
 
-  // Build sorted racer list
-  const racers = useMemo(() => {
-    const currentUserId = user ? user.id || user._id : null;
-    let displayList = [];
-
-    if (leaderboard?.length > 0) {
-      // Map leaderboard to immediately reflect local participant updates for the current user
-      displayList = leaderboard.map((p) => {
-        if (currentUserId && (p.userId === currentUserId || p.username === user?.username)) {
-          return {
-            ...p,
-            score: Math.max(p.score || 0, participant?.score || 0),
-            puzzlesSolved: Math.max(p.puzzlesSolved || 0, participant?.puzzlesSolved || 0),
-          };
-        }
-        return p;
-      });
-      displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  // Ground-truth solved count — prioritize participant.puzzlesSolved (updated instantly
+  // via updateParticipant() from PuzzlePage on every successful solve), fall back to
+  // counting solved puzzles in the context array.
+  const localSolvedCount = useMemo(() => {
+    // participant.puzzlesSolved is updated immediately by PuzzlePage via updateParticipant()
+    if (participant?.puzzlesSolved != null && participant.puzzlesSolved > 0) {
+      return participant.puzzlesSolved;
     }
-
-    if (currentUserId) {
-      const inList = displayList.find(
-        (p) => p.userId === currentUserId || p.username === user?.username
-      );
-      if (!inList && user) {
-        displayList.push({
-          userId: currentUserId,
-          username: user.username || user.name || "You",
-          rank: 999,
-          score: participant?.score || 0,
-          puzzlesSolved: participant?.puzzlesSolved || 0,
-        });
-      }
+    // Fallback: count from context puzzles array (populated by loadCompetitionPuzzles)
+    if (contextPuzzles?.length > 0) {
+      return contextPuzzles.filter(p => p.isSolved).length;
     }
-
-    return displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
-  }, [leaderboard, user, participant]);
+    return 0;
+  }, [participant, contextPuzzles]);
 
   const currentUserId = user ? user.id || user._id : null;
 
@@ -80,13 +58,47 @@ const PuzzleRacer = () => {
     [currentUserId, user]
   );
 
+  // Build sorted racer list – current user's score always reads from local ground truth
+  const racers = useMemo(() => {
+    let displayList = [];
+
+    if (leaderboard?.length > 0) {
+      displayList = leaderboard.map((p) => {
+        if (currentUserId && (p.userId === currentUserId || p.username === user?.username)) {
+          return {
+            ...p,
+            score: Math.max(p.score || 0, participant?.score || 0),
+            // Use local puzzle count as ground truth — avoids stale server value
+            puzzlesSolved: Math.max(p.puzzlesSolved || 0, localSolvedCount),
+          };
+        }
+        return p;
+      });
+      displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+    }
+
+    // If current user not in leaderboard yet, add them with local data
+    if (currentUserId) {
+      const inList = displayList.find(
+        (p) => p.userId === currentUserId || p.username === user?.username
+      );
+      if (!inList && user) {
+        displayList.push({
+          userId: currentUserId,
+          username: user.username || user.name || "You",
+          rank: 999,
+          score: participant?.score || 0,
+          puzzlesSolved: localSolvedCount,
+        });
+      }
+    }
+
+    return displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  }, [leaderboard, user, participant, currentUserId, localSolvedCount]);
+
   // Sun = rank 1, planets = ranks 2-9
   const sunRacer = racers[0] || null;
   const planetSlots = PLANET_DATA.map((planet, i) => {
-    // We want Rank 2 (racers[1]) to be at Mercury (last index) roughly
-    // So we map in reverse order:
-    // i=7 (Mercury) -> racer 1 (Rank 2)
-    // i=0 (Neptune) -> racer 8 (Rank 9)
     const racerIndex = PLANET_DATA.length - i;
     return {
       planet,
@@ -126,17 +138,17 @@ const PuzzleRacer = () => {
 
       {/* Solar System Visual */}
       <div className="solar-system-scene">
-        {/* Decorative orbit curves */}
-        <svg className="orbit-svg" viewBox="0 0 1000 340" preserveAspectRatio="none">
-          {[180, 220, 260, 300, 340, 380, 420, 460].map((rx, i) => (
+        {/* Orbit ellipses anchored at sun position */}
+        <svg className="orbit-svg" viewBox="0 0 1000 260" preserveAspectRatio="none">
+          {[130, 175, 220, 265, 310, 355, 400, 445].map((rx, i) => (
             <ellipse
               key={i}
-              cx="920"
-              cy="170"
+              cx="940"
+              cy="130"
               rx={rx}
-              ry={rx * 0.45}
+              ry={rx * 0.38}
               fill="none"
-              stroke="rgba(255,255,255,0.04)"
+              stroke="rgba(255,255,255,0.045)"
               strokeWidth="1"
             />
           ))}
@@ -146,11 +158,12 @@ const PuzzleRacer = () => {
         <div className="comet comet-1" />
         <div className="comet comet-2" />
 
-        {/* Planets area (left → center) */}
+        {/* Planets area */}
         <div className="planets-lineup">
           {planetSlots.map(({ planet, racer, rank }, idx) => {
             const isCurrent = racer && isCurrentUser(racer);
-            const solved = racer?.puzzlesSolved || 0;
+            // Use local ground truth for current user
+            const solved = isCurrent ? localSolvedCount : (racer?.puzzlesSolved || 0);
 
             return (
               <div
@@ -160,24 +173,33 @@ const PuzzleRacer = () => {
               >
                 {/* The sphere */}
                 <div
-                  className={`planet-orb planet-float-${idx + 1}`}
+                  className={`planet-orb planet-float-${idx + 1} ${isCurrent ? "planet-orb-you" : ""}`}
                   style={{
                     width: `${planet.size}px`,
                     height: `${planet.size}px`,
                     background: `radial-gradient(circle at 35% 35%, ${planet.color1}, ${planet.color2} 40%, ${planet.color3} 75%, ${planet.color4})`,
-                    boxShadow: `0 0 ${planet.size * 0.4}px ${planet.glow}, 0 0 ${planet.size * 0.8}px ${planet.glow.replace(/[\d.]+\)$/, '0.12)')}`,
+                    boxShadow: isCurrent
+                      ? `0 0 ${planet.size * 0.5}px ${planet.glow}, 0 0 ${planet.size}px rgba(120,200,255,0.25), 0 0 3px rgba(255,255,255,0.6)`
+                      : `0 0 ${planet.size * 0.4}px ${planet.glow}, 0 0 ${planet.size * 0.8}px ${planet.glow.replace(/[\d.]+\)$/, '0.1)')}`,
                   }}
                 >
-                  {/* Saturn ring */}
                   {planet.hasRing && <div className="saturn-ring" />}
-                  {/* Jupiter bands */}
                   {planet.hasBands && <div className="jupiter-bands" />}
-                  {/* Earth land patches */}
                   {planet.hasLand && <div className="earth-land" />}
-
-                  {/* Highlight shine */}
                   <div className="planet-shine" />
+                  {/* Crown badge for rank 1 on planet */}
+                  {rank === 1 && racer && <span className="planet-crown">👑</span>}
                 </div>
+
+                {/* Score bar */}
+                {racer && (
+                  <div className="planet-progress-wrap">
+                    <div
+                      className="planet-progress-bar"
+                      style={{ width: `${(solved / totalPuzzles) * 100}%`, background: isCurrent ? 'linear-gradient(90deg,#4fc3f7,#81d4fa)' : 'rgba(255,255,255,0.2)' }}
+                    />
+                  </div>
+                )}
 
                 {/* Label below */}
                 <div className="planet-slot-label">
@@ -186,7 +208,7 @@ const PuzzleRacer = () => {
                       <span className={`planet-slot-name ${isCurrent ? "name-you" : ""}`}>
                         {isCurrent ? "⭐ You" : racer.username}
                       </span>
-                      <span className="planet-slot-score">
+                      <span className={`planet-slot-score ${isCurrent ? "score-you" : ""}`}>
                         {solved}/{totalPuzzles}
                       </span>
                     </>
@@ -213,7 +235,7 @@ const PuzzleRacer = () => {
                   {isCurrentUser(sunRacer) ? "⭐ You" : sunRacer.username}
                 </span>
                 <span className="sun-player-score">
-                  {sunRacer.puzzlesSolved || 0}/{totalPuzzles}
+                  {isCurrentUser(sunRacer) ? localSolvedCount : (sunRacer.puzzlesSolved || 0)}/{totalPuzzles}
                 </span>
               </>
             ) : (
@@ -230,7 +252,7 @@ const PuzzleRacer = () => {
           <div className="star-info-3d">
             <span className="star-username-3d">⭐ You</span>
             <span className="star-rank-3d">
-              Rank #{currentUserRacer.rank} · {currentUserRacer.puzzlesSolved || 0}/{totalPuzzles} solved
+              Rank #{currentUserRacer.rank} · {localSolvedCount}/{totalPuzzles} solved
             </span>
           </div>
         </div>

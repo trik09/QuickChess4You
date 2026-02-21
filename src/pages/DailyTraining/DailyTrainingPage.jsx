@@ -165,16 +165,11 @@ function DailyTrainingPage() {
                         {/* To Move Indicator - Highlighted */}
                         {currentPuzzle && (() => {
                             const fenTurn = currentPuzzle.fen.split(" ")[1]; // 'w' or 'b' from FEN
-                            const isComputerFirst = currentPuzzle.firstMoveBy === 'computer';
-                            // If computer goes first, student plays the opposite color
-                            const studentColor = isComputerFirst
-                                ? (fenTurn === 'w' ? 'b' : 'w')
-                                : fenTurn;
+                            // Computer always plays first, student plays the opposite color
+                            const studentColor = fenTurn === 'w' ? 'b' : 'w';
                             return (
                                 <div className={styles.toMoveSection}>
-                                    <div className={styles.toMoveLabel}>
-                                        {isComputerFirst ? 'You Play As:' : 'Turn to Move:'}
-                                    </div>
+                                    <div className={styles.toMoveLabel}>You Play As:</div>
                                     <div className={styles.toMoveIndicator}>
                                         <div
                                             className={`${styles.colorDot} ${studentColor === "w"
@@ -251,7 +246,7 @@ function DailyTrainingPage() {
                                 alternativeSolutions={currentPuzzle.alternativeSolutions}
                                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                                 kidsConfig={currentPuzzle.kidsConfig}
-                                firstMoveBy={currentPuzzle.firstMoveBy || 'human'}
+                                firstMoveBy={currentPuzzle.firstMoveBy}
                                 onPuzzleSolved={handlePuzzleSolved}
                                 onWrongMove={handleWrongMove}
                                 onBoardStateChange={(fen, moveHistory) => {
