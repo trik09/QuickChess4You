@@ -6,7 +6,6 @@ import {
   FaMedal,
   FaUserCircle,
   FaSync,
-  FaClock,
   FaPuzzlePiece,
 } from "react-icons/fa";
 import "./CompetitionLeaderboard.css";
@@ -21,88 +20,64 @@ const CompetitionLeaderboard = ({
   const [lastUpdate, setLastUpdate] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+  /* =====================================================
+     EFFECT
+  ===================================================== */
   useEffect(() => {
     if (!competitionId) return;
 
-    // Load initial leaderboard
-    loadLeaderboard();
-
-    // If it's a live competition, setup real-time updates and ensure participation
-    if (isLive) {
+    if (!isLive) {
+      loadLeaderboard();
+    } else {
       ensureParticipation();
       setupLiveUpdates();
     }
 
     return () => {
-      if (isLive) {
-        cleanup();
-      }
+      cleanup();
     };
   }, [competitionId, isLive]);
 
+  /* =====================================================
+     ENSURE PARTICIPATION (LIVE ONLY)
+  ===================================================== */
   const ensureParticipation = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const token = localStorage.getItem("token");
 
-      if (!user.id || !token) {
-        return;
-      }
+      if (!user?.id || !token) return;
 
-      // Try to participate in the live competition
       await liveCompetitionAPI.participate(
         competitionId,
-        user.username || user.name,
+        user.username || user.name
       );
 
-      // Reload leaderboard after participation
-      setTimeout(() => {
-        loadLeaderboard();
-      }, 1000);
+      // ❌ NO leaderboard reload here
+      // Socket will handle everything
     } catch (error) {
-      // This is expected if user is already participating
+      // User already participating — ignore
     }
   };
 
+  /* =====================================================
+     HTTP LEADERBOARD (NON-LIVE ONLY)
+  ===================================================== */
   const loadLeaderboard = async () => {
     try {
       setLoading(true);
 
-      const response = await liveCompetitionAPI.getLeaderboard(competitionId);
+      const response = await liveCompetitionAPI.getLeaderboard(
+        competitionId
+      );
 
       if (response.success) {
         setLeaderboard(response.leaderboard);
-        setLastUpdate(new Date());
-      } else {
-        // Fallback to regular competition API
-        try {
-          const fallbackResponse = await fetch(
-            `http://localhost:4000/api/competition/${competitionId}/leaderboard`,
-          );
-          const fallbackData = await fallbackResponse.json();
-
-          if (fallbackData.leaderboard) {
-            // Convert regular leaderboard format to live format
-            const convertedLeaderboard = fallbackData.leaderboard.map(
-              (participant, index) => ({
-                rank: index + 1,
-                userId: participant.user._id || participant.user,
-                username:
-                  participant.user.name ||
-                  participant.user.username ||
-                  "Unknown",
-                score: participant.score || 0,
-                puzzlesSolved: participant.ENDEDPuzzles?.length || 0,
-                timeSpent: 0,
-              }),
-            );
-            setLeaderboard(convertedLeaderboard);
-            setLastUpdate(new Date());
-          }
-        } catch (fallbackError) {
-          console.error("Fallback leaderboard failed:", fallbackError);
-        }
       }
+
+      setLastUpdate(new Date());
     } catch (error) {
       console.error("Failed to load leaderboard:", error);
     } finally {
@@ -110,55 +85,60 @@ const CompetitionLeaderboard = ({
     }
   };
 
+  /* =====================================================
+     SOCKET LIVE UPDATES
+  ===================================================== */
   const setupLiveUpdates = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    try {
-      socketService
-        .connect({
-          competition: { id: competitionId },
-        })
-        .then((socket) => {
-          setIsConnected(true);
+    const socket = socketService.connect();
 
-          const user = JSON.parse(localStorage.getItem("user") || "{}");
+    socket.on("connect", () => {
+      setIsConnected(true);
 
-          socket.emit("joinCompetition", {
-            competitionId,
-            username: user.username || user.name || "Anonymous",
-          });
-
-          socket.on("connect", () => setIsConnected(true));
-          socket.on("disconnect", () => setIsConnected(false));
-        })
-        .catch((error) => {
-          console.error("Socket connection failed:", error);
-          setIsConnected(false);
-        });
-
-      socketService.on("leaderboardUpdate", (newLeaderboard) => {
-        setLeaderboard(newLeaderboard);
-        setLastUpdate(new Date());
+      socket.emit("joinCompetition", {
+        competitionId,
       });
+    });
 
-      socketService.on("error", () => setIsConnected(false));
-    } catch (error) {
+    socket.on("competitionJoined", (data) => {
+      setLeaderboard(data.leaderboard || []);
+      setLastUpdate(new Date());
+      setLoading(false);
+    });
+
+    socket.on("leaderboardUpdate", (data) => {
+      setLeaderboard(data || []);
+      setLastUpdate(new Date());
+      setLoading(false);
+    });
+
+    socket.on("disconnect", () => {
       setIsConnected(false);
-    }
+    });
   };
 
+  /* =====================================================
+     CLEANUP (IMPORTANT)
+  ===================================================== */
   const cleanup = () => {
-    socketService.disconnect();
+    const socket = socketService.getSocket?.();
+
+    if (socket) {
+      socket.off("connect");
+      socket.off("competitionJoined");
+      socket.off("leaderboardUpdate");
+      socket.off("disconnect");
+    }
+
+    socketService.disconnect?.();
     setIsConnected(false);
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
+  /* =====================================================
+     RENDER HELPERS
+  ===================================================== */
   const getRankStart = (rank) => {
     switch (rank) {
       case 1:
@@ -184,8 +164,9 @@ const CompetitionLeaderboard = ({
     }
   };
 
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-
+  /* =====================================================
+     LOADING STATE
+  ===================================================== */
   if (loading) {
     return (
       <div className="competition-leaderboard loading">
@@ -195,9 +176,14 @@ const CompetitionLeaderboard = ({
     );
   }
 
+  /* =====================================================
+     UI
+  ===================================================== */
   return (
     <div
-      className={`competition-leaderboard ${theme === "light" ? "light-theme" : ""}`}
+      className={`competition-leaderboard ${
+        theme === "light" ? "light-theme" : ""
+      }`}
     >
       <div className="leaderboard-header-stylish">
         <div className="header-content">
@@ -206,13 +192,15 @@ const CompetitionLeaderboard = ({
             {isLive ? "Live Updates" : "Final Results"}
           </p>
         </div>
-        <button
-          className="refresh-btn-stylish"
-          onClick={loadLeaderboard}
-          title="Refresh leaderboard"
-        >
-          <FaSync className={loading ? "spinning" : ""} />
-        </button>
+
+        {!isLive && (
+          <button
+            className="refresh-btn-stylish"
+            onClick={loadLeaderboard}
+          >
+            <FaSync className={loading ? "spinning" : ""} />
+          </button>
+        )}
       </div>
 
       <div className="leaderboard-list-stylish">
@@ -221,7 +209,9 @@ const CompetitionLeaderboard = ({
             <div
               key={participant.userId}
               className={`leaderboard-card ${
-                participant.userId === currentUser.id ? "current-user-card" : ""
+                participant.userId === currentUser?.id
+                  ? "current-user-card"
+                  : ""
               } rank-${participant.rank}`}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
@@ -229,12 +219,17 @@ const CompetitionLeaderboard = ({
                 <div className="rank-display">
                   {getRankStart(participant.rank)}
                 </div>
+
                 <div className="user-info">
                   <span className="user-avatar">
                     <FaUserCircle />
                   </span>
-                  <span className="username">{participant.username}</span>
-                  {participant.userId === currentUser.id && (
+
+                  <span className="username">
+                    {participant.username}
+                  </span>
+
+                  {participant.userId === currentUser?.id && (
                     <span className="you-badge">YOU</span>
                   )}
                 </div>
@@ -242,14 +237,18 @@ const CompetitionLeaderboard = ({
 
               <div className="card-right">
                 <div className="stat-group primary">
-                  <div className="stat-value">{participant.score}</div>
+                  <div className="stat-value">
+                    {participant.score}
+                  </div>
                   <div className="stat-label">PTS</div>
                 </div>
+
                 <div className="stat-divider"></div>
+
                 <div className="stat-group">
                   <div className="stat-value">
                     <FaPuzzlePiece className="icon-small" />{" "}
-                    {participant.puzzlesSolved}
+                    {participant.puzzlesSolved || 0}
                   </div>
                 </div>
               </div>
@@ -262,14 +261,6 @@ const CompetitionLeaderboard = ({
             </div>
             <h3>No Participants Yet</h3>
             <p>Be the first to join and solve puzzles!</p>
-            {isLive && (
-              <button
-                onClick={ensureParticipation}
-                className="join-btn-stylish"
-              >
-                Join Competition
-              </button>
-            )}
           </div>
         )}
       </div>
