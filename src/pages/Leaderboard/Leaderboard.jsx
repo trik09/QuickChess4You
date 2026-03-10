@@ -14,7 +14,10 @@ import {
   FaArrowLeft,
   FaChessKnight,
   FaBullseye,
-  FaStopwatch
+  FaStopwatch,
+  FaSearch,
+  FaChevronLeft,
+  FaChevronRight
 } from "react-icons/fa";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { competitionAPI } from "../../services/api";
@@ -36,6 +39,7 @@ function Leaderboard() {
   const [error, setError] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
   const hasAutoPaginatedRef = React.useRef(false);
 
@@ -181,16 +185,25 @@ function Leaderboard() {
     ? [...eligibleSolvers].sort((a, b) => (a.timeSpent || 999999) - (b.timeSpent || 999999))[0]
     : null;
 
-  // Pagination Logic
+  // Pagination & Search Logic
+  const filteredLeaderboard = leaderboard.filter(user =>
+    user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentLeaderboard = leaderboard.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(leaderboard.length / itemsPerPage);
+  const currentLeaderboard = filteredLeaderboard.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLeaderboard.length / itemsPerPage);
 
   const handlePageChange = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   return (
@@ -323,29 +336,46 @@ function Leaderboard() {
                 <div className={styles.rankingsTitle}>
                   <FaChartLine /> Full Ranking
                 </div>
-                {/* Pagination UI moved to TOP */}
-                {totalPages > 1 && (
-                  <div className={styles.paginationContainer} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      style={{ padding: '4px 10px', borderRadius: '6px', background: currentPage === 1 ? 'rgba(255,255,255,0.05)' : 'rgba(212,163,115,0.1)', color: currentPage === 1 ? '#555' : '#d4a373', border: 'none', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: '600', fontSize: '0.75rem', transition: 'all 0.2s' }}
-                    >
-                      Prev
-                    </button>
-                    <span style={{ color: '#d4a373', fontWeight: '500', fontSize: '0.8rem', letterSpacing: '0.02em', margin: '0 4px' }}>
-                      Page <strong style={{ color: '#fbbf24' }}>{currentPage}</strong> of {totalPages}
-                    </span>
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      style={{ padding: '4px 10px', borderRadius: '6px', background: currentPage === totalPages ? 'rgba(255,255,255,0.05)' : '#d4a373', color: currentPage === totalPages ? '#555' : '#171412', border: 'none', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: '700', fontSize: '0.75rem', transition: 'all 0.2s' }}
-                    >
-                      Next
-                    </button>
+
+                <div className={styles.headerControls}>
+                  <div className={styles.searchWrapper}>
+                    <FaSearch className={styles.searchIcon} />
+                    <input
+                      type="text"
+                      placeholder="Search player..."
+                      className={styles.searchInput}
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                    />
                   </div>
-                )}
+
+                  {totalPages > 1 && (
+                    <div className={styles.paginationArrowContainer}>
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={styles.pageArrowBtn}
+                        title="Previous"
+                      >
+                        <FaChevronLeft />
+                      </button>
+                      <span className={styles.pageIndicator}>
+                        {currentPage} / {totalPages}
+                      </span>
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={styles.pageArrowBtn}
+                        title="Next"
+                      >
+                        <FaChevronRight />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              <div className={styles.headerDivider} />
 
               <div className={styles.rankingsList}>
                 {currentLeaderboard.map((user, idx) => {

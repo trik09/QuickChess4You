@@ -504,6 +504,142 @@
   margin-top: 0.2rem;
 }
 
+/* Header Controls: Search + Pagination */
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: rgba(212, 163, 115, 0.4);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 163, 115, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px 8px 34px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchInput:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #d4a373;
+  box-shadow: 0 0 12px rgba(212, 163, 115, 0.15);
+}
+
+.searchInput::placeholder {
+  color: #666;
+}
+
+.paginationArrowContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageArrowBtn {
+  background: rgba(212, 163, 115, 0.1);
+  border: 1px solid rgba(212, 163, 115, 0.2);
+  color: #d4a373;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.pageArrowBtn:hover:not(:disabled) {
+  background: #d4a373;
+  color: #171412;
+  transform: scale(1.08);
+}
+
+.pageArrowBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.pageArrowBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
+  color: #555;
+}
+
+.pageIndicator {
+  color: #d4a373;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 45px;
+  text-align: center;
+}
+
+/* Divider between header and list */
+.headerDivider {
+  height: 1px;
+  background: linear-gradient(to right, rgba(212, 163, 115, 0.15), rgba(212, 163, 115, 0.02) 80%);
+  margin: 0 1.5rem;
+  opacity: 0.5;
+}
+
+[data-theme='light'] .searchInput {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #1a202c;
+}
+
+[data-theme='light'] .searchInput::placeholder {
+  color: #94a3b8;
+}
+
+[data-theme='light'] .searchInput:focus {
+  background: #fff;
+  border-color: #b58863;
+  box-shadow: 0 0 10px rgba(181, 136, 99, 0.1);
+}
+
+[data-theme='light'] .pageArrowBtn {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+[data-theme='light'] .pageArrowBtn:hover:not(:disabled) {
+  background: #b58863;
+  color: #fff;
+  border-color: #b58863;
+}
+
+[data-theme='light'] .pageIndicator {
+  color: #b58863;
+}
+
+[data-theme='light'] .searchIcon {
+  color: #94a3b8;
+}
+
 .rankingsList {
   overflow-y: auto;
   flex: 1;
