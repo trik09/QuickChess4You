@@ -1,75 +1,52 @@
 /* Competition Lobby - Gaming Pro Theme */
 
 /* ========== THEME VARIABLES ========== */
-/* Copied from Leaderboard.module.css for consistency */
-:root {
-    /* Default Light Mode - Clean, Sharp, Professional */
-    --bg-primary: #f0f2f5;
-    --bg-card: #ffffff;
-    --bg-card-hover: #f9fafb;
-    --bg-glass: rgba(255, 255, 255, 0.8);
+.competitionLobby {
+    /* Map local variables to Global Theme */
+    --bg-primary: var(--bg-light, #161512);
+    --bg-card: var(--bg-white, #262421);
+    --bg-card-hover: var(--bg-secondary, #302e2c);
+    --bg-glass: var(--white-or-black-alpha, rgba(255, 255, 255, 0.05));
 
-    --text-primary: #1f2937;
-    --text-secondary: #6b7280;
-    --text-accent: #b45309;
+    --text-primary: var(--text-heading, #e0e0e0);
+    --text-secondary: var(--text-primary, #bababa);
+    --text-accent: var(--brand-accent, #fbbf24);
 
-    --border-color: #e5e7eb;
-    --border-hover: #d1d5db;
+    --border-color: var(--border-color, #404040);
+    --border-hover: var(--border-light, #303030);
 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-glow: 0 0 15px rgba(181, 136, 99, 0.2);
+    --shadow-sm: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
+    --shadow-lg: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.5));
+    --shadow-glow: var(--shadow-glow, 0 0 20px rgba(181, 136, 99, 0.1));
 
     /* Shared Accents */
-    --accent-gold: #b58863;
-    --accent-gold-gradient: linear-gradient(135deg, #b58863 0%, #d97706 100%);
+    --accent-gold: var(--brand-primary, #b58863);
+    --accent-gold-gradient: linear-gradient(135deg, var(--brand-primary, #b58863) 0%, var(--warning, #d97706) 100%);
     --trophy-gold: #fbbf24;
     --trophy-silver: #94a3b8;
     --trophy-bronze: #d97706;
-}
 
-[data-theme="dark"] {
-    /* Gaming Dark Mode - Deep, immersive, high contrast */
-    --bg-primary: #0f172a;
-    /* Deeper slate blue/black */
-    --bg-card: #1e293b;
-    --bg-card-hover: #334155;
-    --bg-glass: rgba(30, 41, 59, 0.8);
-
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-accent: #fbbf24;
-
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.15);
-
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 25px rgba(181, 136, 99, 0.3);
-}
-
-.competitionLobby {
-    padding: 0.5rem 1rem;
-    /* Reduced extra top/left/right space */
+    /* Base Spacing & Layout */
+    padding: 1rem;
+    /* Removing horizontal padding as layout handles it */
     max-width: 100%;
-    /* Take up the entire screen */
     margin: 0 auto;
     font-family: 'Outfit', 'Inter', sans-serif;
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - var(--top-header-height, 60px));
     color: var(--text-primary);
-    background-color: transparent;
+    background-color: var(--bg-primary);
     overflow-x: hidden;
-    /* Prevent any horizontal layout overflow */
+    border-radius: 12px;
 }
 
 /* ========== CARDS & GLASSMORPHISM ========== */
 .lobbyCard {
     background: var(--bg-card);
     border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    /* Tighter padding */
-    margin-bottom: 1.25rem;
-    /* Tighter margin */
+    padding: 1.5rem;
+    /* Standardized 24px padding */
+    margin-bottom: 1.5rem;
+    /* Standardized 24px margin */
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
@@ -82,9 +59,9 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 1.5rem;
     background: var(--bg-card);
-    padding: 1rem 1.5rem;
+    padding: 1.5rem;
     min-height: 70px;
 }
 
@@ -244,62 +221,50 @@
 }
 
 .joinBtn {
-    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    background: var(--accent-gold);
     color: white;
-    border: 2px solid #fcd34d;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
-    animation: goldBreathing 2s infinite alternate;
+    border: 2px solid transparent;
+    box-shadow: var(--shadow-md);
 }
 
 .joinBtn:hover {
-    background: linear-gradient(135deg, #fcd34d 0%, #d97706 100%);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
+    background: var(--text-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .joinBtn:disabled {
-    background: var(--border-color);
-    color: var(--text-secondary);
+    background: var(--bg-hover);
+    color: var(--text-muted);
     border: 2px solid var(--border-color);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
-    animation: none;
-    text-shadow: none;
 }
 
 .enterBtn {
-    background: #10b981;
+    background: var(--success, #629924);
     color: white;
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    box-shadow: var(--shadow-md);
 }
 
 .enterBtn:hover {
-    background: #059669;
+    background: #52821f;
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+    box-shadow: var(--shadow-lg);
 }
 
 .enterBtnLive {
-    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    background: var(--accent-gold);
     color: white;
-    border: 2px solid #fcd34d;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
-    animation: goldBreathing 2s infinite alternate;
+    border: 2px solid transparent;
+    box-shadow: var(--shadow-md);
 }
 
-@keyframes goldBreathing {
-    0% {
-        box-shadow: 0 0 10px rgba(251, 191, 36, 0.4), inset 0 0 5px rgba(255, 255, 255, 0.3);
-        transform: scale(1);
-    }
-
-    100% {
-        box-shadow: 0 0 25px rgba(251, 191, 36, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.6);
-        transform: scale(1.03);
-    }
+.enterBtnLive:hover {
+    background: var(--text-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .joinedText {
@@ -1083,7 +1048,7 @@
 
 @media (max-width: 768px) {
     .competitionLobby {
-        padding: 0.5rem;
+        padding: 24px;
     }
 
     .pageTitle {
@@ -1148,7 +1113,7 @@
 .lobbyMainContent {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: start;
 }
 
