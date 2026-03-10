@@ -13,6 +13,11 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-primary);
   min-height: calc(100vh - 72px);
+  background: transparent;
+}
+
+[data-theme='light'] .leaderboardPage {
+  color: #1a202c;
 }
 
 /* Removed old Header styles; components are now within grid layout directly */
@@ -55,13 +60,13 @@
 }
 
 [data-theme="light"] .podiumSection {
-  background: #1e1915;
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="light"] .topChampionsHeader {
-  background: transparent;
-  border: none;
-  color: #fff;
+  color: #1a202c;
 }
 
 .headerTrophyIcon {
@@ -173,12 +178,16 @@
   font-weight: 700;
   font-size: 0.8rem;
   text-align: center;
-  color: var(--text-primary);
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
   margin-top: 0.25rem;
+}
+
+[data-theme="light"] .podiumName {
+  color: #2d3748;
 }
 
 .podiumScore {
@@ -232,6 +241,12 @@
 
 [data-theme="dark"] .bar3 {
   background: #25201d;
+}
+
+[data-theme="light"] .podiumBar {
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.05);
 }
 
 .barStats {
@@ -299,6 +314,11 @@
   flex-direction: column;
 }
 
+[data-theme="light"] .fastestSolverCard {
+  background: #ffffff !important;
+  border-color: #e2e8f0;
+}
+
 .fastestBanner {
   margin: 0 auto 1.5rem auto;
   width: 100%;
@@ -359,6 +379,12 @@
   border-radius: 12px;
   padding: 1.5rem;
   color: #fff;
+}
+
+[data-theme="light"] .competitionInfoCard {
+  background: #ffffff !important;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .compHeaderRow {
@@ -457,6 +483,10 @@
   color: #b58863;
 }
 
+[data-theme="light"] .headerDivider {
+  background: linear-gradient(to right, rgba(181, 136, 99, 0.2), rgba(181, 136, 99, 0.05) 80%);
+}
+
 /* Removed original statsRow as per implementation plan to match the cleaner layout */
 
 /* ========== RIGHT PANEL: FULL RANKINGS ========== */
@@ -471,6 +501,12 @@
   position: sticky;
   top: 1.5rem;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .rankingsPanel {
+  background: #ffffff !important;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .rankingsPanelHeader {
@@ -596,6 +632,14 @@
   text-align: center;
 }
 
+[data-theme="light"] .pageIndicator {
+  color: #718096;
+}
+
+[data-theme="light"] .rankTime {
+  color: #718096 !important;
+}
+
 /* Divider between header and list */
 .headerDivider {
   height: 1px;
@@ -676,6 +720,14 @@
   cursor: default;
 }
 
+[data-theme="light"] .rankRow {
+  border-bottom-color: #f1f5f9;
+}
+
+[data-theme="light"] .rankRow:hover {
+  background: #f8fafc;
+}
+
 .rankRow:last-child {
   border-bottom: none;
 }
@@ -708,7 +760,13 @@
 [data-theme="light"] .currentUser .scoreNumber,
 [data-theme="light"] .currentUser .rankNumber,
 [data-theme="light"] .currentUser .rankNum {
-  color: #d97706 !important;
+  color: #c05621 !important;
+}
+
+[data-theme="light"] .currentUser {
+  background: #fffaf0 !important;
+  border-left-color: #ed8936;
+  border-bottom-color: #feebc8;
 }
 
 .currentUser .scoreLabel,
@@ -763,6 +821,15 @@
   text-align: center;
 }
 
+[data-theme="light"] .rankNumber {
+  background: #edf2f7;
+  color: #4a5568;
+}
+
+[data-theme="light"] .rankName {
+  color: #1a202c;
+}
+
 /* Small avatar in list */
 .rankAvatar {
   width: 28px;
@@ -775,7 +842,7 @@
   justify-content: center;
   font-weight: 800;
   font-size: 0.7rem;
-  color: var(--text-primary);
+  color: #d98300;
   flex-shrink: 0;
 }
 
@@ -825,11 +892,19 @@
   color: #fff;
 }
 
+[data-theme="light"] .scoreNumber {
+  color: #1a202c;
+}
+
 .scoreLabel {
   font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.5);
   font-weight: 600;
   text-transform: lowercase;
+}
+
+[data-theme="light"] .scoreLabel {
+  color: #718096;
 }
 
 /* ========== LOADING ========== */
