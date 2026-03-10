@@ -716,10 +716,10 @@ function PuzzlePage() {
       const wrapAroundUnsolvedIndex =
         nextUnsolvedIndex === -1
           ? puzzles.findIndex(
-              (p) =>
-                puzzleStatuses[p.id || p._id] !== "success" &&
-                puzzleStatuses[p.id || p._id] !== "failed",
-            )
+            (p) =>
+              puzzleStatuses[p.id || p._id] !== "success" &&
+              puzzleStatuses[p.id || p._id] !== "failed",
+          )
           : -1;
 
       const finalNextIndex =
@@ -830,10 +830,10 @@ function PuzzlePage() {
       const wrapAroundUnsolvedIndex =
         nextUnsolvedIndex === -1
           ? puzzles.findIndex(
-              (p) =>
-                puzzleStatuses[p.id || p._id] !== "success" &&
-                puzzleStatuses[p.id || p._id] !== "failed",
-            )
+            (p) =>
+              puzzleStatuses[p.id || p._id] !== "success" &&
+              puzzleStatuses[p.id || p._id] !== "failed",
+          )
           : -1;
 
       const finalNextIndex =
@@ -1264,7 +1264,7 @@ function PuzzlePage() {
                       (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
                         "success" &&
                         puzzleStatuses[
-                          currentPuzzle.id || currentPuzzle._id
+                        currentPuzzle.id || currentPuzzle._id
                         ] !== "failed"))
                   }
                   showSolution={showSolution}
@@ -1316,7 +1316,7 @@ function PuzzlePage() {
                           Math.floor(
                             (new Date(competitionData.startTime).getTime() -
                               Date.now()) /
-                              1000,
+                            1000,
                           ),
                         )}
                         s
@@ -1545,7 +1545,7 @@ function PuzzlePage() {
                               if (
                                 competitionData.chapters &&
                                 activeChapterIndex <
-                                  competitionData.chapters.length - 1
+                                competitionData.chapters.length - 1
                               ) {
                                 const nextChapterIdx = activeChapterIndex + 1;
                                 const chPuzzleIds = (
@@ -1586,7 +1586,7 @@ function PuzzlePage() {
                           disabled={
                             chapterCurrentIndex >= navPuzzles.length - 1 &&
                             activeChapterIndex >=
-                              (competitionData.chapters?.length || 1) - 1
+                            (competitionData.chapters?.length || 1) - 1
                           }
                           title="Next Puzzle"
                           style={{ flex: 1 }}
@@ -1793,7 +1793,7 @@ function PuzzlePage() {
                                   }}
                                 >
                                   {currentPuzzle?.solution &&
-                                  currentPuzzle.solution.length > 0 ? (
+                                    currentPuzzle.solution.length > 0 ? (
                                     currentPuzzle.solution.map((move, i) => {
                                       if (i % 2 == 0) return null;
                                       return (
