@@ -27,14 +27,14 @@
     --trophy-bronze: #d97706;
 
     /* Base Spacing & Layout */
-    padding: 1rem;
+    /* padding: 1rem; */
     /* Removing horizontal padding as layout handles it */
     max-width: 100%;
     margin: 0 auto;
     font-family: 'Outfit', 'Inter', sans-serif;
     min-height: calc(100vh - var(--top-header-height, 60px));
     color: var(--text-primary);
-    background-color: var(--bg-primary);
+    /* background-color: var(--bg-primary); */
     overflow-x: hidden;
     border-radius: 12px;
 }
@@ -324,7 +324,7 @@
 .tableResponsive {
     overflow-x: auto;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .participantsTable {
@@ -341,13 +341,13 @@
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .participantsTable td {
     padding: 16px;
     color: var(--text-primary);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: var(--bg-card);
     transition: background 0.2s;
 }
