@@ -44,6 +44,30 @@
     z-index: 0;
 }
 
+[data-theme='light'] .puzzle-racer-container::before {
+    background-image:
+        radial-gradient(circle at 15% 45%, rgba(212, 163, 115, 0.12), transparent 45%),
+        radial-gradient(circle at 65% 75%, rgba(255, 138, 101, 0.1), transparent 55%),
+        radial-gradient(circle at 85% 25%, rgba(224, 180, 50, 0.12), transparent 45%),
+        /* subtle constellation dots */
+        radial-gradient(2px 2px at 10% 20%, #d4a373 50%, transparent),
+        radial-gradient(2px 2px at 30% 60%, #e87722 50%, transparent),
+        radial-gradient(2px 2px at 70% 30%, #b58863 50%, transparent),
+        radial-gradient(2px 2px at 85% 80%, #d4a373 50%, transparent);
+    animation: nebulaMove 15s ease-in-out infinite alternate;
+    opacity: 0.7;
+}
+
+@keyframes nebulaMove {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+
+    100% {
+        transform: scale(1.1) translate(10px, 10px);
+    }
+}
+
 @keyframes twinkle {
     0% {
         opacity: 0.5;
@@ -107,6 +131,18 @@
     color: #b0bec5;
 }
 
+[data-theme='light'] .racer-header h4 {
+    background: linear-gradient(90deg, #5c4033, #8c5d2e);
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+
+[data-theme='light'] .puzzle-count {
+    background: rgba(92, 64, 51, 0.06);
+    border-color: rgba(92, 64, 51, 0.1);
+    color: #5c4033;
+}
+
 .others-badge {
     display: flex;
     align-items: center;
@@ -117,6 +153,12 @@
     font-size: 0.78rem;
     color: #81d4fa;
     border: 1px solid rgba(129, 212, 250, 0.15);
+}
+
+[data-theme='light'] .others-badge {
+    background: rgba(181, 136, 99, 0.1);
+    color: #8c5d2e;
+    border-color: rgba(181, 136, 99, 0.2);
 }
 
 .others-icon {
@@ -145,7 +187,14 @@
     pointer-events: none;
 }
 
-/* ---------- Comets ---------- */
+.orbit-svg ellipse {
+    stroke: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] .orbit-svg ellipse {
+    stroke: rgba(181, 136, 99, 0.15);
+}
+
 .comet {
     position: absolute;
     width: 3px;
@@ -154,6 +203,10 @@
     border-radius: 50%;
     z-index: 1;
     pointer-events: none;
+}
+
+[data-theme='light'] .comet {
+    background: #d4a373;
 }
 
 .comet::after {
@@ -165,6 +218,10 @@
     height: 1.5px;
     background: linear-gradient(90deg, rgba(255, 255, 255, 0.45), transparent);
     border-radius: 2px;
+}
+
+[data-theme='light'] .comet::after {
+    background: linear-gradient(90deg, rgba(212, 163, 115, 0.45), transparent);
 }
 
 .comet-1 {
@@ -542,6 +599,16 @@
     text-shadow: 0 0 8px rgba(100, 181, 246, 0.4), 0 1px 5px rgba(0, 0, 0, 0.7);
 }
 
+[data-theme='light'] .planet-slot-name {
+    color: #5c4033;
+    text-shadow: none;
+}
+
+[data-theme='light'] .planet-slot-name.name-you {
+    color: #2c5282;
+    text-shadow: 0 0 10px rgba(66, 153, 225, 0.2);
+}
+
 .planet-slot-score {
     font-size: 0.55rem;
     font-weight: 600;
@@ -553,6 +620,14 @@
     font-weight: 600;
     color: rgba(255, 255, 255, 0.25);
     font-style: italic;
+}
+
+[data-theme='light'] .planet-slot-score {
+    color: rgba(92, 64, 51, 0.5);
+}
+
+[data-theme='light'] .planet-slot-planet-name {
+    color: rgba(92, 64, 51, 0.4);
 }
 
 /* ========================================
@@ -706,6 +781,15 @@
     font-size: 0.65rem;
     font-weight: 600;
     color: rgba(255, 200, 100, 0.5);
+}
+
+[data-theme='light'] .sun-player-name {
+    color: #8c5d2e;
+    text-shadow: none;
+}
+
+[data-theme='light'] .sun-player-score {
+    color: rgba(140, 93, 46, 0.6);
 }
 
 .sun-waiting {

@@ -6,6 +6,10 @@ import {
   FaPuzzlePiece,
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
+  FaChevronLeft,
+  FaChevronRight,
+  FaCaretLeft,
+  FaCaretRight,
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import socketService from "../../services/socketService";
@@ -84,6 +88,18 @@ function PuzzlePage() {
   const ITEMS_PER_PAGE = 10;
 
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+  const [showGalaxy, setShowGalaxy] = useState(true);
+  const headerScrollRef = useRef(null);
+
+  const scrollHeader = (direction) => {
+    if (headerScrollRef.current) {
+      const scrollAmount = 200;
+      headerScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Chapter scroll reference and minimal indicator state
   const chapterScrollRef = useRef(null);
@@ -977,39 +993,88 @@ function PuzzlePage() {
   return (
     <div className={styles.container}>
       <Toaster position="top-right" />
+      {/* THIN TITLE HEADERBAR */}
+      {competitionData && (
+        <div className={styles.titleHeader}>
+          <div className={styles.titleHeaderLeft}>
+            <button className={styles.backBtnHeader} onClick={() => navigate(-1)} title="Go back">
+              <FaArrowLeft />
+            </button>
+            <h2 className={styles.mainTitle}>{competitionData.name}</h2>
+            {/* {competitionData.chapters?.length > 0 && (
+              <div className={styles.chapterBadgeRowHeader}>
+                <span className={styles.chapterBadgeHeader}>{competitionData.chapters[activeChapterIndex]?.name || "Chapter 1"}</span>
+                <span className={styles.chapterBadgeHeader} style={{ opacity: 0.8 }}>
+                  {chapterCurrentIndex >= 0 ? chapterCurrentIndex + 1 : 1} of {navPuzzles.length}
+                </span>
+              </div>
+            )} */}
+            {isReviewMode && <span className={styles.liveBadge} style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", borderColor: "rgba(165,180,252,0.3)" }}>Review</span>}
+          </div>
+
+          {/* MID HEADER: HORIZONTAL CHAPTERS */}
+          {competitionData.chapters?.length > 0 && (
+            <div className={styles.titleHeaderMid}>
+              <button className={styles.headerNavArrow} onClick={() => scrollHeader('left')} title="Scroll left">
+                <FaCaretLeft />
+              </button>
+              <div className={styles.headerChaptersWrap} ref={headerScrollRef}>
+                {competitionData.chapters.map((chapter, idx) => {
+                  const ids = (chapter.puzzleIds || []).map(id => id.toString());
+                  const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
+                  const solved = chPs.filter(p => puzzleStatuses[(p.id || p._id).toString()] === "success").length;
+                  return (
+                    <button
+                      key={`h-ch-${idx}`}
+                      type="button"
+                      className={`${styles.headerChapterPill} ${activeChapterIndex === idx ? styles.headerChapterPillActive : ""}`}
+                      onClick={() => {
+                        if (isBeforeStartTime && !isReviewMode) return;
+                        setActiveChapterIndex(idx);
+                        setCurrentFrame(0);
+                        const gPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
+                        if (gPs.length > 0) {
+                          const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString());
+                          if (gi !== -1) setCurrentPuzzleIndex(gi);
+                        }
+                      }}
+                      style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
+                    >
+                      <span className={styles.headerChapterName}>{chapter.name}</span>
+                      <span className={styles.headerChapterBadge}>{solved}/{chPs.length}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button className={styles.headerNavArrow} onClick={() => scrollHeader('right')} title="Scroll right">
+                <FaCaretRight />
+              </button>
+            </div>
+          )}
+
+          <div className={styles.titleHeaderRight}>
+            <button
+              className={`${styles.galaxyToggle} ${!showGalaxy ? styles.galaxyToggleOff : ""}`}
+              onClick={() => setShowGalaxy(!showGalaxy)}
+              title={showGalaxy ? "Hide Galaxy" : "Show Galaxy"}
+            >
+              <span className={styles.toggleIcon}>🪐</span>
+              <span className={styles.toggleText}>{showGalaxy ? "Galaxy On" : "Galaxy Off"}</span>
+              <div className={styles.toggleSwitch}>
+                <div className={styles.toggleKnob} />
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* BODY — 3 Columns */}
-
       <div className={styles.body}>
-
         {/* LEFT COLUMN */}
         <div className={styles.leftColumn}>
           {competitionData && (
             <div className={styles.statsCard}>
-              <div className={styles.compNameBox}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "space-between" }}>
-                  <span className={styles.compNameLabel}>Competition</span>
-                  {isLiveCompetition && !isReviewMode && (
-                    <span className={styles.liveChip}>🟢 LIVE</span>
-                  )}
-                  {isReviewMode && (
-                    <span className={styles.liveChip} style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", borderColor: "rgba(165,180,252,0.3)" }}>Review</span>
-                  )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <button className={styles.backBtnInline} onClick={() => navigate(-1)} title="Go back"><FaArrowLeft /></button>
-                  <span className={styles.compNameValue}>{competitionData.name}</span>
-                </div>
-              </div>
-              {competitionData.chapters?.length > 0 && (
-                <div className={styles.chapterBadgeRow}>
-                  <span className={styles.chapterBadge}>{competitionData.chapters[activeChapterIndex]?.name || "Chapter 1"}</span>
-                  <span className={styles.chapterBadge} style={{ fontSize: "0.6rem" }}>
-                    {chapterCurrentIndex >= 0 ? chapterCurrentIndex + 1 : 1} of {navPuzzles.length}
-                  </span>
-                </div>
-              )}
-              <div className={styles.divider} />
+
               {!isReviewMode && (
                 <div className={styles.timerBox}>
                   <div className={styles.timerLabel}>{isBeforeStartTime ? "Starts In" : "Time Left"}</div>
@@ -1043,35 +1108,58 @@ function PuzzlePage() {
               </div>
             </div>
           )}
+
+          {currentPuzzle && (() => {
+            const fenTurn = currentPuzzle.fen?.split(" ")[1];
+            const uColor = fenTurn === "w" ? "b" : "w";
+            return (
+              <div className={`${styles.infoCard} ${uColor === "w" ? styles.turnWhite : styles.turnBlack}`}>
+                <div className={styles.toPlayRow}>
+                  <span className={`${styles.kingIcon} ${uColor === "w" ? styles.kingWhite : styles.kingBlack}`}>
+                    {uColor === "w" ? "♔" : "♚"}
+                  </span>
+                  <span className={styles.toPlayText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
+                </div>
+                <div className={styles.infoMeta}>
+                  <div className={styles.infoMetaItem}>
+                    <span className={styles.infoMetaLabel}>Level</span>
+                    <span className={styles.infoMetaValue}>{currentPuzzle.level || 1}</span>
+                  </div>
+                  <div className={styles.infoMetaItem}>
+                    <span className={styles.infoMetaLabel}>Difficulty</span>
+                    <span className={`${styles.infoMetaValue} ${styles["diff_" + (currentPuzzle.difficulty || "medium").toLowerCase()]}`}>
+                      {currentPuzzle.difficulty || "Medium"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           {competitionData && isLiveCompetition && !isReviewMode && (
             <div className={styles.rankCard}>
-              <div className={styles.rankLabel}><span>🏆</span> YOUR RANK <span>🏆</span></div>
-              <div className={styles.rankNumber}>#{getCurrentUserRank() || "–"}</div>
+              <div className={styles.rankRow}>
+                <div className={styles.rankLabel}><span>🏆</span> YOUR RANK</div>
+                <div className={styles.rankNumber}>#{getCurrentUserRank() || "–"}</div>
+              </div>
               <div className={styles.rankProgressBar}>
                 <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
               </div>
               <div className={styles.rankParticipants}>{leaderboard.length} participant{leaderboard.length !== 1 ? "s" : ""}</div>
             </div>
           )}
-          {competitionData && isReviewMode && (
-            <div className={styles.navCard} style={{ flex: 1 }}>
-              <div className={styles.navCardTitle}>Competition Results</div>
-              <div className={styles.navGrid}>
-                {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle) => {
-                  const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
-                  const pid = puzzle.id || puzzle._id;
-                  const status = puzzleStatuses[pid];
-                  return (
-                    <div key={`perf-${pid}`}
-                      className={`${styles.navItem} ${status === "success" ? styles.success : ""} ${status === "failed" ? styles.danger : ""}`}
-                      style={{ cursor: "default" }} title="Competition Result">
-                      {status === "success" ? <FaCheckCircle /> : gi + 1}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+
+
+
+          {isLiveCompetition && !isReviewMode && (
+            <button className={styles.btnSubmitLeft}
+              onClick={() => setShowSubmitModal(true)}
+              disabled={submitting || getUnattemptedCount() > 0}
+              title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
+            >
+              Submit Competition
+            </button>
           )}
+
         </div>
 
         {/* CENTER: Chessboard */}
@@ -1137,8 +1225,10 @@ function PuzzlePage() {
                         }}
                         style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
                       >
-                        <span className={styles.chapterPillName}>{chapter.name}</span>
-                        <span className={styles.chapterPillBadge}>{solved}/{chPs.length}</span>
+                        <div className={styles.chapterPillContent}>
+                          <span className={styles.chapterPillName}>{chapter.name}</span>
+                          <span className={styles.chapterPillBadge}>{solved}/{chPs.length}</span>
+                        </div>
                       </button>
                     );
                   })}
@@ -1274,44 +1364,6 @@ function PuzzlePage() {
                 </div>
               )}
             </div>
-
-            {currentPuzzle && (() => {
-              const fenTurn = currentPuzzle.fen?.split(" ")[1];
-              const uColor = fenTurn === "w" ? "b" : "w";
-              return (
-                <div className={styles.infoCard}>
-                  {currentPuzzle.category && <div className={styles.categoryBadge}><span className={styles.categoryDot} />{currentPuzzle.category}</div>}
-                  <div className={styles.toPlayRow}>
-                    <span className={styles.kingIcon}>{uColor === "w" ? "♔" : "♚"}</span>
-                    <span className={styles.toPlayText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
-                  </div>
-                  <div className={styles.infoMeta}>
-                    <div className={styles.infoMetaItem}>
-                      <span className={styles.infoMetaLabel}>Level</span>
-                      <span className={styles.infoMetaValue}>{currentPuzzle.level || 1}</span>
-                    </div>
-                    <div className={styles.infoMetaItem}>
-                      <span className={styles.infoMetaLabel}>Difficulty</span>
-                      <span className={`${styles.infoMetaValue} ${styles["diff_" + (currentPuzzle.difficulty || "medium").toLowerCase()]}`}>
-                        {currentPuzzle.difficulty || "Medium"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {isLiveCompetition && !isReviewMode && (
-              <div className={styles.submitArea}>
-                <button className={styles.btnSubmit}
-                  onClick={() => setShowSubmitModal(true)}
-                  disabled={submitting || getUnattemptedCount() > 0}
-                  title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
-                >
-                  Submit Competition
-                </button>
-              </div>
-            )}
           </div>
         )}
 
@@ -1319,7 +1371,7 @@ function PuzzlePage() {
       {/* END BODY */}
 
       {/* GALAXY — Full Width */}
-      {isLiveCompetition && !isReviewMode && (
+      {isLiveCompetition && !isReviewMode && showGalaxy && (
         <div className={styles.galaxySection}>
           <PuzzleRacer />
         </div>
