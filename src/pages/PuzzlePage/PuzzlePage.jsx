@@ -729,10 +729,10 @@ function PuzzlePage() {
       const wrapAroundUnsolvedIndex =
         nextUnsolvedIndex === -1
           ? puzzles.findIndex(
-            (p) =>
-              puzzleStatuses[p.id || p._id] !== "success" &&
-              puzzleStatuses[p.id || p._id] !== "failed",
-          )
+              (p) =>
+                puzzleStatuses[p.id || p._id] !== "success" &&
+                puzzleStatuses[p.id || p._id] !== "failed",
+            )
           : -1;
 
       const finalNextIndex =
@@ -844,10 +844,10 @@ function PuzzlePage() {
       const wrapAroundUnsolvedIndex =
         nextUnsolvedIndex === -1
           ? puzzles.findIndex(
-            (p) =>
-              puzzleStatuses[p.id || p._id] !== "success" &&
-              puzzleStatuses[p.id || p._id] !== "failed",
-          )
+              (p) =>
+                puzzleStatuses[p.id || p._id] !== "success" &&
+                puzzleStatuses[p.id || p._id] !== "failed",
+            )
           : -1;
 
       const finalNextIndex =
@@ -1074,7 +1074,10 @@ function PuzzlePage() {
                       }
                     }
                   }}
-                  disabled={activeChapterIndex <= 0 || (isBeforeStartTime && !isReviewMode)}
+                  disabled={
+                    activeChapterIndex <= 0 ||
+                    (isBeforeStartTime && !isReviewMode)
+                  }
                   title="Previous Chapter"
                 >
                   <FaAngleDoubleLeft /> Previous
@@ -1120,7 +1123,12 @@ function PuzzlePage() {
                               }
                             }
                           }}
-                          style={{ cursor: (isBeforeStartTime && !isReviewMode) ? "not-allowed" : "pointer" }}
+                          style={{
+                            cursor:
+                              isBeforeStartTime && !isReviewMode
+                                ? "not-allowed"
+                                : "pointer",
+                          }}
                         >
                           <span className={styles.chapterTabName}>
                             {chapter.name}
@@ -1164,7 +1172,8 @@ function PuzzlePage() {
                     }
                   }}
                   disabled={
-                    activeChapterIndex >= competitionData.chapters.length - 1 || (isBeforeStartTime && !isReviewMode)
+                    activeChapterIndex >= competitionData.chapters.length - 1 ||
+                    (isBeforeStartTime && !isReviewMode)
                   }
                   title="Next Chapter"
                 >
@@ -1187,11 +1196,11 @@ function PuzzlePage() {
               timeLeft={
                 isBeforeStartTime && targetStartTimeRef.current
                   ? Math.max(
-                    0,
-                    Math.floor(
-                      (targetStartTimeRef.current - Date.now()) / 1000,
-                    ),
-                  )
+                      0,
+                      Math.floor(
+                        (targetStartTimeRef.current - Date.now()) / 1000,
+                      ),
+                    )
                   : timeLeft
               }
               score={score}
@@ -1322,7 +1331,11 @@ function PuzzlePage() {
                   alternativeSolutions={currentPuzzle.alternativeSolutions}
                   puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                   kidsConfig={currentPuzzle.kidsConfig}
-                  firstMoveBy={(isBeforeStartTime && !isReviewMode) ? "human" : currentPuzzle.firstMoveBy}
+                  firstMoveBy={
+                    isBeforeStartTime && !isReviewMode
+                      ? "human"
+                      : currentPuzzle.firstMoveBy
+                  }
                   onPuzzleSolved={handlePuzzleSolved}
                   onWrongMove={handleWrongMove}
                   onBoardStateChange={(fen, moveHistory) => {
@@ -1338,6 +1351,10 @@ function PuzzlePage() {
                       ? null
                       : puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]
                   }
+                  isSolved={
+                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] ===
+                    "success"
+                  }
                   interactive={
                     !solving &&
                     !isBeforeStartTime &&
@@ -1345,7 +1362,7 @@ function PuzzlePage() {
                       (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
                         "success" &&
                         puzzleStatuses[
-                        currentPuzzle.id || currentPuzzle._id
+                          currentPuzzle.id || currentPuzzle._id
                         ] !== "failed"))
                   }
                   showSolution={showSolution}
@@ -1382,7 +1399,7 @@ function PuzzlePage() {
                           fontWeight: "900",
                           textShadow:
                             "0 0 20px gold, 0 0 40px rgba(255, 215, 0, 0.4)",
-                          animation: "pulse 1s infinite alternate"
+                          animation: "pulse 1s infinite alternate",
                         }}
                       >
                         <div>starts in </div>
@@ -1391,7 +1408,7 @@ function PuzzlePage() {
                           Math.floor(
                             (new Date(competitionData.startTime).getTime() -
                               Date.now()) /
-                            1000,
+                              1000,
                           ),
                         )}
                         s
@@ -1470,7 +1487,8 @@ function PuzzlePage() {
                                   ${status === "failed" ? styles.danger : ""}
                           `}
                                   onClick={() => {
-                                    if (isBeforeStartTime && !isReviewMode) return;
+                                    if (isBeforeStartTime && !isReviewMode)
+                                      return;
                                     if (!solving) {
                                       setCurrentPuzzleIndex(globalIndex);
                                       if (status === "success")
@@ -1481,7 +1499,12 @@ function PuzzlePage() {
                                         );
                                     }
                                   }}
-                                  style={{ cursor: (isBeforeStartTime && !isReviewMode) ? "not-allowed" : "pointer" }}
+                                  style={{
+                                    cursor:
+                                      isBeforeStartTime && !isReviewMode
+                                        ? "not-allowed"
+                                        : "pointer",
+                                  }}
                                 >
                                   {status === "success" ? (
                                     <FaCheckCircle />
@@ -1537,12 +1560,18 @@ function PuzzlePage() {
                                     ${pStatus === "failed" ? styles.danger : ""}
                           `}
                                     onClick={() => {
-                                      if (isBeforeStartTime && !isReviewMode) return;
+                                      if (isBeforeStartTime && !isReviewMode)
+                                        return;
                                       if (!solving) {
                                         setCurrentPuzzleIndex(globalIndex);
                                       }
                                     }}
-                                    style={{ cursor: (isBeforeStartTime && !isReviewMode) ? "not-allowed" : "pointer" }}
+                                    style={{
+                                      cursor:
+                                        isBeforeStartTime && !isReviewMode
+                                          ? "not-allowed"
+                                          : "pointer",
+                                    }}
                                     title="Practice Mode - Unlimited Retries"
                                   >
                                     {pStatus === "success" ? (
@@ -1606,7 +1635,9 @@ function PuzzlePage() {
                             }
                           }}
                           disabled={
-                            (chapterCurrentIndex <= 0 && activeChapterIndex <= 0) || (isBeforeStartTime && !isReviewMode)
+                            (chapterCurrentIndex <= 0 &&
+                              activeChapterIndex <= 0) ||
+                            (isBeforeStartTime && !isReviewMode)
                           }
                           title="Previous Puzzle"
                           style={{ flex: 1 }}
@@ -1622,7 +1653,7 @@ function PuzzlePage() {
                               if (
                                 competitionData.chapters &&
                                 activeChapterIndex <
-                                competitionData.chapters.length - 1
+                                  competitionData.chapters.length - 1
                               ) {
                                 const nextChapterIdx = activeChapterIndex + 1;
                                 const chPuzzleIds = (
@@ -1663,7 +1694,8 @@ function PuzzlePage() {
                           disabled={
                             (chapterCurrentIndex >= navPuzzles.length - 1 &&
                               activeChapterIndex >=
-                              (competitionData.chapters?.length || 1) - 1) || (isBeforeStartTime && !isReviewMode)
+                                (competitionData.chapters?.length || 1) - 1) ||
+                            (isBeforeStartTime && !isReviewMode)
                           }
                           title="Next Puzzle"
                           style={{ flex: 1 }}
@@ -1870,7 +1902,7 @@ function PuzzlePage() {
                                   }}
                                 >
                                   {currentPuzzle?.solution &&
-                                    currentPuzzle.solution.length > 0 ? (
+                                  currentPuzzle.solution.length > 0 ? (
                                     currentPuzzle.solution.map((move, i) => {
                                       if (i % 2 == 0) return null;
                                       return (
