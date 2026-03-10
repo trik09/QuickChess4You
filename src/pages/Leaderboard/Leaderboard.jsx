@@ -211,7 +211,7 @@ function Leaderboard() {
               {/* Solid header block matching figma */}
               <div className={styles.topChampionsHeader}>
                 <FaTrophy className={styles.headerTrophyIcon} />
-                <h2>TOP CHAMPIONS</h2>
+                <h2>WINNERS</h2>
               </div>
 
               <div className={styles.podium}>

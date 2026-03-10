@@ -43,7 +43,9 @@ function PuzzlePage() {
         _id: location.state.competitionId,
         name: location.state.competitionTitle,
         duration: location.state.time,
-        status: "live", // Assume live if navigated from lobby
+        startTime: location.state.competitionStartTime,
+        endTime: location.state.competitionEndTime,
+        status: location.state.status || "live",
       };
     }
     return null;
@@ -320,7 +322,9 @@ function PuzzlePage() {
         const end = new Date(comp.endTime).getTime();
 
         const isLive = comp.status === "live" || comp.status === "LIVE";
-        setIsLiveCompetition(isLive);
+        // CRITICAL: Ensure isLiveCompetition is true if it's a competition from lobby,
+        // so that rank, submit, and turn indicators are rendered immediately.
+        setIsLiveCompetition(true);
         isLiveRef.current = isLive;
 
         // Check review mode
@@ -331,6 +335,9 @@ function PuzzlePage() {
         const isAboutToStart = diffToStart > 0 && diffToStart <= 12000; // 12s buffer for clock drift
         setIsBeforeStartTime(!isLive && diffToStart > 0);
         targetStartTimeRef.current = start;
+
+        // CRITICAL: Hide loading as soon as we have competition data to show the layout
+        setLoading(false);
 
         if (!reviewMode) {
           if (!isLive && !isAboutToStart) {
@@ -620,10 +627,12 @@ function PuzzlePage() {
         } else {
           const diffToStart = targetStartTimeRef.current - Date.now();
           // Set false as soon as within 500ms or status changes
-          if (diffToStart <= 500) {
+          if (diffToStart <= 0) {
             setIsBeforeStartTime(false);
+            setIsLiveCompetition(true); // Unlock UI components
+            // If it just started, we might need to refresh data or just ensure UI is unlocked
+            isLiveRef.current = true;
           } else {
-            // Double check if it should be true (in case of drift back)
             setIsBeforeStartTime(true);
           }
         }
@@ -635,14 +644,18 @@ function PuzzlePage() {
       const remainingSec = Math.max(0, Math.floor(remainingMs / 1000));
 
       setTimeLeft((prev) => {
-        if (remainingSec <= 0) {
+        if (
+          remainingSec <= 0 &&
+          targetEndTimeRef.current &&
+          Date.now() >= targetEndTimeRef.current
+        ) {
           clearInterval(timerRef.current);
           handleTimeout();
           return 0;
         }
         return remainingSec;
       });
-    }, 1000);
+    }, 500); // 500ms for extra responsiveness
   };
 
   const handleTimeout = () => {
@@ -716,10 +729,10 @@ function PuzzlePage() {
       const wrapAroundUnsolvedIndex =
         nextUnsolvedIndex === -1
           ? puzzles.findIndex(
-              (p) =>
-                puzzleStatuses[p.id || p._id] !== "success" &&
-                puzzleStatuses[p.id || p._id] !== "failed",
-            )
+            (p) =>
+              puzzleStatuses[p.id || p._id] !== "success" &&
+              puzzleStatuses[p.id || p._id] !== "failed",
+          )
           : -1;
 
       const finalNextIndex =
@@ -742,7 +755,8 @@ function PuzzlePage() {
       // Fire-and-forget promise
       (async () => {
         try {
-          if (isLiveCompetition) {
+          // Always use live API for competitions to ensure immediate calculation in the race
+          if (isLiveRef.current || paramCompetitionId) {
             const movesPlayed =
               boardMoveHistory ||
               puzzleBoardStates[currentPuzzle.id]?.moveHistory ||
@@ -830,10 +844,10 @@ function PuzzlePage() {
       const wrapAroundUnsolvedIndex =
         nextUnsolvedIndex === -1
           ? puzzles.findIndex(
-              (p) =>
-                puzzleStatuses[p.id || p._id] !== "success" &&
-                puzzleStatuses[p.id || p._id] !== "failed",
-            )
+            (p) =>
+              puzzleStatuses[p.id || p._id] !== "success" &&
+              puzzleStatuses[p.id || p._id] !== "failed",
+          )
           : -1;
 
       const finalNextIndex =
@@ -976,6 +990,58 @@ function PuzzlePage() {
           }
         />
 
+        {/* Conditional Prominent Heading for Competition Status */}
+        {/* {competitionData && !isReviewMode && (
+          <div
+            className={styles.statusHeadingContainer}
+            style={{
+              padding: "1rem",
+              textAlign: "center",
+              background: isBeforeStartTime
+                ? "rgba(212, 163, 115, 0.1)"
+                : "rgba(16, 185, 129, 0.05)",
+              borderRadius: "12px",
+              border: `1px solid ${isBeforeStartTime ? "rgba(212, 163, 115, 0.3)" : "rgba(16, 185, 129, 0.2)"}`,
+              marginTop: "1rem",
+              marginBottom: "1rem",
+              animation: "fadeIn 0.5s ease-out",
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "1.5rem",
+                color: isBeforeStartTime
+                  ? "var(--gold, #d4a373)"
+                  : "var(--success, #10b981)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+              }}
+            >
+              {isBeforeStartTime ? (
+                <>
+                  <FaClock /> Competition Starts In:{" "}
+                  {Math.max(
+                    0,
+                    Math.floor(
+                      (new Date(competitionData.startTime).getTime() -
+                        Date.now()) /
+                        1000,
+                    ),
+                  )}
+                  s
+                </>
+              ) : (
+                <>
+                 
+                </>
+              )}
+            </h2>
+          </div>
+        )} */}
+
         {/* Chapter Tabs Container (Full Width, Below PageHeader) */}
         {competitionData &&
           competitionData.chapters &&
@@ -986,6 +1052,7 @@ function PuzzlePage() {
                 <button
                   className={`${styles.navArrow} ${styles.chapterNavArrow} ${styles.navArrowLeft} ${styles.goldArrow}`}
                   onClick={() => {
+                    if (isBeforeStartTime && !isReviewMode) return;
                     const newIdx = Math.max(0, activeChapterIndex - 1);
                     setActiveChapterIndex(newIdx);
                     setCurrentFrame(0);
@@ -1007,7 +1074,7 @@ function PuzzlePage() {
                       }
                     }
                   }}
-                  disabled={activeChapterIndex <= 0}
+                  disabled={activeChapterIndex <= 0 || (isBeforeStartTime && !isReviewMode)}
                   title="Previous Chapter"
                 >
                   <FaAngleDoubleLeft /> Previous
@@ -1037,6 +1104,7 @@ function PuzzlePage() {
                           type="button"
                           className={`${styles.chapterTab} ${activeChapterIndex === idx ? styles.chapterTabActive : ""}`}
                           onClick={() => {
+                            if (isBeforeStartTime && !isReviewMode) return;
                             setActiveChapterIndex(idx);
                             setCurrentFrame(0);
                             if (chPuzzles.length > 0) {
@@ -1052,6 +1120,7 @@ function PuzzlePage() {
                               }
                             }
                           }}
+                          style={{ cursor: (isBeforeStartTime && !isReviewMode) ? "not-allowed" : "pointer" }}
                         >
                           <span className={styles.chapterTabName}>
                             {chapter.name}
@@ -1069,6 +1138,7 @@ function PuzzlePage() {
                 <button
                   className={`${styles.navArrow} ${styles.chapterNavArrow} ${styles.navArrowRight} ${styles.goldArrow}`}
                   onClick={() => {
+                    if (isBeforeStartTime && !isReviewMode) return;
                     const newIdx = Math.min(
                       competitionData.chapters.length - 1,
                       activeChapterIndex + 1,
@@ -1094,7 +1164,7 @@ function PuzzlePage() {
                     }
                   }}
                   disabled={
-                    activeChapterIndex >= competitionData.chapters.length - 1
+                    activeChapterIndex >= competitionData.chapters.length - 1 || (isBeforeStartTime && !isReviewMode)
                   }
                   title="Next Chapter"
                 >
@@ -1114,11 +1184,21 @@ function PuzzlePage() {
           {competitionData && (
             <GameTimer
               isReviewMode={isReviewMode}
-              timeLeft={timeLeft}
+              timeLeft={
+                isBeforeStartTime && targetStartTimeRef.current
+                  ? Math.max(
+                    0,
+                    Math.floor(
+                      (targetStartTimeRef.current - Date.now()) / 1000,
+                    ),
+                  )
+                  : timeLeft
+              }
               score={score}
               solvedCount={solvedCount}
               attemptedCount={puzzles.length - getUnattemptedCount()}
               remainingCount={getUnattemptedCount()}
+              isBeforeStartTime={isBeforeStartTime}
             />
           )}
 
@@ -1242,10 +1322,11 @@ function PuzzlePage() {
                   alternativeSolutions={currentPuzzle.alternativeSolutions}
                   puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                   kidsConfig={currentPuzzle.kidsConfig}
-                  firstMoveBy={currentPuzzle.firstMoveBy}
+                  firstMoveBy={(isBeforeStartTime && !isReviewMode) ? "human" : currentPuzzle.firstMoveBy}
                   onPuzzleSolved={handlePuzzleSolved}
                   onWrongMove={handleWrongMove}
                   onBoardStateChange={(fen, moveHistory) => {
+                    if (isBeforeStartTime && !isReviewMode) return;
                     const puzzleId = currentPuzzle.id || currentPuzzle._id;
                     setPuzzleBoardStates((prev) => ({
                       ...prev,
@@ -1264,7 +1345,7 @@ function PuzzlePage() {
                       (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
                         "success" &&
                         puzzleStatuses[
-                          currentPuzzle.id || currentPuzzle._id
+                        currentPuzzle.id || currentPuzzle._id
                         ] !== "failed"))
                   }
                   showSolution={showSolution}
@@ -1277,46 +1358,40 @@ function PuzzlePage() {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      background: "rgba(0,0,0,0.4)",
+                      background: "rgba(0,0,0,0.6)",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "center",
                       alignItems: "center",
                       zIndex: 10,
                       borderRadius: "8px",
-                      backdropFilter: "blur(2px)",
+                      backdropFilter: "blur(4px)",
                     }}
                   >
                     <div
                       style={{
-                        background: "rgba(0,0,0,0.8)",
                         padding: "20px",
                         borderRadius: "12px",
-                        border: "1px solid gold",
-                        color: "gold",
+                        color: "white",
                         textAlign: "center",
                       }}
                     >
-                      <h3 style={{ margin: "0 0 10px 0" }}>
-                        Competition Starting Soon
-                      </h3>
-                      <p style={{ margin: "0 0 15px 0" }}>
-                        Get ready! Puzzles will be unlocked at the start time.
-                      </p>
                       <div
                         style={{
-                          fontSize: "3rem",
-                          fontWeight: "bold",
-                          color: "white",
-                          textShadow: "0 0 10px gold",
+                          fontSize: "6rem",
+                          fontWeight: "900",
+                          textShadow:
+                            "0 0 20px gold, 0 0 40px rgba(255, 215, 0, 0.4)",
+                          animation: "pulse 1s infinite alternate"
                         }}
                       >
+                        <div>starts in </div>
                         {Math.max(
                           0,
                           Math.floor(
                             (new Date(competitionData.startTime).getTime() -
                               Date.now()) /
-                              1000,
+                            1000,
                           ),
                         )}
                         s
@@ -1395,6 +1470,7 @@ function PuzzlePage() {
                                   ${status === "failed" ? styles.danger : ""}
                           `}
                                   onClick={() => {
+                                    if (isBeforeStartTime && !isReviewMode) return;
                                     if (!solving) {
                                       setCurrentPuzzleIndex(globalIndex);
                                       if (status === "success")
@@ -1405,7 +1481,7 @@ function PuzzlePage() {
                                         );
                                     }
                                   }}
-                                  style={{ cursor: "pointer" }}
+                                  style={{ cursor: (isBeforeStartTime && !isReviewMode) ? "not-allowed" : "pointer" }}
                                 >
                                   {status === "success" ? (
                                     <FaCheckCircle />
@@ -1461,11 +1537,12 @@ function PuzzlePage() {
                                     ${pStatus === "failed" ? styles.danger : ""}
                           `}
                                     onClick={() => {
+                                      if (isBeforeStartTime && !isReviewMode) return;
                                       if (!solving) {
                                         setCurrentPuzzleIndex(globalIndex);
                                       }
                                     }}
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: (isBeforeStartTime && !isReviewMode) ? "not-allowed" : "pointer" }}
                                     title="Practice Mode - Unlimited Retries"
                                   >
                                     {pStatus === "success" ? (
@@ -1529,7 +1606,7 @@ function PuzzlePage() {
                             }
                           }}
                           disabled={
-                            chapterCurrentIndex <= 0 && activeChapterIndex <= 0
+                            (chapterCurrentIndex <= 0 && activeChapterIndex <= 0) || (isBeforeStartTime && !isReviewMode)
                           }
                           title="Previous Puzzle"
                           style={{ flex: 1 }}
@@ -1545,7 +1622,7 @@ function PuzzlePage() {
                               if (
                                 competitionData.chapters &&
                                 activeChapterIndex <
-                                  competitionData.chapters.length - 1
+                                competitionData.chapters.length - 1
                               ) {
                                 const nextChapterIdx = activeChapterIndex + 1;
                                 const chPuzzleIds = (
@@ -1584,9 +1661,9 @@ function PuzzlePage() {
                             }
                           }}
                           disabled={
-                            chapterCurrentIndex >= navPuzzles.length - 1 &&
-                            activeChapterIndex >=
-                              (competitionData.chapters?.length || 1) - 1
+                            (chapterCurrentIndex >= navPuzzles.length - 1 &&
+                              activeChapterIndex >=
+                              (competitionData.chapters?.length || 1) - 1) || (isBeforeStartTime && !isReviewMode)
                           }
                           title="Next Puzzle"
                           style={{ flex: 1 }}
@@ -1793,7 +1870,7 @@ function PuzzlePage() {
                                   }}
                                 >
                                   {currentPuzzle?.solution &&
-                                  currentPuzzle.solution.length > 0 ? (
+                                    currentPuzzle.solution.length > 0 ? (
                                     currentPuzzle.solution.map((move, i) => {
                                       if (i % 2 == 0) return null;
                                       return (
