@@ -88,8 +88,8 @@
   justify-content: center;
   align-items: flex-end;
   gap: 12px;
-  height: 290px;
-  padding: 1rem 1rem 0 1rem;
+  /* height: 290px; */
+  padding: 3rem 1rem 1rem 1rem;
 }
 
 .podiumPlace {
@@ -112,7 +112,7 @@
 }
 
 .trophyImg {
-  width: 55px;
+  width: 75px;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5));
@@ -120,9 +120,9 @@
 }
 
 .first .goldTrophy {
-  width: 75px;
+  width: 95px;
   filter: drop-shadow(0 6px 12px rgba(251, 191, 36, 0.5));
-  animation: float 3.5s ease-in-out infinite;
+  /* animation: float 3.5s ease-in-out infinite; */
 }
 
 /* Optional: Small rank dots if desired, but image handles it natively well. 

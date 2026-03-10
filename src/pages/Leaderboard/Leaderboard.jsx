@@ -22,6 +22,10 @@ import socketService from "../../services/socketService";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
 import styles from "./Leaderboard.module.css";
 
+import silver from "../../assets/Trophy/silver-trophy.svg"
+import gold from "../../assets/Trophy/gold-trophy.svg"
+import bronze from "../../assets/Trophy/bronze-trophy.svg"
+
 function Leaderboard() {
   const { competitionId } = useParams();
   const navigate = useNavigate();
@@ -214,7 +218,7 @@ function Leaderboard() {
                 {/* 2nd Place */}
                 <div className={`${styles.podiumPlace} ${styles.second}`}>
                   <div className={styles.podiumAvatar}>
-                    <img src="/assets/silver-trophy.svg" alt="2nd Place" className={styles.trophyImg} />
+                    <img src={silver} alt="2nd Place" className={styles.trophyImg} />
                   </div>
                   <div className={styles.podiumName}>{top3[1]?.username || '—'}</div>
                   <div className={styles.podiumScore}>{top3[1]?.score || 0} pts</div>
@@ -231,7 +235,7 @@ function Leaderboard() {
                 {/* 1st Place */}
                 <div className={`${styles.podiumPlace} ${styles.first}`}>
                   <div className={styles.podiumAvatar}>
-                    <img src="/assets/gold-trophy.svg" alt="1st Place" className={`${styles.trophyImg} ${styles.goldTrophy}`} />
+                    <img src={gold} alt="1st Place" className={`${styles.trophyImg} ${styles.goldTrophy}`} />
                   </div>
                   <div className={styles.podiumName}>{top3[0]?.username || '—'}</div>
                   <div className={styles.podiumScore}>{top3[0]?.score || 0} pts</div>
@@ -248,7 +252,7 @@ function Leaderboard() {
                 {/* 3rd Place */}
                 <div className={`${styles.podiumPlace} ${styles.third}`}>
                   <div className={styles.podiumAvatar}>
-                    <img src="/assets/bronze-trophy.svg" alt="3rd Place" className={styles.trophyImg} />
+                    <img src={bronze} alt="3rd Place" className={styles.trophyImg} />
                   </div>
                   <div className={styles.podiumName}>{top3[2]?.username || '—'}</div>
                   <div className={styles.podiumScore}>{top3[2]?.score || 0} pts</div>
