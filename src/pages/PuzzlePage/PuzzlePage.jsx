@@ -1174,7 +1174,11 @@ function PuzzlePage() {
                   alternativeSolutions={currentPuzzle.alternativeSolutions}
                   puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
                   kidsConfig={currentPuzzle.kidsConfig}
-                  firstMoveBy={isBeforeStartTime && !isReviewMode ? "human" : currentPuzzle.firstMoveBy}
+                  firstMoveBy={
+                    isBeforeStartTime && !isReviewMode
+                      ? "human"
+                      : currentPuzzle.firstMoveBy
+                  }
                   onPuzzleSolved={handlePuzzleSolved}
                   onWrongMove={handleWrongMove}
                   onBoardStateChange={(fen, moveHistory) => {
@@ -1182,8 +1186,25 @@ function PuzzlePage() {
                     const puzzleId = currentPuzzle.id || currentPuzzle._id;
                     setPuzzleBoardStates(prev => ({ ...prev, [puzzleId]: { fen, moveHistory } }));
                   }}
-                  savedBoardState={isReviewMode ? null : puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]}
-                  interactive={!solving && !isBeforeStartTime && (isReviewMode || (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "success" && puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !== "failed"))}
+                  savedBoardState={
+                    isReviewMode
+                      ? null
+                      : puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]
+                  }
+                  isSolved={
+                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] ===
+                    "success"
+                  }
+                  interactive={
+                    !solving &&
+                    !isBeforeStartTime &&
+                    (isReviewMode ||
+                      (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
+                        "success" &&
+                        puzzleStatuses[
+                        currentPuzzle.id || currentPuzzle._id
+                        ] !== "failed"))
+                  }
                   showSolution={showSolution}
                 />
                 {isBeforeStartTime && !isReviewMode && (
