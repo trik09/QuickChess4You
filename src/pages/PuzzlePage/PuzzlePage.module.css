@@ -41,6 +41,7 @@
   overflow: hidden;
   /* background: var(--bg-base); */
   color: var(--text-primary-local);
+
 }
 
 /* ========================================
@@ -467,7 +468,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 250px;
+  max-height: 205px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
@@ -521,7 +522,7 @@
 }
 
 .chapterPillActive {
-  background: linear-gradient(135deg, #e68a00, #ff9800, #ffb74d) !important;
+  background: linear-gradient(135deg, #b58863, #b58863, #b58863) !important;
   border-color: #ffcc80 !important;
   color: #fff !important;
   box-shadow: 0 4px 15px rgba(230, 138, 0, 0.4) !important;
@@ -544,7 +545,7 @@
 
 .chapterPillName {
   font-size: 0.9rem;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -677,15 +678,18 @@
 }
 
 .statsCard {
-  background: var(--bg-card);
-  border-radius: 12px;
-  border: 1px solid var(--border-dim);
-  padding: 16px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   flex-shrink: 0;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 [data-theme='light'] .statsCard {
@@ -706,34 +710,46 @@
 .statsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .statItem {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.statItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(201, 152, 42, 0.3);
+  transform: translateY(-1px);
 }
 
 .statLabel {
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  font-weight: 700;
+  letter-spacing: 1.5px;
+  font-weight: 800;
   color: var(--text-secondary);
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .statValue {
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: 1.3rem;
+  font-weight: 900;
   color: var(--text-primary);
   font-family: 'JetBrains Mono', monospace;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .statValue.gold {
   color: var(--gold);
+  text-shadow: 0 0 10px var(--gold-glow);
 }
 
 /* Timer */
@@ -756,11 +772,13 @@
 
 .timerValue {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 2.5rem;
+  font-size: 3rem;
+  /* Increased size */
   font-weight: 900;
   color: var(--gold);
-  text-shadow: 0 0 15px var(--gold-glow);
+  text-shadow: 0 0 20px var(--gold-glow), 0 0 40px rgba(201, 152, 42, 0.2);
   line-height: 1;
+  letter-spacing: -1px;
 }
 
 /* Rank Card */
@@ -1129,7 +1147,7 @@
   padding: 8px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 3px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;

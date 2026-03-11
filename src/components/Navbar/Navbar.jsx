@@ -122,7 +122,9 @@ function Navbar({ onLoginClick, onSignupClick }) {
                       {user?.avatar ? (
                         <img src={user.avatar} alt={`${user.username}'s avatar`} />
                       ) : (
-                        <BsPersonCircle className={styles.profileIcon} />
+                        <div className={styles.initialAvatar}>
+                          {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "U"}
+                        </div>
                       )}
                     </div>
                   </button>
@@ -183,7 +185,9 @@ function Navbar({ onLoginClick, onSignupClick }) {
                 {user?.avatar ? (
                   <img src={user.avatar} alt={`${user.username}'s avatar`} className={styles.mobileProfileImg} />
                 ) : (
-                  <BsPersonCircle size={22} />
+                  <div className={styles.mobileInitialAvatar}>
+                    {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "U"}
+                  </div>
                 )}
               </button>
             ) : (

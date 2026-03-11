@@ -1150,15 +1150,6 @@ function PuzzlePage() {
 
 
 
-          {isLiveCompetition && !isReviewMode && (
-            <button className={styles.btnSubmitLeft}
-              onClick={() => setShowSubmitModal(true)}
-              disabled={submitting || getUnattemptedCount() > 0}
-              title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
-            >
-              Submit Competition
-            </button>
-          )}
 
         </div>
 
@@ -1348,6 +1339,8 @@ function PuzzlePage() {
                 </div>
               )}
 
+
+
               {isReviewMode && (
                 <div style={{ marginTop: 8 }}>
                   <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
@@ -1385,8 +1378,18 @@ function PuzzlePage() {
                 </div>
               )}
             </div>
+            {isLiveCompetition && !isReviewMode && (
+              <button className={styles.btnSubmitLeft}
+                onClick={() => setShowSubmitModal(true)}
+                disabled={submitting || getUnattemptedCount() > 0}
+                title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
+              >
+                Submit Competition
+              </button>
+            )}
           </div>
         )}
+
 
       </div>
       {/* END BODY */}

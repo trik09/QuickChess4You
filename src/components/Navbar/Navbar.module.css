@@ -184,6 +184,24 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid rgba(181, 135, 99, 0.3);
+}
+
+.initialAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b58863, #8b5e34);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  user-select: none;
 }
 
 .profileIcon {
@@ -343,10 +361,27 @@
 }
 
 .mobileProfileImg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid rgba(181, 135, 99, 0.3);
+}
+
+.mobileInitialAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #b58863, #8b5e34);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  user-select: none;
 }
 
 :global(html[data-theme='dark']) .mobileProfileBtn,
