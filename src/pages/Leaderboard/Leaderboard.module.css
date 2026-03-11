@@ -510,7 +510,7 @@
 }
 
 .rankingsPanelHeader {
-  padding: 1.2rem 1.5rem;
+  padding: 0.7rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
   display: flex;
@@ -687,7 +687,7 @@
 .rankingsList {
   overflow-y: auto;
   flex: 1;
-  padding: 0.5rem 0;
+  padding: 0 0;
 }
 
 /* Custom scrollbar */

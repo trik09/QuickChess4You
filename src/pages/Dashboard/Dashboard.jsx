@@ -237,7 +237,7 @@ function Dashboard() {
                         className={`${styles.actionBtn} ${styles.outlineBtn}`}
                         onClick={(e) => handleViewPuzzles(e, comp)}
                       >
-                        <FaEye /> Puzzles
+                        <FaEye /> Performance
                       </button>
                       <button
                         className={`${styles.actionBtn} ${styles.primaryBtn}`}
