@@ -1061,6 +1061,9 @@ function ChessBoard({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          border: "3px solid var(--border-gold)",
+          borderRadius: "8px"
+
         }}
       >
         {feedback && (

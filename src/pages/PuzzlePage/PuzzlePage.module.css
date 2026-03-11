@@ -201,7 +201,7 @@
 }
 
 .headerChapterPillActive {
-  background: linear-gradient(135deg, #e68a00, #ff9800) !important;
+  background: linear-gradient(135deg, #b58863, #b58863, #b58863) !important;
   border-color: #ffcc80 !important;
   color: #fff !important;
   box-shadow: 0 2px 8px rgba(230, 138, 0, 0.3) !important;
@@ -209,7 +209,7 @@
 
 .headerChapterName {
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 600;
   text-transform: lowercase;
 }
 
@@ -447,8 +447,10 @@
   padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 [data-theme='light'] .chaptersBox {
@@ -468,8 +470,10 @@
 .chaptersWrap {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 205px;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  max-height: 220px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
@@ -575,8 +579,8 @@
    ======================================== */
 .body {
   display: grid;
-  grid-template-columns: minmax(260px, 340px) 1fr minmax(280px, 320px);
-  gap: 16px;
+  grid-template-columns: minmax(230px, 280px) 1fr minmax(260px, 310px);
+  gap: 12px;
   max-width: 1600px;
   /* margin: 0 auto; */
   /* padding: 0 16px; */
@@ -714,7 +718,7 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
 }
 
@@ -909,11 +913,11 @@
   aspect-ratio: 1 / 1;
   height: 100%;
   border-radius: 8px;
-  border: 3px solid var(--border-gold);
-  box-shadow:
+  /* border: 3px solid var(--border-gold); */
+  /* box-shadow:
     0 0 0 1px rgba(201, 152, 42, 0.15),
     0 0 24px var(--gold-glow),
-    0 8px 32px rgba(0, 0, 0, 0.6);
+    0 8px 32px rgba(0, 0, 0, 0.6); */
   overflow: hidden;
   position: relative;
   display: flex;
@@ -976,9 +980,10 @@
 .rightColumn {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
   overflow: hidden;
+  height: 100%;
 }
 
 .navCard {
@@ -1160,14 +1165,14 @@
 
 .infoCard {
   border-radius: 12px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-
+  flex-shrink: 0;
 }
 
 /* White to Play: Wood-Brown Theme */
@@ -1258,7 +1263,7 @@
 }
 
 .kingIcon {
-  font-size: 3.2rem;
+  font-size: 2.8rem;
   line-height: 1;
   transition: transform 0.3s ease;
 }
@@ -1274,7 +1279,7 @@
 }
 
 .toPlayText {
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: -0.8px;
   text-transform: capitalize;
@@ -1283,9 +1288,10 @@
 .infoMeta {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: 12px;
+  gap: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 14px;
+  padding-top: 8px;
+  margin-top: 2px;
 }
 
 .infoMetaItem {
@@ -1321,6 +1327,8 @@
 /* Submit button */
 .submitArea {
   flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .btnSubmit {
@@ -1676,11 +1684,11 @@
 }
 
 /* ========================================
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE BREAKPOINTS — WIDTH
    ======================================== */
 @media (max-width: 1280px) {
   .body {
-    grid-template-columns: 190px 1fr 235px;
+    grid-template-columns: 180px 1fr 225px;
     gap: 8px;
     padding: 8px;
   }
@@ -1688,7 +1696,7 @@
 
 @media (max-width: 1100px) {
   .body {
-    grid-template-columns: 172px 1fr 215px;
+    grid-template-columns: 165px 1fr 210px;
     gap: 6px;
     padding: 6px;
   }
@@ -1771,5 +1779,468 @@
   .galaxySection {
     height: auto;
     min-height: 120px;
+  }
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS — HEIGHT
+   Progressively scale down elements as
+   viewport height decreases so nothing
+   overflows or gets cut off.
+   ======================================== */
+
+/* 750px height — moderate reduction */
+@media (max-height: 750px) {
+  .titleHeader {
+    height: 46px;
+    margin-bottom: 6px;
+  }
+
+  .timerValue {
+    font-size: 2.4rem;
+  }
+
+  .timerLabel {
+    font-size: 0.85rem;
+  }
+
+  .statsCard {
+    gap: 14px;
+    padding: 8px;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+
+  .statLabel {
+    font-size: 0.6rem;
+  }
+
+  .rankCard {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .rankNumber {
+    font-size: 1.5rem;
+  }
+
+  .rankLabel {
+    font-size: 0.85rem;
+  }
+
+  .rankParticipants {
+    font-size: 0.85rem;
+  }
+
+  .toPlayText {
+    font-size: 1.3rem;
+  }
+
+  .kingIcon {
+    font-size: 2.4rem;
+  }
+
+  .infoMeta {
+    padding-top: 6px;
+    gap: 6px;
+  }
+
+  .infoMetaLabel {
+    font-size: 0.58rem;
+  }
+
+  .infoMetaValue {
+    font-size: 1rem;
+  }
+
+  .infoCard {
+    padding: 6px 12px;
+    gap: 1px;
+  }
+
+  .chaptersBox {
+    padding: 8px;
+  }
+
+  .chaptersBoxTitle {
+    font-size: 0.75rem;
+  }
+
+  .chapterPill {
+    padding: 8px 12px;
+    min-height: 40px;
+  }
+
+  .chapterPillName {
+    font-size: 0.82rem;
+  }
+
+  .navCard {
+    padding: 8px;
+  }
+
+  .navCardTitle {
+    font-size: 0.72rem;
+    margin-bottom: 6px;
+  }
+
+  .navGrid {
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .navItem {
+    font-size: 0.75rem;
+  }
+
+  .navArrow {
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .btnSubmit {
+    padding: 9px 10px;
+    font-size: 0.82rem;
+  }
+
+  .btnSubmitLeft {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+
+  .chaptersWrap {
+    max-height: 170px;
+  }
+
+  .galaxyOffLayout .timerValue {
+    font-size: 2rem;
+  }
+
+  .galaxyOffLayout .toPlayText {
+    font-size: 1.2rem;
+  }
+
+  .galaxyOffLayout .kingIcon {
+    font-size: 2.2rem;
+  }
+}
+
+/* 680px height — significant reduction */
+@media (max-height: 680px) {
+  .titleHeader {
+    height: 40px;
+    margin-bottom: 4px;
+    border-radius: 20px;
+    padding: 0 12px;
+  }
+
+  .mainTitle {
+    font-size: 0.85rem;
+  }
+
+  .timerValue {
+    font-size: 2rem;
+  }
+
+  .statsCard {
+    gap: 10px;
+    padding: 6px 8px;
+  }
+
+  .statsGrid {
+    gap: 4px;
+  }
+
+  .statItem {
+    padding: 6px 4px;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .rankCard {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .rankNumber {
+    font-size: 1.3rem;
+  }
+
+  .rankProgressBar {
+    margin-top: 4px;
+  }
+
+  .toPlayText {
+    font-size: 1.15rem;
+  }
+
+  .kingIcon {
+    font-size: 2rem;
+  }
+
+  .infoCard {
+    padding: 5px 10px;
+  }
+
+  .infoMeta {
+    padding-top: 4px;
+    gap: 4px;
+  }
+
+  .infoMetaValue {
+    font-size: 0.9rem;
+  }
+
+  .chapterPill {
+    padding: 6px 10px;
+    min-height: 34px;
+    border-radius: 12px;
+  }
+
+  .chaptersBox {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .chaptersWrap {
+    max-height: 140px;
+    gap: 5px;
+  }
+
+  .navCard {
+    padding: 6px 8px;
+  }
+
+  .navGrid {
+    gap: 3px;
+    margin-bottom: 5px;
+  }
+
+  .navItem {
+    font-size: 0.7rem;
+  }
+
+  .navArrow {
+    height: 26px;
+    font-size: 0.7rem;
+  }
+
+  .btnSubmit {
+    padding: 7px 10px;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+  }
+
+  .rightColumn {
+    gap: 6px;
+  }
+
+  .divider {
+    height: 4px;
+    min-height: 4px;
+  }
+
+  .galaxySection {
+    height: 140px;
+    margin-top: 6px;
+  }
+
+  .galaxySection :global(.puzzle-racer-container) {
+    height: 140px !important;
+  }
+}
+
+/* 600px height — aggressive reduction, keep everything visible */
+@media (max-height: 600px) {
+  .container {
+    height: calc(100vh - 28px);
+  }
+
+  .titleHeader {
+    height: 36px;
+    margin-bottom: 3px;
+    border-radius: 18px;
+    padding: 0 10px;
+  }
+
+  .timerValue {
+    font-size: 1.7rem;
+  }
+
+  .timerLabel {
+    font-size: 0.72rem;
+  }
+
+  .statsCard {
+    gap: 6px;
+    padding: 5px 7px;
+  }
+
+  .statsGrid {
+    gap: 3px;
+  }
+
+  .statItem {
+    padding: 4px 3px;
+  }
+
+  .statValue {
+    font-size: 0.9rem;
+  }
+
+  .statLabel {
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+  }
+
+  .rankCard {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .rankNumber {
+    font-size: 1.1rem;
+  }
+
+  .rankLabel {
+    font-size: 0.72rem;
+  }
+
+  .rankParticipants {
+    font-size: 0.72rem;
+    margin-top: 2px;
+  }
+
+  .toPlayText {
+    font-size: 1rem;
+  }
+
+  .kingIcon {
+    font-size: 1.7rem;
+  }
+
+  .toPlayRow {
+    gap: 8px;
+  }
+
+  .infoCard {
+    padding: 4px 8px;
+  }
+
+  .infoMeta {
+    padding-top: 3px;
+    gap: 3px;
+  }
+
+  .infoMetaLabel {
+    font-size: 0.52rem;
+    letter-spacing: 1px;
+  }
+
+  .infoMetaValue {
+    font-size: 0.82rem;
+  }
+
+  .chaptersBox {
+    padding: 5px 7px;
+    gap: 3px;
+  }
+
+  .chaptersBoxTitle {
+    font-size: 0.68rem;
+  }
+
+  .chaptersWrap {
+    max-height: 110px;
+    gap: 4px;
+  }
+
+  .chapterPill {
+    padding: 4px 8px;
+    min-height: 28px;
+    border-radius: 8px;
+  }
+
+  .chapterPillName {
+    font-size: 0.72rem;
+  }
+
+  .chapterPillBadge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .navCard {
+    padding: 5px 7px;
+  }
+
+  .navCardTitle {
+    font-size: 0.62rem;
+    margin-bottom: 4px;
+    letter-spacing: 1.5px;
+  }
+
+  .navGrid {
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+
+  .navItem {
+    font-size: 0.65rem;
+  }
+
+  .navArrow {
+    height: 22px;
+    font-size: 0.65rem;
+    border-radius: 6px;
+  }
+
+  .navControls {
+    gap: 4px;
+  }
+
+  .btnSubmit {
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.8px;
+    border-radius: 8px;
+  }
+
+  .rightColumn {
+    gap: 5px;
+  }
+
+  .divider {
+    height: 3px;
+    min-height: 3px;
+  }
+
+  .body {
+    gap: 8px;
+  }
+
+  .galaxySection {
+    height: 120px;
+    margin-top: 4px;
+  }
+
+  .galaxySection :global(.puzzle-racer-container) {
+    height: 120px !important;
+  }
+
+  .galaxyOffLayout .toPlayText {
+    font-size: 1rem;
+  }
+
+  .galaxyOffLayout .kingIcon {
+    font-size: 1.7rem;
+  }
+
+  .galaxyOffLayout .timerValue {
+    font-size: 1.7rem;
   }
 }

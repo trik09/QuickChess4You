@@ -7,7 +7,7 @@
   background: var(--white);
   border-radius: var(--radius-lg);
   /* box-shadow: var(--shadow-lg); */
-  border: 1px solid var(--gray);
+  border: none;
   position: relative;
 }
 
