@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   FaClock,
@@ -1069,7 +1069,7 @@ function PuzzlePage() {
       )}
 
       {/* BODY — 3 Columns */}
-      <div className={styles.body}>
+      <div className={`${styles.body} ${!showGalaxy ? styles.galaxyOffLayout : ""}`}>
         {/* LEFT COLUMN */}
         <div className={styles.leftColumn}>
           {competitionData && (
@@ -1123,7 +1123,7 @@ function PuzzlePage() {
                 <div className={styles.infoMeta}>
                   <div className={styles.infoMetaItem}>
                     <span className={styles.infoMetaLabel}>Level</span>
-                    <span className={styles.infoMetaValue}>{currentPuzzle.level || 1}</span>
+                    <span className={styles.infoMetaValue}>{currentPuzzle.level || 1}/7</span>
                   </div>
                   <div className={styles.infoMetaItem}>
                     <span className={styles.infoMetaLabel}>Difficulty</span>

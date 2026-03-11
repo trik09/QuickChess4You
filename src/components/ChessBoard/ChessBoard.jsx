@@ -451,20 +451,22 @@ function ChessBoard({
     // or if we simply want it to fit.
     const updateScale = () => {
       if (containerRef.current) {
-        const parentWidth =
-          containerRef.current.parentElement?.offsetWidth ||
-          containerRef.current.offsetWidth;
-        // Base width of the board is roughly 8 * 70px + borders/padding ~ 600px.
-        // Let's assume the "natural" size is around 600px wide.
-        const naturalWidth = 600;
+        const parent = containerRef.current.parentElement;
+        if (!parent) return;
 
-        // If parent is smaller than natural width, scale down.
-        // If parent is larger, we can keep it 1 or scale up? Let's cap at 1 for crispness unless needed.
-        if (parentWidth && parentWidth < naturalWidth) {
-          setScale(parentWidth / naturalWidth);
-        } else {
-          setScale(1);
-        }
+        const parentWidth = parent.offsetWidth;
+        const parentHeight = parent.offsetHeight;
+
+        // Base width of the board where scale = 1.0
+        const naturalWidth = 600;
+        const naturalHeight = 620;
+
+        const scaleW = parentWidth / naturalWidth;
+        const scaleH = parentHeight / naturalHeight;
+
+        // Use the smaller of the two scales to ensure it fits both ways
+        // Allow scaling UP to fill the space (e.g., on large monitors)
+        setScale(Math.min(scaleW, scaleH, 2.0));
       }
     };
 
@@ -1042,23 +1044,20 @@ function ChessBoard({
       ref={containerRef}
       className={styles.boardContainer}
       style={{
-        // Maintain aspect ratio space when scaled
-        // Natural height ~600. If scaled 0.5, needs 300 height.
-        width: scale < 1 ? '100%' : 'auto',
-        height: scale < 1 ? `${610 * scale}px` : 'auto',
-        padding: scale < 1 ? '0' : '5px', // Reduce padding when small
+        width: '100%',
+        height: '100%',
+        padding: '0',
         overflow: 'hidden',
-        border: scale < 1 ? 'none' : undefined, // Remove border for previews if desired
-        boxShadow: scale < 1 ? 'none' : undefined
+        border: 'none',
+        boxShadow: 'none'
       }}
     >
       <div
         ref={wrapperRef}
         style={{
           transform: `scale(${scale})`,
-          // transformOrigin: 'top center',
-          width: '600px',
-          // height: '610px',
+          transformOrigin: 'center center',
+          width: '600px', // Fixed base width for consistent scaling
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
