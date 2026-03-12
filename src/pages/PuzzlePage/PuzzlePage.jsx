@@ -1052,24 +1052,26 @@ function PuzzlePage() {
             </div>
           )}
 
-          <div className={styles.titleHeaderRight}>
-            <button
-              className={`${styles.galaxyToggle} ${!showGalaxy ? styles.galaxyToggleOff : ""}`}
-              onClick={() => setShowGalaxy(!showGalaxy)}
-              title={showGalaxy ? "Hide Galaxy" : "Show Galaxy"}
-            >
-              <span className={styles.toggleIcon}>🪐</span>
-              <span className={styles.toggleText}>{showGalaxy ? "Galaxy On" : "Galaxy Off"}</span>
-              <div className={styles.toggleSwitch}>
-                <div className={styles.toggleKnob} />
-              </div>
-            </button>
-          </div>
+          {!isReviewMode && (
+            <div className={styles.titleHeaderRight}>
+              <button
+                className={`${styles.galaxyToggle} ${!showGalaxy ? styles.galaxyToggleOff : ""}`}
+                onClick={() => setShowGalaxy(!showGalaxy)}
+                title={showGalaxy ? "Hide Galaxy" : "Show Galaxy"}
+              >
+                <span className={styles.toggleIcon}>🪐</span>
+                <span className={styles.toggleText}>{showGalaxy ? "Galaxy On" : "Galaxy Off"}</span>
+                <div className={styles.toggleSwitch}>
+                  <div className={styles.toggleKnob} />
+                </div>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* BODY — 3 Columns */}
-      <div className={`${styles.body} ${!showGalaxy ? styles.galaxyOffLayout : ""}`}>
+      <div className={`${styles.body} ${(!showGalaxy || isReviewMode) ? styles.galaxyOffLayout : ""}`}>
         {/* LEFT COLUMN */}
         <div className={styles.leftColumn}>
           {competitionData && (
@@ -1148,8 +1150,29 @@ function PuzzlePage() {
             </div>
           )}
 
-
-
+          {/* Competition Results — left column, review mode only */}
+          {isReviewMode && competitionData && (
+            <div className={styles.navCard}>
+              <div className={styles.navCardTitle}>COMPETITION RESULTS</div>
+              <div className={styles.navGrid}>
+                {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
+                  const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
+                  const ci = currentFrame * ITEMS_PER_PAGE + li;
+                  const pid = puzzle.id || puzzle._id;
+                  const status = puzzleStatuses[pid];
+                  return (
+                    <div key={`res-left-${pid}`}
+                      className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${status === "success" ? styles.success : ""} ${status === "failed" ? styles.danger : ""}`}
+                      onClick={() => { if (!solving) setCurrentPuzzleIndex(gi); }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {status === "success" ? <FaCheckCircle /> : gi + 1}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
         </div>
 
@@ -1274,6 +1297,7 @@ function PuzzlePage() {
 
               {isReviewMode && (
                 <>
+                  {/* Practice Attempts — tracks what user does in review mode */}
                   <div className={styles.sectionTitle}>Practice Attempts</div>
                   <div className={styles.navGrid}>
                     {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
