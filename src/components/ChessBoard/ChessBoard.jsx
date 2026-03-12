@@ -183,7 +183,6 @@ function ChessBoard({
   const [solutionIndex, setSolutionIndex] = useState(0);
   const [initialFen, setInitialFen] = useState(fen);
   const [userColor, setUserColor] = useState("w");
-  const [computerFirstMovePlayed, setComputerFirstMovePlayed] = useState(false);
 
   const [normalizedSolution, setNormalizedSolution] = useState([]);
   const [allNormalizedPaths, setAllNormalizedPaths] = useState([]);
@@ -283,7 +282,6 @@ function ChessBoard({
     }
 
     // Reset computer first move flag when the puzzle officially changes/mounts
-    setComputerFirstMovePlayed(false);
   }, [fen, solution, alternativeSolutions, puzzleType, kidsConfig]);
 
   const onBoardStateChangeRef = useRef(onBoardStateChange);
@@ -291,77 +289,82 @@ function ChessBoard({
     onBoardStateChangeRef.current = onBoardStateChange;
   }, [onBoardStateChange]);
 
-  // Auto-play first solution move for normal puzzles (computer ALWAYS plays first)
+  // Unified Computer Response Logic (Declarative)
   useEffect(() => {
     // Only auto-play if:
     // 1. It's a normal puzzle
-    // 2. Computer hasn't played yet
-    // 3. We are at the start of the puzzle (no saved human moves) OR it's already solved
+    // 2. We are NOT in show-solution mode (it has its own player)
+    // 3. The puzzle is not yet solved (locally or via prop)
+    // 4. No promotion is pending
+    // 5. It is the computer's turn
+    // 6. We have a solution move to play at the current index
 
-    // Check if human has moved in the CURRENT session history
-    const sessionHistoryLen = moveHistory.length;
-    const hasHumanMovedNow = sessionHistoryLen > 1;
-
-    // Check if human has moved in the RESTORED saved state
-    const hasHumanMovedSaved =
-      savedBoardState &&
-      savedBoardState.moveHistory &&
-      savedBoardState.moveHistory.length > 1;
-
-    const shouldShowIntro =
-      (!hasHumanMovedNow && !hasHumanMovedSaved) || isSolved;
+    const isGameSolved = isSolved || feedback === "solved";
+    const isComputerTurn = game.turn() !== userColor;
+    const hasMoveToPlay = solutionIndex < normalizedSolution.length;
 
     if (
       puzzleType === "normal" &&
-      !computerFirstMovePlayed &&
-      shouldShowIntro &&
-      normalizedSolution.length > 0
+      !showSolution &&
+      !isGameSolved &&
+      !promotionPending &&
+      isComputerTurn &&
+      hasMoveToPlay
     ) {
       const timer = setTimeout(() => {
         try {
-          const firstSolutionMove = normalizedSolution[0];
-          if (!firstSolutionMove) return;
+          const nextMove = normalizedSolution[solutionIndex];
+          if (!nextMove) return;
 
-          const tempGame = new Chess(initialFen);
-          const result = tempGame.move(firstSolutionMove);
+          const gameCopy = new Chess(game.fen());
+          const result = gameCopy.move(nextMove);
 
           if (result) {
             playSound(result.san.includes("x") ? "capture" : "move");
-            setMoveHistory([result.san]);
+            const newHistory = [...moveHistory, result.san];
+
+            // Update local state
+            setMoveHistory(newHistory);
             setLastMove({ from: result.from, to: result.to });
-            setGame(new Chess(tempGame.fen()));
-            setSolutionIndex(1); // User starts from index 1 (second move)
-            setComputerFirstMovePlayed(true);
+            const nextSolutionIndex = solutionIndex + 1;
+            setSolutionIndex(nextSolutionIndex);
+            setGame(new Chess(gameCopy.fen()));
+
+            // Check if this move finishes the puzzle
+            const isEndOfPath = nextSolutionIndex >= normalizedSolution.length;
+            if (isEndOfPath || gameCopy.isCheckmate()) {
+              setTimeout(() => {
+                setFeedback("solved");
+                playSound("solved");
+                if (onPuzzleSolved) onPuzzleSolved(undefined, newHistory);
+              }, 300);
+            } else {
+              setFeedback(null);
+            }
 
             if (onBoardStateChangeRef.current) {
-              onBoardStateChangeRef.current(tempGame.fen(), [result.san]);
+              onBoardStateChangeRef.current(gameCopy.fen(), newHistory);
             }
-          } else {
-            console.warn(
-              "Auto-play move failed. FEN:",
-              initialFen,
-              "Move:",
-              firstSolutionMove,
-            );
-            setComputerFirstMovePlayed(true);
           }
         } catch (e) {
-          console.error("Failed to auto-play first solution move:", e);
-          setComputerFirstMovePlayed(true);
+          console.error("Auto-move execution failed:", e);
         }
-      }, 800);
+      }, 250); // Uniform fast 250ms delay for all computer moves (including first move)
 
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    computerFirstMovePlayed,
-    puzzleType,
-    savedBoardState,
+    game,
+    userColor,
+    solutionIndex,
     normalizedSolution,
-    initialFen,
+    puzzleType,
     isSolved,
+    feedback,
+    promotionPending,
+    showSolution,
     moveHistory,
+    onPuzzleSolved
   ]);
 
   // Restore saved board state if available
@@ -381,7 +384,6 @@ function ChessBoard({
             setMoveHistory(savedBoardState.moveHistory);
             setSolutionIndex(savedBoardState.moveHistory.length);
           }
-          setComputerFirstMovePlayed(true);
         } catch (error) {
           console.error("Failed to restore board state:", error);
         }
@@ -573,7 +575,6 @@ function ChessBoard({
       setPossibleMoves([]);
       setFeedback(null);
       setCapturedTargets([]); // Reset targets
-      setComputerFirstMovePlayed(false); // Retrigger the computer's first move!
     }, delay);
   };
 
@@ -733,53 +734,16 @@ function ChessBoard({
       const winningPathIndex = nextValidIndices.find(
         (idx) => nextIndex >= allNormalizedPaths[idx].length,
       );
-      const isCheckmate = game.isCheckmate();
+      setGame(new Chess(game.fen()));
+      setSolutionIndex(nextIndex);
 
       if (winningPathIndex !== undefined || isCheckmate) {
-        const finalHistory = newHistory;
         setTimeout(() => {
           setFeedback("solved");
           playSound("solved");
-          if (onPuzzleSolved) onPuzzleSolved(undefined, finalHistory);
+          if (onPuzzleSolved) onPuzzleSolved(undefined, newHistory);
         }, 300);
-      } else {
-        // Opponent Response
-        // We pick the first valid path remaining to dictate the response.
-        // Ideally we should pick the longest one or the "main" one if available.
-        // nextValidIndices[0] is a safe heuristic.
-        const responsePathIdx = nextValidIndices[0];
-        const responsePath = allNormalizedPaths[responsePathIdx];
-
-        if (nextIndex < responsePath.length) {
-          setTimeout(() => {
-            const expectedBlackMove = responsePath[nextIndex];
-            const blackResult = game.move(expectedBlackMove);
-            if (blackResult) {
-              playSound(blackResult.san.includes("x") ? "capture" : "move");
-              setMoveHistory((prev) => [...prev, blackResult.san]);
-              setLastMove({ from: blackResult.from, to: blackResult.to });
-              setSolutionIndex(nextIndex + 1);
-              setGame(new Chess(game.fen()));
-
-              // Check if end of puzzle after opponent move
-              if (nextIndex + 1 >= responsePath.length || game.isCheckmate()) {
-                const solvedHistory = [...newHistory, blackResult.san];
-                setTimeout(() => {
-                  setFeedback("solved");
-                  playSound("solved");
-                  if (onPuzzleSolved) onPuzzleSolved(undefined, solvedHistory);
-                }, 300);
-              } else {
-                setFeedback(null);
-              }
-            }
-          }, 300);
-          setSolutionIndex(nextIndex); // Update index for user's next turn (wait, this is actually set AFTER opponent move usually? No, user move increments index)
-          // Actually logic above: user moves (idx 0), we set index to 1. Opponent moves (idx 1), we set index to 2.
-          // So solutionIndex tracks 'moves played so far' effectively.
-        }
       }
-      setGame(new Chess(game.fen()));
     } else {
       if (onWrongMove) onWrongMove(newHistory);
       resetToInitial();
