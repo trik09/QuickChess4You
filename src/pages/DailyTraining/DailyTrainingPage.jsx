@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaEye, FaPuzzlePiece, FaUndo, FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaEye, FaPuzzlePiece, FaUndo, FaArrowLeft, FaArrowRight, FaChessBoard, FaTrophy, FaChartLine } from "react-icons/fa";
+
 import toast, { Toaster } from "react-hot-toast";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
@@ -152,13 +153,21 @@ function DailyTrainingPage() {
                 <div className={styles.leftPanel}>
                     {/* Puzzle Information Card */}
                     <div className={styles.puzzleInfoCard}>
-                        <h2 className={styles.puzzleCardTitle}>
-                            {currentPuzzle?.title || "Chess Puzzle"}
-                        </h2>
+                        <div className={styles.puzzleHeaderArea}>
+                            <div className={styles.puzzleIconBox}>
+                                <FaChessBoard />
+                            </div>
+                            <h2 className={styles.puzzleCardTitle}>
+                                {currentPuzzle?.title || "Chess Puzzle"}
+                            </h2>
+                        </div>
+
                         {currentPuzzle?.description && (
-                            <p className={styles.puzzleDescription}>
-                                {currentPuzzle.description}
-                            </p>
+                            <div className={styles.puzzleTags}>
+                                {currentPuzzle.description.split(" ").map((tag, idx) => (
+                                    <span key={idx} className={styles.tagPill}>{tag}</span>
+                                ))}
+                            </div>
                         )}
 
                         {/* To Move Indicator - Highlighted */}
@@ -168,7 +177,7 @@ function DailyTrainingPage() {
                             const studentColor = fenTurn === 'w' ? 'b' : 'w';
                             return (
                                 <div className={styles.toMoveSection}>
-                                    <div className={styles.toMoveLabel}>You Play As:</div>
+                                    <div className={styles.toMoveLabel}>You Play As</div>
                                     <div className={styles.toMoveIndicator}>
                                         <div
                                             className={`${styles.colorDot} ${studentColor === "w"
@@ -180,6 +189,7 @@ function DailyTrainingPage() {
                                             {studentColor === "w" ? "White" : "Black"}
                                         </span>
                                     </div>
+                                    <div className={styles.toMoveSub}>Make the best move!</div>
                                 </div>
                             );
                         })()}
@@ -188,12 +198,18 @@ function DailyTrainingPage() {
                         {currentPuzzle && (
                             <div className={styles.puzzleMetadata}>
                                 <div className={styles.metadataItem}>
-                                    <span className={styles.metadataLabel}>Level:</span>
-                                    <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
+                                    <div className={styles.metaIcon}><FaChartLine /></div>
+                                    <div className={styles.metaContent}>
+                                        <span className={styles.metadataLabel}>Level</span>
+                                        <span className={styles.metadataValue}>{currentPuzzle.level || 1}</span>
+                                    </div>
                                 </div>
                                 <div className={styles.metadataItem}>
-                                    <span className={styles.metadataLabel}>Rating:</span>
-                                    <span className={styles.metadataValue}>{currentPuzzle.rating || 400}</span>
+                                    <div className={styles.metaIcon}><FaTrophy /></div>
+                                    <div className={styles.metaContent}>
+                                        <span className={styles.metadataLabel}>Rating</span>
+                                        <span className={styles.metadataValue}>{currentPuzzle.rating || 400}</span>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -209,7 +225,7 @@ function DailyTrainingPage() {
                             </button>
 
                             <button
-                                className={`${styles.actionBtn} ${styles.btnSecondary}`}
+                                className={`${styles.actionBtn} ${styles.btnReset}`}
                                 onClick={handleReset}
                             >
                                 <FaUndo />
@@ -218,20 +234,6 @@ function DailyTrainingPage() {
                         </div>
                     </div>
 
-                    {/* Progress Card */}
-                    <div className={styles.progressCard}>
-                        <div className={styles.progressLabel}>Your Progress</div>
-                        <div className={styles.progressStats}>
-                            <div className={styles.progressItem}>
-                                <span className={styles.progressValue}>{solvedCount}</span>
-                                <span className={styles.progressText}>Solved</span>
-                            </div>
-                            <div className={styles.progressItem}>
-                                <span className={styles.progressValue}>{puzzles.length - solvedCount}</span>
-                                <span className={styles.progressText}>Remaining</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Center Panel - Board Only */}
@@ -268,8 +270,23 @@ function DailyTrainingPage() {
                     </div>
                 </div>
 
-                {/* Right Panel - Navigation */}
+                {/* Right Panel - Navigation & Progress */}
                 <div className={styles.rightPanel}>
+                    {/* Progress Card - Relocated to Right */}
+                    <div className={styles.progressCard}>
+                        <div className={styles.progressLabel}>Your Progress</div>
+                        <div className={styles.progressStats}>
+                            <div className={styles.progressItem}>
+                                <span className={styles.progressValue}>{solvedCount}</span>
+                                <span className={styles.progressText}>Solved</span>
+                            </div>
+                            <div className={styles.progressItem}>
+                                <span className={styles.progressValue}>{puzzles.length - solvedCount}</span>
+                                <span className={styles.progressText}>Remaining</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className={styles.controlCard}>
                         <div className={styles.controlHeader}>Puzzle Navigation</div>
 

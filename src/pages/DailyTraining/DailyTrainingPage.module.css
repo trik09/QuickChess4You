@@ -70,14 +70,13 @@
 /* --- MAIN LAYOUT --- */
 .mainContent {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto minmax(260px, 1fr);
-  gap: 2rem;
+  grid-template-columns: 320px 1fr 310px;
+  gap: 1.5rem;
   max-width: 1600px;
   width: 100%;
   margin: 0 auto;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   align-items: start;
-  justify-content: center;
 }
 
 /* --- PANELS --- */
@@ -115,30 +114,67 @@
 
 /* --- PUZZLE INFO CARD --- */
 .puzzleInfoCard {
-  border-radius: 14px;
-  padding: 1.5rem;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid rgba(181, 136, 99, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95), rgba(18, 18, 18, 0.98));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="light"] .puzzleInfoCard {
-  background: #ffffff;
-  border-color: #e5d5c5;
-  box-shadow: 0 2px 8px rgba(181, 136, 99, 0.1);
-}
-
-[data-theme="dark"] .puzzleInfoCard {
-  background: #1a1a1a;
-  border-color: #3a3028;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(145deg, #ffffff, #f9f9f9);
+  border-color: rgba(181, 136, 99, 0.25);
+  box-shadow: 0 4px 20px rgba(181, 136, 99, 0.08);
 }
 
 .puzzleCardTitle {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem 0;
-  line-height: 1.3;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
   color: #b58863;
+  letter-spacing: -0.5px;
+}
+
+.puzzleHeaderArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.puzzleIconBox {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(181, 136, 99, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #b58863;
+  border: 1px solid rgba(181, 136, 99, 0.2);
+  flex-shrink: 0;
+}
+
+.puzzleTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.tagPill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .puzzleDescription {
@@ -157,36 +193,33 @@
 
 /* To Move Section - Highlighted */
 .toMoveSection {
-  margin: 1rem 0;
-  padding: 1rem;
-  border-radius: 10px;
-  border: 2px solid transparent;
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 1px solid rgba(181, 136, 99, 0.2);
+  background: linear-gradient(135deg, rgba(181, 136, 99, 0.08) 0%, rgba(181, 136, 99, 0.03) 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-[data-theme="light"] .toMoveSection {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border-color: #fbbf24;
-}
-
-[data-theme="dark"] .toMoveSection {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
-  border-color: rgba(251, 191, 36, 0.3);
+.toMoveSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle at top right, rgba(181, 136, 99, 0.1), transparent 70%);
 }
 
 .toMoveLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.5rem;
-}
-
-[data-theme="light"] .toMoveLabel {
-  color: #92400e;
-}
-
-[data-theme="dark"] .toMoveLabel {
-  color: #fbbf24;
+  letter-spacing: 1.5px;
+  margin-bottom: 0.75rem;
+  color: #b58863;
+  opacity: 0.8;
 }
 
 .toMoveIndicator {
@@ -214,50 +247,71 @@
 }
 
 .toMoveText {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.5px;
 }
 
-[data-theme="light"] .toMoveText {
-  color: #92400e;
-}
-
-[data-theme="dark"] .toMoveText {
-  color: #fbbf24;
+.toMoveSub {
+  font-size: 0.75rem;
+  color: #d4a373;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 /* Puzzle Metadata */
 .puzzleMetadata {
   display: flex;
-  gap: 1.5rem;
-  margin-top: 1rem;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
 }
 
 .metadataItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.metadataItem:hover {
+  background: rgba(181, 136, 99, 0.08);
+  border-color: rgba(181, 136, 99, 0.2);
+}
+
+.metaIcon {
+  font-size: 1.1rem;
+  color: #b58863;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metaContent {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
 .metadataLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.6rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-[data-theme="light"] .metadataLabel {
-  color: #8b6242;
-}
-
-[data-theme="dark"] .metadataLabel {
-  color: #d4a373;
+  letter-spacing: 1px;
+  color: #a0a0a0;
+  margin-bottom: 1px;
 }
 
 .metadataValue {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 900;
   color: #b58863;
+  line-height: 1;
 }
 
 /* Action Buttons */
@@ -265,54 +319,40 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
-.btnSecondary {
-  background: transparent !important;
-  border: 2px solid transparent !important;
+.btnReset {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
 }
 
-[data-theme="light"] .btnSecondary {
-  border-color: #e5d5c5 !important;
-  color: #8b6242 !important;
-}
-
-[data-theme="light"] .btnSecondary:hover {
-  background: #f5f0eb !important;
-  border-color: #b58863 !important;
-  color: #2d2520 !important;
-}
-
-[data-theme="dark"] .btnSecondary {
-  border-color: #3a3028 !important;
-  color: #d4a373 !important;
-}
-
-[data-theme="dark"] .btnSecondary:hover {
-  background: #252525 !important;
-  border-color: #b58863 !important;
-  color: #f5f0eb !important;
+.btnReset:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  transform: translateY(-1px);
 }
 
 /* Progress Card */
 .progressCard {
-  border-radius: 14px;
-  padding: 1.5rem;
-  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid rgba(181, 136, 99, 0.2);
   text-align: center;
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95), rgba(18, 18, 18, 0.98));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme="light"] .progressCard {
-  background: #ffffff;
-  border-color: #e5d5c5;
-  box-shadow: 0 2px 8px rgba(181, 136, 99, 0.1);
-}
-
-[data-theme="dark"] .progressCard {
-  background: #1a1a1a;
-  border-color: #3a3028;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(145deg, #ffffff, #f9f9f9);
+  border-color: rgba(181, 136, 99, 0.25);
+  box-shadow: 0 4px 20px rgba(181, 136, 99, 0.08);
 }
 
 .progressLabel {
@@ -715,15 +755,18 @@
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, #d4a373 0%, #b58863 100%) !important;
+  background: linear-gradient(135deg, #b58863, #8b6242) !important;
   color: #ffffff !important;
   border: none !important;
+  padding: 1rem 1.25rem !important; /* Larger button */
+  font-size: 1rem !important;
+  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.2);
 }
 
 .btnPrimary:hover {
-  background: linear-gradient(135deg, #c49d6b 0%, #a37651 100%) !important;
+  background: linear-gradient(135deg, #c49d6b, #9d704a) !important;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.4);
+  box-shadow: 0 6px 16px rgba(181, 136, 99, 0.4);
 }
 
 .btnSubmit {
