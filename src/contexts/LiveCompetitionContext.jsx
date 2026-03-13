@@ -1,8 +1,17 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import socketService from "../services/socketService";
 import { liveCompetitionAPI } from "../services/liveCompetitionAPI";
 import puzzleStateManager from "../services/puzzleStateManager";
 import toast from "react-hot-toast";
+import { useLiveCompetitionSocketBridge } from "../features/liveCompetition/useLiveCompetitionSocketBridge";
+import {
+  mergePuzzlesWithStoredStates,
+} from "../features/liveCompetition/puzzleStateMerge";
+import {
+  deriveTotalPuzzleCount,
+  shouldHydrateCompetition,
+  syncPuzzleStatesToLocalStorage,
+} from "../features/liveCompetition/competitionPuzzlesLoaders";
 
 const LiveCompetitionContext = createContext();
 
@@ -28,6 +37,20 @@ export const LiveCompetitionProvider = ({ children }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [totalPuzzleCount, setTotalPuzzleCount] = useState(0); // Add total puzzle count state
   const [forceRenderTick, setForceRenderTick] = useState(0);
+
+  // Disconnect from competition (defined early because socket bridge depends on it)
+  const disconnectFromCompetition = useCallback(() => {
+    socketService.disconnect();
+    setIsConnected(false);
+    setCompetition(null);
+    setLeaderboard([]);
+    setPuzzles([]);
+    setParticipant(null);
+    setCompetitionEnded(false);
+    setError(null);
+    setLastUpdate(null);
+    setTotalPuzzleCount(0); // Reset total puzzle count
+  }, []);
 
   // Exact transition trigger to eliminate the 5-8 second polling delay when a competition starts
   useEffect(() => {
@@ -103,89 +126,15 @@ export const LiveCompetitionProvider = ({ children }) => {
     initializeState();
   }, []); // Run once on mount
 
-  // ALWAYS listen to socket events for real-time capabilities
-  useEffect(() => {
-    const handleLeaderboardUpdate = (newLeaderboard) => {
-      console.log("[LiveComp] Socket: leaderboardUpdate, entries:", newLeaderboard?.length);
-      setLeaderboard(newLeaderboard);
-      setLastUpdate(new Date());
-    };
-
-    const handleLiveScoreUpdate = (data) => {
-      console.log("[LiveComp] Socket: liveScoreUpdate", data.username, data.score);
-      setLeaderboard((prev) => {
-        const updated = prev.map((entry) =>
-          entry.userId === data.userId?.toString() || entry.userId === data.userId
-            ? {
-              ...entry,
-              score: data.score,
-              puzzlesSolved: data.puzzlesSolved,
-              timeSpent: data.timeSpent,
-              status: data.status,
-            }
-            : entry
-        );
-        return updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
-      });
-      setLastUpdate(new Date());
-    };
-
-    const handleCompetitionEnded = (finalResults) => {
-      setCompetitionEnded(true);
-      setLeaderboard(finalResults.leaderboard);
-      toast.success(finalResults.message, { duration: 5000 });
-      setTimeout(() => disconnectFromCompetition(), 10000);
-    };
-
-    const handleParticipantJoined = (data) => {
-      console.log("[LiveComp] Socket: participantJoined", data.username);
-      // Removed toast to decrease noise
-    };
-
-    const handleParticipantSubmitted = (data) => {
-      toast(`${data.username} submitted their solution!`, { icon: "🏁", duration: 3000 });
-    };
-
-    const handleError = (error) => {
-      console.error("Socket error state:", error);
-      setError(error.message);
-    };
-
-    socketService.on("leaderboardUpdate", handleLeaderboardUpdate);
-    socketService.on("liveScoreUpdate", handleLiveScoreUpdate);
-    socketService.on("competitionEnded", handleCompetitionEnded);
-    socketService.on("participantJoined", handleParticipantJoined);
-    socketService.on("participantSubmitted", handleParticipantSubmitted);
-    socketService.on("error", handleError);
-
-    return () => {
-      socketService.off("leaderboardUpdate", handleLeaderboardUpdate);
-      socketService.off("liveScoreUpdate", handleLiveScoreUpdate);
-      socketService.off("competitionEnded", handleCompetitionEnded);
-      socketService.off("participantJoined", handleParticipantJoined);
-      socketService.off("participantSubmitted", handleParticipantSubmitted);
-      socketService.off("error", handleError);
-    };
-  }, []);
-
-  const ensureSocketConnection = async (competitionId) => {
-    if (!competitionId) return;
-
-    if (!socketService.isConnected) {
-      try {
-        console.log(`[LiveComp] ensureSocketConnection: Manually connecting socket for ${competitionId}`);
-        const compData = { competition: { id: competitionId, name: "" } };
-        await socketService.connect(compData);
-        setIsConnected(true);
-        socketService.emit("joinCompetition", { competitionId });
-      } catch (err) {
-        console.error(`[LiveComp] ensureSocketConnection: Failed`, err);
-      }
-    } else {
-      socketService.emit("joinCompetition", { competitionId });
-      setIsConnected(true);
-    }
-  };
+  const { ensureSocketConnection, refreshLeaderboard } =
+    useLiveCompetitionSocketBridge({
+      setLeaderboard,
+      setLastUpdate,
+      setCompetitionEnded,
+      setError,
+      setIsConnected,
+      disconnectFromCompetition,
+    });
 
   // Participate in competition
   const participateInCompetition = async (competitionId, username) => {
@@ -303,7 +252,7 @@ export const LiveCompetitionProvider = ({ children }) => {
         );
 
         // Set competition data if not already set
-        if (!competition) {
+        if (shouldHydrateCompetition(competition)) {
           setCompetition(response.competition);
           setTotalPuzzleCount(
             response.competition?.totalPuzzles || response.puzzles.length,
@@ -320,70 +269,9 @@ export const LiveCompetitionProvider = ({ children }) => {
         console.log("Stored states from localStorage:", storedStates);
 
         // Merge server data with stored states
-        const puzzlesWithStates = response.puzzles.map((puzzle) => {
-          const storedState = storedStates[puzzle._id];
-
-          console.log(`Puzzle ${puzzle._id}:`, {
-            serverStatus: puzzle.status,
-            serverSolved: puzzle.isSolved,
-            serverFailed: puzzle.isFailed,
-            storedState: storedState,
-          });
-
-          // Determine final status - server takes precedence, then localStorage
-          let finalStatus = "unsolved";
-          let isSolved = false;
-          let isFailed = false;
-          let isLocked = false;
-
-          if (
-            puzzle.status &&
-            (puzzle.status === "solved" || puzzle.status === "failed")
-          ) {
-            // Server has definitive status
-            finalStatus = puzzle.status;
-            isSolved = puzzle.status === "solved";
-            isFailed = puzzle.status === "failed";
-            isLocked = true;
-          } else if (
-            storedState &&
-            (storedState.status === "solved" || storedState.status === "failed")
-          ) {
-            // Use localStorage status if server doesn't have it
-            finalStatus = storedState.status;
-            isSolved = storedState.status === "solved";
-            isFailed = storedState.status === "failed";
-            isLocked = storedState.isLocked || true;
-          } else if (puzzle.isSolved || puzzle.isFailed) {
-            // Fallback to boolean flags
-            finalStatus = puzzle.isSolved ? "solved" : "failed";
-            isSolved = puzzle.isSolved;
-            isFailed = puzzle.isFailed;
-            isLocked = true;
-          }
-
-          return {
-            ...puzzle,
-            status: finalStatus,
-            isSolved,
-            isFailed,
-            isLocked,
-
-            // Preserve board position from localStorage if available
-            boardPosition: puzzle.boardPosition || storedState?.boardPosition,
-            moveHistory: puzzle.moveHistory || storedState?.moveHistory || [],
-
-            // Merge solved data
-            solvedData:
-              puzzle.solvedData ||
-              (storedState?.status === "solved"
-                ? {
-                  scoreEarned: storedState.scoreEarned,
-                  timeSpent: storedState.timeSpent,
-                  solvedAt: storedState.solvedAt,
-                }
-                : null),
-          };
+        const puzzlesWithStates = mergePuzzlesWithStoredStates({
+          serverPuzzles: response.puzzles,
+          storedStates,
         });
 
         console.log(
@@ -400,36 +288,18 @@ export const LiveCompetitionProvider = ({ children }) => {
         setParticipant(response.participant);
 
         // Update total puzzle count if not already set
-        if (totalPuzzleCount === 0) {
-          setTotalPuzzleCount(
-            response.competition?.totalPuzzles || response.puzzles.length,
-          );
-        }
+        const nextTotal = deriveTotalPuzzleCount({
+          currentTotalPuzzleCount: totalPuzzleCount,
+          responseCompetition: response.competition,
+          responsePuzzles: response.puzzles,
+        });
+        if (nextTotal != null) setTotalPuzzleCount(nextTotal);
 
         // Sync any missing states to localStorage
-        puzzlesWithStates.forEach((puzzle) => {
-          if (puzzle.status !== "unsolved") {
-            const stateToSave = {
-              status: puzzle.status,
-              boardPosition: puzzle.boardPosition,
-              moveHistory: puzzle.moveHistory,
-              timeSpent: puzzle.solvedData?.timeSpent || 0,
-              isLocked: puzzle.isLocked,
-              scoreEarned: puzzle.solvedData?.scoreEarned || 0,
-            };
-
-            if (puzzle.status === "solved") {
-              stateToSave.solvedAt = puzzle.solvedData?.solvedAt || Date.now();
-            } else if (puzzle.status === "failed") {
-              stateToSave.failedAt = Date.now();
-            }
-
-            puzzleStateManager.savePuzzleState(
-              competitionId,
-              puzzle._id,
-              stateToSave,
-            );
-          }
+        syncPuzzleStatesToLocalStorage({
+          competitionId,
+          puzzlesWithStates,
+          puzzleStateManager,
         });
       }
     } catch (error) {
@@ -549,11 +419,6 @@ export const LiveCompetitionProvider = ({ children }) => {
     }
   };
 
-  // Refresh leaderboard manually
-  const refreshLeaderboard = () => {
-    socketService.refreshLeaderboard();
-  };
-
   // Get leaderboard via REST API (fallback)
   const getLeaderboard = async (competitionIdOverride = null) => {
     try {
@@ -595,20 +460,6 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     return () => clearInterval(syncInterval);
   }, [competition?.id, competition?.status, competitionEnded]);
-
-  // Disconnect from competition
-  const disconnectFromCompetition = () => {
-    socketService.disconnect();
-    setIsConnected(false);
-    setCompetition(null);
-    setLeaderboard([]);
-    setPuzzles([]);
-    setParticipant(null);
-    setCompetitionEnded(false);
-    setError(null);
-    setLastUpdate(null);
-    setTotalPuzzleCount(0); // Reset total puzzle count
-  };
 
   // Get current user's rank
   const getCurrentUserRank = () => {

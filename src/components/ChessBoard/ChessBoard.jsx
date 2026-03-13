@@ -707,6 +707,7 @@ function ChessBoard({
     const newHistory = [...moveHistory, san];
     setMoveHistory(newHistory);
     setLastMove({ from, to });
+    const isCheckmateNow = game.isCheckmate();
 
     // Validate User Move against all valid paths
     const userMoveSan = normalizeSAN(san);
@@ -737,7 +738,7 @@ function ChessBoard({
       setGame(new Chess(game.fen()));
       setSolutionIndex(nextIndex);
 
-      if (winningPathIndex !== undefined || isCheckmate) {
+      if (winningPathIndex !== undefined || isCheckmateNow) {
         setTimeout(() => {
           setFeedback("solved");
           playSound("solved");

@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LiveCompetitionProvider } from "./contexts/LiveCompetitionContext";
+import PremiumLoader from "./components/PremiumLoader/PremiumLoader";
 
 // Layouts stay static — they wrap routes and are always needed
 import LandingLayout from "./layouts/LandingLayout/LandingLayout";
@@ -12,7 +13,6 @@ import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import UserProtectedRoute from "./components/ProtectedRoute/UserProtectedRoute";
 import AdminProtectedRoute from "./components/ProtectedRoute/AdminProtectedRoute";
 import AdminRedirect from "./components/AdminRedirect";
-import { AuthProvider } from "./contexts/AuthContext";
 import CompetitionRejoinManager from "./components/CompetitionRejoinManager/CompetitionRejoinManager";
 
 // ─── LAZY-LOADED PAGES (code-split per route) ───────────────────────
@@ -57,13 +57,12 @@ const AdminSettings = React.lazy(() => import("./pages/Admin/Settings/Settings")
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <LiveCompetitionProvider>
-          <Router>
-            <CompetitionRejoinManager />
-            <Suspense fallback={null}>
-              <Routes>
+    <ThemeProvider>
+      <LiveCompetitionProvider>
+        <Router>
+          <CompetitionRejoinManager />
+          <Suspense fallback={<PremiumLoader text="Loading page..." />}>
+            <Routes>
                 {/* LANDING PAGE LAYOUT (Public) */}
                 <Route element={<LandingLayout />}>
                   <Route path="/" element={<Home />} />
@@ -137,12 +136,11 @@ function App() {
                   <Route path="monitoring" element={<SystemMonitor />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>
-              </Routes>
-            </Suspense>
-          </Router>
-        </LiveCompetitionProvider>
-      </ThemeProvider>
-    </AuthProvider>
+            </Routes>
+          </Suspense>
+        </Router>
+      </LiveCompetitionProvider>
+    </ThemeProvider>
   );
 }
 

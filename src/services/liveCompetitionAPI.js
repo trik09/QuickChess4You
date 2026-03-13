@@ -1,52 +1,16 @@
-// API Base URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
+import { apiRequest as baseRequest } from "./http";
+import { clearUserAuth, getUserToken } from "./authStorage";
 
-/**
- * Generic API request function for live competitions
- */
 const apiRequest = async (endpoint, options = {}, token = null) => {
-  const authToken = token || localStorage.getItem("token");
-
-  const config = {
-    ...options,
-    headers: {
-      ...options.headers,
-      "Content-Type": "application/json",
-      ...(authToken && { Authorization: `Bearer ${authToken}` }),
-    },
-  };
-
+  const authToken = token || getUserToken();
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-
-    // Handle 401 Unauthorized (Token expired or user invalid)
-    if (response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      // Force redirect to login/home
-      window.location.href = "/";
+    return await baseRequest(endpoint, options, authToken);
+  } catch (err) {
+    if (err?.status === 401) {
+      clearUserAuth();
       throw new Error("Session expired. Please login again.");
     }
-
-    let data;
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      throw new Error(text || 'An error occurred');
-    }
-
-    if (!response.ok) {
-      throw new Error(data.message || data.error || 'An error occurred');
-    }
-
-    return data;
-  } catch (error) {
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Could not connect to server. Please check if the backend is running.');
-    }
-    throw error;
+    throw err;
   }
 };
 
@@ -89,7 +53,7 @@ const saveSessionCache = (competitionId, data) => {
 export const liveCompetitionAPI = {
   // Participate in live competition (REST API validation)
   participate: async (competitionId, username, accessCode = null) => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     const body = { username };
     if (accessCode) {
       body.accessCode = accessCode;
@@ -106,7 +70,7 @@ export const liveCompetitionAPI = {
 
   // Submit entire competition (early submission)
   submitCompetition: async (competitionId) => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     return apiRequest(
       `/live-competition/${competitionId}/submit`,
       {
@@ -118,7 +82,7 @@ export const liveCompetitionAPI = {
 
   // Submit puzzle solution with Socket.IO notification
   submitSolution: async (competitionId, puzzleId, solution, timeSpent, boardPosition = null, moveHistory = []) => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     const body = { solution, timeSpent };
 
     if (boardPosition) {
@@ -179,7 +143,7 @@ export const liveCompetitionAPI = {
 
   // Check for active participation
   getActiveParticipation: async () => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     return apiRequest(
       `/live-competition/user/active-participation`,
       { method: "GET" },
@@ -190,7 +154,7 @@ export const liveCompetitionAPI = {
 
   // Get competition puzzles for participants
   getPuzzles: async (competitionId) => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     return apiRequest(
       `/live-competition/${competitionId}/puzzles`,
       {

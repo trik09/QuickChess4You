@@ -1,4 +1,17 @@
 import { createContext, useContext, useState } from "react";
+import {
+  clearAdminAuth,
+  clearUserAuth,
+  getAdmin,
+  getAdminToken,
+  getPreferredAuthHeader,
+  getUser,
+  getUserToken,
+  setAdmin,
+  setAdminToken,
+  setUser,
+  setUserToken,
+} from "../services/authStorage";
 
 const AuthContext = createContext(null);
 
@@ -7,15 +20,9 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   // ------------------ USER AUTH ------------------
   const [user, setUser] = useState(() => {
-    try {
-      const item = localStorage.getItem("user");
-      return item ? JSON.parse(item) : null;
-    } catch (e) {
-      console.warn("Error parsing user from localStorage:", e);
-      return null;
-    }
+    return getUser();
   });
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [token, setToken] = useState(getUserToken());
 
   const isUserAuthenticated = !!token;
 
@@ -23,29 +30,22 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setToken(authToken);
 
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", authToken);
+    setUser(userData);
+    setUserToken(authToken);
   };
 
   const userLogout = () => {
     setUser(null);
     setToken(null);
 
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    clearUserAuth();
   };
 
   // ------------------ ADMIN AUTH ------------------
   const [admin, setAdmin] = useState(() => {
-    try {
-      const item = localStorage.getItem("admin");
-      return item ? JSON.parse(item) : null;
-    } catch (e) {
-      console.warn("Error parsing admin from localStorage:", e);
-      return null;
-    }
+    return getAdmin();
   });
-  const [atoken, setAToken] = useState(localStorage.getItem("atoken") || null);
+  const [atoken, setAToken] = useState(getAdminToken());
 
   const isAdminAuthenticated = !!atoken;
 
@@ -53,23 +53,20 @@ export const AuthProvider = ({ children }) => {
     setAdmin(adminData);
     setAToken(adminToken);
 
-    localStorage.setItem("admin", JSON.stringify(adminData));
-    localStorage.setItem("atoken", adminToken);
+    setAdmin(adminData);
+    setAdminToken(adminToken);
   };
 
   const adminLogout = () => {
     setAdmin(null);
     setAToken(null);
 
-    localStorage.removeItem("admin");
-    localStorage.removeItem("atoken");
+    clearAdminAuth();
   };
 
   // --------------- GET AUTH HEADER BASED ON USER/ADMIN ---------------
   const getAuthHeader = () => {
-    if (atoken) return { Authorization: `Bearer ${atoken}` }; // admin first
-    if (token) return { Authorization: `Bearer ${token}` };   // user next
-    return {};
+    return getPreferredAuthHeader();
   };
 
   return (

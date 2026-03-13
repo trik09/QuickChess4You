@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { getUserToken } from "./authStorage";
 
 class SocketService {
   constructor() {
@@ -12,7 +13,7 @@ class SocketService {
   connect(competitionData) {
     return new Promise((resolve, reject) => {
       try {
-        const token = localStorage.getItem("token");
+        const token = getUserToken();
 
         if (!token) {
           return reject(new Error("Authentication token required"));

@@ -1,57 +1,9 @@
-//import { updateCompetition } from "../../../backend/controllers/compition.controlller";
+import { apiRequest as baseRequest } from "./http";
+import { getAdminToken } from "./authStorage";
 
-// API Base URL - Update this to match your backend server
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api";
-
-/**
- * Generic API request function
- * @param {string} endpoint - API endpoint
- * @param {object} options - Fetch options
- * @param {string} token - Optional token (if not provided, will get from localStorage)
- */
-const apiRequest = async (endpoint, options = {}, token = null) => {
-  const authToken = token || localStorage.getItem("atoken");
-
-  const config = {
-    ...options,
-    headers: {
-      ...options.headers,
-      "Content-Type": "application/json",
-      ...(authToken && { Authorization: `Bearer ${authToken}` }),
-    },
-  };
-
-  // Handle FormData
-  if (options.body instanceof FormData) {
-    delete config.headers["Content-Type"];
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-
-    // Handle non-JSON responses
-    let data;
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      const text = await response.text();
-      throw new Error(text || 'An error occurred');
-    }
-
-    if (!response.ok) {
-      throw new Error(data.message || data.error || 'An error occurred');
-    }
-
-    return data;
-  } catch (error) {
-    // Re-throw with more context if it's a network error
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Could not connect to server. Please check if the backend is running.');
-    }
-    throw error;
-  }
+const apiRequest = (endpoint, options = {}, token = null) => {
+  const authToken = token || getAdminToken();
+  return baseRequest(endpoint, options, authToken);
 };
 
 
