@@ -41,6 +41,8 @@
   overflow-x: auto;
   max-width: 100%;
   transition: all 0.3s ease;
+  margin-top: 10px;
+
 }
 
 /* Light Mode Tabs */

@@ -77,39 +77,6 @@
   align-items: center;
 }
 
-.btnSubmitLeft {
-  background: var(--red-btn);
-  color: #fff;
-  border: none;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.24s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  width: 100%;
-  margin-top: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
-}
-
-.btnSubmitLeft:hover:not(:disabled) {
-  background: var(--red-btn-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
-}
-
-.btnSubmitLeft:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btnSubmitLeft:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  /* filter: grayscale(1); */
-}
 
 /* GALAXY TOGGLE HEADER */
 .titleHeaderRight {
@@ -447,9 +414,11 @@
   padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1;
+  gap: 8px;
+  flex-shrink: 0;
   min-height: 0;
+  max-height: 350px;
+  /* Reduced default max height */
   overflow: hidden;
 }
 
@@ -1010,7 +979,7 @@
 
 .navGrid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 5px;
   margin-bottom: 10px;
 }
@@ -1023,7 +992,7 @@
   justify-content: center;
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   transition: all 0.2s;
   border: 1.5px solid var(--border-dim);
   background: rgba(255, 255, 255, 0.04);
@@ -1185,7 +1154,8 @@
 }
 
 .turnWhite .toPlayText,
-.turnWhite .infoMetaValue {
+.turnWhite .infoMetaValue,
+.turnWhite .fenValue {
   color: #ffe7c4;
   font-weight: 600;
 }
@@ -1223,7 +1193,8 @@
 }
 
 .turnBlack .toPlayText,
-.turnBlack .infoMetaValue {
+.turnBlack .infoMetaValue,
+.turnBlack .fenValue {
   color: #ffebce;
   font-weight: 600;
 }
@@ -1312,6 +1283,58 @@
   font-weight: 900;
 }
 
+.fenCard {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-dim);
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .fenCard {
+  background: #ffffff;
+  border-color: #e0e0e0;
+}
+
+.fenCardTitle {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: var(--text-muted-local);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fenCardTitle::before {
+  content: '♟';
+  color: var(--gold);
+  font-size: 1rem;
+}
+
+.fenBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.fenValueFull {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  word-break: break-all;
+  white-space: pre-wrap;
+  display: block;
+  line-height: 1.5;
+}
+
+[data-theme='light'] .fenValueFull {
+  color: #666;
+}
+
 .diff_easy {
   color: #4ade80 !important;
 }
@@ -1354,10 +1377,34 @@
   box-shadow: 0 6px 20px rgba(192, 57, 43, 0.5);
 }
 
-.btnSubmit:disabled {
+.btnSubmitInside {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  border: none;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.25);
+}
+
+.btnSubmitInside:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(192, 57, 43, 0.4);
+}
+
+.btnSubmitInside:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 /* Review mode right column */
@@ -1427,17 +1474,18 @@
 
 .viewSolBtn {
   width: 100%;
-  padding: 7px;
-  border-radius: 6px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
   color: #4ade80;
   cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
   font-family: inherit;
-  margin-top: 8px;
-  transition: all 0.18s;
+  margin-top: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.5px;
 }
 
 .viewSolBtn:hover {
@@ -1892,7 +1940,7 @@
   }
 
   .navItem {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
   }
 
   .navArrow {

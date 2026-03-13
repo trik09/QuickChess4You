@@ -53,20 +53,21 @@
 
 /* --- LOGO SECTION --- */
 .logoSection {
-    height: 90px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1rem;
-    transition: border-color 0.3s ease;
+    padding: 0 1.25rem;
+    position: relative;
+    /* Border removed as requested */
 }
 
 [data-theme="light"] .logoSection {
-    border-bottom: 2px solid #e5d5c5;
+    background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%);
 }
 
 [data-theme="dark"] .logoSection {
-    border-bottom: 2px solid #3a3028;
+    background: linear-gradient(180deg, #0f0f0f 0%, #151515 100%);
 }
 
 .logoImg {
@@ -81,35 +82,44 @@
 }
 
 .toggleBtn {
-    background: transparent;
-    border: none;
+    background: rgba(181, 136, 99, 0.08); /* Soft chess-gold tint */
+    border: 1px solid transparent;
     cursor: pointer;
     margin-left: auto;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="light"] .toggleBtn {
     color: #8b6242;
+    border-color: rgba(139, 98, 66, 0.1);
 }
 
 [data-theme="light"] .toggleBtn:hover {
-    background: #f5f0eb;
-    color: #b58863;
+    background: #b58863;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
+    transform: scale(1.05);
 }
 
 [data-theme="dark"] .toggleBtn {
     color: #d4a373;
+    background: rgba(212, 163, 115, 0.1);
+    border-color: rgba(212, 163, 115, 0.15);
 }
 
 [data-theme="dark"] .toggleBtn:hover {
-    background: #1a1a1a;
-    color: #b58863;
+    background: #b58863;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(181, 136, 99, 0.4);
+    transform: scale(1.05);
 }
 
 /* --- NAVIGATION LINKS --- */

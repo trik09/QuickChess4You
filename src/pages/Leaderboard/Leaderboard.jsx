@@ -281,19 +281,22 @@ function Leaderboard() {
               </div>
             </div>
 
-            {/* Fastest Solver Banner in separate card */}
+            {/* Fastest Solver section - Header type with data box */}
             {fastestSolver && (
-              <div className={styles.fastestSolverCard}>
-                <div className={styles.fastestBanner}>
-                  <FaBolt /> Fastest Solver
+              <div className={styles.fastestSolverSection}>
+                <div className={styles.fastestSolverHeader}>
+                  <FaBolt className={styles.headerBoltIcon} />
+                  <h2>FASTEST SOLVER</h2>
                 </div>
-                <div className={styles.userStatsFooter}>
-                  <div className={styles.footerName}>{fastestSolver.username}</div>
-                  <div className={styles.footerAcc}>
-                    Avg Accuracy {calculateAccuracy(fastestSolver.puzzlesSolved, totalPuzzles)}%
-                    <FaArrowUp style={{ color: '#10b981', marginLeft: '4px', marginRight: '4px' }} />
-                    {/* Mock static stat for visual parity with design */}
-                    <span>{`+${Math.max(1, calculateAccuracy(fastestSolver.puzzlesSolved, totalPuzzles) - averageAccuracy)}% Vs Avg`}</span>
+                
+                <div className={styles.fastestSolverBox}>
+                  <div className={styles.userStatsFooter}>
+                    <div className={styles.footerName}>{fastestSolver.username}</div>
+                    <div className={styles.footerAcc}>
+                      Avg Accuracy {calculateAccuracy(fastestSolver.puzzlesSolved, totalPuzzles)}%
+                      <FaArrowUp style={{ color: '#10b981', marginLeft: '4px', marginRight: '4px' }} />
+                      <span>{`+${Math.max(1, calculateAccuracy(fastestSolver.puzzlesSolved, totalPuzzles) - averageAccuracy)}% Vs Avg`}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -302,7 +305,7 @@ function Leaderboard() {
 
           {/* RIGHT: Competition Info + Full Rankings */}
           <div className={styles.rightPanel}>
-            {/* Top Right Competition Details Block */}
+            {/* Top Right Competition Details Block - Compact Single Row */}
             <div className={styles.competitionInfoCard}>
               <div className={styles.compHeaderRow}>
                 <div className={styles.compTitleWrapper}>
@@ -310,23 +313,25 @@ function Leaderboard() {
                     <FaArrowLeft />
                   </button>
                   <h2 className={styles.compTitle}>{competition?.name || 'Test Competition'}</h2>
+                  
+                  <div className={styles.competitionMeta}>
+                    <div className={styles.metaPill}>
+                      <FaClock /> {competition?.duration || 15} MIN
+                    </div>
+                    <div className={styles.metaPill}>
+                      <FaUserCircle /> {leaderboard.length} PLAYERS
+                    </div>
+                    <div className={styles.metaPill}>
+                      {isLive ? '🔴 LIVE' : '✅ COMPLETED'}
+                    </div>
+                  </div>
                 </div>
+                
                 {isLive && (
                   <button onClick={loadLeaderboard} className={styles.refreshBtn}>
                     <FaSync />
                   </button>
                 )}
-              </div>
-              <div className={styles.competitionMeta}>
-                <div className={styles.metaPill}>
-                  <FaClock /> {competition?.duration || 15} MIN
-                </div>
-                <div className={styles.metaPill}>
-                  <FaUserCircle /> {leaderboard.length} PLAYERS
-                </div>
-                <div className={styles.metaPill}>
-                  {isLive ? '🔴 LIVE' : '✅ COMPLETED'}
-                </div>
               </div>
             </div>
 

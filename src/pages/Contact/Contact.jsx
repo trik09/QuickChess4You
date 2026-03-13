@@ -10,8 +10,8 @@ function Contact() {
         <div className={styles.topSection}>
           <div className={styles.emailGroup}>
             <span className={styles.smallLabel}>Uncover the potency<br />of Chess at</span>
-            <a href="mailto:quickchess4kids@gmail.com" className={styles.emailLink}>
-              quickchess4kids@gmail.com
+            <a href="mailto:support@quickchessforyou.com" className={styles.emailLink}>
+              support@quickchessforyou.com
             </a>
           </div>
 

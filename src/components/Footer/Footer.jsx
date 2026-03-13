@@ -54,7 +54,7 @@ const Footer = () => {
                         <h3>Contact Us</h3>
                         <div className={styles.contactItem}>
                             <FaEnvelope className={styles.contactIcon} />
-                            <span>quickchess4kids@gmail.com</span>
+                            <span>support@quickchessforyou.com</span>
                         </div>
                         <div className={styles.contactItem}>
                             <FaPhone className={styles.contactIcon} />

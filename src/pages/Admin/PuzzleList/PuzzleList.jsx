@@ -248,10 +248,10 @@ function PuzzleList() {
 
   // Filter puzzles based on search term, category, and difficulty
   const filteredPuzzles = puzzles.filter((puzzle) => {
-    // Search filter (by title)
-    const matchesSearch = puzzle.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    // Search filter (by title or FEN)
+    const matchesSearch = 
+      puzzle.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (puzzle.fen || "").toLowerCase().includes(searchTerm.toLowerCase());
 
     // Category filter
     const matchesCategory =
@@ -299,6 +299,31 @@ function PuzzleList() {
     },
     { key: 'id', label: 'ID', width: '80px', render: (id) => `#${id}` },
     { key: 'title', label: 'Title' },
+    {
+      key: 'fen',
+      label: 'FEN',
+      render: (fen) => (
+        <span
+          title={fen}
+          style={{
+            fontSize: '0.75rem',
+            color: '#888',
+            fontFamily: 'monospace',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: 'inline-block',
+            maxWidth: '120px'
+          }}
+        >
+          {fen ? (
+            fen.length > 15
+              ? `${fen.substring(0, 6)}...${fen.substring(fen.length - 6)}`
+              : fen
+          ) : '—'}
+        </span>
+      ),
+    },
     {
       key: 'difficulty',
       label: 'Difficulty',

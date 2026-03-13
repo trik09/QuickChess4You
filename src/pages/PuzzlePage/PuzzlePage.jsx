@@ -1174,6 +1174,14 @@ function PuzzlePage() {
             </div>
           )}
 
+          {isReviewMode && currentPuzzle && currentPuzzle.fen && (
+            <div className={styles.fenCard}>
+              <div className={styles.fenCardTitle}>FEN STRING</div>
+              <div className={styles.fenBox}>
+                <span className={styles.fenValueFull}>{currentPuzzle.fen}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* CENTER: Chessboard */}
@@ -1268,6 +1276,16 @@ function PuzzlePage() {
                     );
                   })}
                 </div>
+                {/* Submit button relocated inside chaptersBox */}
+                {isLiveCompetition && !isReviewMode && (
+                  <button className={styles.btnSubmitInside}
+                    onClick={() => setShowSubmitModal(true)}
+                    disabled={submitting || getUnattemptedCount() > 0}
+                    title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
+                  >
+                    Submit Competition
+                  </button>
+                )}
               </div>
             )}
 
@@ -1402,15 +1420,6 @@ function PuzzlePage() {
                 </div>
               )}
             </div>
-            {isLiveCompetition && !isReviewMode && (
-              <button className={styles.btnSubmitLeft}
-                onClick={() => setShowSubmitModal(true)}
-                disabled={submitting || getUnattemptedCount() > 0}
-                title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
-              >
-                Submit Competition
-              </button>
-            )}
           </div>
         )}
 
