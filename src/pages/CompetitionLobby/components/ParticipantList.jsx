@@ -25,9 +25,23 @@ const ParticipantList = ({
     };
 
     const getStatus = (participant) => {
+        // Prefer explicit status coming from backend (JOINED / PLAYING / SUBMITTED)
         if (participant.status) return participant.status;
-        if (participant.isSubmitted) return "Submitted";
-        return "Waiting";
+
+        // Legacy flag from older data structures
+        if (participant.isSubmitted || participant.submittedAt) return "SUBMITTED";
+
+        // Heuristic: if the player has started solving (score, puzzles, time),
+        // treat them as PLAYING even if status wasn't sent.
+        const hasActivity =
+            (participant.puzzlesSolved && participant.puzzlesSolved > 0) ||
+            (participant.score && participant.score > 0) ||
+            (participant.timeSpent && participant.timeSpent > 0);
+
+        if (hasActivity) return "PLAYING";
+
+        // Default fallback when they have joined but not started
+        return "JOINED";
     };
 
     const formatTime = (seconds) => {
