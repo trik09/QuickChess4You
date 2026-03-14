@@ -352,7 +352,7 @@ function Leaderboard() {
                       <FaClock /> {competition?.duration || 15} MIN
                     </div>
                     <div className={styles.metaPill}>
-                      <FaUserCircle /> {leaderboard.length} PLAYERS
+                      <FaUserCircle /> {processedLeaderboard.length} PLAYERS
                     </div>
                     <div className={styles.metaPill}>
                       {isLive ? '🔴 LIVE' : '✅ COMPLETED'}

@@ -79,7 +79,7 @@ const ParticipantList = ({
     return (
         <div className={`${styles.lobbyCard} ${styles.participantsCard}`}>
             <h2 className={styles.sectionTitle}>
-                Participants ({participants.length})
+                Participants ({processedParticipants.length})
             </h2>
             <div className={styles.tableResponsive}>
                 <table className={styles.participantsTable}>
@@ -93,7 +93,7 @@ const ParticipantList = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {participants.length > 0 ? (
+                        {processedParticipants.length > 0 ? (
                             currentParticipants.map((p, idx) => {
                                 const actualRank = indexOfFirstItem + idx + 1;
                                 return (
