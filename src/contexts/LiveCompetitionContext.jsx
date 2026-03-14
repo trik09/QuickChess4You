@@ -1,18 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import socketService from "../services/socketService";
 import { liveCompetitionAPI } from "../services/liveCompetitionAPI";
 import puzzleStateManager from "../services/puzzleStateManager";
 import toast from "react-hot-toast";
-import { useLiveCompetitionSocketBridge } from "../features/liveCompetition/useLiveCompetitionSocketBridge";
-import {
-  mergePuzzlesWithStoredStates,
-} from "../features/liveCompetition/puzzleStateMerge";
-import {
-  deriveTotalPuzzleCount,
-  shouldHydrateCompetition,
-  syncPuzzleStatesToLocalStorage,
-} from "../features/liveCompetition/competitionPuzzlesLoaders";
-import { deduplicateLeaderboard } from "../features/liveCompetition/leaderboardUtils";
 
 const LiveCompetitionContext = createContext();
 
@@ -38,20 +28,6 @@ export const LiveCompetitionProvider = ({ children }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [totalPuzzleCount, setTotalPuzzleCount] = useState(0); // Add total puzzle count state
   const [forceRenderTick, setForceRenderTick] = useState(0);
-
-  // Disconnect from competition (defined early because socket bridge depends on it)
-  const disconnectFromCompetition = useCallback(() => {
-    socketService.disconnect();
-    setIsConnected(false);
-    setCompetition(null);
-    setLeaderboard([]);
-    setPuzzles([]);
-    setParticipant(null);
-    setCompetitionEnded(false);
-    setError(null);
-    setLastUpdate(null);
-    setTotalPuzzleCount(0); // Reset total puzzle count
-  }, []);
 
   // Exact transition trigger to eliminate the 5-8 second polling delay when a competition starts
   useEffect(() => {
@@ -88,54 +64,153 @@ export const LiveCompetitionProvider = ({ children }) => {
   // Initialize state on mount - restore from localStorage if available
   useEffect(() => {
     const initializeState = async () => {
+      // Check if we're on a competition page
       const currentPath = window.location.pathname;
+      console.log("Current path:", currentPath);
 
       // Match both /competition/:id and /competition/:id/puzzle patterns
       const competitionMatch = currentPath.match(/\/competition\/([^\/]+)/);
 
-      // PERFORMANCE: Skip heavy init if not on a competition page
-      // Also skip on LOBBY pages — lobby has its own loadLobby() function
-      if (!competitionMatch || currentPath.includes('/lobby')) return;
+      if (competitionMatch) {
+        const competitionId = competitionMatch[1];
+        console.log("Initializing competition state for:", competitionId);
 
-      const competitionId = competitionMatch[1];
+        try {
+          // Try to load competition puzzles to restore state
+          await loadCompetitionPuzzles(competitionId);
+          console.log("Competition state restored successfully");
 
-      try {
-        // Parallel: load puzzles + leaderboard simultaneously
-        await Promise.all([
-          loadCompetitionPuzzles(competitionId),
-          getLeaderboard(competitionId)
-        ]);
+          // Fetch leaderboard immediately on initialization
+          console.log("Fetching initial leaderboard on mount");
+          await getLeaderboard(competitionId);
 
-        // AUTO-RECONNECT SOCKET on page refresh
-        const token = localStorage.getItem("token");
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (token && user && !socketService.isConnected) {
-          try {
-            const compData = { competition: { id: competitionId, name: "" } };
-            await socketService.connect(compData);
-            setIsConnected(true);
-            socketService.emit("joinCompetition", { competitionId });
-          } catch (sockErr) {
-            // Not critical — REST polling will cover us
+          // AUTO-RECONNECT SOCKET on page refresh if user is already a participant
+          // This ensures real-time updates continue after refresh
+          const token = localStorage.getItem("token");
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          if (token && user && !socketService.isConnected) {
+            console.log(
+              "[LiveComp] Auto-reconnecting socket after page refresh",
+            );
+            try {
+              const compData = { competition: { id: competitionId, name: "" } };
+              await socketService.connect(compData);
+              setIsConnected(true);
+              socketService.emit("joinCompetition", {
+                competitionId,
+              });
+
+              console.log("[LiveComp] Socket reconnected successfully");
+            } catch (sockErr) {
+              console.error(
+                "[LiveComp] Socket reconnect failed:",
+                sockErr.message,
+              );
+              // Not critical — REST polling will cover us
+            }
           }
+        } catch (error) {
+          console.error("Failed to restore competition state:", error);
+          // This is expected if user hasn't participated yet
         }
-      } catch (error) {
-        // Expected if user hasn't participated yet
+      } else {
+        console.log("Not on a competition page, skipping state restoration");
       }
     };
 
     initializeState();
   }, []); // Run once on mount
 
-  const { ensureSocketConnection, refreshLeaderboard } =
-    useLiveCompetitionSocketBridge({
-      setLeaderboard,
-      setLastUpdate,
-      setCompetitionEnded,
-      setError,
-      setIsConnected,
-      disconnectFromCompetition,
-    });
+  // ALWAYS listen to socket events for real-time capabilities
+  useEffect(() => {
+    const handleLeaderboardUpdate = (newLeaderboard) => {
+      console.log("[LiveComp] Socket: leaderboardUpdate, entries:", newLeaderboard?.length);
+      setLeaderboard(newLeaderboard);
+      setLastUpdate(new Date());
+    };
+
+    const handleLiveScoreUpdate = (data) => {
+      console.log("[LiveComp] Socket: liveScoreUpdate", data.username, data.score);
+      setLeaderboard((prev) => {
+        const updated = prev.map((entry) => {
+          const isMatch = (entry.userId === data.userId?.toString() || entry.userId === data.userId || (entry.userId?._id && entry.userId._id === data.userId));
+          return isMatch
+            ? {
+              ...entry,
+              score: data.score,
+              puzzlesSolved: data.puzzlesSolved,
+              timeSpent: data.timeSpent,
+              status: data.status,
+            }
+            : entry;
+        });
+        
+        // Re-sort and re-calculate RANKS for everyone!
+        const sorted = updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
+        return sorted.map((entry, index) => ({
+          ...entry,
+          rank: index + 1
+        }));
+      });
+      setLastUpdate(new Date());
+    };
+
+    const handleCompetitionEnded = (finalResults) => {
+      setCompetitionEnded(true);
+      setLeaderboard(finalResults.leaderboard);
+      toast.success(finalResults.message, { duration: 5000 });
+      setTimeout(() => disconnectFromCompetition(), 10000);
+    };
+
+    const handleParticipantJoined = (data) => {
+      console.log("[LiveComp] Socket: participantJoined", data.username);
+      // Removed toast to decrease noise
+    };
+
+    const handleParticipantSubmitted = (data) => {
+      toast(`${data.username} submitted their solution!`, { icon: "🏁", duration: 3000 });
+    };
+
+    const handleError = (error) => {
+      console.error("Socket error state:", error);
+      setError(error.message);
+    };
+
+    socketService.on("leaderboardUpdate", handleLeaderboardUpdate);
+    socketService.on("liveScoreUpdate", handleLiveScoreUpdate);
+    socketService.on("competitionEnded", handleCompetitionEnded);
+    socketService.on("participantJoined", handleParticipantJoined);
+    socketService.on("participantSubmitted", handleParticipantSubmitted);
+    socketService.on("error", handleError);
+
+    return () => {
+      socketService.off("leaderboardUpdate", handleLeaderboardUpdate);
+      socketService.off("liveScoreUpdate", handleLiveScoreUpdate);
+      socketService.off("competitionEnded", handleCompetitionEnded);
+      socketService.off("participantJoined", handleParticipantJoined);
+      socketService.off("participantSubmitted", handleParticipantSubmitted);
+      socketService.off("error", handleError);
+    };
+  }, []);
+
+  const ensureSocketConnection = async (competitionId) => {
+    if (!competitionId) return;
+
+    if (!socketService.isConnected) {
+      try {
+        console.log(`[LiveComp] ensureSocketConnection: Manually connecting socket for ${competitionId}`);
+        const compData = { competition: { id: competitionId, name: "" } };
+        await socketService.connect(compData);
+        setIsConnected(true);
+        socketService.emit("joinCompetition", { competitionId });
+      } catch (err) {
+        console.error(`[LiveComp] ensureSocketConnection: Failed`, err);
+      }
+    } else {
+      socketService.emit("joinCompetition", { competitionId });
+      setIsConnected(true);
+    }
+  };
 
   // Participate in competition
   const participateInCompetition = async (competitionId, username) => {
@@ -253,7 +328,7 @@ export const LiveCompetitionProvider = ({ children }) => {
         );
 
         // Set competition data if not already set
-        if (shouldHydrateCompetition(competition)) {
+        if (!competition) {
           setCompetition(response.competition);
           setTotalPuzzleCount(
             response.competition?.totalPuzzles || response.puzzles.length,
@@ -270,9 +345,70 @@ export const LiveCompetitionProvider = ({ children }) => {
         console.log("Stored states from localStorage:", storedStates);
 
         // Merge server data with stored states
-        const puzzlesWithStates = mergePuzzlesWithStoredStates({
-          serverPuzzles: response.puzzles,
-          storedStates,
+        const puzzlesWithStates = response.puzzles.map((puzzle) => {
+          const storedState = storedStates[puzzle._id];
+
+          console.log(`Puzzle ${puzzle._id}:`, {
+            serverStatus: puzzle.status,
+            serverSolved: puzzle.isSolved,
+            serverFailed: puzzle.isFailed,
+            storedState: storedState,
+          });
+
+          // Determine final status - server takes precedence, then localStorage
+          let finalStatus = "unsolved";
+          let isSolved = false;
+          let isFailed = false;
+          let isLocked = false;
+
+          if (
+            puzzle.status &&
+            (puzzle.status === "solved" || puzzle.status === "failed")
+          ) {
+            // Server has definitive status
+            finalStatus = puzzle.status;
+            isSolved = puzzle.status === "solved";
+            isFailed = puzzle.status === "failed";
+            isLocked = true;
+          } else if (
+            storedState &&
+            (storedState.status === "solved" || storedState.status === "failed")
+          ) {
+            // Use localStorage status if server doesn't have it
+            finalStatus = storedState.status;
+            isSolved = storedState.status === "solved";
+            isFailed = storedState.status === "failed";
+            isLocked = storedState.isLocked || true;
+          } else if (puzzle.isSolved || puzzle.isFailed) {
+            // Fallback to boolean flags
+            finalStatus = puzzle.isSolved ? "solved" : "failed";
+            isSolved = puzzle.isSolved;
+            isFailed = puzzle.isFailed;
+            isLocked = true;
+          }
+
+          return {
+            ...puzzle,
+            status: finalStatus,
+            isSolved,
+            isFailed,
+            isLocked,
+
+            // Preserve board position from localStorage if available
+            boardPosition: puzzle.boardPosition || storedState?.boardPosition,
+            moveHistory: puzzle.moveHistory || storedState?.moveHistory || [],
+
+            // Merge solved data
+            solvedData:
+              puzzle.solvedData ||
+              (storedState?.status === "solved"
+                ? {
+                  scoreEarned: storedState.scoreEarned,
+                  timeSpent: storedState.timeSpent,
+                  solvedAt: storedState.solvedAt,
+                }
+                : null),
+          };
         });
 
         console.log(
@@ -289,18 +425,36 @@ export const LiveCompetitionProvider = ({ children }) => {
         setParticipant(response.participant);
 
         // Update total puzzle count if not already set
-        const nextTotal = deriveTotalPuzzleCount({
-          currentTotalPuzzleCount: totalPuzzleCount,
-          responseCompetition: response.competition,
-          responsePuzzles: response.puzzles,
-        });
-        if (nextTotal != null) setTotalPuzzleCount(nextTotal);
+        if (totalPuzzleCount === 0) {
+          setTotalPuzzleCount(
+            response.competition?.totalPuzzles || response.puzzles.length,
+          );
+        }
 
         // Sync any missing states to localStorage
-        syncPuzzleStatesToLocalStorage({
-          competitionId,
-          puzzlesWithStates,
-          puzzleStateManager,
+        puzzlesWithStates.forEach((puzzle) => {
+          if (puzzle.status !== "unsolved") {
+            const stateToSave = {
+              status: puzzle.status,
+              boardPosition: puzzle.boardPosition,
+              moveHistory: puzzle.moveHistory,
+              timeSpent: puzzle.solvedData?.timeSpent || 0,
+              isLocked: puzzle.isLocked,
+              scoreEarned: puzzle.solvedData?.scoreEarned || 0,
+            };
+
+            if (puzzle.status === "solved") {
+              stateToSave.solvedAt = puzzle.solvedData?.solvedAt || Date.now();
+            } else if (puzzle.status === "failed") {
+              stateToSave.failedAt = Date.now();
+            }
+
+            puzzleStateManager.savePuzzleState(
+              competitionId,
+              puzzle._id,
+              stateToSave,
+            );
+          }
         });
       }
     } catch (error) {
@@ -420,6 +574,11 @@ export const LiveCompetitionProvider = ({ children }) => {
     }
   };
 
+  // Refresh leaderboard manually
+  const refreshLeaderboard = () => {
+    socketService.refreshLeaderboard();
+  };
+
   // Get leaderboard via REST API (fallback)
   const getLeaderboard = async (competitionIdOverride = null) => {
     try {
@@ -438,7 +597,7 @@ export const LiveCompetitionProvider = ({ children }) => {
           response.leaderboard.length,
           "entries",
         );
-        setLeaderboard(deduplicateLeaderboard(response.leaderboard));
+        setLeaderboard(response.leaderboard);
         setLastUpdate(new Date());
       }
     } catch (error) {
@@ -456,21 +615,43 @@ export const LiveCompetitionProvider = ({ children }) => {
     if (!isLive) return;
 
     const syncInterval = setInterval(() => {
+      console.log("[LiveComp] Periodic leaderboard sync");
       getLeaderboard(competition.id);
-    }, 30000);
+    }, 5000);
 
     return () => clearInterval(syncInterval);
   }, [competition?.id, competition?.status, competitionEnded]);
 
+  // Disconnect from competition
+  const disconnectFromCompetition = () => {
+    socketService.disconnect();
+    setIsConnected(false);
+    setCompetition(null);
+    setLeaderboard([]);
+    setPuzzles([]);
+    setParticipant(null);
+    setCompetitionEnded(false);
+    setError(null);
+    setLastUpdate(null);
+    setTotalPuzzleCount(0); // Reset total puzzle count
+  };
+
   // Get current user's rank
   const getCurrentUserRank = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const userEntry = leaderboard.find(
-      (entry) =>
-        (user.id && entry.userId === user.id) ||
-        (user._id && entry.userId === user._id) ||
-        entry.username === user.username,
-    );
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!storedUser || (!storedUser.id && !storedUser._id)) return null;
+
+    const userEntry = leaderboard.find((entry) => {
+      // Robust ID comparison: handles string IDs, object IDs, and разными formats
+      const targetId = storedUser.id || storedUser._id;
+      const entryId = entry.userId?._id || entry.userId;
+      
+      const idMatch = entryId && targetId && String(entryId) === String(targetId);
+      const usernameMatch = entry.username && storedUser.username && entry.username === storedUser.username;
+      
+      return idMatch || usernameMatch;
+    });
+    
     return userEntry ? userEntry.rank : null;
   };
 
