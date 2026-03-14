@@ -74,7 +74,12 @@ const PuzzleRacer = () => {
         }
         return p;
       });
-      displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+      displayList.sort((a, b) => {
+        if (b.score !== a.score) {
+          return (b.score || 0) - (a.score || 0);
+        }
+        return (a.timeSpent || 0) - (b.timeSpent || 0);
+      });
     }
 
     // If current user not in leaderboard yet, add them with local data
@@ -93,7 +98,19 @@ const PuzzleRacer = () => {
       }
     }
 
-    return displayList.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+    displayList.sort((a, b) => {
+      if (b.score !== a.score) {
+        return (b.score || 0) - (a.score || 0);
+      }
+      return (a.timeSpent || 0) - (b.timeSpent || 0);
+    });
+
+    // Re-assign ranks dynamically after sorting based on score/time parameters
+    displayList.forEach((racer, index) => {
+      racer.rank = index + 1;
+    });
+
+    return displayList;
   }, [leaderboard, user, participant, currentUserId, localSolvedCount]);
 
   // Sun = rank 1, planets = ranks 2-9
