@@ -1,5 +1,6 @@
 import React from "react";
 import { FaUserCircle } from "react-icons/fa";
+import { deduplicateLeaderboard } from "../../../features/liveCompetition/leaderboardUtils";
 import styles from "../CompetitionLobby.module.css";
 
 const ParticipantList = ({
@@ -10,30 +11,7 @@ const ParticipantList = ({
     setCurrentPage,
     itemsPerPage,
 }) => {
-    const getProcessedParticipants = () => {
-        // 1. Deduplicate by UserId (keeping highest score/activity)
-        const uniqueUsers = new Map();
-        participants.forEach(entry => {
-            const uid = entry.userId?._id || entry.userId || entry.id;
-            if (!uid) return;
-            
-            const existing = uniqueUsers.get(String(uid));
-            // Keep the one with more puzzles solved or higher score
-            if (!existing || (entry.puzzlesSolved || 0) > (existing.puzzlesSolved || 0) || (entry.score || 0) > (existing.score || 0)) {
-                uniqueUsers.set(String(uid), entry);
-            }
-        });
-
-        // 2. Sort by Puzzles Solved (DESC) then Time (ASC)
-        return Array.from(uniqueUsers.values()).sort((a, b) => {
-            if (b.puzzlesSolved !== a.puzzlesSolved) {
-                return (b.puzzlesSolved || 0) - (a.puzzlesSolved || 0);
-            }
-            return (a.timeSpent || 0) - (b.timeSpent || 0);
-        });
-    };
-
-    const processedParticipants = getProcessedParticipants();
+    const processedParticipants = deduplicateLeaderboard(participants);
     const totalPages = Math.ceil(processedParticipants.length / itemsPerPage) || 1;
 
     const indexOfLastItem = currentPage * itemsPerPage;

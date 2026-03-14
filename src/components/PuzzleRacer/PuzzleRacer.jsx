@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from "react";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { deduplicateLeaderboard } from "../../features/liveCompetition/leaderboardUtils";
 import "./PuzzleRacer.css";
 
 /* ========================================================
@@ -53,7 +54,8 @@ const PuzzleRacer = () => {
   const isCurrentUser = useCallback(
     (racer) => {
       if (!racer || !user) return false;
-      return racer.userId === currentUserId || racer.username === user?.username;
+      const racerId = racer.userId && typeof racer.userId === 'object' ? (racer.userId._id || racer.userId.id) : racer.userId;
+      return String(racerId) === String(currentUserId) || racer.username === user?.username;
     },
     [currentUserId, user]
   );
@@ -64,7 +66,7 @@ const PuzzleRacer = () => {
 
     if (leaderboard?.length > 0) {
       displayList = leaderboard.map((p) => {
-        if (currentUserId && (p.userId === currentUserId || p.username === user?.username)) {
+        if (isCurrentUser(p)) {
           return {
             ...p,
             score: Math.max(p.score || 0, participant?.score || 0),
@@ -85,7 +87,7 @@ const PuzzleRacer = () => {
     // If current user not in leaderboard yet, add them with local data
     if (currentUserId) {
       const inList = displayList.find(
-        (p) => p.userId === currentUserId || p.username === user?.username
+        (p) => isCurrentUser(p)
       );
       if (!inList && user) {
         displayList.push({
@@ -98,20 +100,9 @@ const PuzzleRacer = () => {
       }
     }
 
-    displayList.sort((a, b) => {
-      if (b.score !== a.score) {
-        return (b.score || 0) - (a.score || 0);
-      }
-      return (a.timeSpent || 0) - (b.timeSpent || 0);
-    });
-
-    // Re-assign ranks dynamically after sorting based on score/time parameters
-    displayList.forEach((racer, index) => {
-      racer.rank = index + 1;
-    });
-
-    return displayList;
-  }, [leaderboard, user, participant, currentUserId, localSolvedCount]);
+    // Use the comprehensive deduplication algorithm as the final step
+    return deduplicateLeaderboard(displayList);
+  }, [leaderboard, user, participant, currentUserId, localSolvedCount, isCurrentUser]);
 
   // Sun = rank 1, planets = ranks 2-9
   const sunRacer = racers[0] || null;
@@ -125,11 +116,11 @@ const PuzzleRacer = () => {
   });
 
   const currentUserInSlots = racers.slice(0, VISIBLE_SLOTS).some(
-    (r) => r && (r.userId === currentUserId || r.username === user?.username)
+    (r) => r && isCurrentUser(r)
   );
 
   const currentUserRacer = racers.find(
-    (r) => r.userId === currentUserId || r.username === user?.username
+    (r) => r && isCurrentUser(r)
   );
 
   const othersCount = Math.max(0, racers.length - VISIBLE_SLOTS);

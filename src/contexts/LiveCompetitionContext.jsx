@@ -12,6 +12,7 @@ import {
   shouldHydrateCompetition,
   syncPuzzleStatesToLocalStorage,
 } from "../features/liveCompetition/competitionPuzzlesLoaders";
+import { deduplicateLeaderboard } from "../features/liveCompetition/leaderboardUtils";
 
 const LiveCompetitionContext = createContext();
 
@@ -437,7 +438,7 @@ export const LiveCompetitionProvider = ({ children }) => {
           response.leaderboard.length,
           "entries",
         );
-        setLeaderboard(response.leaderboard);
+        setLeaderboard(deduplicateLeaderboard(response.leaderboard));
         setLastUpdate(new Date());
       }
     } catch (error) {

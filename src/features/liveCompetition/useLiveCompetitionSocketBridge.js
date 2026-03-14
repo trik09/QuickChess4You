@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import socketService from "../../services/socketService";
+import { deduplicateLeaderboard } from "./leaderboardUtils";
 
 /**
  * Bridge SocketService events into React state setters.
@@ -21,7 +22,7 @@ export function useLiveCompetitionSocketBridge({
         "[LiveComp] Socket: leaderboardUpdate, entries:",
         newLeaderboard?.length,
       );
-      setLeaderboard(newLeaderboard);
+      setLeaderboard(deduplicateLeaderboard(newLeaderboard));
       setLastUpdate(new Date());
     };
 
@@ -43,16 +44,14 @@ export function useLiveCompetitionSocketBridge({
               }
             : entry,
         );
-        return updated.sort(
-          (a, b) => b.score - a.score || a.timeSpent - b.timeSpent,
-        );
+        return deduplicateLeaderboard(updated);
       });
       setLastUpdate(new Date());
     };
 
     const handleCompetitionEnded = (finalResults) => {
       setCompetitionEnded(true);
-      setLeaderboard(finalResults.leaderboard);
+      setLeaderboard(deduplicateLeaderboard(finalResults.leaderboard));
       toast.success(finalResults.message, { duration: 5000 });
       setTimeout(() => disconnectFromCompetition(), 10000);
     };

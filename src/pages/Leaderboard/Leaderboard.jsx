@@ -22,6 +22,7 @@ import {
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { competitionAPI } from "../../services/api";
 import socketService from "../../services/socketService";
+import { deduplicateLeaderboard } from "../../features/liveCompetition/leaderboardUtils";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
 import styles from "./Leaderboard.module.css";
 
@@ -70,7 +71,7 @@ function Leaderboard() {
   // Socket event handlers (stable references for cleanup)
   const handleLeaderboardUpdate = (newLeaderboard) => {
     console.log('[Leaderboard] Socket: leaderboardUpdate received', newLeaderboard?.length);
-    setLeaderboard(newLeaderboard);
+    setLeaderboard(deduplicateLeaderboard(newLeaderboard));
   };
 
   const handleParticipantJoined = (data) => {
@@ -100,13 +101,14 @@ function Leaderboard() {
       if (showLoader) setLoading(true);
       const response = await liveCompetitionAPI.getLeaderboard(competitionId);
       if (response.success && response.leaderboard) {
-        setLeaderboard(response.leaderboard);
+        const dedupedList = deduplicateLeaderboard(response.leaderboard);
+        setLeaderboard(dedupedList);
 
         // Auto-paginate to the user's page on initial load
         if (!hasAutoPaginatedRef.current) {
           const currentId = getCurrentUser();
           if (currentId) {
-            const userIndex = response.leaderboard.findIndex(u => {
+            const userIndex = dedupedList.findIndex(u => {
               const targetId = typeof u.userId === 'object' ? (u.userId?._id || u.userId?.id) : u.userId;
               return String(targetId) === String(currentId);
             });
