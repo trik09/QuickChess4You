@@ -76,7 +76,7 @@ const Hero = () => {
                     <div className={`${styles.ctaGroupRight} ${styles.fadeIn}`}>
                         <button
                             className={styles.btnSecondary}
-                            onClick={() => navigate('/puzzle')}
+                            onClick={() => navigate('/play')}
                         >
                             <span>Start Solving</span>
                             <BsPlayCircle className={styles.btnPlayIcon} />

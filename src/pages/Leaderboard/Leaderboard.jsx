@@ -186,18 +186,51 @@ function Leaderboard() {
     : null;
 
   // Pagination & Search Logic
-  const filteredLeaderboard = leaderboard.filter(user =>
-    user.username?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getProcessedLeaderboard = () => {
+    // 1. Deduplicate by UserId (keeping highest score)
+    const uniqueUsers = new Map();
+    leaderboard.forEach(entry => {
+      const uid = typeof entry.userId === 'object' ? (entry.userId?._id || entry.userId?.id) : entry.userId;
+      if (!uid) return;
+      
+      const existing = uniqueUsers.get(String(uid));
+      if (!existing || (entry.score || 0) > (existing.score || 0)) {
+        uniqueUsers.set(String(uid), entry);
+      }
+    });
 
+    // 2. Filter by search term
+    let items = Array.from(uniqueUsers.values());
+    if (searchTerm) {
+      items = items.filter(user =>
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // 3. Sort by Score (DESC) then Time (ASC)
+    return items.sort((a, b) => {
+      if (b.score !== a.score) {
+        return (b.score || 0) - (a.score || 0);
+      }
+      return (a.timeSpent || 0) - (b.timeSpent || 0);
+    });
+  };
+
+  const processedLeaderboard = getProcessedLeaderboard();
+  const totalPages = Math.ceil(processedLeaderboard.length / itemsPerPage);
+  
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentLeaderboard = filteredLeaderboard.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredLeaderboard.length / itemsPerPage);
+  const currentLeaderboard = processedLeaderboard.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setCurrentPage(pageNum);
+      // Scroll to top of rankings panel smoothly when page changes
+      const panel = document.querySelector(`.${styles.rankingsPanel}`);
+      if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -385,9 +418,10 @@ function Leaderboard() {
               <div className={styles.rankingsList}>
                 {currentLeaderboard.map((user, idx) => {
                   const actualRank = indexOfFirstItem + idx + 1;
+                  const uid = typeof user.userId === 'object' ? (user.userId?._id || user.userId?.id) : user.userId;
                   return (
                     <div
-                      key={user.userId}
+                      key={`${uid}-${actualRank}`}
                       className={`${styles.rankRow} ${isCurrentUser(user.userId) ? styles.currentUser : ''}`}
                     >
                       <div className={styles.rankNum}>

@@ -10,13 +10,38 @@ const ParticipantList = ({
     setCurrentPage,
     itemsPerPage,
 }) => {
+    const getProcessedParticipants = () => {
+        // 1. Deduplicate by UserId (keeping highest score/activity)
+        const uniqueUsers = new Map();
+        participants.forEach(entry => {
+            const uid = entry.userId?._id || entry.userId || entry.id;
+            if (!uid) return;
+            
+            const existing = uniqueUsers.get(String(uid));
+            // Keep the one with more puzzles solved or higher score
+            if (!existing || (entry.puzzlesSolved || 0) > (existing.puzzlesSolved || 0) || (entry.score || 0) > (existing.score || 0)) {
+                uniqueUsers.set(String(uid), entry);
+            }
+        });
+
+        // 2. Sort by Puzzles Solved (DESC) then Time (ASC)
+        return Array.from(uniqueUsers.values()).sort((a, b) => {
+            if (b.puzzlesSolved !== a.puzzlesSolved) {
+                return (b.puzzlesSolved || 0) - (a.puzzlesSolved || 0);
+            }
+            return (a.timeSpent || 0) - (b.timeSpent || 0);
+        });
+    };
+
+    const processedParticipants = getProcessedParticipants();
+    const totalPages = Math.ceil(processedParticipants.length / itemsPerPage) || 1;
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentParticipants = participants.slice(
+    const currentParticipants = processedParticipants.slice(
         indexOfFirstItem,
         indexOfLastItem,
     );
-    const totalPages = Math.ceil(participants.length / itemsPerPage) || 1;
 
     const handlePageChange = (pageNum) => {
         if (pageNum >= 1 && pageNum <= totalPages) {
@@ -73,8 +98,8 @@ const ParticipantList = ({
                                 const actualRank = indexOfFirstItem + idx + 1;
                                 return (
                                     <tr
-                                        key={p.userId || idx}
-                                        className={`${p.userId === user?.id ? styles.rowHighlight : ""}`}
+                                        key={`${p.userId || idx}-${actualRank}`}
+                                        className={`${p.userId === user?.id || p.userId?._id === user?.id ? styles.rowHighlight : ""}`}
                                     >
                                         <td className={styles.tdRank}>#{actualRank}</td>
                                         <td className={styles.tdPlayer}>
