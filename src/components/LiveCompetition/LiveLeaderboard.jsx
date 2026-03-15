@@ -113,7 +113,7 @@ const LiveLeaderboard = () => {
               <div 
                 key={participant.userId}
                 className={`table-row ${
-                  (participant.userId?._id || participant.userId) === (currentUser?.id || currentUser?._id) ? 'current-user' : ''
+                  participant.userId === currentUser.id ? 'current-user' : ''
                 } ${participant.rank <= 3 ? 'top-three' : ''}`}
               >
                 <span className="col-rank">

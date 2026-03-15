@@ -131,9 +131,19 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     const handleLiveScoreUpdate = (data) => {
       console.log("[LiveComp] Socket: liveScoreUpdate", data.username, data.score);
+      // Normalize incoming userId to a plain string regardless of whether it's an object or string
+      const incomingId = data.userId?._id
+        ? String(data.userId._id)
+        : data.userId
+          ? String(data.userId)
+          : null;
+
       setLeaderboard((prev) => {
         const updated = prev.map((entry) => {
-          const isMatch = (entry.userId === data.userId?.toString() || entry.userId === data.userId || (entry.userId?._id && entry.userId._id === data.userId));
+          const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
+          const isMatch =
+            (incomingId && entryId && incomingId === entryId) ||
+            (data.username && entry.username && data.username === entry.username);
           return isMatch
             ? {
               ...entry,
@@ -144,12 +154,12 @@ export const LiveCompetitionProvider = ({ children }) => {
             }
             : entry;
         });
-        
-        // Re-sort and re-calculate RANKS for everyone!
+
+        // Re-sort and re-calculate ranks for everyone
         const sorted = updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
         return sorted.map((entry, index) => ({
           ...entry,
-          rank: index + 1
+          rank: index + 1,
         }));
       });
       setLastUpdate(new Date());
@@ -639,20 +649,18 @@ export const LiveCompetitionProvider = ({ children }) => {
   // Get current user's rank
   const getCurrentUserRank = () => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!storedUser || (!storedUser.id && !storedUser._id)) return null;
+    if (!storedUser || (!storedUser.id && !storedUser._id && !storedUser.username)) return null;
+
+    const targetId = storedUser.id ? String(storedUser.id) : storedUser._id ? String(storedUser._id) : null;
 
     const userEntry = leaderboard.find((entry) => {
-      // Robust ID comparison: handles string IDs, object IDs, and разными formats
-      const targetId = storedUser.id || storedUser._id;
-      const entryId = entry.userId?._id || entry.userId;
-      
-      const idMatch = entryId && targetId && String(entryId) === String(targetId);
+      const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
+      const idMatch = targetId && entryId && entryId === targetId;
       const usernameMatch = entry.username && storedUser.username && entry.username === storedUser.username;
-      
       return idMatch || usernameMatch;
     });
-    
-    return userEntry ? userEntry.rank : null;
+
+    return userEntry?.rank ?? null;
   };
 
   // Get solved puzzles count

@@ -3,15 +3,15 @@ import { clearUserAuth, getUserToken } from "./authStorage";
 
 const apiRequest = async (endpoint, options = {}, token = null) => {
   const authToken = token || getUserToken();
-  try {
-    return await baseRequest(endpoint, options, authToken);
-  } catch (err) {
-    if (err?.status === 401) {
-      clearUserAuth();
-      throw new Error("Session expired. Please login again.");
-    }
-    throw err;
-  }
+  // try {
+  return await baseRequest(endpoint, options, authToken);
+  // } catch (err) {
+  //   if (err?.status === 401) {
+  //     clearUserAuth();
+  //     throw new Error("Session expired. Please login again.");
+  //   }
+  //   throw err;
+  // }
 };
 
 /**

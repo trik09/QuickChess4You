@@ -7,9 +7,9 @@ import {
   getPreferredAuthHeader,
   getUser,
   getUserToken,
-  setAdmin,
+  setAdmin as saveAdmin,
   setAdminToken,
-  setUser,
+  setUser as saveUser,
   setUserToken,
 } from "../services/authStorage";
 
@@ -29,8 +29,7 @@ export const AuthProvider = ({ children }) => {
   const userLogin = (userData, authToken) => {
     setUser(userData);
     setToken(authToken);
-
-    setUser(userData);
+    saveUser(userData);
     setUserToken(authToken);
   };
 
@@ -52,8 +51,7 @@ export const AuthProvider = ({ children }) => {
   const adminLogin = (adminData, adminToken) => {
     setAdmin(adminData);
     setAToken(adminToken);
-
-    setAdmin(adminData);
+    saveAdmin(adminData);
     setAdminToken(adminToken);
   };
 

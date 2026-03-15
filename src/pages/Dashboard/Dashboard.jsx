@@ -39,10 +39,36 @@ function Dashboard() {
           const endDate = new Date(comp.endTime);
           const now = new Date();
 
-          let status = "Upcoming";
-          if (now < startDate) status = "Upcoming";
-          else if (now >= startDate && now <= endDate) status = "Live";
-          else status = "Ended";
+          // ─── FIX: Trust the backend status first ─────────────────────────────
+          // The backend sets comp.status = "ended" / "live" / "upcoming" when
+          // all players submit early (before the clock runs out), or when the
+          // admin ends the competition manually. Recalculating only from the
+          // clock ignores that signal entirely.
+          //
+          // Priority:
+          //  1. If backend explicitly says "ended" / "ENDED"  → Ended
+          //  2. If backend explicitly says "live"   / "LIVE"   → Live
+          //  3. Fall back to time-based calculation for "upcoming" / unknown
+          // ────────────────────────────────────────────────────────────────────
+          let status;
+          const backendStatus = (comp.status || "").toLowerCase();
+
+          if (backendStatus === "ended") {
+            status = "Ended";
+          } else if (backendStatus === "live") {
+            // Double-check: if the end time has already passed on the client,
+            // also treat as Ended (handles edge cases where backend is slightly behind)
+            status = now > endDate ? "Ended" : "Live";
+          } else {
+            // "upcoming" or anything else — derive from clock
+            if (now < startDate) {
+              status = "Upcoming";
+            } else if (now >= startDate && now <= endDate) {
+              status = "Live";
+            } else {
+              status = "Ended";
+            }
+          }
 
           const durationMs = endDate - startDate;
           const durationMins = Math.floor(durationMs / 60000);

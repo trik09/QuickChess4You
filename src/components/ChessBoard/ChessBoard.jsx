@@ -198,7 +198,7 @@ function ChessBoard({
   const [draggedPiece, setDraggedPiece] = useState(null);
   const [dragOverSquare, setDragOverSquare] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // Offset from mouse to piece top-left in logical pixels
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [draggedPieceImage, setDraggedPieceImage] = useState(null);
   const boardRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -206,6 +206,20 @@ function ChessBoard({
   const dragStateRef = useRef({ draggedPiece: null, possibleMoves: [] });
   const dragTimeoutRef = useRef(null);
   const isMouseDownRef = useRef(false);
+
+  // ─── Keep a ref to the latest `interactive` prop ─────────────────────────────
+  // This ensures drag/click handlers always read the current value even if they
+  // were registered before the prop changed (stale closure prevention).
+  const interactiveRef = useRef(interactive);
+  useEffect(() => {
+    interactiveRef.current = interactive;
+    // When the board becomes non-interactive (e.g. puzzle locked after wrong move),
+    // immediately clear any selection/possible-move highlights so it looks locked.
+    if (!interactive) {
+      setSelectedSquare(null);
+      setPossibleMoves([]);
+    }
+  }, [interactive]);
 
   // Re-initialize when FEN or solution changes
   useEffect(() => {
@@ -280,8 +294,6 @@ function ChessBoard({
       setAllNormalizedPaths(allPaths);
       setValidPathIndices(allPaths.map((_, i) => i));
     }
-
-    // Reset computer first move flag when the puzzle officially changes/mounts
   }, [fen, solution, alternativeSolutions, puzzleType, kidsConfig]);
 
   const onBoardStateChangeRef = useRef(onBoardStateChange);
@@ -291,14 +303,6 @@ function ChessBoard({
 
   // Unified Computer Response Logic (Declarative)
   useEffect(() => {
-    // Only auto-play if:
-    // 1. It's a normal puzzle
-    // 2. We are NOT in show-solution mode (it has its own player)
-    // 3. The puzzle is not yet solved (locally or via prop)
-    // 4. No promotion is pending
-    // 5. It is the computer's turn
-    // 6. We have a solution move to play at the current index
-
     const isGameSolved = isSolved || feedback === "solved";
     const isComputerTurn = game.turn() !== userColor;
     const hasMoveToPlay = solutionIndex < normalizedSolution.length;
@@ -323,14 +327,12 @@ function ChessBoard({
             playSound(result.san.includes("x") ? "capture" : "move");
             const newHistory = [...moveHistory, result.san];
 
-            // Update local state
             setMoveHistory(newHistory);
             setLastMove({ from: result.from, to: result.to });
             const nextSolutionIndex = solutionIndex + 1;
             setSolutionIndex(nextSolutionIndex);
             setGame(new Chess(gameCopy.fen()));
 
-            // Check if this move finishes the puzzle
             const isEndOfPath = nextSolutionIndex >= normalizedSolution.length;
             if (isEndOfPath || gameCopy.isCheckmate()) {
               setTimeout(() => {
@@ -349,7 +351,7 @@ function ChessBoard({
         } catch (e) {
           console.error("Auto-move execution failed:", e);
         }
-      }, 250); // Uniform fast 250ms delay for all computer moves (including first move)
+      }, 250);
 
       return () => clearTimeout(timer);
     }
@@ -368,9 +370,6 @@ function ChessBoard({
   ]);
 
   // Restore saved board state if available
-  // Special Rule: Only restore the "last stage" if the human player has already made a move
-  // AND the puzzle is not yet marked as solved.
-  // If no human move was made or it's already solved, we start from initial FEN to play the computer move again.
   useEffect(() => {
     if (savedBoardState && savedBoardState.fen) {
       const hasHumanMoved =
@@ -396,7 +395,6 @@ function ChessBoard({
     if (showSolution && puzzleType === "normal") {
       const playNext = () => {
         if (solutionIndex >= normalizedSolution.length) {
-          // Finished solution
           if (onPuzzleSolved && feedback !== "solved") {
             setFeedback("solved");
             if (onPuzzleSolved) onPuzzleSolved();
@@ -405,7 +403,6 @@ function ChessBoard({
         }
 
         const nextMove = normalizedSolution[solutionIndex];
-        // Ensure move is valid in current state
         let result = null;
         try {
           result = game.move(nextMove);
@@ -437,7 +434,6 @@ function ChessBoard({
   // Cleanup effect for mouse event listeners
   useEffect(() => {
     return () => {
-      // Clean up body listeners if they exist
       document.removeEventListener("mousemove", mouseHandlersRef.current.move);
       document.removeEventListener("mouseup", mouseHandlersRef.current.up);
       if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
@@ -449,8 +445,6 @@ function ChessBoard({
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    // Only scale if a specific width prop is likely controlling the container
-    // or if we simply want it to fit.
     const updateScale = () => {
       if (containerRef.current) {
         const parent = containerRef.current.parentElement;
@@ -459,15 +453,12 @@ function ChessBoard({
         const parentWidth = parent.offsetWidth;
         const parentHeight = parent.offsetHeight;
 
-        // Base width of the board where scale = 1.0
         const naturalWidth = 600;
         const naturalHeight = 620;
 
         const scaleW = parentWidth / naturalWidth;
         const scaleH = parentHeight / naturalHeight;
 
-        // Use the smaller of the two scales to ensure it fits both ways
-        // Allow scaling UP to fill the space (e.g., on large monitors)
         setScale(Math.min(scaleW, scaleH, 2.0));
       }
     };
@@ -508,7 +499,6 @@ function ChessBoard({
 
   const getSquareStyle = (row, col) => {
     const isDark = (row + col) % 2 === 1;
-    // const backgroundColor = isDark ? '#B58863' : '#F0D9B5'; // Default
     const backgroundColor = isDark
       ? currentBoardColors?.dark || "#B58863"
       : currentBoardColors?.light || "#F0D9B5";
@@ -533,7 +523,6 @@ function ChessBoard({
       dragOverSquare.row === row &&
       dragOverSquare.col === col;
 
-    // Kids Mode
     const squareSan = getFileRank(row, col);
     const isCapturedTarget = capturedTargets.includes(squareSan);
     const isTarget =
@@ -542,19 +531,14 @@ function ChessBoard({
     const style = {
       backgroundColor: isSelected ? "rgba(255, 255, 0, 0.5)" : backgroundColor,
       ...((isSelected || isLastMove) && {
-        boxShadow: `inset 0 0 0 0px ${isDark ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.1)"}`, // subtle highlight
+        boxShadow: `inset 0 0 0 0px ${isDark ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.1)"}`,
       }),
     };
 
-    // Highlight last move
     if (isLastMove) {
-      style.backgroundColor = isDark ? "#aaa23a" : "#cdcw68"; // simplistic highlight override
-      // Better merge:
-      // style.backgroundColor = isDark ? '#baca44' : '#f6f669';
-      // Actually using CSS class is better, but here we do inline for dynamic colors + overrides
+      style.backgroundColor = isDark ? "#aaa23a" : "#cdcw68";
     }
 
-    // In Check (King red)
     if (inCheck) {
       style.background = `radial-gradient(circle at center, #ff4d4d 0%, ${backgroundColor} 70%)`;
     }
@@ -574,13 +558,11 @@ function ChessBoard({
       setSelectedSquare(null);
       setPossibleMoves([]);
       setFeedback(null);
-      setCapturedTargets([]); // Reset targets
+      setCapturedTargets([]);
     }, delay);
   };
 
   const checkKidsWinCondition = (currentCaptured) => {
-    // Check if all targets are captured
-    // We need to know how many targets were there
     const totalTargets = kidsTargets.length;
     if (currentCaptured.length >= totalTargets) {
       return true;
@@ -589,9 +571,6 @@ function ChessBoard({
   };
 
   const handleKidsMove = (from, to) => {
-    // Allow any legal move
-    // No turn check needed as we force user color usually, but game.turn() handles it
-
     const moveAttempt = { from, to, promotion: "q" };
     let result = null;
     try {
@@ -602,12 +581,8 @@ function ChessBoard({
 
     if (!result) return;
 
-    // STARTING NEW LOGIC FOR KIDS:
-    // Check if 'to' square had a target
-    // Targets are logically pieces (pawns) of opposite color so they are 'captured' by engine move
-    // But we need to track them visually as Pizza/Chocolate
     const targetHit = kidsTargets.find((t) => t.square === to);
-    const isCapture = !!targetHit; // Physically it is a capture in engine if we put enemy pieces there
+    const isCapture = !!targetHit;
 
     playSound(isCapture ? "capture" : "move");
 
@@ -615,28 +590,22 @@ function ChessBoard({
     setMoveHistory(newHistory);
     setLastMove({ from, to });
 
-    // Update visually captured targets
     let newCaptured = capturedTargets;
     if (targetHit) {
-      // If we haven't already captured it (should be impossible if piece is there but safe check)
       if (!capturedTargets.includes(targetHit.square)) {
         newCaptured = [...capturedTargets, targetHit.square];
         setCapturedTargets(newCaptured);
       }
     }
 
-    // Force update board state AND keep turn on player logic
-    // We want the player to keep moving until all targets captured
-    // So we must hack the FEN to set turn back to userColor
     const currentFen = game.fen();
     const fenParts = currentFen.split(" ");
-    fenParts[1] = userColor; // Force turn back to user
+    fenParts[1] = userColor;
     const newFen = fenParts.join(" ");
 
     setGame(new Chess(newFen));
-    setFeedback(null); // Clear feedback? Or keep it briefly?
+    setFeedback(null);
 
-    // Check win
     if (checkKidsWinCondition(newCaptured)) {
       setTimeout(() => {
         setFeedback("solved");
@@ -645,23 +614,23 @@ function ChessBoard({
       }, 300);
     }
 
-    // No computer response in Kids Mode
-
-    // Notify parent of board state change
     if (onBoardStateChange) {
       onBoardStateChange(game.fen(), newHistory);
     }
   };
 
   const handleUserMove = (from, to, promotion = null) => {
+    // ─── HARD GATE: never process moves when board is locked ─────────────────
+    // This is the final safety net — all click and drag paths funnel here.
+    // Using the ref ensures we always read the latest prop value even inside
+    // stale closures (drag handlers registered via addEventListener).
+    if (!interactiveRef.current) return;
+
     // Branch based on Puzzle Type
     if (puzzleType === "kids") {
       handleKidsMove(from, to);
       return;
     }
-
-    // Normal Puzzle Logic
-    if (game.turn() !== userColor) return;
 
     // Normal Puzzle Logic
     if (game.turn() !== userColor) return;
@@ -674,20 +643,17 @@ function ChessBoard({
         ((piece.color === "w" && to[1] === "8") ||
           (piece.color === "b" && to[1] === "1"))
       ) {
-        // Intercept for promotion
         setPromotionPending({ from, to, color: piece.color });
         return;
       }
     }
 
-    // Default to queen if still null (shouldn't happen with interception, but safe fallback) or use chosen piece
     const moveAttempt = { from, to, promotion: promotion || "q" };
     let result = null;
     try {
       try {
         result = game.move(moveAttempt);
       } catch (e) {
-        // If move failed (e.g. invalid promotion), try without promotion just in case, but usually strict
         try {
           result = game.move({ from, to });
         } catch (e2) {
@@ -698,7 +664,7 @@ function ChessBoard({
       result = null;
     }
 
-    if (!result) return; // Invalid move
+    if (!result) return;
 
     const san = result.san;
     const isCapture = san.includes("x");
@@ -709,10 +675,8 @@ function ChessBoard({
     setLastMove({ from, to });
     const isCheckmateNow = game.isCheckmate();
 
-    // Validate User Move against all valid paths
     const userMoveSan = normalizeSAN(san);
 
-    // Filter valid paths: keep those where current move matches
     const nextValidIndices = validPathIndices.filter((idx) => {
       const path = allNormalizedPaths[idx];
       return (
@@ -727,10 +691,6 @@ function ChessBoard({
       setValidPathIndices(nextValidIndices);
 
       let nextIndex = solutionIndex + 1;
-
-      // Determine if ANY valid path is finished (or if we need to reply)
-      // If user solved it (reached end of a path), we can consider it solved?
-      // Usually we want to follow the longest line if possible, OR if they played a mate we stop.
 
       const winningPathIndex = nextValidIndices.find(
         (idx) => nextIndex >= allNormalizedPaths[idx].length,
@@ -750,7 +710,6 @@ function ChessBoard({
       resetToInitial();
     }
 
-    // Notify parent of board state change for normal puzzles too
     if (onBoardStateChange) {
       setTimeout(() => {
         onBoardStateChange(game.fen(), newHistory);
@@ -766,6 +725,8 @@ function ChessBoard({
   };
 
   const handleSquareClick = (square) => {
+    // ─── HARD GATE: block all clicks when board is not interactive ────────────
+    if (!interactiveRef.current) return;
     if (feedback === "solved" || isDragging) return;
 
     // Move Logic
@@ -781,10 +742,9 @@ function ChessBoard({
         setPossibleMoves([]);
         return;
       }
-      // Switch selection logic
+      // Switch selection
       const piece = getPiece(square);
       if (piece && piece.color === game.turn()) {
-        // Allow switching if valid turn
         setSelectedSquare(square);
         const moves = game.moves({ square, verbose: true }) || [];
         setPossibleMoves(moves.map((m) => m.to));
@@ -795,7 +755,7 @@ function ChessBoard({
     } else {
       const piece = getPiece(square);
       if (!piece) return;
-      if (piece.color !== game.turn()) return; // Must be moving side
+      if (piece.color !== game.turn()) return;
 
       setSelectedSquare(square);
       const moves = game.moves({ square, verbose: true }) || [];
@@ -808,8 +768,10 @@ function ChessBoard({
   useEffect(() => {
     handleUserMoveRef.current = handleUserMove;
   });
+
   const [floatingSize, setFloatingSize] = useState(60);
-  // Custom Mouse Drag Handlers using useRef to avoid circular dependency
+
+  // Custom Mouse Drag Handlers
   useEffect(() => {
     mouseHandlersRef.current.handleMouseMove = (e) => {
       if (!boardRef.current || !wrapperRef.current) return;
@@ -822,7 +784,6 @@ function ChessBoard({
 
       const rect = boardRef.current.getBoundingClientRect();
 
-      // Determine which square we're over
       const squareSize = rect.width / 8;
       setFloatingSize(squareSize * 0.9);
 
@@ -851,10 +812,8 @@ function ChessBoard({
     };
 
     mouseHandlersRef.current.handleMouseUp = (e) => {
-      // Clear the mouse down flag
       isMouseDownRef.current = false;
 
-      // Remove global event listeners
       document.removeEventListener(
         "mousemove",
         mouseHandlersRef.current.handleMouseMove,
@@ -864,11 +823,9 @@ function ChessBoard({
         mouseHandlersRef.current.handleMouseUp,
       );
 
-      // Get current drag state from ref
       const currentDraggedPiece = dragStateRef.current.draggedPiece;
       const currentPossibleMoves = dragStateRef.current.possibleMoves;
 
-      // Determine drop target
       let targetSquare = null;
       if (boardRef.current) {
         const rect = boardRef.current.getBoundingClientRect();
@@ -891,16 +848,14 @@ function ChessBoard({
         }
       }
 
-      // Reset drag state first
       setIsDragging(false);
       setDraggedPiece(null);
       setDragOverSquare(null);
       setDraggedPieceImage(null);
 
-      // Clear ref
       dragStateRef.current = { draggedPiece: null, possibleMoves: [] };
 
-      // Then handle the move if valid - USE REF TO GET LATEST FUNCTION
+      // handleUserMove itself checks interactiveRef, so this is safe
       if (
         currentDraggedPiece &&
         targetSquare &&
@@ -910,28 +865,25 @@ function ChessBoard({
         if (handleUserMoveRef.current) {
           handleUserMoveRef.current(currentDraggedPiece, targetSquare);
         }
-        // Clear selection after successful drag move
         setSelectedSquare(null);
         setPossibleMoves([]);
       }
     };
-  }, [userColor, scale]); // Include scale to ensure coordinate conversion is correct
+  }, [userColor, scale]);
 
   const startDrag = (square, e) => {
-    // Check interactivity
-    if (typeof interactive !== "undefined" && !interactive) return;
+    // Use ref so this always reads the latest interactive value
+    if (!interactiveRef.current) return;
 
     const piece = getPiece(square);
     const moves = game.moves({ square, verbose: true }) || [];
     const movesToSquares = moves.map((m) => m.to);
 
-    // Update ref with current drag state
     dragStateRef.current = {
       draggedPiece: square,
       possibleMoves: movesToSquares,
     };
 
-    // Start drag
     setIsDragging(true);
     setDraggedPiece(square);
     setDraggedPieceImage(
@@ -939,7 +891,6 @@ function ChessBoard({
     );
     setPossibleMoves(movesToSquares);
 
-    // Get mouse position relative to wrapper (for visual positioning)
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
     const logicalX = (e.clientX - wrapperRect.left) / scale;
     const logicalY = (e.clientY - wrapperRect.top) / scale;
@@ -948,14 +899,11 @@ function ChessBoard({
       y: logicalY,
     });
 
-    // Calculate offset from piece top-left (User wants drag from click position)
-    // Note: e.target is the image element
     const pieceRect = e.target.getBoundingClientRect();
     const offsetX = (e.clientX - pieceRect.left) / scale;
     const offsetY = (e.clientY - pieceRect.top) / scale;
     setDragOffset({ x: offsetX, y: offsetY });
 
-    // Add global mouse event listeners
     document.addEventListener(
       "mousemove",
       mouseHandlersRef.current.handleMouseMove,
@@ -969,25 +917,23 @@ function ChessBoard({
   };
 
   const handleMouseDown = (e, square) => {
-    if (typeof interactive !== "undefined" && !interactive) return;
+    // Use ref so this always reads the latest interactive value
+    if (!interactiveRef.current) return;
     if (feedback === "solved") return;
 
     const piece = getPiece(square);
     if (!piece || piece.color !== game.turn()) return;
 
-    // Only handle left mouse button
     if (e.button !== 0) return;
 
     isMouseDownRef.current = true;
 
-    // Start drag after a short delay to allow for clicks
     dragTimeoutRef.current = setTimeout(() => {
       if (isMouseDownRef.current) {
         startDrag(square, e);
       }
-    }, 150); // 150ms delay to distinguish click from drag
+    }, 150);
 
-    // Add temporary mouseup listener to cancel drag if mouse is released quickly
     const quickMouseUp = () => {
       clearTimeout(dragTimeoutRef.current);
       isMouseDownRef.current = false;
@@ -1022,13 +968,12 @@ function ChessBoard({
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
-          width: '600px', // Fixed base width for consistent scaling
+          width: '600px',
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           border: "3px solid var(--border-gold)",
           borderRadius: "8px"
-
         }}
       >
         {feedback && (
@@ -1107,13 +1052,13 @@ function ChessBoard({
                 <div
                   key={square}
                   className={`
-          ${styles.square}
-          ${isSelected(square) ? styles.selected : ''}
-          ${isPossibleMove(square) ? styles.possibleMove : ''}
-          ${isLastMove(square) ? styles.lastMove : ''}
-          ${dragOverSquare === square ? styles.dragOver : ''}
-          ${isDragging && draggedPiece === square ? styles.dragSource : ''}
-        `}
+                    ${styles.square}
+                    ${isSelected(square) ? styles.selected : ''}
+                    ${isPossibleMove(square) ? styles.possibleMove : ''}
+                    ${isLastMove(square) ? styles.lastMove : ''}
+                    ${dragOverSquare === square ? styles.dragOver : ''}
+                    ${isDragging && draggedPiece === square ? styles.dragSource : ''}
+                  `}
                   style={{ backgroundColor: squareColor }}
                   onClick={() => handleSquareClick(square)}
                 >
@@ -1126,7 +1071,11 @@ function ChessBoard({
                         className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
                         draggable={false}
                         onMouseDown={(e) => handleMouseDown(e, square)}
-                        style={{ cursor: game.turn() === piece.color && feedback !== 'solved' ? 'grab' : 'default' }}
+                        style={{
+                          cursor: interactiveRef.current && game.turn() === piece.color && feedback !== 'solved'
+                            ? 'grab'
+                            : 'default'
+                        }}
                       />
                     )
                   )}
@@ -1141,7 +1090,6 @@ function ChessBoard({
 
                 </div>
               );
-
             }))}
         </div>
 

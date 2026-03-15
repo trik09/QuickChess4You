@@ -163,6 +163,11 @@ function PuzzlePage() {
   // New state strictly for Review Mode to track practice attempts vs actual competition results
   const [practiceStatuses, setPracticeStatuses] = useState({}); // { [puzzleId]: 'success' | 'failed' }
 
+  // ─── FIX 2: Review mode reset key ───────────────────────────────────────────
+  // Incrementing this forces the ChessBoard to fully remount/reset for the
+  // current puzzle without navigating away.
+  const [reviewResetKey, setReviewResetKey] = useState(0);
+
   // Timer & Score
   const [timeLeft, setTimeLeft] = useState(0); // in seconds
   const [score, setScore] = useState(0);
@@ -179,15 +184,26 @@ function PuzzlePage() {
   // Inline Solution Toggle State (for Review Mode)
   const [showInlineSolution, setShowInlineSolution] = useState(false);
 
-  // Reset inline solution when puzzle changes
+  // Reset inline solution AND reviewResetKey when puzzle changes
   useEffect(() => {
     setShowInlineSolution(false);
+    setReviewResetKey(0); // reset manual-reset counter when switching puzzles
   }, [currentPuzzleIndex]);
 
   // Refs for tracking without re-renders
   const timerRef = useRef(null);
   const isLoadedRef = useRef(false);
   const isLiveRef = useRef(false);
+
+  // ─── Ref mirror of puzzleStatuses ────────────────────────────────────────────
+  // puzzleStatuses state updates are async; handlers called from ChessBoard
+  // (onWrongMove / onPuzzleSolved) may read a stale closure copy.
+  // This ref is updated synchronously whenever puzzleStatuses changes so the
+  // competition lock is always reading the latest value — no stale closures.
+  const puzzleStatusesRef = useRef({});
+  useEffect(() => {
+    puzzleStatusesRef.current = puzzleStatuses;
+  }, [puzzleStatuses]);
 
   // Listen for competition events from socket directly
   useEffect(() => {
@@ -705,8 +721,14 @@ function PuzzlePage() {
         ? winningMoves
         : currentPuzzle.solution;
 
-    // Check if already solved
-    if (puzzleStatuses[currentPuzzle.id] === "success") return;
+    // ─── Competition lock: use ref so we always read latest status ───────────
+    // isReviewMode check first — review mode never blocks re-solving
+    if (!isReviewMode) {
+      const latestStatus = puzzleStatusesRef.current[currentPuzzle.id];
+      if (latestStatus === "success" || latestStatus === "failed") {
+        return;
+      }
+    }
 
     // Calculate time taken for this puzzle (simple approximation)
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
@@ -829,8 +851,14 @@ function PuzzlePage() {
 
     const puzzleId = currentPuzzle.id || currentPuzzle._id;
 
-    // Check if already marked as failed
-    if (puzzleStatuses[puzzleId] === "failed") return;
+    // ─── Competition lock: use ref so we always read latest status ───────────
+    // isReviewMode check first — review mode never blocks retrying
+    if (!isReviewMode) {
+      const latestStatus = puzzleStatusesRef.current[puzzleId];
+      if (latestStatus === "failed" || latestStatus === "success") {
+        return;
+      }
+    }
 
     // Calculate time taken for this puzzle
     const timeTaken = Math.floor((Date.now() - startTime) / 1000);
@@ -990,6 +1018,23 @@ function PuzzlePage() {
     return `Puzzle ${currentPuzzleIndex + 1} of ${puzzles.length}`;
   })();
 
+  /* ── FIX: Derive board interactivity cleanly, using ref for sync reads ── */
+  const currentPuzzleStatus = currentPuzzle
+    ? (puzzleStatusesRef.current[currentPuzzle.id || currentPuzzle._id] ?? puzzleStatuses[currentPuzzle.id || currentPuzzle._id])
+    : null;
+
+  const isBoardInteractive = (() => {
+    if (solving) return false;
+    if (isBeforeStartTime && !isReviewMode) return false;
+    // Review mode: always interactive regardless of competition result
+    if (isReviewMode) return true;
+    // Competition mode: lock board once puzzle has been solved OR failed — final, no retries
+    if (currentPuzzleStatus === "success" || currentPuzzleStatus === "failed") {
+      return false;
+    }
+    return true;
+  })();
+
   return (
     <div className={styles.container}>
       <Toaster position="top-right" />
@@ -1001,14 +1046,6 @@ function PuzzlePage() {
               <FaArrowLeft />
             </button>
             <h2 className={styles.mainTitle}>{competitionData.name}</h2>
-            {/* {competitionData.chapters?.length > 0 && (
-              <div className={styles.chapterBadgeRowHeader}>
-                <span className={styles.chapterBadgeHeader}>{competitionData.chapters[activeChapterIndex]?.name || "Chapter 1"}</span>
-                <span className={styles.chapterBadgeHeader} style={{ opacity: 0.8 }}>
-                  {chapterCurrentIndex >= 0 ? chapterCurrentIndex + 1 : 1} of {navPuzzles.length}
-                </span>
-              </div>
-            )} */}
             {isReviewMode && <span className={styles.liveBadge} style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", borderColor: "rgba(165,180,252,0.3)" }}>Review</span>}
           </div>
 
@@ -1146,7 +1183,7 @@ function PuzzlePage() {
               <div className={styles.rankProgressBar}>
                 <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
               </div>
-              <div className={styles.rankParticipants}>{leaderboard.length} participant{leaderboard.length !== 1 ? "s" : ""}</div>
+              <div className={styles.rankParticipants}>{leaderboard.length - 1} participant{leaderboard.length - 1 !== 1 ? "s" : ""}</div>
             </div>
           )}
 
@@ -1190,7 +1227,14 @@ function PuzzlePage() {
             {puzzles.length > 0 && currentPuzzle ? (
               <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <ChessBoard
-                  key={`${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}`}
+                  key={
+                    // In review mode, reviewResetKey forces a full board remount on manual reset.
+                    // In competition mode, including the puzzle status in the key ensures that
+                    // navigating back to a solved/failed puzzle always remounts to a clean locked state.
+                    isReviewMode
+                      ? `${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-review-${reviewResetKey}`
+                      : `${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-${currentPuzzleStatus ?? "unsolved"}`
+                  }
                   fen={currentPuzzle.fen}
                   solution={currentPuzzle.solution}
                   alternativeSolutions={currentPuzzle.alternativeSolutions}
@@ -1214,19 +1258,11 @@ function PuzzlePage() {
                       : puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]
                   }
                   isSolved={
-                    puzzleStatuses[currentPuzzle.id || currentPuzzle._id] ===
-                    "success"
+                    isReviewMode
+                      ? practiceStatuses[currentPuzzle.id || currentPuzzle._id] === "success"
+                      : (currentPuzzleStatus === "success" || currentPuzzleStatus === "failed")
                   }
-                  interactive={
-                    !solving &&
-                    !isBeforeStartTime &&
-                    (isReviewMode ||
-                      (puzzleStatuses[currentPuzzle.id || currentPuzzle._id] !==
-                        "success" &&
-                        puzzleStatuses[
-                        currentPuzzle.id || currentPuzzle._id
-                        ] !== "failed"))
-                  }
+                  interactive={isBoardInteractive}
                   showSolution={showSolution}
                 />
                 {isBeforeStartTime && !isReviewMode && (
@@ -1303,7 +1339,14 @@ function PuzzlePage() {
                     return (
                       <div key={`nav-${pid}`}
                         className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${status === "success" ? styles.success : ""} ${status === "failed" ? styles.danger : ""}`}
-                        onClick={() => { if (isBeforeStartTime && !isReviewMode) return; if (!solving) { setCurrentPuzzleIndex(gi); if (status === "success") toast.info("Puzzle already solved!"); else if (status === "failed") toast.info("Puzzle failed — view only"); } }}
+                        onClick={() => {
+                          if (isBeforeStartTime && !isReviewMode) return;
+                          if (!solving) {
+                            setCurrentPuzzleIndex(gi);
+                            if (status === "success") toast.info("Puzzle already solved!");
+                            else if (status === "failed") toast.info("Puzzle failed — view only");
+                          }
+                        }}
                         style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
                       >
                         {status === "success" ? <FaCheckCircle /> : gi + 1}
@@ -1381,13 +1424,35 @@ function PuzzlePage() {
                 </div>
               )}
 
-
-
+              {/* ─── FIX 2: Review Mode — Reset + Solution ─────────────────────────── */}
               {isReviewMode && (
-                <div style={{ marginTop: 8 }}>
+                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {/* Reset Puzzle button — always shown in review mode */}
+                  <button
+                    className={styles.resetPuzzleBtn}
+                    onClick={() => {
+                      // Clear this puzzle's practice status so the nav dot resets too
+                      const pid = currentPuzzle?.id || currentPuzzle?._id;
+                      if (pid) {
+                        setPracticeStatuses(prev => {
+                          const next = { ...prev };
+                          delete next[pid];
+                          return next;
+                        });
+                      }
+                      // Force ChessBoard remount
+                      setReviewResetKey(k => k + 1);
+                      setShowInlineSolution(false);
+                      toast("Puzzle reset!", { icon: "🔄", duration: 1200 });
+                    }}
+                  >
+                    🔄 Reset Puzzle
+                  </button>
+
                   <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
                     {showInlineSolution ? "Hide Solution" : "View Solution"}
                   </button>
+
                   {showInlineSolution && (
                     <div className={styles.solutionBox}>
                       {currentPuzzle?.moveHistory?.length > 0 && (() => {
