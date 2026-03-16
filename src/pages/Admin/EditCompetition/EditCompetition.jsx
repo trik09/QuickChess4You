@@ -82,6 +82,8 @@ function EditCompetition() {
     totalRecords: 0,
   });
 
+  const [goToPage, setGoToPage] = useState("");
+
   const [filterOptions, setFilterOptions] = useState({
     categories: [],
     difficulties: [],
@@ -178,6 +180,18 @@ function EditCompetition() {
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPagination((prev) => ({ ...prev, current: 1 }));
+  };
+
+  const handleGoToPage = (e) => {
+    e.preventDefault();
+    const pageNum = parseInt(goToPage);
+    const totalPages = Math.ceil(pagination.totalRecords / pagination.limit);
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+      setPagination(p => ({ ...p, current: pageNum }));
+      setGoToPage("");
+    } else {
+      toast.error(`Please enter a valid page number between 1 and ${totalPages}`);
+    }
   };
 
   // --- Chapter helpers ---
@@ -736,6 +750,25 @@ function EditCompetition() {
                   >
                     <FaChevronRight />
                   </button>
+                </div>
+
+                <div className={styles.goToPageWrapper}>
+                  <span>Go to:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max={Math.ceil(pagination.totalRecords / pagination.limit)}
+                    value={goToPage}
+                    onChange={(e) => setGoToPage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleGoToPage(e);
+                      }
+                    }}
+                    placeholder="Page"
+                  />
+                  <button type="button" className={styles.goBtn} onClick={handleGoToPage}>Go</button>
                 </div>
               </div>
             )}

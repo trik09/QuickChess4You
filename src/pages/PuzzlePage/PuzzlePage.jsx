@@ -174,6 +174,14 @@ function PuzzlePage() {
   const [solvedCount, setSolvedCount] = useState(0);
   const [startTime, setStartTime] = useState(Date.now());
 
+  // ─── Stable participant count ─────────────────────────────────────────────
+  // The raw leaderboard array from context gets a new entry appended on every
+  // score-update socket event, so `leaderboard.length` grows with each move
+  // made by any player — it is NOT the real participant count.
+  // We store the true count from the server on load and only update it when
+  // the deduplicated leaderboard grows larger than what we already know.
+  const [participantCount, setParticipantCount] = useState(0);
+
   // Submission Modal State
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -205,7 +213,21 @@ function PuzzlePage() {
     puzzleStatusesRef.current = puzzleStatuses;
   }, [puzzleStatuses]);
 
-  // Listen for competition events from socket directly
+  // ─── Keep participantCount in sync with the deduplicated leaderboard ────────
+  // The leaderboard from context may contain duplicate entries for the same
+  // user (one per score-update event). We deduplicate by userId and take the
+  // maximum of what we already know vs what the leaderboard now shows.
+  // This ensures the count only ever increases — never flickers down.
+  useEffect(() => {
+    if (!leaderboard || leaderboard.length === 0) return;
+    const uniqueIds = new Set(
+      leaderboard.map((p) => p.userId || p._id || p.id).filter(Boolean)
+    );
+    const uniqueCount = uniqueIds.size;
+    if (uniqueCount > participantCount) {
+      setParticipantCount(uniqueCount);
+    }
+  }, [leaderboard]);
   useEffect(() => {
     if (paramCompetitionId) {
       const onCompetitionStarted = () => {
@@ -347,6 +369,13 @@ function PuzzlePage() {
 
         const comp = compResponse.data;
         setCompetitionData(comp);
+
+        // Seed the stable participant count from the server's authoritative list.
+        // This is the number that shows in the rank card — we use the length of
+        // comp.participants (the array of user IDs) as the baseline.
+        if (Array.isArray(comp.participants) && comp.participants.length > 0) {
+          setParticipantCount(comp.participants.length);
+        }
 
         // Check active status
         const now = new Date();
@@ -1018,7 +1047,29 @@ function PuzzlePage() {
     return `Puzzle ${currentPuzzleIndex + 1} of ${puzzles.length}`;
   })();
 
-  /* ── FIX: Derive board interactivity cleanly, using ref for sync reads ── */
+  /* ── Deduplicated rank computation ──────────────────────────────────────────
+     The leaderboard may contain multiple entries for the same user because
+     the context appends an entry on every socket score-update. We deduplicate
+     by keeping only the latest (highest-index) entry per userId, then sort
+     by score descending to compute the current user's rank.
+  ───────────────────────────────────────────────────────────────────────── */
+  const stableRank = (() => {
+    if (!leaderboard || leaderboard.length === 0) return getCurrentUserRank() || null;
+    // Deduplicate: last entry wins for each userId
+    const byUser = new Map();
+    leaderboard.forEach((p) => {
+      const uid = p.userId || p._id || p.id;
+      if (uid) byUser.set(uid, p);
+    });
+    const deduped = Array.from(byUser.values());
+    // Sort by score descending
+    deduped.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    // Find current user
+    const myId = user?._id || user?.id;
+    if (!myId) return getCurrentUserRank() || null;
+    const myIdx = deduped.findIndex((p) => (p.userId || p._id || p.id) === myId);
+    return myIdx !== -1 ? myIdx + 1 : getCurrentUserRank() || null;
+  })();
   const currentPuzzleStatus = currentPuzzle
     ? (puzzleStatusesRef.current[currentPuzzle.id || currentPuzzle._id] ?? puzzleStatuses[currentPuzzle.id || currentPuzzle._id])
     : null;
@@ -1178,12 +1229,14 @@ function PuzzlePage() {
             <div className={styles.rankCard}>
               <div className={styles.rankRow}>
                 <div className={styles.rankLabel}><span>🏆</span> YOUR RANK</div>
-                <div className={styles.rankNumber}>#{getCurrentUserRank() || "–"}</div>
+                <div className={styles.rankNumber}>#{stableRank || "–"}</div>
               </div>
               <div className={styles.rankProgressBar}>
                 <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
               </div>
-              <div className={styles.rankParticipants}>{leaderboard.length - 1} participant{leaderboard.length - 1 !== 1 ? "s" : ""}</div>
+              <div className={styles.rankParticipants}>
+                {participantCount > 0 ? participantCount : "–"} participant{participantCount !== 1 ? "s" : ""}
+              </div>
             </div>
           )}
 

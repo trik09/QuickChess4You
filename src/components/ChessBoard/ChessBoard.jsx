@@ -968,7 +968,7 @@ function ChessBoard({
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
-          width: '600px',
+          width: '615px',
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

@@ -1,7 +1,11 @@
 export const deduplicateLeaderboard = (list) => {
   if (!list || !Array.isArray(list)) return [];
   const map = new Map();
-  list.forEach(p => {
+  
+  // Reverse to ensure "first come first" default insertion order for equal scores
+  const processedList = [...list].reverse();
+  
+  processedList.forEach(p => {
     // Correctly handle both string IDs and populated object IDs to ensure 100% uniqueness
     const extractedId = p.userId && typeof p.userId === 'object' 
       ? (p.userId._id || p.userId.id) 

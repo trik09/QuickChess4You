@@ -209,13 +209,28 @@ function Leaderboard() {
       );
     }
 
-    // 3. Sort by Score (DESC) then Time (ASC)
-    return items.sort((a, b) => {
+    // 3. Sort ALL users globally to determine ranks
+    const sortedItems = items.sort((a, b) => {
       if (b.score !== a.score) {
         return (b.score || 0) - (a.score || 0);
       }
       return (a.timeSpent || 0) - (b.timeSpent || 0);
     });
+
+    // 4. Assign global ranks
+    const rankedItems = sortedItems.map((item, index) => ({
+      ...item,
+      globalRank: index + 1
+    }));
+
+    // 5. Filter the ranked list by search term
+    if (searchTerm) {
+      return rankedItems.filter(user =>
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return rankedItems;
   };
 
   const processedLeaderboard = getProcessedLeaderboard();
@@ -268,7 +283,7 @@ function Leaderboard() {
                   <div className={styles.podiumAvatar}>
                     <img src={silver} alt="2nd Place" className={styles.trophyImg} />
                   </div>
-                  <div className={styles.podiumName}>{top3[1]?.username || '—'}</div>
+                  <div className={styles.podiumName}>{(top3[1] && top3[1].score > 0) ? (top3[1].username || '—') : '—'}</div>
                   <div className={styles.podiumScore}>{top3[1]?.score || 0} pts</div>
                   <div className={`${styles.podiumBar} ${styles.bar2}`}>
                     {top3[1] && (
@@ -285,7 +300,7 @@ function Leaderboard() {
                   <div className={styles.podiumAvatar}>
                     <img src={gold} alt="1st Place" className={`${styles.trophyImg} ${styles.goldTrophy}`} />
                   </div>
-                  <div className={styles.podiumName}>{top3[0]?.username || '—'}</div>
+                  <div className={styles.podiumName}>{(top3[0] && top3[0].score > 0) ? (top3[0].username || '—') : '—'}</div>
                   <div className={styles.podiumScore}>{top3[0]?.score || 0} pts</div>
                   <div className={`${styles.podiumBar} ${styles.bar1}`}>
                     {top3[0] && (
@@ -302,7 +317,7 @@ function Leaderboard() {
                   <div className={styles.podiumAvatar}>
                     <img src={bronze} alt="3rd Place" className={styles.trophyImg} />
                   </div>
-                  <div className={styles.podiumName}>{top3[2]?.username || '—'}</div>
+                  <div className={styles.podiumName}>{(top3[2] && top3[2].score > 0) ? (top3[2].username || '—') : '—'}</div>
                   <div className={styles.podiumScore}>{top3[2]?.score || 0} pts</div>
                   <div className={`${styles.podiumBar} ${styles.bar3}`}>
                     {top3[2] && (
@@ -427,7 +442,7 @@ function Leaderboard() {
                       className={`${styles.rankRow} ${isCurrentUser(user.userId) ? styles.currentUser : ''}`}
                     >
                       <div className={styles.rankNum}>
-                        <span className={styles.rankNumber}>{actualRank}</span>
+                        <span className={styles.rankNumber}>{user.globalRank}</span>
                       </div>
 
                       <div className={styles.rankAvatar}>
