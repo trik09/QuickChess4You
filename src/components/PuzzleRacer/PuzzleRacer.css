@@ -1,7 +1,7 @@
 /* ---------- Container ---------- */
 .puzzle-racer-container {
     width: 100%;
-    background: radial-gradient(ellipse at 85% 50%, #111d33 0%, #0a1220 40%, #050a12 70%, #020408 100%);
+    background: radial-gradient(ellipse at 85% 50%, #0d1424 0%, #080d1a 40%, #04070a 70%, #000000 100%);
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: 18px;
     padding: 20px 24px 18px;
@@ -46,16 +46,22 @@
 
 [data-theme='light'] .puzzle-racer-container::before {
     background-image:
-        radial-gradient(circle at 15% 45%, rgba(212, 163, 115, 0.12), transparent 45%),
-        radial-gradient(circle at 65% 75%, rgba(255, 138, 101, 0.1), transparent 55%),
-        radial-gradient(circle at 85% 25%, rgba(224, 180, 50, 0.12), transparent 45%),
+        radial-gradient(circle at 15% 45%, rgba(139, 155, 180, 0.08), transparent 45%),
+        radial-gradient(circle at 65% 75%, rgba(160, 175, 200, 0.06), transparent 55%),
+        radial-gradient(circle at 85% 25%, rgba(180, 195, 220, 0.08), transparent 45%),
         /* subtle constellation dots */
-        radial-gradient(2px 2px at 10% 20%, #d4a373 50%, transparent),
-        radial-gradient(2px 2px at 30% 60%, #e87722 50%, transparent),
-        radial-gradient(2px 2px at 70% 30%, #b58863 50%, transparent),
-        radial-gradient(2px 2px at 85% 80%, #d4a373 50%, transparent);
+        radial-gradient(2px 2px at 10% 20%, #8b9bb4 40%, transparent),
+        radial-gradient(2px 2px at 30% 60%, #a0afc8 40%, transparent),
+        radial-gradient(2px 2px at 70% 30%, #7586a3 40%, transparent),
+        radial-gradient(2px 2px at 85% 80%, #a0afc8 40%, transparent);
     animation: nebulaMove 15s ease-in-out infinite alternate;
-    opacity: 0.7;
+    opacity: 0.8;
+}
+
+[data-theme='light'] .puzzle-racer-container {
+    background: radial-gradient(ellipse at 85% 50%, #f4f6fa 0%, #edf1f7 40%, #e6eaf3 70%, #dfe4ee 100%);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), inset 0 0 60px rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 @keyframes nebulaMove {
@@ -683,76 +689,55 @@
     border-radius: 50%;
     background: radial-gradient(circle, rgba(255, 150, 30, 0.06) 0%, transparent 60%);
     pointer-events: none;
-    z-index: 0;
 }
 
-.sun-crown-icon {
+/* Rank Badges */
+.planet-rank-badge {
     position: absolute;
-    top: 8px;
+    top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 1.4rem;
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.7));
-    animation: crownBob 2.5s ease-in-out infinite;
+    background: rgba(20, 25, 35, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+    font-size: 0.65rem;
+    font-weight: 800;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
     z-index: 10;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+    backdrop-filter: blur(4px);
 }
 
-@keyframes sunPulse {
-
-    0%,
-    100% {
-        box-shadow:
-            0 0 35px rgba(255, 170, 0, 0.55),
-            0 0 70px rgba(255, 140, 0, 0.3),
-            0 0 110px rgba(255, 100, 0, 0.15),
-            inset 0 0 25px rgba(255, 220, 120, 0.3);
-    }
-
-    50% {
-        box-shadow:
-            0 0 45px rgba(255, 170, 0, 0.7),
-            0 0 85px rgba(255, 140, 0, 0.4),
-            0 0 130px rgba(255, 100, 0, 0.22),
-            inset 0 0 30px rgba(255, 220, 120, 0.4);
-    }
+[data-theme='light'] .planet-rank-badge {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #334155;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes sunFloat {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-5px);
-    }
+.sun-rank-badge {
+    top: 5px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 10px rgba(255, 140, 0, 0.6);
 }
 
-@keyframes coronaPulse {
-
-    0%,
-    100% {
-        opacity: 0.7;
-        transform: translate(-50%, -50%) scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.06);
-    }
-}
-
-@keyframes crownBob {
-
-    0%,
-    100% {
-        transform: translateX(-50%) translateY(0);
-    }
-
-    50% {
-        transform: translateX(-50%) translateY(-4px);
-    }
+[data-theme='light'] .sun-rank-badge {
+    background: linear-gradient(135deg, #ffb300, #e65100);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(230, 81, 0, 0.4);
 }
 
 /* Sun labels */
@@ -940,8 +925,10 @@
         height: 100px;
     }
 
-    .sun-crown-icon {
-        font-size: 1rem;
+    .sun-rank-badge {
+        font-size: 0.7rem;
+        width: 20px;
+        height: 20px;
         top: -4px;
     }
 
@@ -1027,19 +1014,7 @@
     transition: width 0.4s ease;
     background: rgba(255, 255, 255, 0.2);
 }
-
-/* ---- crown badge on planet ---- */
-.planet-crown {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.75rem;
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
-    animation: crownBob 2.5s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 10;
-}
+} /* Added missing closing brace */
 
 /* ---- "You" score highlight ---- */
 .planet-slot-score.score-you {

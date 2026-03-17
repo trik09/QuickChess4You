@@ -201,13 +201,8 @@ function Leaderboard() {
       }
     });
 
-    // 2. Filter by search term
+    // 2. Removed early term filtering so ranks compute globally first
     let items = Array.from(uniqueUsers.values());
-    if (searchTerm) {
-      items = items.filter(user =>
-        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
 
     // 3. Sort ALL users globally to determine ranks
     const sortedItems = items.sort((a, b) => {

@@ -439,6 +439,7 @@
 .chaptersWrap {
   display: flex;
   flex-direction: column;
+  margin-top: 10px;
   gap: 8px;
   flex: 1;
   min-height: 0;
@@ -489,7 +490,7 @@
 }
 
 .chapterPill:hover {
-  transform: translateY(-2px);
+  /* transform: translateY(2px); */
   background: #333333;
   border-color: rgba(181, 136, 99, 0.3);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);

@@ -9,14 +9,14 @@ import "./PuzzleRacer.css";
 ======================================================== */
 const PLANET_DATA = [
   // Order: farthest from Sun (left) → closest to Sun (right)
-  { key: "neptune", label: "Neptune", size: 42, color1: "#5588ff", color2: "#3366ee", color3: "#2244cc", color4: "#1122aa", glow: "rgba(60,110,255,0.5)" },
-  { key: "uranus", label: "Uranus", size: 44, color1: "#55eeff", color2: "#22ccdd", color3: "#11aabb", color4: "#008899", glow: "rgba(50,220,240,0.45)" },
-  { key: "saturn", label: "Saturn", size: 55, color1: "#ffe4a0", color2: "#eebb55", color3: "#cc9933", color4: "#aa7722", glow: "rgba(238,190,90,0.4)", hasRing: true },
-  { key: "jupiter", label: "Jupiter", size: 65, color1: "#ffbb77", color2: "#ee9944", color3: "#cc7733", color4: "#995522", glow: "rgba(238,160,80,0.45)", hasBands: true },
-  { key: "mars", label: "Mars", size: 32, color1: "#ff6633", color2: "#dd3311", color3: "#bb1100", color4: "#880000", glow: "rgba(255,60,20,0.45)" },
-  { key: "earth", label: "Earth", size: 40, color1: "#55ccff", color2: "#2299ee", color3: "#1177cc", color4: "#0055aa", glow: "rgba(50,170,255,0.5)", hasLand: true },
-  { key: "venus", label: "Venus", size: 38, color1: "#ff9933", color2: "#e87722", color3: "#cc5511", color4: "#993300", glow: "rgba(255,140,40,0.5)" },
-  { key: "mercury", label: "Mercury", size: 28, color1: "#e0d6cc", color2: "#c4b8a8", color3: "#9e8e78", color4: "#706050", glow: "rgba(200,185,165,0.4)" },
+  { key: "neptune", label: "Neptune", size: 42, color1: "#4a7dfc", color2: "#295eeb", color3: "#1a46bf", color4: "#0f2b80", glow: "rgba(74, 125, 252, 0.5)" },
+  { key: "uranus", label: "Uranus", size: 44, color1: "#47e1f5", color2: "#20c2d6", color3: "#139eb0", color4: "#0a7e8f", glow: "rgba(71, 225, 245, 0.45)" },
+  { key: "saturn", label: "Saturn", size: 55, color1: "#fce09c", color2: "#dbb75a", color3: "#b89335", color4: "#8f6916", glow: "rgba(252, 224, 156, 0.45)", hasRing: true },
+  { key: "jupiter", label: "Jupiter", size: 65, color1: "#fca85d", color2: "#db8535", color3: "#b56316", color4: "#8a4405", glow: "rgba(252, 168, 93, 0.45)", hasBands: true },
+  { key: "mars", label: "Mars", size: 32, color1: "#fa5c2a", color2: "#d43908", color3: "#ab2800", color4: "#781800", glow: "rgba(250, 92, 42, 0.45)" },
+  { key: "earth", label: "Earth", size: 40, color1: "#4fbbff", color2: "#2493db", color3: "#1072b0", color4: "#045487", glow: "rgba(79, 187, 255, 0.5)", hasLand: true },
+  { key: "venus", label: "Venus", size: 38, color1: "#f79120", color2: "#d67408", color3: "#ad5600", color4: "#853e00", glow: "rgba(247, 145, 32, 0.5)" },
+  { key: "mercury", label: "Mercury", size: 28, color1: "#cfc4ba", color2: "#ab9e91", color3: "#8c7e70", color4: "#635649", glow: "rgba(207, 196, 186, 0.4)" },
 ];
 
 const VISIBLE_SLOTS = 9; // 1 sun + 8 planets
@@ -195,8 +195,8 @@ const PuzzleRacer = () => {
                   {planet.hasBands && <div className="jupiter-bands" />}
                   {planet.hasLand && <div className="earth-land" />}
                   <div className="planet-shine" />
-                  {/* Crown badge for rank 1 on planet */}
-                  {rank === 1 && racer && <span className="planet-crown">👑</span>}
+                  {/* Numbered badge for rank on planet (starts at 2 since sun is 1) */}
+                  {racer && <span className="planet-rank-badge">{rank}</span>}
                 </div>
 
                 {/* Score bar */}
@@ -233,7 +233,7 @@ const PuzzleRacer = () => {
         <div className="sun-region">
           <div className="sun-corona" />
           <div className="sun-outer-glow" />
-          {sunRacer && <span className="sun-crown-icon">👑</span>}
+          {sunRacer && <span className="planet-rank-badge sun-rank-badge">1</span>}
           <div className="sun-body" />
 
           <div className="sun-label">
