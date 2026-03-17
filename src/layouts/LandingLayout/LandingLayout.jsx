@@ -32,7 +32,7 @@ const LandingLayout = () => {
         <div className={styles.container}>
             <Navbar onLoginClick={handleLoginClick} onSignupClick={handleSignupClick} />
             <main className={styles.main}>
-                <Outlet />
+                <Outlet context={{ handleLoginClick, handleSignupClick }} />
             </main>
             <LoginModal
                 isOpen={isLoginModalOpen}

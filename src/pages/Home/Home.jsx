@@ -1,4 +1,4 @@
-import React from 'react';
+import { useOutletContext } from 'react-router-dom';
 import Hero from '../Hero/Hero';
 import About from '../About/About';
 import Courses from '../Courses/Courses';
@@ -11,9 +11,11 @@ import styles from './Home.module.css';
 import HighlightsStrip from '../HighlightsStrip/HighlightsStrip';
 
 const Home = () => {
+  const { handleLoginClick, handleSignupClick } = useOutletContext();
+
   return (
     <div className={styles.mainWrapper}>
-      <Hero />
+      <Hero handleLoginClick={handleLoginClick} />
       <HighlightsStrip />
 
       <div id="about" className={styles.sectionWrapper}>

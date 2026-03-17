@@ -160,8 +160,10 @@ function Profile() {
             <button
               className={styles.headerLogoutBtn}
               onClick={() => {
-                if (logout) logout();
-                navigate('/');
+                import('../../services/authStorage').then(({ clearUserAuth }) => {
+                  clearUserAuth();
+                  window.location.href = '/';
+                });
               }}
             >
               <FaSignOutAlt /> <span>Logout</span>
@@ -345,8 +347,10 @@ function Profile() {
                   <button
                     className={styles.logoutBtn}
                     onClick={() => {
-                      if (logout) logout();
-                      navigate('/');
+                      import('../../services/authStorage').then(({ clearUserAuth }) => {
+                        clearUserAuth();
+                        window.location.href = '/';
+                      });
                     }}
                   >
                     <FaSignOutAlt /> Logout

@@ -54,10 +54,11 @@ function Navbar({ onLoginClick, onSignupClick }) {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
     setIsOpen(false);
-    navigate("/");
+    const { clearUserAuth } = await import('../../services/authStorage');
+    clearUserAuth();
+    window.location.href = '/';
   };
 
   const menuLinks = isHomePage ? [

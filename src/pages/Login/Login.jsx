@@ -190,7 +190,7 @@ function Login() {
       <div className={styles.leftSection}>
         <div className={styles.decorCircle}></div>
         <div className={styles.logo}>
-          <span className={styles.logoIcon}>♟♔</span>
+          {/* <span className={styles.logoIcon}>♟♔</span> */}
         </div>
 
         <div className={styles.formContainer}>
