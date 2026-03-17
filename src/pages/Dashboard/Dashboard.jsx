@@ -147,7 +147,7 @@ function Dashboard() {
 
   const handleParticipate = (competition) => {
     if (!isUserAuthenticated) {
-      navigate("/", { state: { openLogin: true } });
+      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${competition._id}/lobby`)}`);
       return;
     }
     if (competition.status === "Ended") {
@@ -169,7 +169,7 @@ function Dashboard() {
   const handleViewPuzzles = (e, competition) => {
     e.stopPropagation();
     if (!isUserAuthenticated) {
-      navigate("/", { state: { openLogin: true } });
+      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${competition._id}/puzzle`)}`);
       return;
     }
     navigate(`/competition/${competition._id}/puzzle`, { state: { reviewMode: true } });

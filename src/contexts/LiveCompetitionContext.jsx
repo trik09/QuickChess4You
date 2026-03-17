@@ -129,6 +129,14 @@ export const LiveCompetitionProvider = ({ children }) => {
       setLastUpdate(new Date());
     };
 
+    const handleCompetitionJoined = (data) => {
+      console.log("[LiveComp] Socket: competitionJoined, entries:", data?.leaderboard?.length);
+      if (data?.leaderboard?.length) {
+        setLeaderboard(data.leaderboard);
+        setLastUpdate(new Date());
+      }
+    };
+
     const handleLiveScoreUpdate = (data) => {
       console.log("[LiveComp] Socket: liveScoreUpdate", data.username, data.score);
       // Normalize incoming userId to a plain string regardless of whether it's an object or string
@@ -186,6 +194,7 @@ export const LiveCompetitionProvider = ({ children }) => {
       setError(error.message);
     };
 
+    socketService.on("competitionJoined", handleCompetitionJoined);
     socketService.on("leaderboardUpdate", handleLeaderboardUpdate);
     socketService.on("liveScoreUpdate", handleLiveScoreUpdate);
     socketService.on("competitionEnded", handleCompetitionEnded);
@@ -194,6 +203,7 @@ export const LiveCompetitionProvider = ({ children }) => {
     socketService.on("error", handleError);
 
     return () => {
+      socketService.off("competitionJoined", handleCompetitionJoined);
       socketService.off("leaderboardUpdate", handleLeaderboardUpdate);
       socketService.off("liveScoreUpdate", handleLiveScoreUpdate);
       socketService.off("competitionEnded", handleCompetitionEnded);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from "../../contexts/AuthContext"
 import { authAPI } from '../../services/api';
@@ -7,7 +7,11 @@ import styles from './Login.module.css';
 
 function Login() {
   const navigate = useNavigate();
-  const { userLogin } = useAuth();   // <-- UPDATED: now using userLogin()
+  const [searchParams] = useSearchParams();
+  const { userLogin } = useAuth();
+
+  const sessionExpired = searchParams.get("reason") === "session_expired";
+  const returnTo = searchParams.get("returnTo") || "/Dashboard";
 
   const [formData, setFormData] = useState({
     email: '',
@@ -22,7 +26,7 @@ function Login() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [tempToken, setTempToken] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(sessionExpired ? 'Your session has expired. Please log in again.' : '');
   const [success, setSuccess] = useState('');
 
   const handleInputChange = (e) => {
@@ -52,10 +56,10 @@ function Login() {
       const response = await authAPI.login(formData.email, formData.password);
 
       // Save user token + user data into context
-      userLogin(response.user, response.token);   // <-- UPDATED
+      userLogin(response.user, response.token);
 
       setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/'), 1500);
+      setTimeout(() => navigate(returnTo), 1500);
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -76,7 +80,7 @@ function Login() {
       userLogin(response.user, response.token);
 
       setSuccess('Login successful! Redirecting...');
-      setTimeout(() => navigate('/'), 1500);
+      setTimeout(() => navigate(returnTo), 1500);
     } catch (err) {
       setError(err.message || 'Google login failed. Please try again.');
     } finally {

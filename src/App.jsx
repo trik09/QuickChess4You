@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { LiveCompetitionProvider } from "./contexts/LiveCompetitionContext";
 import PremiumLoader from "./components/PremiumLoader/PremiumLoader";
 
@@ -18,6 +19,7 @@ import CompetitionRejoinManager from "./components/CompetitionRejoinManager/Comp
 // ─── LAZY-LOADED PAGES (code-split per route) ───────────────────────
 // Student pages
 const Home = React.lazy(() => import("./pages/Home/Home"));
+const Login = React.lazy(() => import("./pages/Login/Login"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard/Dashboard"));
 const MyCompetitions = React.lazy(() => import("./pages/Dashboard/MyCompetitions"));
 const MyCourses = React.lazy(() => import("./pages/Dashboard/MyCourses"));
@@ -60,16 +62,17 @@ function App() {
     <ThemeProvider>
       <LiveCompetitionProvider>
         <Router>
+          <AuthProvider>
           <CompetitionRejoinManager />
           <Suspense fallback={<PremiumLoader text="Loading page..." />}>
             <Routes>
                 {/* LANDING PAGE LAYOUT (Public) */}
                 <Route element={<LandingLayout />}>
                   <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
                   {/* <Route path="/privacy-policy" element={<PrivacyPolicy />} /> */}
                   <Route path="/learn/capture" element={<CapturePuzzle />} />
                   <Route path="/gallery" element={<Gallery />} />
-                  {/* Keep these valid for direct links, or handle in Home as sections */}
                 </Route>
 
                 {/* STUDENT DASHBOARD LAYOUT (Protected) */}
@@ -138,6 +141,7 @@ function App() {
                 </Route>
             </Routes>
           </Suspense>
+          </AuthProvider>
         </Router>
       </LiveCompetitionProvider>
     </ThemeProvider>

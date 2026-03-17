@@ -27,8 +27,8 @@ const getSessionCache = (competitionId) => {
     const cachedStr = sessionStorage.getItem(`lobbyCache_${competitionId}`);
     if (cachedStr) {
       const parsed = JSON.parse(cachedStr);
-      // Let sessionStorage cache live for 60 seconds to survive page reloads smoothly
-      if (Date.now() - parsed.timestamp < 60000) {
+      // Keep session cache short (5s) so participant counts stay accurate
+      if (Date.now() - parsed.timestamp < 5000) {
         return parsed.data;
       }
     }

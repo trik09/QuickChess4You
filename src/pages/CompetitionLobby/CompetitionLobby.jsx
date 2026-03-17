@@ -379,7 +379,7 @@ const CompetitionLobby = () => {
 
   const joinCompetitionWithCode = async (code = null) => {
     if (!user) {
-      navigate("/", { state: { openLogin: true } });
+      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${id}/lobby`)}`);
       return;
     }
 
@@ -498,7 +498,7 @@ const CompetitionLobby = () => {
 
   const handleJoin = () => {
     if (!user) {
-      navigate("/", { state: { openLogin: true } });
+      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${id}/lobby`)}`);
       return;
     }
 

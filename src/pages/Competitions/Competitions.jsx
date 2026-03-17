@@ -22,24 +22,37 @@ function Competitions() {
     const { user, isAuthenticated } = useAuth();
     const [liveCompetitions, setLiveCompetitions] = useState([]);
     const [upcomingCompetitions, setUpcomingCompetitions] = useState([]);
-    const [ENDEDCompetitions, setENDEDCompetitions] = useState([]); // State for ENDED competitions
+    const [ENDEDCompetitions, setENDEDCompetitions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [joiningId, setJoiningId] = useState(null);
+    // Track which competition IDs the current user has joined (from live ParticipantModel)
+    const [joinedCompetitionIds, setJoinedCompetitionIds] = useState(new Set());
 
     // Result Modal State
     const [showResultModal, setShowResultModal] = useState(false);
     const [selectedCompetitionId, setSelectedCompetitionId] = useState(null);
 
     useEffect(() => {
-        fetchCompetitions(); // Initial load
+        fetchCompetitions();
+        if (isAuthenticated) fetchJoinedCompetitions();
 
-        // Poll for updates every 5 seconds
         const interval = setInterval(() => {
             fetchCompetitions(true);
         }, 5000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isAuthenticated]);
+
+    const fetchJoinedCompetitions = async () => {
+        try {
+            const res = await liveCompetitionAPI.getActiveParticipation();
+            if (res.success && res.competition?.id) {
+                setJoinedCompetitionIds(prev => new Set([...prev, res.competition.id]));
+            }
+        } catch {
+            // silent — not critical
+        }
+    };
 
     const fetchCompetitions = async (isBackground = false) => {
         try {
@@ -69,7 +82,6 @@ function Competitions() {
 
     const handleJoin = async (competition) => {
         if (!isAuthenticated) {
-            // Redirect to login with return url
             navigate(`/login?returnTo=/competitions`);
             return;
         }
@@ -78,9 +90,8 @@ function Competitions() {
             setJoiningId(competition._id);
             await competitionAPI.joinCompetition(competition._id);
             toast.success("Joined successfully!");
-
-            // Refresh list to update UI state
-            fetchCompetitions();
+            setJoinedCompetitionIds(prev => new Set([...prev, competition._id]));
+            fetchCompetitions(true);
         } catch (error) {
             console.error("Failed to join:", error);
             toast.error(error.response?.data?.message || "Failed to join competition");
@@ -90,13 +101,18 @@ function Competitions() {
     };
 
     const handlePlay = (competitionId) => {
-        // Navigate to live competition page instead of regular puzzle page
         navigate(`/live-competition/${competitionId}`);
     };
 
     const isJoined = (competition) => {
-        if (!user || !competition.participants) return false;
-        return competition.participants.some(p => p.user?._id === user.id || p.user === user.id);
+        if (!user) return false;
+        // Check live ParticipantModel set first
+        if (joinedCompetitionIds.has(competition._id)) return true;
+        // Fallback: legacy participants array (may be present for upcoming competitions)
+        if (competition.participants) {
+            return competition.participants.some(p => p.user?._id === user.id || p.user === user.id);
+        }
+        return false;
     };
 
     const formatDate = (dateString) => {
@@ -110,7 +126,8 @@ function Competitions() {
 
     const CompetitionCard = ({ competition, status }) => {
         const joined = isJoined(competition);
-        const isFull = competition.maxParticipants && competition.participants.length >= competition.maxParticipants;
+        const count = competition.participantCount ?? competition.participants?.length ?? 0;
+        const isFull = competition.maxParticipants && count >= competition.maxParticipants;
 
         // Determine badge based on status
         let statusBadge;
@@ -140,7 +157,7 @@ function Competitions() {
                     </div>
                     <div className={styles.infoRow}>
                         <FaUsers />
-                        <span>{competition.participants?.length || 0} / {competition.maxParticipants || '∞'} Players</span>
+                        <span>{competition.participantCount ?? competition.participants?.length ?? 0} / {competition.maxParticipants || '∞'} Players</span>
                     </div>
                     {competition.description && (
                         <p className={styles.description}>{competition.description}</p>

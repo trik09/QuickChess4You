@@ -3,7 +3,8 @@ const API_BASE_URL =
 
 /**
  * Small fetch wrapper that normalizes JSON parsing and error messages.
- * It intentionally does not perform navigation/redirects.
+ * On 401 responses it clears stored auth and fires a "auth:expired" event
+ * so the app can redirect to login without hard-coupling to React Router.
  */
 export async function apiRequest(endpoint, options = {}, token = null) {
   const config = {
@@ -33,7 +34,21 @@ export async function apiRequest(endpoint, options = {}, token = null) {
         "An error occurred";
       const err = new Error(message);
       err.status = response.status;
+      err.code = isJson ? data?.code : undefined;
       err.data = isJson ? data : undefined;
+
+      // Handle expired/invalid token globally
+      if (response.status === 401) {
+        const code = isJson ? data?.code : null;
+        // Only auto-logout for token issues, not for "not a participant" type 401s
+        if (!code || code === "TOKEN_EXPIRED" || code === "TOKEN_INVALID" || code === "NO_TOKEN") {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          // Fire a global event — AuthContext listens and updates state
+          window.dispatchEvent(new CustomEvent("auth:expired", { detail: { message } }));
+        }
+      }
+
       throw err;
     }
 
