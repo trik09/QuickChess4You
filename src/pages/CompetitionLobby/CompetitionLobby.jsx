@@ -251,7 +251,6 @@ const CompetitionLobby = () => {
         .then((res) => {
           if (res.success) {
             setCompetition(res.competition);
-            setParticipants(res.leaderboard);
             setCompetitionState(res.competitionState);
             // Only update participantState if we haven't optimistically joined
             if (res.participantState !== "NOT_JOINED") {
@@ -261,6 +260,27 @@ const CompetitionLobby = () => {
             }
             if (res.serverTime)
               timeOffsetRef.current = res.serverTime - Date.now();
+
+            // ✅ Guard: never overwrite leaderboard with a version that drops the
+            // current user — this can happen in the brief window after joining
+            // before the backend has fully propagated the new participant.
+            setParticipants((prev) => {
+              const currentUserId = user?.id || user?._id;
+              if (!currentUserId || participantStateRef.current === "NOT_JOINED") {
+                return res.leaderboard;
+              }
+              const serverHasUser = res.leaderboard?.some(
+                (p) => String(p.userId) === String(currentUserId) ||
+                       String(p.userId?._id) === String(currentUserId)
+              );
+              const prevHasUser = prev.some(
+                (p) => String(p.userId) === String(currentUserId) ||
+                       String(p.userId?._id) === String(currentUserId)
+              );
+              // If server dropped the user but we had them, keep prev
+              if (prevHasUser && !serverHasUser) return prev;
+              return res.leaderboard;
+            });
           }
         })
         .catch(() => { });
@@ -428,7 +448,27 @@ const CompetitionLobby = () => {
                 setParticipantState(res.participantState);
               }
               setCompetitionState(res.competitionState);
-              setParticipants(res.leaderboard);
+
+              // ✅ Guard: if the server leaderboard doesn't include the current user yet
+              // (race condition — DB write may not have propagated), keep the optimistic
+              // entry so the user never sees themselves disappear after joining.
+              const currentUserId = user?.id || user?._id;
+              const serverHasCurrentUser = res.leaderboard?.some(
+                (p) => String(p.userId) === String(currentUserId) ||
+                       String(p.userId?._id) === String(currentUserId)
+              );
+              if (!serverHasCurrentUser && currentUserId) {
+                setParticipants((prev) => {
+                  const alreadyInPrev = prev.some(
+                    (p) => String(p.userId) === String(currentUserId) ||
+                           String(p.userId?._id) === String(currentUserId)
+                  );
+                  if (alreadyInPrev) return prev; // keep existing optimistic entry
+                  return res.leaderboard || prev;
+                });
+              } else {
+                setParticipants(res.leaderboard);
+              }
 
               // Auto-redirect if the competition is already live or user is already playing
               if (
