@@ -204,17 +204,18 @@
   border-radius: 12px;
   position: relative;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;   /* anchor stats to the bottom */
   margin-top: 0.8rem;
-  padding-top: 0.6rem;
+  padding-bottom: 0.75rem;     /* consistent bottom breathing room */
   background: #25201d;
   /* Solid dark */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .bar1 {
-  height: 120px;
+  height: 140px;   /* was 120px — tallest, kept as reference */
   border: 1px solid rgba(251, 191, 36, 0.2);
   box-shadow: inset 0 8px 16px -8px rgba(251, 191, 36, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -224,7 +225,7 @@
 }
 
 .bar2 {
-  height: 90px;
+  height: 115px;   /* was 90px — medium */
   border: 1px solid rgba(148, 163, 184, 0.2);
   box-shadow: inset 0 8px 16px -8px rgba(148, 163, 184, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -234,7 +235,7 @@
 }
 
 .bar3 {
-  height: 65px;
+  height: 90px;   /* was 65px — increased so stats have breathing room */
   border: 1px solid rgba(205, 127, 50, 0.2);
   box-shadow: inset 0 8px 16px -8px rgba(205, 127, 50, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -253,8 +254,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10px;
-  gap: 6px;
+  gap: 5px;  /* consistent gap between Acc and Time badges */
 }
 
 .accBadge {
@@ -995,116 +995,266 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  /* Page root */
   .leaderboardPage {
-    padding: 0.85rem 0.75rem;
+    padding: 0.75rem 0.75rem;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
-  .pageTitle {
-    font-size: 1.15rem;
+  /* Stack to single column */
+  .mainContent {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
-  .competitionMeta {
-    gap: 0.4rem;
+  /* ── LEFT PANEL ──────────────────────── */
+  .leftPanel {
+    width: 100%;
+    gap: 0.75rem;
   }
 
-  .metaItem {
-    font-size: 0.68rem;
-    padding: 0.25rem 0.65rem;
+  /* Podium section: fit within screen */
+  .podiumSection {
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  /* Podium smaller */
+  .topChampionsHeader {
+    padding: 1rem 1rem 0.4rem;
+  }
+
+  .topChampionsHeader h2 {
+    font-size: 1.1rem;
+  }
+
+  .headerTrophyIcon {
+    font-size: 1.5rem;
+  }
+
+  /* Podium: scale trophies for narrow screens */
   .podium {
-    height: 260px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
     gap: 8px;
-    padding-top: 1.5rem;
+    padding: 1.5rem 0.5rem 0.75rem;
+    height: auto;
   }
 
-  .avatarCircle {
-    width: 44px;
-    height: 44px;
-    font-size: 1rem;
+  .podiumPlace {
+    flex: 1;
+    max-width: 110px;
+    min-width: 0;
   }
 
-  .first .avatarCircle {
-    width: 56px;
-    height: 56px;
-    font-size: 1.3rem;
+  .podiumAvatar {
+    height: 64px;
   }
 
-  .bar1 {
-    height: 110px;
+  .trophyImg {
+    width: 58px;
   }
 
-  .bar2 {
-    height: 78px;
+  .first .goldTrophy {
+    width: 76px;
   }
 
-  .bar3 {
-    height: 55px;
+  .podiumName {
+    font-size: 0.7rem;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .podiumScore {
     font-size: 0.78rem;
   }
 
-  .podiumName {
-    font-size: 0.72rem;
+  /* Bar heights scaled for mobile */
+  .bar1 { height: 120px; }
+  .bar2 { height: 98px; }
+  .bar3 { height: 78px; }
+
+  .barStats {
+    gap: 4px;
   }
 
-  /* Stats - full width single col */
-  .statsRow {
-    grid-template-columns: 1fr;
+  .accBadge {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .timeBadge {
+    font-size: 0.58rem;
+    padding: 2px 6px;
+  }
+
+  /* Fastest Solver */
+  .fastestSolverSection {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0;
+  }
+
+  .fastestSolverHeader {
+    padding: 0.85rem 1rem 0.4rem;
+  }
+
+  .fastestSolverHeader h2 {
+    font-size: 0.9rem;
+  }
+
+  .fastestSolverBox {
+    padding: 0 0.85rem 0.85rem;
+  }
+
+  .footerName {
+    font-size: 0.9rem;
+  }
+
+  .footerAcc {
+    font-size: 0.78rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── RIGHT PANEL ─────────────────────── */
+  .rightPanel {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  /* Competition info card */
+  .competitionInfoCard {
+    padding: 0.85rem 1rem;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .compHeaderRow {
+    flex-wrap: wrap;
     gap: 0.5rem;
   }
 
-  .statCard {
-    padding: 0.75rem;
+  .compTitleWrapper {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
   }
 
-  /* Rankings compact */
-  .rankRow {
-    grid-template-columns: 36px 30px 1fr auto;
+  .compTitle {
+    font-size: 1rem;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  .competitionMeta {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .metaPill {
+    font-size: 0.68rem;
+    padding: 0.25rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  /* Rankings panel */
+  .rankingsPanel {
+    max-height: none;
+    position: static;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .rankingsList {
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  .rankingsPanelHeader {
     padding: 0.65rem 0.85rem;
-    gap: 0.45rem;
-    margin: 0 0.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .rankingsTitle {
+    font-size: 0.95rem;
+  }
+
+  .headerControls {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .searchWrapper {
+    width: 140px;
+  }
+
+  .searchInput {
+    font-size: 0.75rem;
+    padding: 6px 10px 6px 28px;
+  }
+
+  /* Rank rows: tighter, no overflow */
+  .rankRow {
+    grid-template-columns: 36px 28px 1fr auto auto;
+    padding: 0.65rem 0.85rem;
+    gap: 0.4rem;
+    box-sizing: border-box;
   }
 
   .rankAvatar {
-    width: 30px;
-    height: 30px;
-    font-size: 0.65rem;
+    width: 26px;
+    height: 26px;
+    font-size: 0.62rem;
   }
 
   .rankName {
     font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .rankMeta {
-    font-size: 0.62rem;
+  .rankNum {
+    min-width: 30px;
+    font-size: 0.8rem;
+  }
+
+  .rankNumber {
+    font-size: 0.75rem;
+    min-width: 22px;
+  }
+
+  .rankScore {
+    min-width: 45px;
   }
 
   .scoreNumber {
     font-size: 0.88rem;
   }
 
-  .crownIcon {
-    font-size: 1.2rem;
-    top: -10px;
+  .scoreLabel {
+    font-size: 0.62rem;
   }
 
-  .rankBadge {
-    width: 19px;
-    height: 19px;
-    font-size: 0.58rem;
+  /* Leaderboard other elements */
+  .crownIcon {
+    font-size: 1.1rem;
+    top: -10px;
   }
 
   .rankingsTitle {
     font-size: 1rem;
-  }
-
-  .fastestBanner {
-    font-size: 0.8rem;
-    padding: 0.75rem 1rem;
   }
 }
 
