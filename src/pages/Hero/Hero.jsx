@@ -2,14 +2,16 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { FaChessKing, FaChessQueen, FaChessPawn } from 'react-icons/fa';
 import { BsArrowRight, BsPlayCircle } from "react-icons/bs";
 import styles from './Hero.module.css';
 import chess1 from "../../assets/Chess-1.png";
 import chess2 from "../../assets/Chess-2.png";
 
-const Hero = () => {
+const Hero = ({ handleLoginClick }) => {
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const heroRef = useRef(null);
 
     useEffect(() => {
@@ -76,7 +78,13 @@ const Hero = () => {
                     <div className={`${styles.ctaGroupRight} ${styles.fadeIn}`}>
                         <button
                             className={styles.btnSecondary}
-                            onClick={() => navigate('/play')}
+                            onClick={() => {
+                                if (isAuthenticated) {
+                                    navigate('/play');
+                                } else {
+                                    handleLoginClick();
+                                }
+                            }}
                         >
                             <span>Start Solving</span>
                             <BsPlayCircle className={styles.btnPlayIcon} />
@@ -85,7 +93,13 @@ const Hero = () => {
 
                         <button
                             className={styles.btnPrimary}
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => {
+                                if (isAuthenticated) {
+                                    navigate('/dashboard');
+                                } else {
+                                    handleLoginClick();
+                                }
+                            }}
                         >
                             <BsArrowRight className={styles.btnIcon} />
 
