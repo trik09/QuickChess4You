@@ -10,6 +10,8 @@ import {
   FaChevronRight,
   FaCaretLeft,
   FaCaretRight,
+  FaStar,
+  FaRegStar,
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import socketService from "../../services/socketService";
@@ -1101,7 +1103,7 @@ function PuzzlePage() {
           </div>
 
           {/* MID HEADER: HORIZONTAL CHAPTERS */}
-          {competitionData.chapters?.length > 0 && (
+          {/* {competitionData.chapters?.length > 0 && (
             <div className={styles.titleHeaderMid}>
               <button className={styles.headerNavArrow} onClick={() => scrollHeader('left')} title="Scroll left">
                 <FaCaretLeft />
@@ -1138,7 +1140,7 @@ function PuzzlePage() {
                 <FaCaretRight />
               </button>
             </div>
-          )}
+          )} */}
 
           {!isReviewMode && (
             <div className={styles.titleHeaderRight}>
@@ -1180,8 +1182,8 @@ function PuzzlePage() {
               )}
               <div className={styles.statsGrid}>
                 <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Score</span>
-                  <span className={`${styles.statValue} ${styles.gold}`}>{Math.round(score)}</span>
+                  <span className={styles.statLabel}>Total</span>
+                  <span className={`${styles.statValue} ${styles.gold}`}>{puzzles.length - getUnattemptedCount() + getUnattemptedCount()} </span>
                 </div>
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Solved</span>
@@ -1213,13 +1215,16 @@ function PuzzlePage() {
                 <div className={styles.infoMeta}>
                   <div className={styles.infoMetaItem}>
                     <span className={styles.infoMetaLabel}>Level</span>
-                    <span className={styles.infoMetaValue}>{currentPuzzle.level || 1}/7</span>
-                  </div>
-                  <div className={styles.infoMetaItem}>
-                    <span className={styles.infoMetaLabel}>Difficulty</span>
-                    <span className={`${styles.infoMetaValue} ${styles["diff_" + (currentPuzzle.difficulty || "medium").toLowerCase()]}`}>
-                      {currentPuzzle.difficulty || "Medium"}
-                    </span>
+                    <div className={styles.starRating}>
+                      {[...Array(7)].map((_, i) => (
+                        i < (currentPuzzle.level || 1) ? (
+                          <FaStar key={i} className={styles.starFilled} />
+                        ) : (
+                          <FaRegStar key={i} className={styles.starEmpty} />
+                        )
+                      ))}
+                      <span className={styles.levelNumber}>{(currentPuzzle.level || 1)}/7</span>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup, FaUpload, FaDownload } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup, FaUpload, FaDownload, FaSignal } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, SearchBar, FilterSelect, Button, DataTable, Badge, IconButton } from '../../../components/Admin';
 import { adminAPI, categoryAPI } from '../../../services/api';
@@ -13,6 +13,7 @@ function PuzzleList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState(initialCategory);
   const [filterDifficulty, setFilterDifficulty] = useState('all');
+  const [filterLevel, setFilterLevel] = useState('all');
   const [showPreview, setShowPreview] = useState(false);
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [puzzles, setPuzzles] = useState([]);
@@ -200,6 +201,7 @@ function PuzzleList() {
           title: puzzle.title || `Puzzle #${index + 1}`,
           difficulty: puzzle.difficulty || 'Unknown',
           category: puzzle.category || 'General',
+          level: puzzle.level || '',
           createdAt: puzzle.createdAt || puzzle.updatedAt || '',
         }));
 
@@ -246,6 +248,17 @@ function PuzzleList() {
     { value: 'expert', label: 'Expert' },
   ];
 
+  const levelOptions = [
+    { value: 'all', label: 'All Levels' },
+    { value: '1', label: 'Level 1' },
+    { value: '2', label: 'Level 2' },
+    { value: '3', label: 'Level 3' },
+    { value: '4', label: 'Level 4' },
+    { value: '5', label: 'Level 5' },
+    { value: '6', label: 'Level 6' },
+    { value: '7', label: 'Level 7' },
+  ];
+
   // Filter puzzles based on search term, category, and difficulty
   const filteredPuzzles = puzzles.filter((puzzle) => {
     // Search filter (by title or FEN)
@@ -263,13 +276,18 @@ function PuzzleList() {
       filterDifficulty === 'all' ||
       (puzzle.difficulty || '').toLowerCase() === filterDifficulty.toLowerCase();
 
-    return matchesSearch && matchesCategory && matchesDifficulty;
+    // Level filter
+    const matchesLevel =
+      filterLevel === 'all' ||
+      (puzzle.level || '').toString() === filterLevel;
+
+    return matchesSearch && matchesCategory && matchesDifficulty && matchesLevel;
   });
 
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterCategory, filterDifficulty]);
+  }, [searchTerm, filterCategory, filterDifficulty, filterLevel]);
 
   // Get current page items
   const paginatedPuzzles = filteredPuzzles.slice(
@@ -346,6 +364,7 @@ function PuzzleList() {
       },
     },
     { key: 'category', label: 'Category' },
+    { key: 'level', label: 'Level', render: (lvl) => lvl ? `Lvl ${lvl}` : '—' },
     {
       key: 'createdAt',
       label: 'Created At',
@@ -426,6 +445,13 @@ function PuzzleList() {
           options={difficultyOptions}
           icon={FaFilter}
           label="Difficulty"
+        />
+        <FilterSelect
+          value={filterLevel}
+          onChange={setFilterLevel}
+          options={levelOptions}
+          icon={FaSignal}
+          label="Level"
         />
       </div>
 

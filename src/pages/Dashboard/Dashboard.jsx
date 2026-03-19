@@ -263,7 +263,7 @@ function Dashboard() {
                         className={`${styles.actionBtn} ${styles.outlineBtn}`}
                         onClick={(e) => handleViewPuzzles(e, comp)}
                       >
-                        <FaEye /> Performance
+                        <FaEye /> Analyze
                       </button>
                       <button
                         className={`${styles.actionBtn} ${styles.primaryBtn}`}
@@ -272,7 +272,7 @@ function Dashboard() {
                           navigate(`/leaderboard/${comp._id}`);
                         }}
                       >
-                        <FaChartBar /> Results
+                        <FaChartBar /> Leaderboard
                       </button>
                     </div>
                   ) : (

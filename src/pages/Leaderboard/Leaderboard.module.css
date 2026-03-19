@@ -25,7 +25,7 @@
 /* ========== MAIN: SIDE BY SIDE ========== */
 .mainContent {
   display: grid;
-  grid-template-columns: 500px 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: start;
 }
@@ -94,7 +94,7 @@
   align-items: flex-end;
   gap: 12px;
   /* height: 290px; */
-  padding: 3rem 1rem 1rem 1rem;
+  padding: 3rem 2rem 2rem 2rem;
 }
 
 .podiumPlace {
@@ -505,6 +505,46 @@
 
 [data-theme="light"] .metaPill svg {
   color: #b58863;
+}
+
+.reviewBtn {
+  background: rgba(212, 163, 115, 0.15);
+  color: #d4a373;
+  border: 1px solid rgba(212, 163, 115, 0.3);
+  padding: 0.35rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 0.5rem;
+}
+
+.reviewBtn:hover {
+  background: #d4a373;
+  color: #171412;
+  border-color: #d4a373;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 163, 115, 0.2);
+}
+
+.reviewBtn:active {
+  transform: translateY(0);
+}
+
+[data-theme="light"] .reviewBtn {
+  background: rgba(181, 136, 99, 0.1);
+  color: #b58863;
+  border-color: rgba(181, 136, 99, 0.2);
+}
+
+[data-theme="light"] .reviewBtn:hover {
+  background: #b58863;
+  color: #fff;
+  border-color: #b58863;
 }
 
 [data-theme="light"] .headerDivider {
