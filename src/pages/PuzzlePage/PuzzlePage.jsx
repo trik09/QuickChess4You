@@ -1214,7 +1214,7 @@ function PuzzlePage() {
                 </div>
                 <div className={styles.infoMeta}>
                   <div className={styles.infoMetaItem}>
-                    <span className={styles.infoMetaLabel}>Level</span>
+                    <span className={styles.infoMetaLabel}>Level  <span className={styles.levelNumber}>{(currentPuzzle.level || 1)}/7</span></span>
                     <div className={styles.starRating}>
                       {[...Array(7)].map((_, i) => (
                         i < (currentPuzzle.level || 1) ? (
@@ -1223,7 +1223,7 @@ function PuzzlePage() {
                           <FaRegStar key={i} className={styles.starEmpty} />
                         )
                       ))}
-                      <span className={styles.levelNumber}>{(currentPuzzle.level || 1)}/7</span>
+
                     </div>
                   </div>
                 </div>
