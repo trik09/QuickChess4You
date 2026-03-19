@@ -444,39 +444,13 @@ function ChessBoard({
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
 
+  // Board sizing is now fully CSS-driven (width: 100%, aspect-ratio: 1/1).
+  // The scale transform is no longer applied; scale stays at 1.0 so that drag
+  // coordinate calculations (which divide by `scale`) remain correct (÷1 = no-op).
   useEffect(() => {
-    const updateScale = () => {
-      if (containerRef.current) {
-        const parent = containerRef.current.parentElement;
-        if (!parent) return;
-
-        const parentWidth = parent.offsetWidth;
-        const parentHeight = parent.offsetHeight;
-
-        const naturalWidth = 600;
-        const naturalHeight = 620;
-
-        const scaleW = parentWidth / naturalWidth;
-        const scaleH = parentHeight / naturalHeight;
-
-        setScale(Math.min(scaleW, scaleH, 2.0));
-      }
-    };
-
-    updateScale();
-    const resizeObserver = new ResizeObserver(updateScale);
-    if (containerRef.current) {
-      resizeObserver.observe(
-        containerRef.current.parentElement || document.body,
-      );
-    }
-    window.addEventListener("resize", updateScale);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateScale);
-    };
+    setScale(1);
   }, []);
+
 
   const getFileRank = (row, col) => {
     return `${files[col]}${ranks[row]}`;
@@ -956,7 +930,7 @@ function ChessBoard({
       className={styles.boardContainer}
       style={{
         width: '100%',
-        height: '100%',
+        height: 'auto',
         padding: '0',
         overflow: 'hidden',
         border: 'none',
@@ -966,14 +940,13 @@ function ChessBoard({
       <div
         ref={wrapperRef}
         style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'center center',
-          width: '615px',
+          width: '100%',
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
           border: "3px solid var(--border-gold)",
-          borderRadius: "8px"
+          borderRadius: "8px",
+          boxSizing: 'border-box',
+          overflow: 'hidden',
         }}
       >
         {feedback && (
