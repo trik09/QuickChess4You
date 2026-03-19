@@ -1849,8 +1849,17 @@
   }
 
   .leftColumn {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+
+  .statsCard,
+  .infoCard,
+  .rankCard {
+    flex: auto;
+    width: 100%;
+    margin: 0;
   }
 
   .boardArea {
