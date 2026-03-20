@@ -15,6 +15,8 @@ import {
   FaFilter,
   FaLayerGroup,
   FaLock,
+  FaCalendarAlt,
+  FaHourglassHalf,
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -61,6 +63,10 @@ function CompetitionList() {
   const [showResultModal, setShowResultModal] = useState(false); // New state for Result Modal
   const [selectedCompetition, setSelectedCompetition] = useState(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   const formatDuration = (minutes) => {
     if (!minutes && minutes !== 0) return "N/A";
 
@@ -90,15 +96,23 @@ function CompetitionList() {
           name: comp.title || comp.name,
           status: getCompetitionStatus(comp),
           startTime: comp.startTime
+            ? new Date(comp.startTime).toLocaleDateString()
+            : "N/A",
+          startTimeFull: comp.startTime
             ? new Date(comp.startTime).toLocaleString()
             : "N/A",
+          startDate: comp.startTime
+            ? new Date(comp.startTime).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })
+            : "N/A",
+          startTimeOnly: comp.startTime
+            ? new Date(comp.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : "N/A",
+          startTimeRaw: comp.startTime ? new Date(comp.startTime) : new Date(0),
           duration: comp.duration ? formatDuration(comp.duration) : "N/A",
-          players: comp.participants?.length || 0,
           maxPlayers: comp.maxPlayers || 100,
           puzzles: comp.puzzles || [],
           accessCode: comp.accessCode,
-        }));
-        // console.log("✅ Mapped competitions:", mappedCompetitions);
+        })).sort((a, b) => b.startTimeRaw - a.startTimeRaw);
         setCompetitions(mappedCompetitions);
       } else {
         // console.warn("⚠️ Response structure unexpected or not successful");
@@ -391,28 +405,40 @@ function CompetitionList() {
         <button
           className={`${styles.tab} ${activeTab === "all" ? styles.active : ""
             }`}
-          onClick={() => setActiveTab("all")}
+          onClick={() => {
+            setActiveTab("all");
+            setCurrentPage(1);
+          }}
         >
           All
         </button>
         <button
           className={`${styles.tab} ${activeTab === "upcoming" ? styles.active : ""
             }`}
-          onClick={() => setActiveTab("upcoming")}
+          onClick={() => {
+            setActiveTab("upcoming");
+            setCurrentPage(1);
+          }}
         >
           Upcoming
         </button>
         <button
           className={`${styles.tab} ${activeTab === "live" ? styles.active : ""
             }`}
-          onClick={() => setActiveTab("live")}
+          onClick={() => {
+            setActiveTab("live");
+            setCurrentPage(1);
+          }}
         >
           Live
         </button>
         <button
           className={`${styles.tab} ${activeTab === "ENDED" ? styles.active : ""
             }`}
-          onClick={() => setActiveTab("ENDED")}
+          onClick={() => {
+            setActiveTab("ENDED");
+            setCurrentPage(1);
+          }}
         >
           ENDED
         </button>
@@ -421,62 +447,129 @@ function CompetitionList() {
       {loading ? (
         <div className={styles.loading}>Loading competitions...</div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredCompetitions}
-          actions={(comp) => (
-            <>
-              {/* Start Live Competition Button - only for upcoming competitions */}
-              {comp.status === 'upcoming' && (
-                <IconButton
-                  icon={FaTrophy}
-                  onClick={() => handleStartLiveCompetition(comp)}
-                  title="Start Live Competition"
-                  variant="success"
-                />
-              )}
+        <>
+          <div className={styles.competitionGrid}>
+            {filteredCompetitions
+              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+              .map((comp) => (
+                <div key={comp.id} className={styles.competitionCard}>
+                  <div className={styles.cardHeader}>
+                    <Badge variant={
+                      comp.status === "Live" ? "live" :
+                        comp.status === "Upcoming" ? "warning" : "info"
+                    }>
+                      {comp.status}
+                    </Badge>
+                    <div className={styles.cardActions}>
+                      <button
+                        className={styles.actionIcon}
+                        onClick={() => handleView(comp)}
+                        title="View Details"
+                      >
+                        <FaEye />
+                      </button>
+                      <button
+                        className={styles.actionIcon}
+                        onClick={() => navigate(`/admin/competitions/edit/${comp._id || comp.id}`)}
+                        title="Edit"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className={`${styles.actionIcon} ${styles.delete}`}
+                        onClick={() => handleDelete(comp)}
+                        title="Delete"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
 
-              {/* <IconButton
-                icon={FaPuzzlePiece}
-                onClick={() => handleViewPuzzles(comp)}
-                title="View Puzzles"
-                variant="success"
-              /> */}
-              <IconButton
-                icon={FaEye}
-                onClick={() => handleView(comp)}
-                title="View Details"
-                variant="primary"
-              />
-              <IconButton
-                icon={FaEdit}
-                to={`/admin/competitions/edit/${comp._id || comp.id}`}
-                title="Edit"
-                variant="primary"
-              />
-              <IconButton
-                icon={FaTrash}
-                onClick={() => handleDelete(comp)}
-                title="Delete"
-                variant="danger"
-              />
+                  <div className={styles.cardBody}>
+                    <h3 className={styles.cardTitle}>{comp.name}</h3>
+                    <div className={styles.infoRow}>
+                      <FaCalendarAlt />
+                      <span>{comp.startDate} • {comp.startTimeOnly}</span>
+                    </div>
+                    <div className={styles.infoRow}>
+                      <FaHourglassHalf />
+                      <span>Duration: {comp.duration}</span>
+                    </div>
+                    {comp.accessCode && (
+                      <div className={styles.infoRow}>
+                        <FaLock />
+                        <span>Passcode: {comp.accessCode}</span>
+                      </div>
+                    )}
+                  </div>
 
-              {/* Show Result Button for ENDED Competitions */}
-              {comp.status === 'ENDED' && (
-                <Button
-                  size="small"
-                  variant="secondary"
-                  icon={FaTrophy}
-                  onClick={() => handleShowResult(comp)}
-                  style={{ marginLeft: '5px' }}
-                >
-                  Result
-                </Button>
-              )}
-            </>
+                  <div className={styles.cardFooter}>
+                    {comp.status === 'upcoming' && (
+                      <Button
+                        size="small"
+                        variant="success"
+                        icon={FaTrophy}
+                        onClick={() => handleStartLiveCompetition(comp)}
+                        className={styles.footerBtn}
+                      >
+                        Start Live
+                      </Button>
+                    )}
+                    {comp.status === 'ENDED' && (
+                      <Button
+                        size="small"
+                        variant="secondary"
+                        icon={FaTrophy}
+                        onClick={() => handleShowResult(comp)}
+                        className={styles.footerBtn}
+                      >
+                        View Result
+                      </Button>
+                    )}
+                    {comp.status === 'Live' && (
+                      <Button
+                        size="small"
+                        variant="primary"
+                        icon={FaEye}
+                        onClick={() => handleView(comp)}
+                        className={styles.footerBtn}
+                      >
+                        View Live
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {filteredCompetitions.length > itemsPerPage && (
+            <div className={styles.pagination}>
+              <button
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                &laquo;
+              </button>
+              
+              <span className={styles.pageInfo}>
+                Page <strong>{currentPage}</strong> of {Math.ceil(filteredCompetitions.length / itemsPerPage)}
+              </span>
+
+              <button
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredCompetitions.length / itemsPerPage), prev + 1))}
+                disabled={currentPage === Math.ceil(filteredCompetitions.length / itemsPerPage)}
+              >
+                &raquo;
+              </button>
+            </div>
           )}
-          emptyMessage="No competitions found"
-        />
+
+          {filteredCompetitions.length === 0 && (
+            <div className={styles.loading}>No competitions found</div>
+          )}
+        </>
       )}
 
       {/* View Puzzles Modal - Full Featured like PuzzleList */}

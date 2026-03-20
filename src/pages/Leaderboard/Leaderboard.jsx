@@ -17,8 +17,10 @@ import {
   FaStopwatch,
   FaSearch,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
+  FaEye
 } from "react-icons/fa";
+import { useAuth } from "../../contexts/AuthContext";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import { competitionAPI } from "../../services/api";
 import socketService from "../../services/socketService";
@@ -33,6 +35,7 @@ import bronze from "../../assets/Trophy/bronze-trophy.svg"
 function Leaderboard() {
   const { competitionId } = useParams();
   const navigate = useNavigate();
+  const { isUserAuthenticated } = useAuth();
 
   const [leaderboard, setLeaderboard] = useState([]);
   const [competition, setCompetition] = useState(null);
@@ -155,6 +158,14 @@ function Leaderboard() {
     return user.id || user._id;
   };
 
+  const handleReview = () => {
+    if (!isUserAuthenticated) {
+      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${competitionId}/puzzle`)}`);
+      return;
+    }
+    navigate(`/competition/${competitionId}/puzzle`, { state: { reviewMode: true } });
+  };
+
   const isCurrentUser = (userId) => {
     const currentId = getCurrentUser();
     if (!currentId || !userId) return false;
@@ -194,7 +205,7 @@ function Leaderboard() {
     leaderboard.forEach(entry => {
       const uid = typeof entry.userId === 'object' ? (entry.userId?._id || entry.userId?.id) : entry.userId;
       if (!uid) return;
-      
+
       const existing = uniqueUsers.get(String(uid));
       if (!existing || (entry.score || 0) > (existing.score || 0)) {
         uniqueUsers.set(String(uid), entry);
@@ -230,7 +241,7 @@ function Leaderboard() {
 
   const processedLeaderboard = getProcessedLeaderboard();
   const totalPages = Math.ceil(processedLeaderboard.length / itemsPerPage);
-  
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentLeaderboard = processedLeaderboard.slice(indexOfFirstItem, indexOfLastItem);
@@ -333,7 +344,7 @@ function Leaderboard() {
                   <FaBolt className={styles.headerBoltIcon} />
                   <h2>FASTEST SOLVER</h2>
                 </div>
-                
+
                 <div className={styles.fastestSolverBox}>
                   <div className={styles.userStatsFooter}>
                     <div className={styles.footerName}>{fastestSolver.username}</div>
@@ -358,7 +369,7 @@ function Leaderboard() {
                     <FaArrowLeft />
                   </button>
                   <h2 className={styles.compTitle}>{competition?.name || 'Test Competition'}</h2>
-                  
+
                   <div className={styles.competitionMeta}>
                     <div className={styles.metaPill}>
                       <FaClock /> {competition?.duration || 15} MIN
@@ -366,12 +377,17 @@ function Leaderboard() {
                     <div className={styles.metaPill}>
                       <FaUserCircle /> {processedLeaderboard.length} PLAYERS
                     </div>
-                    <div className={styles.metaPill}>
+                    {/* <div className={styles.metaPill}>
                       {isLive ? '🔴 LIVE' : '✅ COMPLETED'}
-                    </div>
+                    </div> */}
+                    {!isLive && (
+                      <button onClick={handleReview} className={styles.reviewBtn}>
+                        <FaEye /> Analyze
+                      </button>
+                    )}
                   </div>
                 </div>
-                
+
                 {isLive && (
                   <button onClick={loadLeaderboard} className={styles.refreshBtn}>
                     <FaSync />
