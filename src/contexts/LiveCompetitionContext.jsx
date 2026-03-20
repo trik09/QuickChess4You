@@ -147,21 +147,36 @@ export const LiveCompetitionProvider = ({ children }) => {
           : null;
 
       setLeaderboard((prev) => {
+        let found = false;
         const updated = prev.map((entry) => {
           const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
           const isMatch =
             (incomingId && entryId && incomingId === entryId) ||
             (data.username && entry.username && data.username === entry.username);
-          return isMatch
-            ? {
+          if (isMatch) {
+            found = true;
+            return {
               ...entry,
               score: data.score,
               puzzlesSolved: data.puzzlesSolved,
               timeSpent: data.timeSpent,
               status: data.status,
-            }
-            : entry;
+            };
+          }
+          return entry;
         });
+
+        // Late joiner: not in list yet — insert them so they appear immediately
+        if (!found) {
+          updated.push({
+            userId: incomingId || data.userId,
+            username: data.username,
+            score: data.score,
+            puzzlesSolved: data.puzzlesSolved,
+            timeSpent: data.timeSpent,
+            status: data.status,
+          });
+        }
 
         // Re-sort and re-calculate ranks for everyone
         const sorted = updated.sort((a, b) => b.score - a.score || a.timeSpent - b.timeSpent);
@@ -182,7 +197,32 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     const handleParticipantJoined = (data) => {
       console.log("[LiveComp] Socket: participantJoined", data.username);
-      // Removed toast to decrease noise
+      // Add the new participant to the leaderboard immediately so participant count
+      // and galaxy update before they make their first move
+      if (data.userId || data.username) {
+        const incomingId = data.userId?._id ? String(data.userId._id) : data.userId ? String(data.userId) : null;
+        setLeaderboard((prev) => {
+          const alreadyIn = prev.some((entry) => {
+            const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
+            return (incomingId && entryId && incomingId === entryId) ||
+              (data.username && entry.username && data.username === entry.username);
+          });
+          if (alreadyIn) return prev;
+          return [
+            ...prev,
+            {
+              userId: incomingId || data.userId,
+              username: data.username,
+              score: 0,
+              puzzlesSolved: 0,
+              timeSpent: 0,
+              status: "JOINED",
+              rank: prev.length + 1,
+            },
+          ];
+        });
+        setLastUpdate(new Date());
+      }
     };
 
     const handleParticipantSubmitted = (data) => {

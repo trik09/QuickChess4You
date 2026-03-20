@@ -5,6 +5,8 @@ import logo from '../../assets/QuickChessForYou-Logo.svg';
 
 function TopHeader({ onLoginClick }) {
   const { isAuthenticated, user } = useAuth();
+  console.log(isAuthenticated);
+  
   const navigate = useNavigate();
 
   return (
@@ -33,11 +35,10 @@ function TopHeader({ onLoginClick }) {
               style={{ cursor: "pointer" }}
             >
               <div className={styles.avatar}>
-                {user?.avatar ? (
-                  <img src={user.avatar} alt="User" />
-                ) : (
-                  <span>{user?.username?.[0]?.toUpperCase() || "U"}</span>
-                )}
+                 {user?.googleName?.[0]?.toUpperCase() ||
+                          user?.name?.[0]?.toUpperCase() ||
+                          user?.username?.[0]?.toUpperCase() ||
+                          "U"}
               </div>
 
               <span className={styles.username}>

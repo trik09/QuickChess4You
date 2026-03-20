@@ -261,12 +261,13 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
 
     try {
       const response = await authAPI.googleAuth(credentialResponse.credential);
+      console.log(response.user);
       login(response.user, response.token, response.atoken);
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         onClose();
         navigate('/');
-      }, 1500);
+      }, 1000);
     } catch (err) {
       setError(err.message || 'Google login failed. Please try again.');
     } finally {

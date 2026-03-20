@@ -221,12 +221,15 @@ function PuzzlePage() {
   useEffect(() => {
     if (!leaderboard || leaderboard.length === 0) return;
     const uniqueIds = new Set(
-      leaderboard.map((p) => p.userId || p._id || p.id).filter(Boolean)
+      leaderboard.map((p) => {
+        // userId may be an object { _id: "..." } — normalize to string
+        const uid = p.userId?._id ?? p.userId ?? p._id ?? p.id;
+        return uid ? String(uid) : null;
+      }).filter(Boolean)
     );
     const uniqueCount = uniqueIds.size;
-    if (uniqueCount > participantCount) {
-      setParticipantCount(uniqueCount);
-    }
+    // Use functional update to avoid stale closure on participantCount
+    setParticipantCount((prev) => (uniqueCount > prev ? uniqueCount : prev));
   }, [leaderboard]);
   useEffect(() => {
     if (paramCompetitionId) {
@@ -1058,8 +1061,8 @@ function PuzzlePage() {
     // Deduplicate: last entry wins for each userId
     const byUser = new Map();
     leaderboard.forEach((p) => {
-      const uid = p.userId || p._id || p.id;
-      if (uid) byUser.set(uid, p);
+      const uid = p.userId?._id ?? p.userId ?? p._id ?? p.id;
+      if (uid) byUser.set(String(uid), p);
     });
     const deduped = Array.from(byUser.values());
     // Sort by score descending
@@ -1067,7 +1070,10 @@ function PuzzlePage() {
     // Find current user
     const myId = user?._id || user?.id;
     if (!myId) return getCurrentUserRank() || null;
-    const myIdx = deduped.findIndex((p) => (p.userId || p._id || p.id) === myId);
+    const myIdx = deduped.findIndex((p) => {
+      const uid = p.userId?._id ?? p.userId ?? p._id ?? p.id;
+      return uid && String(uid) === String(myId);
+    });
     return myIdx !== -1 ? myIdx + 1 : getCurrentUserRank() || null;
   })();
   const currentPuzzleStatus = currentPuzzle

@@ -28,24 +28,25 @@ function Navbar({ onLoginClick, onSignupClick }) {
       const tl = gsap.timeline();
 
       tl.to(menuRef.current, {
-        x: '0%',
+        x: "0%",
         duration: 0.5,
         ease: "power3.out",
       })
-        .fromTo(linksRef.current,
+        .fromTo(
+          linksRef.current,
           { y: 50, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.4, stagger: 0.1, ease: "power2.out" },
-          "-=0.2"
+          "-=0.2",
         )
-        .fromTo(footerRef.current,
+        .fromTo(
+          footerRef.current,
           { y: 20, opacity: 0 },
           { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" },
-          "-=0.2"
+          "-=0.2",
         );
-
     } else {
       gsap.to(menuRef.current, {
-        x: '-100%',
+        x: "-100%",
         duration: 0.4,
         ease: "power3.in",
       });
@@ -56,33 +57,42 @@ function Navbar({ onLoginClick, onSignupClick }) {
 
   const handleLogout = async () => {
     setIsOpen(false);
-    const { clearUserAuth } = await import('../../services/authStorage');
+    const { clearUserAuth } = await import("../../services/authStorage");
     clearUserAuth();
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
-  const menuLinks = isHomePage ? [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Learn", to: "/learn/capture" },
-    { name: "Courses", href: "#courses" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "Coaching", href: "#coaching" },
-    { name: "Contact", href: "#contact" },
-  ] : [
-    { name: "Home", to: "/" },
-    { name: "Puzzle Arena", to: "/puzzle" },
-  ];
+  const menuLinks = isHomePage
+    ? [
+        { name: "Home", href: "#home" },
+        { name: "About", href: "#about" },
+        { name: "Learn", to: "/learn/capture" },
+        { name: "Courses", href: "#courses" },
+        { name: "Pricing", href: "#pricing" },
+        { name: "Coaching", href: "#coaching" },
+        { name: "Contact", href: "#contact" },
+      ]
+    : [
+        { name: "Home", to: "/" },
+        { name: "Puzzle Arena", to: "/puzzle" },
+      ];
 
   return (
     <>
       <nav className={styles.navbar} ref={containerRef}>
         <div className={styles.container}>
-
           {/* 1. LOGO (Left) */}
           <div className={styles.logoContainer}>
-            <Link to="/" className={styles.logoLink} aria-label="Quick Chess Home">
-              <img src={logo} alt="Quick Chess Logo" className={styles.logoImg} />
+            <Link
+              to="/"
+              className={styles.logoLink}
+              aria-label="Quick Chess Home"
+            >
+              <img
+                src={logo}
+                alt="Quick Chess Logo"
+                className={styles.logoImg}
+              />
             </Link>
           </div>
 
@@ -116,17 +126,16 @@ function Navbar({ onLoginClick, onSignupClick }) {
                 <div className={styles.userProfile}>
                   <button
                     className={styles.userInfo}
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate("/dashboard")}
                     aria-label="Go to dashboard"
                   >
                     <div className={styles.avatar}>
-                      {user?.avatar ? (
-                        <img src={user.avatar} alt={`${user.username}'s avatar`} />
-                      ) : (
-                        <div className={styles.initialAvatar}>
-                          {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "U"}
-                        </div>
-                      )}
+                      <div className={styles.initialAvatar}>
+                        {user?.googleName?.[0]?.toUpperCase() ||
+                          user?.name?.[0]?.toUpperCase() ||
+                          user?.username?.[0]?.toUpperCase() ||
+                          "U"}
+                      </div>
                     </div>
                   </button>
                 </div>
@@ -154,12 +163,13 @@ function Navbar({ onLoginClick, onSignupClick }) {
               <span></span>
             </button>
           </div>
-
         </div>
       </nav>
 
       {/* MOBILE MENU OVERLAY */}
-      {isOpen && <div className={styles.overlay} onClick={() => setIsOpen(false)} />}
+      {isOpen && (
+        <div className={styles.overlay} onClick={() => setIsOpen(false)} />
+      )}
 
       <div className={styles.mobileMenuWrapper} ref={menuRef}>
         <div className={styles.mobileHeader}>
@@ -177,17 +187,23 @@ function Navbar({ onLoginClick, onSignupClick }) {
               <button
                 className={styles.mobileProfileBtn}
                 onClick={() => {
-                  navigate('/dashboard');
+                  navigate("/dashboard");
                   setIsOpen(false);
                 }}
                 aria-label="Go to dashboard"
                 title="Profile"
               >
                 {user?.avatar ? (
-                  <img src={user.avatar} alt={`${user.username}'s avatar`} className={styles.mobileProfileImg} />
+                  <img
+                    src={user.avatar}
+                    alt={`${user.username}'s avatar`}
+                    className={styles.mobileProfileImg}
+                  />
                 ) : (
                   <div className={styles.mobileInitialAvatar}>
-                    {user?.name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || "U"}
+                    {user?.name?.[0]?.toUpperCase() ||
+                      user?.username?.[0]?.toUpperCase() ||
+                      "U"}
                   </div>
                 )}
               </button>
@@ -230,7 +246,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
             {menuLinks.map((link, index) => (
               <li
                 key={index}
-                ref={el => linksRef.current[index] = el}
+                ref={(el) => (linksRef.current[index] = el)}
                 className={styles.mobileLinkItem}
               >
                 {link.to ? (
@@ -282,7 +298,10 @@ function Navbar({ onLoginClick, onSignupClick }) {
         </div>
       </div>
 
-      <ThemeModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+      />
     </>
   );
 }
