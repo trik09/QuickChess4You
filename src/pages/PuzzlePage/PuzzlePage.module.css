@@ -34,7 +34,8 @@
 
 /* OUTER CONTAINER */
 .container {
-  height: calc(100vh - 36px);
+  /* height: calc(100vh - 36px); */
+  height: 100%;
   display: flex;
   flex-direction: column;
   font-family: 'Inter', system-ui, sans-serif;
@@ -745,7 +746,7 @@
 .starFilled {
   color: var(--gold);
   filter: drop-shadow(0 0 4px var(--gold-glow));
-  font-size: 1.3rem;
+  font-size: 1rem;
 }
 
 .starEmpty {
