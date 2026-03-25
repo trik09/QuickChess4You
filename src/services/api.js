@@ -154,18 +154,18 @@ export const adminAPI = {
       null
     ); // Don't send token for login
   },
-  // Get all puzzles (admin view)
-  getPuzzles: async () => {
+  // Get all puzzles (admin view) with server-side pagination and filters
+  getPuzzles: async (params = {}) => {
     const adminToken = localStorage.getItem("atoken");
-    // Matches backend router: app.use('/api/puzzles', puzzleRouter)
-    // backend route: router.get('/get-puzzles', ...)
-    return apiRequest(
-      "/puzzle/get-puzzles",
-      {
-        method: "GET",
-      },
-      adminToken
-    );
+    const query = new URLSearchParams({
+      page: params.page || 1,
+      limit: params.limit || 20,
+      search: params.search || '',
+      category: params.category || '',
+      difficulty: params.difficulty || '',
+      level: params.level || '',
+    }).toString();
+    return apiRequest(`/puzzle/get-puzzles?${query}`, { method: "GET" }, adminToken);
   },
   // Get a puzzle by id
   getPuzzleById: async (id) => {
@@ -259,6 +259,23 @@ export const adminAPI = {
     const adminToken = localStorage.getItem("atoken");
     return apiRequest(
       "/puzzle/delete-multiple-puzzles",
+      {
+        method: "POST",
+        body: JSON.stringify({ puzzleIds }),
+      },
+      adminToken
+    );
+  },
+
+  validatePuzzles: async () => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest("/puzzle/validate-puzzles", {}, adminToken);
+  },
+
+  deleteInvalidPuzzles: async (puzzleIds) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      "/puzzle/delete-invalid-puzzles",
       {
         method: "POST",
         body: JSON.stringify({ puzzleIds }),
