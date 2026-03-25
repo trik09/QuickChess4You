@@ -40,7 +40,7 @@ function CreateCompetition() {
   const [formData, setFormData] = useState({
     name: "",
     startTime: "",
-    duration: "60",
+    duration: "15",
     maxParticipants: "",
     description: "",
   });
