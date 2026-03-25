@@ -45,9 +45,7 @@ function DailyTrainingPage() {
             // Fetch only 10 daily training puzzles for demo
             const response = await puzzleAPI.getAll({ limit: 10 });
 
-            // apiRequest in api.js returns the raw data (which is an array of puzzles from backend)
-            // Wait, puzzle.controller.js getPuzzles returns `res.status(200).json(puzzles);` meaning it's an array, not `{success: true, data: []}` structure!
-            const puzzlesData = Array.isArray(response) ? response : (response.data || []);
+            const puzzlesData = response.puzzles || (Array.isArray(response) ? response : []);
             setPuzzles(puzzlesData);
 
             // Restore saved state
