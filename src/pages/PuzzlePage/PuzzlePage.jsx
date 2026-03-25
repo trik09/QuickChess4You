@@ -1289,7 +1289,7 @@ function PuzzlePage() {
         <div className={styles.boardArea}>
           <div className={styles.boardWrapper}>
             {puzzles.length > 0 && currentPuzzle ? (
-              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "start", justifyContent: "center" }}>
                 <ChessBoard
                   key={
                     // In review mode, reviewResetKey forces a full board remount on manual reset.
