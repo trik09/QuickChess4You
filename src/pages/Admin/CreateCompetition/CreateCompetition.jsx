@@ -338,7 +338,7 @@ function CreateCompetition() {
           </div>
           <div className={styles.formGrid}>
             <div className={styles.inputGroup}>
-              <label>Competition Name</label>
+              <label>Puzzle Arena </label>
               <input
                 type="text"
                 placeholder="e.g. Winter Blitz 2024"
