@@ -206,16 +206,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;   /* anchor stats to the bottom */
+  justify-content: flex-end;
+  /* anchor stats to the bottom */
   margin-top: 0.8rem;
-  padding-bottom: 0.75rem;     /* consistent bottom breathing room */
+  padding-bottom: 0.75rem;
+  /* consistent bottom breathing room */
   background: #25201d;
   /* Solid dark */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .bar1 {
-  height: 140px;   /* was 120px — tallest, kept as reference */
+  height: 140px;
+  /* was 120px — tallest, kept as reference */
   border: 1px solid rgba(251, 191, 36, 0.2);
   box-shadow: inset 0 8px 16px -8px rgba(251, 191, 36, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -225,7 +228,8 @@
 }
 
 .bar2 {
-  height: 115px;   /* was 90px — medium */
+  height: 115px;
+  /* was 90px — medium */
   border: 1px solid rgba(148, 163, 184, 0.2);
   box-shadow: inset 0 8px 16px -8px rgba(148, 163, 184, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -235,7 +239,8 @@
 }
 
 .bar3 {
-  height: 90px;   /* was 65px — increased so stats have breathing room */
+  height: 90px;
+  /* was 65px — increased so stats have breathing room */
   border: 1px solid rgba(205, 127, 50, 0.2);
   box-shadow: inset 0 8px 16px -8px rgba(205, 127, 50, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -254,7 +259,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;  /* consistent gap between Acc and Time badges */
+  gap: 5px;
+  /* consistent gap between Acc and Time badges */
 }
 
 .accBadge {
@@ -416,6 +422,7 @@
 .compTitleWrapper {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -1035,6 +1042,7 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+
   /* Page root */
   .leaderboardPage {
     padding: 0.75rem 0.75rem;
@@ -1118,9 +1126,17 @@
   }
 
   /* Bar heights scaled for mobile */
-  .bar1 { height: 120px; }
-  .bar2 { height: 98px; }
-  .bar3 { height: 78px; }
+  .bar1 {
+    height: 120px;
+  }
+
+  .bar2 {
+    height: 98px;
+  }
+
+  .bar3 {
+    height: 78px;
+  }
 
   .barStats {
     gap: 4px;
