@@ -13,7 +13,8 @@ import {
   FaLock,
   FaBookOpen,
   FaTrash,
-  FaSearch
+  FaSearch,
+  FaPencilAlt
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import styles from "./CreateCompetition.module.css";
@@ -57,6 +58,13 @@ function CreateCompetition() {
   const [showChapterModal, setShowChapterModal] = useState(false);
   const [newChapterName, setNewChapterName] = useState("");
   const chapterInputRef = useRef(null);
+
+  // Chapter rename state
+  const [editingChapter, setEditingChapter] = useState(null); // { id, name }
+  const editChapterInputRef = useRef(null);
+
+  // Cache of all puzzles ever fetched (across pages) — needed for Assigned view
+  const allPuzzlesCacheRef = useRef({});
 
   // View State
   const [viewMode, setViewMode] = useState("library"); // 'library' or 'selected'
@@ -112,6 +120,8 @@ function CreateCompetition() {
       const response = await competitionAPI.getPuzzlesForCompetition(params);
       if (response.success) {
         setPuzzles(response.data);
+        // Merge into cache so Assigned view can find puzzles from any page
+        response.data.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
         setPagination((prev) => ({ ...prev, ...response.pagination }));
         if (response.filters) setFilterOptions(response.filters);
       }
@@ -152,9 +162,11 @@ function CreateCompetition() {
   // All puzzles that are assigned to any chapter (flat)
   const allAssignedPuzzleIds = chapters.flatMap(ch => ch.puzzleIds);
 
-  // Puzzles assigned to the currently active chapter only
+  // Puzzles assigned to the currently active chapter only — pulled from cache
   const activeChapterPuzzleIds = chapters.find(ch => ch.id === activeChapterId)?.puzzleIds || [];
-  const selectedPuzzles = puzzles.filter(p => activeChapterPuzzleIds.includes(p._id));
+  const selectedPuzzles = activeChapterPuzzleIds
+    .map(id => allPuzzlesCacheRef.current[id])
+    .filter(Boolean);
 
   // --- Chapter CRUD ---
   const handleAddChapter = () => {
@@ -178,6 +190,20 @@ function CreateCompetition() {
       const remaining = chapters.filter(ch => ch.id !== chapterId);
       setActiveChapterId(remaining.length > 0 ? remaining[0].id : null);
     }
+  };
+
+  const handleOpenRenameChapter = (ch, e) => {
+    e.stopPropagation();
+    setEditingChapter({ id: ch.id, name: ch.name });
+    setTimeout(() => editChapterInputRef.current?.focus(), 50);
+  };
+
+  const handleRenameChapter = () => {
+    const name = editingChapter?.name?.trim();
+    if (!name) { toast.error("Chapter name cannot be empty"); return; }
+    setChapters(prev => prev.map(ch => ch.id === editingChapter.id ? { ...ch, name } : ch));
+    toast.success(`Renamed to "${name}"`);
+    setEditingChapter(null);
   };
 
   // --- Puzzle toggle in active chapter ---
@@ -432,6 +458,14 @@ function CreateCompetition() {
                       >
                         {ch.puzzleIds.length}
                       </span>
+                      <button
+                        type="button"
+                        className={styles.chapterEditBtn}
+                        onClick={(e) => handleOpenRenameChapter(ch, e)}
+                        title="Rename chapter"
+                      >
+                        <FaPencilAlt />
+                      </button>
                       <button
                         type="button"
                         className={styles.chapterDeleteBtn}
@@ -797,6 +831,45 @@ function CreateCompetition() {
                 disabled={!newChapterName.trim()}
               >
                 <FaPlus /> Create Chapter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Chapter Rename Modal --- */}
+      {editingChapter && (
+        <div className={styles.modalOverlay} onClick={() => setEditingChapter(null)}>
+          <div className={styles.chapterModalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.chapterModalHeader}>
+              <FaPencilAlt className={styles.chapterModalIcon} />
+              <h4>Rename Chapter</h4>
+            </div>
+            <input
+              ref={editChapterInputRef}
+              type="text"
+              className={styles.chapterNameInput}
+              placeholder="Chapter name..."
+              value={editingChapter.name}
+              onChange={e => setEditingChapter(prev => ({ ...prev, name: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && handleRenameChapter()}
+              maxLength={40}
+            />
+            <div className={styles.chapterModalActions}>
+              <button
+                type="button"
+                className={styles.chapterModalCancel}
+                onClick={() => setEditingChapter(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.chapterModalCreate}
+                onClick={handleRenameChapter}
+                disabled={!editingChapter.name.trim()}
+              >
+                <FaCheckCircle /> Save
               </button>
             </div>
           </div>
