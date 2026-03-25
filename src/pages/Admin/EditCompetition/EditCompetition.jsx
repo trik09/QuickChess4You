@@ -130,11 +130,14 @@ function EditCompetition() {
 
         // Load chapters if they exist, else initialize an empty array or fallback logic
         if (comp.chapters && comp.chapters.length > 0) {
-          setChapters(comp.chapters);
-          setActiveChapterId(comp.chapters[0].id);
+          // Normalize: backend may return _id instead of id
+          const normalized = comp.chapters.map(ch => ({
+            ...ch,
+            id: ch.id || ch._id?.toString(),
+          }));
+          setChapters(normalized);
+          setActiveChapterId(normalized[0].id);
         } else {
-          // Legacy competitions migrate by slapping all 'puzzles' into chapter 1 implicitly?
-          // Safer to just create a single Chapter array.
           const legacyChapter = { id: crypto.randomUUID(), name: "Chapter 1", puzzleIds: comp.puzzles || [] };
           setChapters([legacyChapter]);
           setActiveChapterId(legacyChapter.id);
@@ -206,7 +209,10 @@ function EditCompetition() {
 
   // All puzzles that are assigned to any chapter (flat)
   const allAssignedPuzzleIds = chapters.flatMap(ch => ch.puzzleIds);
-  const selectedPuzzles = puzzles.filter(p => allAssignedPuzzleIds.includes(p._id));
+
+  // Puzzles assigned to the currently active chapter only
+  const activeChapterPuzzleIds = chapters.find(ch => ch.id === activeChapterId)?.puzzleIds || [];
+  const selectedPuzzles = puzzles.filter(p => activeChapterPuzzleIds.includes(p._id));
 
   // --- Chapter CRUD ---
   const handleAddChapter = () => {
@@ -570,7 +576,7 @@ function EditCompetition() {
                     className={viewMode === 'selected' ? styles.activeView : ''}
                     onClick={() => setViewMode('selected')}
                   >
-                    Assigned ({allAssignedPuzzleIds.length})
+                    Assigned ({activeChapterPuzzleIds.length})
                   </button>
                 </div>
 
@@ -602,15 +608,17 @@ function EditCompetition() {
                 <thead>
                   <tr>
                     <th width="50">
-                      <button
-                        type="button"
-                        className={styles.selectAllBtn}
-                        onClick={handleSelectAllPage}
-                        title="Select all eligible puzzles on this page"
-                        disabled={!activeChapterId}
-                      >
-                        {getSelectAllState() ? <FaCheckCircle /> : <div className={styles.emptyCheckbox} />}
-                      </button>
+                      {viewMode === 'library' && (
+                        <button
+                          type="button"
+                          className={styles.selectAllBtn}
+                          onClick={handleSelectAllPage}
+                          title="Select all eligible puzzles on this page"
+                          disabled={!activeChapterId}
+                        >
+                          {getSelectAllState() ? <FaCheckCircle /> : <div className={styles.emptyCheckbox} />}
+                        </button>
+                      )}
                     </th>
                     <th>Puzzle Title / ID</th>
                     <th>Category</th>
@@ -654,10 +662,12 @@ function EditCompetition() {
                           style={{ cursor: isInOtherChapter ? 'not-allowed' : 'pointer' }}
                         >
                           <td className={styles.checkCell}>
-                            <div className={`${styles.checkbox} ${isInActiveChapter ? styles.checked : ''}`}
-                              style={isInActiveChapter ? { borderColor: chapterColor, color: chapterColor } : {}}>
-                              {isInActiveChapter && <FaCheckCircle />}
-                            </div>
+                            {viewMode === 'library' && (
+                              <div className={`${styles.checkbox} ${isInActiveChapter ? styles.checked : ''}`}
+                                style={isInActiveChapter ? { borderColor: chapterColor, color: chapterColor } : {}}>
+                                {isInActiveChapter && <FaCheckCircle />}
+                              </div>
+                            )}
                           </td>
                           <td>
                             <div className={styles.puzzleTitle}>
@@ -684,17 +694,33 @@ function EditCompetition() {
                               <span className={styles.unassignedText}>—</span>
                             )}
                           </td>
-                          <td>
-                            <button
-                              type="button"
-                              className={styles.previewIconBtn}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPreviewPuzzle(puzzle);
-                              }}
-                            >
-                              <FaEye />
-                            </button>
+                        <td>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                type="button"
+                                className={styles.previewIconBtn}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewPuzzle(puzzle);
+                                }}
+                              >
+                                <FaEye />
+                              </button>
+                              {viewMode === 'selected' && (
+                                <button
+                                  type="button"
+                                  className={styles.previewIconBtn}
+                                  style={{ color: '#ef4444' }}
+                                  title="Remove from chapter"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePuzzleToggle(puzzle);
+                                  }}
+                                >
+                                  <FaTrash />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
