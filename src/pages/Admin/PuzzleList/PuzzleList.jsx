@@ -1,20 +1,19 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup, FaUpload, FaDownload, FaSignal } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader, SearchBar, FilterSelect, Button, DataTable, Badge, IconButton } from '../../../components/Admin';
+import { Button, DataTable, Badge, IconButton, FilterSelect, SearchableFilterSelect } from '../../../components/Admin';
+import { FaEye, FaEdit, FaTrash, FaChess, FaFilter, FaLayerGroup, FaUpload, FaDownload, FaSignal, FaSearch, FaTimes, FaCalendarPlus, FaCalendarCheck, FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa';
 import { adminAPI, categoryAPI } from '../../../services/api';
 import ChessBoard from '../../../components/ChessBoard/ChessBoard';
 import styles from './PuzzleList.module.css';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 function PuzzleList() {
-  const [searchParams] = useSearchParams();
-
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [filterCategory, setFilterCategory] = useState(searchParams.get('category') || '');
-  const [filterDifficulty, setFilterDifficulty] = useState('');
-  const [filterLevel, setFilterLevel] = useState('');
+  const [filterDifficulty, setFilterDifficulty] = useState(searchParams.get('difficulty') || '');
+  const [filterLevel, setFilterLevel] = useState(searchParams.get('level') || '');
 
   const [puzzles, setPuzzles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +21,7 @@ function PuzzleList() {
   const [categoryOptions, setCategoryOptions] = useState([{ value: '', label: 'All Categories' }]);
 
   // Server-side pagination
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -35,6 +34,7 @@ function PuzzleList() {
   const [validationResult, setValidationResult] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const isInitialMount = useRef(true);
 
   const fileInputRef = useRef(null);
 
@@ -72,27 +72,46 @@ function PuzzleList() {
     fetchPuzzles(currentPage, searchTerm, filterCategory, filterDifficulty, filterLevel);
   }, [currentPage, filterCategory, filterDifficulty, filterLevel]);
 
+  // Sync filters to URL search params
+  useEffect(() => {
+    const params = {};
+    if (searchTerm) params.search = searchTerm;
+    if (filterCategory) params.category = filterCategory;
+    if (filterDifficulty) params.difficulty = filterDifficulty;
+    if (filterLevel) params.level = filterLevel;
+    if (currentPage > 1) params.page = currentPage;
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, filterCategory, filterDifficulty, filterLevel, currentPage, setSearchParams]);
+
   // Debounce search input
   useEffect(() => {
+    // Skip the first run to prevent redundant fetch on mount (handled by the other useEffect)
+    if (isInitialMount.current) return;
+
     clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
-      setCurrentPage(1);
-      fetchPuzzles(1, searchTerm, filterCategory, filterDifficulty, filterLevel);
+      fetchPuzzles(currentPage, searchTerm, filterCategory, filterDifficulty, filterLevel);
     }, 400);
     return () => clearTimeout(searchDebounceRef.current);
   }, [searchTerm]);
 
-  // Reset page when filters change
+  // Reset page when filters change, but NOT on initial mount
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setCurrentPage(1);
-  }, [filterCategory, filterDifficulty, filterLevel]);
+  }, [filterCategory, filterDifficulty, filterLevel, searchTerm]);
 
   // Load categories once
   useEffect(() => {
     categoryAPI.getAll(false).then(data => {
       const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
-      setCategoryOptions([{ value: '', label: 'All Categories' }, ...list.map(c => ({ value: c.name.toLowerCase(), label: c.name }))]);
-    }).catch(() => {});
+      // Sort categories alphabetically by name (case-insensitive)
+      const sorted = [...list].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+      setCategoryOptions([{ value: 'all', label: 'All Categories' }, ...sorted.map(c => ({ value: c.name.toLowerCase(), label: c.name }))]);
+    }).catch(() => { });
   }, []);
 
   const handleFilterChange = (setter) => (val) => {
@@ -241,6 +260,17 @@ function PuzzleList() {
     ...Array.from({ length: 7 }, (_, i) => ({ value: String(i + 1), label: `Level ${i + 1}` })),
   ];
 
+  const handleToggleDailyTraining = async (puzzle) => {
+    try {
+      const newState = !puzzle.isDailyTraining;
+      await adminAPI.toggleDailyTraining(puzzle._id, newState);
+      setPuzzles(prev => prev.map(p => p._id === puzzle._id ? { ...p, isDailyTraining: newState } : p));
+      alert(newState ? "Added to Daily Training!" : "Removed from Daily Training!");
+    } catch (err) {
+      alert(err.message || "Failed to update daily training status");
+    }
+  };
+
   const columns = [
     {
       key: 'select',
@@ -303,36 +333,51 @@ function PuzzleList() {
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
-      <PageHeader
-        icon={FaChess}
-        title="Puzzle Management"
-        subtitle={`${totalRecords} puzzles total`}
-        action={
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-            <Button variant="secondary" icon={FaUpload} onClick={() => fileInputRef.current.click()}>Import JSON</Button>
-            <Button variant="secondary" icon={FaDownload} onClick={handleExport}>Export JSON</Button>
-            <Button variant="secondary" onClick={handleValidatePuzzles} disabled={isValidating}>
-              {isValidating ? 'Validating...' : 'Validate Puzzles'}
-            </Button>
-            <Button to="/admin/puzzles/create" icon={FaChess}>Create Puzzle</Button>
-            {selectedPuzzles.length > 0 && (
-              <Button variant="danger" icon={FaTrash} onClick={() => setDeleteSelectedConfirm(true)}>
-                Delete Selected ({selectedPuzzles.length})
-              </Button>
-            )}
-            <Button variant="danger" icon={FaTrash} onClick={() => setDeleteAllConfirm(true)} disabled={totalRecords === 0}>
-              Delete All
-            </Button>
+      <div className={styles.compactHeader}>
+        <div className={styles.titleArea}>
+          <div className={styles.titleWithIcon}>
+            <FaChess className={styles.headerIcon} />
+            <h2>Puzzle Management</h2>
           </div>
-        }
-      />
+          <p className={styles.subtitle}>{totalRecords} puzzles total</p>
+        </div>
 
-      <div className={styles.filters}>
-        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search puzzles by title or FEN..." />
-        <FilterSelect value={filterCategory || 'all'} onChange={handleFilterChange(setFilterCategory)} options={categoryOptions} icon={FaLayerGroup} label="Category" />
-        <FilterSelect value={filterDifficulty || 'all'} onChange={handleFilterChange(setFilterDifficulty)} options={difficultyOptions} icon={FaFilter} label="Difficulty" />
-        <FilterSelect value={filterLevel || 'all'} onChange={handleFilterChange(setFilterLevel)} options={levelOptions} icon={FaSignal} label="Level" />
+        <div className={styles.headerActions}>
+          <div className={styles.headerButtonGroup}>
+            <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+            <IconButton icon={FaUpload} onClick={() => fileInputRef.current.click()} title="Import JSON" variant="secondary" />
+            <IconButton icon={FaDownload} onClick={handleExport} title="Export JSON" variant="secondary" />
+            <Button size="small" variant="secondary" onClick={handleValidatePuzzles} disabled={isValidating}>
+              {isValidating ? 'Validating...' : 'Validate'}
+            </Button>
+            <Button size="small" to="/admin/puzzles/create" icon={FaChess}>Create</Button>
+            {selectedPuzzles.length > 0 && (
+              <IconButton variant="danger" icon={FaTrash} onClick={() => setDeleteSelectedConfirm(true)} title={`Delete Selected (${selectedPuzzles.length})`} />
+            )}
+            <IconButton variant="danger" icon={FaTrash} onClick={() => setDeleteAllConfirm(true)} disabled={totalRecords === 0} title="Delete All" />
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.filterSectionCompact}>
+        <div className={styles.searchBarWrapperCompact}>
+          <div className={styles.searchIconInside}>
+            <FaSearch />
+          </div>
+          <input
+            type="text"
+            className={styles.compactInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search puzzles by title or FEN..."
+          />
+        </div>
+
+        <div className={styles.filterGroupCompact}>
+          <SearchableFilterSelect value={filterCategory || 'all'} onChange={handleFilterChange(setFilterCategory)} options={categoryOptions} icon={FaLayerGroup} label="Category" />
+          <FilterSelect value={filterDifficulty || 'all'} onChange={handleFilterChange(setFilterDifficulty)} options={difficultyOptions} icon={FaFilter} label="Difficulty" />
+          <FilterSelect value={filterLevel || 'all'} onChange={handleFilterChange(setFilterLevel)} options={levelOptions} icon={FaSignal} label="Level" />
+        </div>
       </div>
 
       {isLoading && puzzles.length > 0 && <p>Loading puzzles...</p>}
@@ -343,46 +388,88 @@ function PuzzleList() {
         data={puzzles}
         actions={(puzzle) => (
           <>
+            <IconButton
+              icon={puzzle.isDailyTraining ? FaCalendarCheck : FaCalendarPlus}
+              onClick={() => handleToggleDailyTraining(puzzle)}
+              title={puzzle.isDailyTraining ? "Remove from Daily Training" : "Add to Daily Training"}
+              variant={puzzle.isDailyTraining ? "success" : "primary"}
+            />
             <IconButton icon={FaEye} onClick={() => handlePreview(puzzle)} title="Preview" variant="primary" />
-            <IconButton icon={FaEdit} to={`/admin/puzzles/edit/${puzzle._id}`} title="Edit" variant="primary" />
+            <IconButton icon={FaEdit} to={`/admin/puzzles/edit/${puzzle._id}${window.location.search}`} title="Edit" variant="primary" />
             <IconButton icon={FaTrash} onClick={() => handleDelete(puzzle)} title="Delete" variant="danger" />
           </>
         )}
         emptyMessage="No puzzles found"
       />
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <>
+        <div className={styles.paginationSection}>
           <div className={styles.paginationInfo}>
-            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalRecords)} of {totalRecords}
+            Showing <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, totalRecords)}</strong> of {totalRecords}
           </div>
-          <div className={styles.paginationContainer}>
-            <button className={styles.pageBtn} onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
-            <button className={styles.pageBtn} onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>‹</button>
-            {(() => {
-              const pages = [];
-              const add = (i) => pages.push(
-                <button key={i} className={`${styles.pageBtn} ${currentPage === i ? styles.activePage : ''}`} onClick={() => setCurrentPage(i)}>{i}</button>
-              );
-              const ellipsis = (k) => pages.push(<span key={k} style={{ padding: '0 4px', color: '#888' }}>...</span>);
-              if (totalPages <= 7) {
-                for (let i = 1; i <= totalPages; i++) add(i);
-              } else {
-                add(1);
-                if (currentPage > 3) ellipsis('e1');
-                const start = Math.max(2, currentPage - 1);
-                const end = Math.min(totalPages - 1, currentPage + 1);
-                for (let i = start; i <= end; i++) add(i);
-                if (currentPage < totalPages - 2) ellipsis('e2');
-                add(totalPages);
-              }
-              return pages;
-            })()}
-            <button className={styles.pageBtn} onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}>›</button>
-            <button className={styles.pageBtn} onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>»</button>
+
+          <div className={styles.paginationControls}>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              title="First Page"
+            >
+              <FaAngleDoubleLeft />
+            </button>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              title="Previous Page"
+            >
+              <FaChevronLeft />
+            </button>
+
+            <div className={styles.pageNumbers}>
+              {(() => {
+                const pages = [];
+                const maxVisible = 5;
+                let start = Math.max(1, currentPage - 2);
+                let end = Math.min(totalPages, start + maxVisible - 1);
+
+                if (end - start + 1 < maxVisible) {
+                  start = Math.max(1, end - maxVisible + 1);
+                }
+
+                for (let i = start; i <= end; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      className={`${styles.pageBtn} ${currentPage === i ? styles.activePage : ''}`}
+                      onClick={() => setCurrentPage(i)}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+                return pages;
+              })()}
+            </div>
+
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              title="Next Page"
+            >
+              <FaChevronRight />
+            </button>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              title="Last Page"
+            >
+              <FaAngleDoubleRight />
+            </button>
           </div>
-        </>
+        </div>
       )}
 
       {/* Preview Modal */}

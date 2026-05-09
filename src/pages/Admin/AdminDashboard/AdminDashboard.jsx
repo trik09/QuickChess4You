@@ -51,11 +51,14 @@ function AdminDashboard() {
         <Button to="/admin/competitions/create" icon={FaTrophy}>
           Create Competition
         </Button>
+        <Button to="/admin/events/create" icon={FaTrophy}>
+          Create Event
+        </Button>
         <Button to="/admin/students" icon={FaUsersCog}>
           Manage Users
         </Button>
-        <Button to="/admin/reports" icon={FaChartBar}>
-          View Reports
+        <Button to="/admin/events" icon={FaChess}>
+          Manage Events
         </Button>
       </div>
 

@@ -40,9 +40,24 @@ export const ThemeProvider = ({ children }) => {
     document.documentElement.setAttribute('data-theme', themeName);
   }, [darkMode]);
 
+  const [themeKey, setThemeKey] = useState(0);
+
   const toggleLoginTheme = () => {
-    setDarkMode(prev => !prev);
-  }
+    const newDarkMode = !darkMode;
+    const themeName = newDarkMode ? 'dark' : 'light';
+
+    // 1. Update visual state immediately for instant feedback
+    document.documentElement.setAttribute('data-theme', themeName);
+
+    // 2. Persist to storage
+    localStorage.setItem('appTheme', themeName);
+
+    // 3. Update React state
+    setDarkMode(newDarkMode);
+    
+    // 4. Update key to force a clean re-render of key components without a full browser reload
+    setThemeKey(prev => prev + 1);
+  };
 
   const boardThemes = {
     classic: {
@@ -101,6 +116,7 @@ export const ThemeProvider = ({ children }) => {
     pieceSets,
     currentBoardColors: boardThemes[boardTheme],
     darkMode,
+    themeKey,
     toggleTheme: toggleLoginTheme
   };
 

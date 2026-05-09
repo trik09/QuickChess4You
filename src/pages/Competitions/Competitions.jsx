@@ -7,7 +7,10 @@ import {
     FaUsers,
     FaGamepad,
     FaSignInAlt,
-    FaCheckCircle
+    FaCheckCircle,
+    FaCircle,
+    FaThLarge,
+    FaThList
 } from "react-icons/fa";
 import styles from "./Competitions.module.css";
 import { competitionAPI } from "../../services/api";
@@ -27,6 +30,7 @@ function Competitions() {
     const [joiningId, setJoiningId] = useState(null);
     // Track which competition IDs the current user has joined (from live ParticipantModel)
     const [joinedCompetitionIds, setJoinedCompetitionIds] = useState(new Set());
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
     // Result Modal State
     const [showResultModal, setShowResultModal] = useState(false);
@@ -58,11 +62,11 @@ function Competitions() {
         try {
             if (!isBackground) setLoading(true);
             // Fetch live
-            const liveRes = await competitionAPI.getCompetitions({ status: 'live', limit: 50 });
+            const liveRes = await competitionAPI.getCompetitions({ status: 'live', limit: 500 });
             // Fetch upcoming
-            const upcomingRes = await competitionAPI.getCompetitions({ status: 'upcoming', limit: 50 });
+            const upcomingRes = await competitionAPI.getCompetitions({ status: 'upcoming', limit: 500 });
             // Fetch ENDED
-            const ENDEDRes = await competitionAPI.getCompetitions({ status: 'ENDED', limit: 50 });
+            const ENDEDRes = await competitionAPI.getCompetitions({ status: 'ENDED', limit: 500 });
 
             if (liveRes.success) setLiveCompetitions(liveRes.data);
             if (upcomingRes.success) setUpcomingCompetitions(upcomingRes.data);
@@ -204,6 +208,105 @@ function Competitions() {
         );
     };
 
+    const CompetitionListView = ({ competitions, status }) => {
+        return (
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Name</th>
+                            <th>Start Time</th>
+                            <th>Duration</th>
+                            <th>Players</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {competitions.map(comp => {
+                            const joined = isJoined(comp);
+                            const count = comp.participantCount ?? comp.participants?.length ?? 0;
+                            const isFull = comp.maxParticipants && count >= comp.maxParticipants;
+                            
+                            let statusBadge;
+                            if (status === 'live') {
+                                statusBadge = <span className={styles.liveBadge}>LIVE</span>;
+                            } else if (status === 'upcoming') {
+                                statusBadge = <span className={styles.upcomingBadge}>UPCOMING</span>;
+                            } else {
+                                statusBadge = <span className={styles.ENDEDBadge} style={{ background: '#6c757d', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>ENDED</span>;
+                            }
+
+                            return (
+                                <tr key={comp._id} onClick={() => status === 'live' && joined ? handlePlay(comp._id) : null} style={{ cursor: status === 'live' && joined ? 'pointer' : 'default' }}>
+                                    <td>{statusBadge}</td>
+                                    <td>
+                                        <div className={styles.tableNameCell}>
+                                            <span className={styles.tableNameText}>{comp.name}</span>
+                                            {comp.description && <span className={styles.tableDescText}>{comp.description}</span>}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.tableIconBox}>
+                                            <FaCalendarAlt />
+                                            <span>{formatDate(comp.startTime)}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.tableIconBox}>
+                                            <FaClock />
+                                            <span>{comp.duration} mins</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.tableIconBox}>
+                                            <FaUsers />
+                                            <span>{count} / {comp.maxParticipants || '∞'}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {status === 'ENDED' ? (
+                                            <button
+                                                className={styles.joinBtnSmall}
+                                                onClick={(e) => { e.stopPropagation(); handleViewResults(comp._id); }}
+                                                style={{ background: '#17a2b8' }}
+                                            >
+                                                Results
+                                            </button>
+                                        ) : joined ? (
+                                            status === 'live' ? (
+                                                <button
+                                                    className={styles.playBtnSmall}
+                                                    onClick={(e) => { e.stopPropagation(); handlePlay(comp._id); }}
+                                                >
+                                                    Play
+                                                </button>
+                                            ) : (
+                                                <span className={styles.registeredText}><FaCheckCircle /> Registered</span>
+                                            )
+                                        ) : (
+                                            <button
+                                                className={isAuthenticated ? styles.joinBtnSmall : styles.loginBtnSmall}
+                                                onClick={(e) => { e.stopPropagation(); handleJoin(comp); }}
+                                                disabled={joiningId === comp._id || (isFull && isAuthenticated)}
+                                            >
+                                                {isAuthenticated ? (
+                                                    joiningId === comp._id ? '...' : (isFull ? 'Full' : 'Join')
+                                                ) : (
+                                                    'Login'
+                                                )}
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
     if (loading) {
         return (
             <div className={styles.loading}>
@@ -273,6 +376,23 @@ function Competitions() {
                 </div>
             )}
 
+            <div className={styles.viewModeToggle}>
+                <button 
+                    className={`${styles.toggleBtn} ${viewMode === 'grid' ? styles.toggleBtnActive : ''}`}
+                    onClick={() => setViewMode('grid')}
+                    title="Grid View"
+                >
+                    <FaThLarge />
+                </button>
+                <button 
+                    className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.toggleBtnActive : ''}`}
+                    onClick={() => setViewMode('list')}
+                    title="List View"
+                >
+                    <FaThList />
+                </button>
+            </div>
+
             <div className={styles.header}>
                 <h1><FaTrophy /> Chess Competitions</h1>
                 <p>Join live tournaments and compete with others!</p>
@@ -280,23 +400,31 @@ function Competitions() {
 
             {liveCompetitions.length > 0 && (
                 <div className={styles.section}>
-                    <h2 className={styles.sectionTitle}>🔴 Live Now</h2>
-                    <div className={styles.grid}>
-                        {liveCompetitions.map(comp => (
-                            <CompetitionCard key={comp._id} competition={comp} status="live" />
-                        ))}
-                    </div>
+                    <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaCircle style={{ color: '#ef4444', fontSize: '12px' }} /> Live Now</h2>
+                    {viewMode === 'list' ? (
+                        <CompetitionListView competitions={liveCompetitions} status="live" />
+                    ) : (
+                        <div className={styles.grid}>
+                            {liveCompetitions.map(comp => (
+                                <CompetitionCard key={comp._id} competition={comp} status="live" />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
             <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>📅 Upcoming Events</h2>
+                <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaCalendarAlt /> Upcoming Events</h2>
                 {upcomingCompetitions.length > 0 ? (
-                    <div className={styles.grid}>
-                        {upcomingCompetitions.map(comp => (
-                            <CompetitionCard key={comp._id} competition={comp} status="upcoming" />
-                        ))}
-                    </div>
+                    viewMode === 'list' ? (
+                        <CompetitionListView competitions={upcomingCompetitions} status="upcoming" />
+                    ) : (
+                        <div className={styles.grid}>
+                            {upcomingCompetitions.map(comp => (
+                                <CompetitionCard key={comp._id} competition={comp} status="upcoming" />
+                            ))}
+                        </div>
+                    )
                 ) : (
                     <div className={styles.emptyState}>
                         <FaCalendarAlt />
@@ -307,12 +435,16 @@ function Competitions() {
 
             {ENDEDCompetitions.length > 0 && (
                 <div className={styles.section}>
-                    <h2 className={styles.sectionTitle}>🏆 Past Competitions</h2>
-                    <div className={styles.grid}>
-                        {ENDEDCompetitions.map(comp => (
-                            <CompetitionCard key={comp._id} competition={comp} status="ENDED" />
-                        ))}
-                    </div>
+                    <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaTrophy /> Past Competitions</h2>
+                    {viewMode === 'list' ? (
+                        <CompetitionListView competitions={ENDEDCompetitions} status="ENDED" />
+                    ) : (
+                        <div className={styles.grid}>
+                            {ENDEDCompetitions.map(comp => (
+                                <CompetitionCard key={comp._id} competition={comp} status="ENDED" />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>

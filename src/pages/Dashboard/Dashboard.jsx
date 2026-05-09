@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { competitionAPI } from "../../services/api";
+import { competitionAPI, eventAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import styles from "./Dashboard.module.css";
@@ -13,10 +13,22 @@ import {
   FaTrophy,
   FaChevronRight,
   FaChartBar,
-  FaEye
+  FaEye,
+  FaArrowLeft,
+  FaArrowRight,
+  FaThLarge,
+  FaThList,
+  FaBolt,
+  FaRocket,
+  FaFlask,
+  FaHistory,
+  FaStar,
+  FaGamepad,
+  FaSearch,
+  FaFilter
 } from "react-icons/fa";
 
-function Dashboard() {
+function Dashboard({ isEvent = false }) {
   const navigate = useNavigate();
   const { isUserAuthenticated } = useAuth();
 
@@ -25,14 +37,41 @@ function Dashboard() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [filteredCompetitions, setFilteredCompetitions] = useState([]);
+  const [viewMode, setViewMode] = useState('list');
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch Competitions
+  // Pagination state - now managed by backend
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 10;
+
+  // Fetch Competitions/Events with backend pagination
   const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const response = await competitionAPI.getAll();
+      // Build query params for backend pagination and filtering
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+
+      // Add status filter if not "All"
+      if (activeTab !== "All") {
+        params.status = activeTab.toLowerCase();
+      }
+
+      // Add search query if present
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+
+      const response = isEvent
+        ? await eventAPI.getAll(params)
+        : await competitionAPI.getAll(params);
+
       if (response.success && Array.isArray(response.data)) {
         const formattedCompetitions = response.data.map((comp) => {
           const startDate = new Date(comp.startTime);
@@ -81,17 +120,20 @@ function Dashboard() {
             id: comp._id,
             _id: comp._id,
             title: comp.name || comp.title || "Untitled Competition",
-            dateDisplay: formatDateRange(comp.startTime),
+            dateDisplay: `${formatDate(comp.startTime)} ${formatTime(comp.startTime)}`,
             startDate: comp.startTime,
             endDate: comp.endTime,
-            participants: comp.participants?.length || 0,
+            participants: comp.participantCount ?? comp.participants?.length ?? 0,
             maxPlayers: comp.maxPlayers || 100,
             status,
             puzzlesCount: comp.puzzles?.length || 0,
             durationText,
+            startTimeText: formatTime(comp.startTime),
+            startDateText: formatDate(comp.startTime),
           };
         });
 
+        // Backend already handles sorting, but we can apply client-side sort for consistency
         const sorted = formattedCompetitions.sort((a, b) => {
           const statusOrder = { Live: 1, Upcoming: 2, Ended: 3 };
           if (statusOrder[a.status] !== statusOrder[b.status]) {
@@ -107,53 +149,94 @@ function Dashboard() {
         });
 
         setCompetitions(sorted);
+        setFilteredCompetitions(sorted);
+
+        // Update pagination metadata from backend response
+        if (response.pagination) {
+          setTotalPages(response.pagination.total || 1);
+          setTotalRecords(response.pagination.totalRecords || sorted.length);
+        } else {
+          // Fallback if backend doesn't return pagination metadata
+          setTotalPages(1);
+          setTotalRecords(sorted.length);
+        }
       } else {
         setCompetitions([]);
+        setFilteredCompetitions([]);
+        setTotalPages(1);
+        setTotalRecords(0);
       }
     } catch (err) {
-      console.error("Failed to fetch competitions:", err);
-      setError("Failed to load competitions.");
+      console.error(`Failed to fetch ${isEvent ? "events" : "competitions"}:`, err);
+      setError(`Failed to load ${isEvent ? "events" : "competitions"}.`);
       setCompetitions([]);
+      setFilteredCompetitions([]);
+      setTotalPages(1);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isEvent, currentPage, activeTab, searchQuery]);
 
   useEffect(() => {
     fetchCompetitions();
   }, [fetchCompetitions]);
 
+  // Reset to page 1 when filters change
   useEffect(() => {
-    if (activeTab === "All") {
-      setFilteredCompetitions(competitions);
-    } else {
-      setFilteredCompetitions(
-        competitions.filter((c) => c.status.toLowerCase() === activeTab.toLowerCase())
-      );
+    if (currentPage !== 1) {
+      setCurrentPage(1);
     }
-  }, [activeTab, competitions]);
+  }, [activeTab, searchQuery]);
 
-  const formatDateRange = (startDate) => {
-    if (!startDate) return "TBA";
-    const start = new Date(startDate);
-    return start.toLocaleString("en-US", {
+  // Backend handles pagination, so we use the full filtered list
+  const currentCompetitions = filteredCompetitions;
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "TBA";
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
+    });
+  };
+
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     });
   };
 
+  const getArenaIcon = (title, index) => {
+    const icons = [
+      { icon: <FaBolt />, bg: 'rgba(255, 215, 0, 0.1)', color: '#ffcc00' },
+      { icon: <FaTrophy />, bg: 'rgba(255, 69, 0, 0.1)', color: '#ff6b6b' },
+      { icon: <FaPuzzlePiece />, bg: 'rgba(30, 144, 255, 0.1)', color: '#4dabf7' },
+      { icon: <FaRocket />, bg: 'rgba(255, 20, 147, 0.1)', color: '#f783ac' },
+      { icon: <FaFlask />, bg: 'rgba(50, 205, 50, 0.1)', color: '#69db7c' },
+      { icon: <FaStar />, bg: 'rgba(255, 165, 0, 0.1)', color: '#ffa94d' },
+      { icon: <FaGamepad />, bg: 'rgba(103, 58, 183, 0.1)', color: '#b197fc' },
+      { icon: <FaCalendarAlt />, bg: 'rgba(0, 188, 212, 0.1)', color: '#66d9e8' },
+    ];
+
+    // Deterministic selection based on title hash or just index
+    const iconIndex = (title.length + index) % icons.length;
+    return icons[iconIndex];
+  };
+
   const handleParticipate = (competition) => {
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${competition._id}/lobby`)}`);
+      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/event/${competition._id}/lobby` : `/competition/${competition._id}/lobby`)}`);
       return;
     }
     if (competition.status === "Ended") {
-      navigate(`/leaderboard/${competition._id}`);
+      navigate(isEvent ? `/event-leaderboard/${competition._id}` : `/leaderboard/${competition._id}`);
     } else {
-      navigate(`/competition/${competition._id}/lobby`);
+      navigate(isEvent ? `/event/${competition._id}/lobby` : `/competition/${competition._id}/lobby`);
     }
   };
 
@@ -162,30 +245,50 @@ function Dashboard() {
   const handlePrefetch = (competitionId) => {
     if (prefetchedRef.has(competitionId)) return;
     prefetchedRef.add(competitionId);
-    // Fire-and-forget — browser caches the response
-    liveCompetitionAPI.getLobbyState(competitionId).catch(() => { });
+    if (!isEvent) {
+      liveCompetitionAPI.getLobbyState(competitionId).catch(() => { });
+    }
   };
 
   const handleViewPuzzles = (e, competition) => {
     e.stopPropagation();
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${competition._id}/puzzle`)}`);
+      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/live-event/${competition._id}` : `/competition/${competition._id}/puzzle`)}`);
       return;
     }
-    navigate(`/competition/${competition._id}/puzzle`, { state: { reviewMode: true } });
+    navigate(isEvent ? `/live-event/${competition._id}` : `/competition/${competition._id}/puzzle`, { state: { reviewMode: true } });
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        <PageHeader
-          title="Puzzle Arena"
-          subtitle="Compete in real-time chess puzzle battles"
-          icon={<FaTrophy />}
-        />
+        <div className={styles.headerRow}>
+          <PageHeader
+            title={isEvent ? "Events Arena" : "Puzzle Arena"}
+            subtitle={isEvent ? "Register and compete in real-time chess events" : "Compete in real-time chess puzzle battles"}
+            icon={<FaTrophy />}
+          />
+          <div className={styles.viewModeToggle}>
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.toggleBtnActive : ''}`}
+              onClick={() => setViewMode('list')}
+              title="List View"
+            >
+              <FaThList />
+            </button>
+            <button
+              className={`${styles.toggleBtn} ${viewMode === 'grid' ? styles.toggleBtnActive : ''}`}
+              onClick={() => setViewMode('grid')}
+              title="Grid View"
+            >
+              <FaThLarge />
+            </button>
 
-        {/* Filter Tabs */}
-        <div className={styles.tabsContainer}>
+          </div>
+        </div>
+
+        {/* Filter & Search Bar */}
+        <div className={styles.controlsRow}>
           <div className={styles.filterTabs}>
             {["All", "Live", "Upcoming", "Ended"].map((tab) => (
               <button
@@ -193,9 +296,27 @@ function Dashboard() {
                 className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ""}`}
                 onClick={() => setActiveTab(tab)}
               >
+                {tab === "Live" && <span className={styles.tabDot} style={{ backgroundColor: '#22c55e' }}></span>}
+                {tab === "Upcoming" && <span className={styles.tabDot} style={{ backgroundColor: '#3b82f6' }}></span>}
                 {tab}
               </button>
             ))}
+          </div>
+
+          <div className={styles.searchWrapper}>
+            <div className={styles.searchInputGroup}>
+              <FaSearch className={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Search arenas..."
+                className={styles.searchInput}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button className={styles.filterBtn}>
+              <FaFilter />
+            </button>
           </div>
         </div>
 
@@ -212,77 +333,211 @@ function Dashboard() {
         ) : filteredCompetitions.length === 0 ? (
           <div className={styles.emptyState}>
             <FaTrophy className={styles.emptyIcon} />
-            <h3>No Competitions Found</h3>
-            <p>There are no tournaments in this category right now.</p>
+            <h3>No {isEvent ? "Events" : "Competitions"} Found</h3>
+            <p>There are no {isEvent ? "events" : "tournaments"} in this category right now.</p>
           </div>
         ) : (
-          <div className={styles.tournamentList}>
-            {filteredCompetitions.map((comp) => (
-              <div
-                key={comp.id}
-                className={`${styles.card} ${styles[comp.status.toLowerCase()]}`}
-                onClick={() => handleParticipate(comp)}
-                onMouseEnter={() => comp.status !== 'Ended' && handlePrefetch(comp._id)}
-              >
-                <div className={styles.cardMain}>
-                  {/* Header: Status + Title */}
-                  <div className={styles.cardHeader}>
-                    <span className={`${styles.statusBadge} ${styles[`badge${comp.status}`]}`}>
-                      {comp.status === 'Live' && <span className={styles.liveDot}></span>}
-                      {comp.status}
-                    </span>
-                    <h3 className={styles.cardTitle}>{comp.title}</h3>
+          viewMode === 'list' ? (
+            <div className={styles.arenaTableWrapper}>
+              <table className={styles.arenaTable}>
+                <thead>
+                  <tr>
+                    <th>Arena</th>
+                    <th>Status</th>
+                    <th>Start Time</th>
+                    <th>Duration</th>
+                    <th>Players</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentCompetitions.map((comp, idx) => {
+                    const arenaStyle = getArenaIcon(comp.title, idx);
+                    return (
+                      <tr key={comp.id} onClick={() => handleParticipate(comp)} className={styles.tableRow}>
+                        <td>
+                          <div className={styles.arenaNameCell}>
+                            <div className={styles.arenaIcon} style={{ backgroundColor: arenaStyle.bg, color: arenaStyle.color }}>
+                              {arenaStyle.icon}
+                            </div>
+                            <div className={styles.arenaInfo}>
+                              <span className={styles.arenaTitle}>{comp.title}</span>
+                              <span className={styles.arenaSubtitle}>
+                                {comp.status === 'Live' ? 'Compete now and win!' :
+                                  comp.status === 'Upcoming' ? 'Get ready for the challenge.' :
+                                    'Tournament finished.'}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.statusColumn}>
+                            <span className={`${styles.modernBadge} ${styles[`modernBadge${comp.status}`]}`}>
+                              {comp.status === 'Live' && <span className={styles.liveDot}></span>}
+                              {comp.status}
+                            </span>
+
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.timeColumn}>
+                            <div className={styles.timeMain}>
+                              <FaCalendarAlt /> {comp.startDateText}
+                            </div>
+                            <div className={styles.timeSub}>
+                              {comp.startTimeText}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.simpleIconBox}>
+                            <FaClock />
+                            <span>{comp.durationText}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.simpleIconBox}>
+                            <FaUserFriends />
+                            <span>{comp.participants}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.tableActionCell} onClick={e => e.stopPropagation()}>
+                            {comp.status === "Ended" ? (
+                              <div className={styles.actionGroupHorizontal}>
+                                <button
+                                  className={styles.modernAnalyzeBtn}
+                                  onClick={(e) => handleViewPuzzles(e, comp)}
+                                >
+                                  Analyze <FaEye />
+                                </button>
+                                <button
+                                  className={styles.modernResultsBtn}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(isEvent ? `/event-leaderboard/${comp._id}` : `/leaderboard/${comp._id}`);
+                                  }}
+                                >
+                                  Results <FaChartBar />
+                                </button>
+                              </div>
+                            ) : comp.status === "Live" ? (
+                              <button
+                                className={styles.modernJoinBtn}
+                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp); }}
+                              >
+                                Join Now <FaChevronRight />
+                              </button>
+                            ) : (
+                              <button
+                                className={styles.modernLobbyBtn}
+                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp); }}
+                              >
+                                Enter Lobby <FaChevronRight />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className={styles.tournamentList}>
+              {currentCompetitions.map((comp) => (
+                <div
+                  key={comp.id}
+                  className={`${styles.card} ${styles[comp.status.toLowerCase()]}`}
+                  onClick={() => handleParticipate(comp)}
+                  onMouseEnter={() => comp.status !== 'Ended' && handlePrefetch(comp._id)}
+                >
+                  <div className={styles.cardMain}>
+                    {/* Header: Status + Title */}
+                    <div className={styles.cardHeader}>
+                      <span className={`${styles.statusBadge} ${styles[`badge${comp.status}`]}`}>
+                        {comp.status === 'Live' && <span className={styles.liveDot}></span>}
+                        {comp.status}
+                      </span>
+                      <h3 className={styles.cardTitle}>{comp.title}</h3>
+                    </div>
+
+                    {/* Metadata Grid */}
+                    <div className={styles.metaGrid}>
+                      <div className={styles.metaItem}>
+                        <FaCalendarAlt className={styles.metaIcon} />
+                        <span>{comp.dateDisplay}</span>
+                      </div>
+                      <div className={styles.metaItem}>
+                        <FaClock className={styles.metaIcon} />
+                        <span>{comp.durationText}</span>
+                      </div>
+                      <div className={styles.metaItem}>
+                        <FaPuzzlePiece className={styles.metaIcon} />
+                        <span>{comp.puzzlesCount} Puzzles</span>
+                      </div>
+                      <div className={styles.metaItem}>
+                        <FaUserFriends className={styles.metaIcon} />
+                        <span>{comp.participants} Players</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Metadata Grid */}
-                  <div className={styles.metaGrid}>
-                    <div className={styles.metaItem}>
-                      <FaCalendarAlt className={styles.metaIcon} />
-                      <span>{comp.dateDisplay}</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <FaClock className={styles.metaIcon} />
-                      <span>{comp.durationText}</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <FaPuzzlePiece className={styles.metaIcon} />
-                      <span>{comp.puzzlesCount} Puzzles</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <FaUserFriends className={styles.metaIcon} />
-                      <span>{comp.participants} Players</span>
-                    </div>
+                  {/* Footer / Actions */}
+                  <div className={styles.cardFooter}>
+                    {comp.status === "Ended" ? (
+                      <div className={styles.actionGroup}>
+                        <button
+                          className={`${styles.actionBtn} ${styles.outlineBtn}`}
+                          onClick={(e) => handleViewPuzzles(e, comp)}
+                        >
+                          <FaEye /> Analyze
+                        </button>
+                        <button
+                          className={`${styles.actionBtn} ${styles.primaryBtn}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(isEvent ? `/event-leaderboard/${comp._id}` : `/leaderboard/${comp._id}`);
+                          }}
+                        >
+                          <FaChartBar /> Leaderboard
+                        </button>
+                      </div>
+                    ) : (
+                      <div className={styles.actionGroup}>
+                        <button className={`${styles.actionBtn} ${styles.primaryBtn} ${styles.fullWidthBtn}`}>
+                          {comp.status === 'Live' ? 'Join Now' : 'Enter Lobby'} <FaChevronRight />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
+              ))}
+            </div>
+          )
+        )}
 
-                {/* Footer / Actions */}
-                <div className={styles.cardFooter}>
-                  {comp.status === "Ended" ? (
-                    <div className={styles.actionGroup}>
-                      <button
-                        className={`${styles.actionBtn} ${styles.outlineBtn}`}
-                        onClick={(e) => handleViewPuzzles(e, comp)}
-                      >
-                        <FaEye /> Analyze
-                      </button>
-                      <button
-                        className={`${styles.actionBtn} ${styles.primaryBtn}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/leaderboard/${comp._id}`);
-                        }}
-                      >
-                        <FaChartBar /> Leaderboard
-                      </button>
-                    </div>
-                  ) : (
-                    <button className={`${styles.actionBtn} ${styles.primaryBtn} ${styles.fullWidthBtn}`}>
-                      {comp.status === 'Live' ? 'Join Now' : 'Enter Lobby'} <FaChevronRight />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+        {/* Pagination Controls */}
+        {!loading && !error && totalRecords > itemsPerPage && (
+          <div className={styles.pagination}>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <FaArrowLeft />
+            </button>
+            <span className={styles.pageInfo}>
+              Page {currentPage} of {totalPages} ({totalRecords} total)
+            </span>
+            <button
+              className={styles.pageBtn}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              <FaArrowRight />
+            </button>
           </div>
         )}
       </div>

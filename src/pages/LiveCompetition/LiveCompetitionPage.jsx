@@ -5,6 +5,7 @@ import { competitionAPI } from '../../services/api';
 import LiveLeaderboard from '../../components/LiveCompetition/LiveLeaderboard';
 import CompetitionTimer from '../../components/LiveCompetition/CompetitionTimer';
 import PuzzleRacer from '../../components/PuzzleRacer/PuzzleRacer';
+import { FaRocket, FaCircle, FaExclamationTriangle, FaFlagCheckered, FaCheck, FaTimes, FaSyncAlt, FaArrowLeft } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import styles from './LiveCompetitionPage.module.css';
 
@@ -187,7 +188,7 @@ const LiveCompetitionPage = () => {
                 onClick={handleParticipate}
                 disabled={isLoading}
               >
-                {isLoading ? 'Joining...' : '🚀 Participate Now'}
+                {isLoading ? 'Joining...' : <><FaRocket style={{ marginRight: '6px' }} />Participate Now</>}
               </button>
 
               <button
@@ -209,8 +210,8 @@ const LiveCompetitionPage = () => {
       <div className={styles['live-competition-page']}>
         <div className={styles['puzzle-solving-interface']}>
           <div className={styles['puzzle-header']}>
-            <button className={styles['back-btn']} onClick={handleBackToPuzzles}>
-              ← Back to Puzzles
+            <button className={styles['back-btn']} onClick={handleBackToPuzzles} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FaArrowLeft /> Back to Puzzles
             </button>
             <h2>{selectedPuzzle.title}</h2>
             <div className={styles['puzzle-info']}>
@@ -287,13 +288,13 @@ const LiveCompetitionPage = () => {
 
       {error && (
         <div className={styles['error-banner']}>
-          <span>⚠️ {error}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaExclamationTriangle /> {error}</span>
         </div>
       )}
 
       {competitionEnded && (
         <div className={styles['competition-ended-banner']}>
-          <span>🏁 Competition has ended! Check the final results below.</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaFlagCheckered /> Competition has ended! Check the final results below.</span>
         </div>
       )}
 
@@ -318,20 +319,20 @@ const LiveCompetitionPage = () => {
                   <div className={styles['puzzle-difficulty']}>{puzzle.difficulty}</div>
 
                   {puzzle.isSolved && (
-                    <div className={styles['solved-indicator']}>
-                      ✅ +{puzzle.solvedData?.scoreEarned || 0} pts
+                    <div className={styles['solved-indicator']} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <FaCheck style={{ color: '#22c55e' }} /> +{puzzle.solvedData?.scoreEarned || 0} pts
                     </div>
                   )}
 
                   {puzzle.isFailed && (
-                    <div className={styles['failed-indicator']}>
-                      ❌ Failed
+                    <div className={styles['failed-indicator']} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <FaTimes style={{ color: '#ef4444' }} /> Failed
                     </div>
                   )}
 
                   {puzzle.status === 'in_progress' && (
-                    <div className={styles['in-progress-indicator']}>
-                      🔄 In Progress
+                    <div className={styles['in-progress-indicator']} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <FaSyncAlt /> In Progress
                     </div>
                   )}
                 </div>

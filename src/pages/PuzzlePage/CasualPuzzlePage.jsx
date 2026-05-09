@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Chess } from "chess.js";
-// import { Chess } from "chess.js";
+import { FaChessPawn, FaEye, FaSyncAlt, FaArrowRight, FaLightbulb, FaCheck, FaTimes } from 'react-icons/fa';
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
 
@@ -110,14 +110,14 @@ function CasualPuzzlePage() {
 
       if (matches) {
         setGame(new Chess(gameCopy.fen()));
-        setMessage("Correct! ✓");
+        setMessage("Correct!");
 
         const nextIndex = moveIndex + 1;
 
         // Check if puzzle is complete
         if (nextIndex >= puzzle.solution.length) {
           setStatus("solved");
-          setMessage("🎉 Puzzle solved!");
+          setMessage("Puzzle Solved!");
           return true;
         }
 
@@ -133,7 +133,7 @@ function CasualPuzzlePage() {
             // Check if that was the last move
             if (nextIndex + 1 >= puzzle.solution.length) {
               setStatus("solved");
-              setMessage("🎉 Puzzle solved!");
+              setMessage("Puzzle Solved!");
             } else {
               setMessage("Your turn again!");
             }
@@ -144,7 +144,7 @@ function CasualPuzzlePage() {
       } else {
         // Wrong move
         setStatus("wrong");
-        setMessage("❌ Not the best move. Try again!");
+        setMessage("Not the best move. Try again!");
         // We set the game temporarily to the wrong move to show it, then revert
         setGame(new Chess(gameCopy.fen()));
 
@@ -202,7 +202,7 @@ function CasualPuzzlePage() {
           gap: '16px'
         }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: '32px', color: '#2d3748' }}>♟️ Chess Tactics</h1>
+            <h1 style={{ margin: 0, fontSize: '32px', color: '#2d3748', display: 'flex', alignItems: 'center', gap: '8px' }}><FaChessPawn /> Chess Tactics</h1>
             <p style={{ margin: '4px 0 0 0', color: '#718096' }}>Master tactical patterns</p>
           </div>
           {puzzle && (
@@ -289,29 +289,31 @@ function CasualPuzzlePage() {
                       onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
                       onMouseOut={e => e.target.style.transform = 'scale(1)'}
                     >
-                      ➜ Next Puzzle
+                      <FaArrowRight style={{ marginRight: '6px' }} /> Next Puzzle
                     </button>
                   ) : (
                     <>
-                      <button
-                        onClick={handleViewSolution}
-                        disabled={showSolution}
-                        style={{
-                          background: showSolution ? '#cbd5e0' : '#667eea',
-                          color: 'white',
-                          border: 'none',
-                          padding: '14px 24px',
-                          borderRadius: '12px',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                          cursor: showSolution ? 'not-allowed' : 'pointer',
-                          transition: 'transform 0.2s'
-                        }}
-                        onMouseOver={e => !showSolution && (e.target.style.transform = 'scale(1.05)')}
-                        onMouseOut={e => e.target.style.transform = 'scale(1)'}
-                      >
-                        👁️ View Solution
-                      </button>
+                      {((puzzle?.puzzleType || puzzle?.type || 'normal') === 'normal') && (
+                        <button
+                          onClick={handleViewSolution}
+                          disabled={showSolution}
+                          style={{
+                            background: showSolution ? '#cbd5e0' : '#667eea',
+                            color: 'white',
+                            border: 'none',
+                            padding: '14px 24px',
+                            borderRadius: '12px',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            cursor: showSolution ? 'not-allowed' : 'pointer',
+                            transition: 'transform 0.2s'
+                          }}
+                          onMouseOver={e => !showSolution && (e.target.style.transform = 'scale(1.05)')}
+                          onMouseOut={e => e.target.style.transform = 'scale(1)'}
+                        >
+                          <FaEye style={{ marginRight: '6px' }} /> View Solution
+                        </button>
+                      )}
                       <button
                         onClick={handleRetry}
                         style={{
@@ -328,7 +330,7 @@ function CasualPuzzlePage() {
                         onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
                         onMouseOut={e => e.target.style.transform = 'scale(1)'}
                       >
-                        🔄 Retry
+                        <FaSyncAlt style={{ marginRight: '6px' }} /> Retry
                       </button>
                       <button
                         onClick={loadNewPuzzle}
@@ -346,13 +348,13 @@ function CasualPuzzlePage() {
                         onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
                         onMouseOut={e => e.target.style.transform = 'scale(1)'}
                       >
-                        Skip ➜
+                        Skip <FaArrowRight style={{ marginLeft: '6px' }} />
                       </button>
                     </>
                   )}
                 </div>
 
-                {showSolution && (
+                {showSolution && ((puzzle?.puzzleType || puzzle?.type || 'normal') === 'normal') && (
                   <div style={{
                     background: '#fef5e7',
                     border: '2px solid #f39c12',
@@ -360,8 +362,8 @@ function CasualPuzzlePage() {
                     borderRadius: '12px',
                     marginTop: '16px'
                   }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#d68910' }}>
-                      💡 Solution:
+                    <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#d68910', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FaLightbulb /> Solution:
                     </div>
                     <div style={{ fontSize: '14px', color: '#7d6608', fontFamily: 'monospace' }}>
                       {puzzle.solution.join(" → ")}

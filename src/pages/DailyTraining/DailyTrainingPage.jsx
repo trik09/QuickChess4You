@@ -20,6 +20,7 @@ function DailyTrainingPage() {
     const [showSolution, setShowSolution] = useState(false);
     const [puzzleStatuses, setPuzzleStatuses] = useState({}); // { [puzzleId]: 'success' | 'failed' }
     const [puzzleBoardStates, setPuzzleBoardStates] = useState({}); // { [puzzleId]: { fen, moveHistory } }
+    const [resetKey, setResetKey] = useState(0);
 
     // Load puzzles on mount
     useEffect(() => {
@@ -42,8 +43,8 @@ function DailyTrainingPage() {
         try {
             setLoading(true);
 
-            // Fetch only 10 daily training puzzles for demo
-            const response = await puzzleAPI.getAll({ limit: 10 });
+            // Fetch only puzzles explicitly marked for daily training
+            const response = await puzzleAPI.getAll({ isDailyTraining: true, limit: 20 });
 
             const puzzlesData = response.puzzles || (Array.isArray(response) ? response : []);
             setPuzzles(puzzlesData);
@@ -74,7 +75,7 @@ function DailyTrainingPage() {
             [puzzleId]: "success",
         }));
 
-        toast.success("Puzzle solved! Great job! 🎉");
+        toast.success("Puzzle solved! Great job!");
     };
 
     const handleWrongMove = () => {
@@ -108,6 +109,7 @@ function DailyTrainingPage() {
             delete newStatuses[puzzleId];
             return newStatuses;
         });
+        setResetKey((k) => k + 1);
         setShowSolution(false);
         toast.success("Puzzle reset!");
     };
@@ -214,13 +216,15 @@ function DailyTrainingPage() {
 
                         {/* Action Buttons */}
                         <div className={styles.actionButtons}>
-                            <button
-                                className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                                onClick={() => setShowSolution(!showSolution)}
-                            >
-                                <FaEye />
-                                {showSolution ? "Hide Solution" : "View Solution"}
-                            </button>
+                            {((currentPuzzle?.puzzleType || currentPuzzle?.type || 'normal') === 'normal') && (
+                                <button
+                                    className={`${styles.actionBtn} ${styles.btnPrimary}`}
+                                    onClick={() => setShowSolution(!showSolution)}
+                                >
+                                    <FaEye />
+                                    {showSolution ? "Hide Solution" : "View Solution"}
+                                </button>
+                            )}
 
                             <button
                                 className={`${styles.actionBtn} ${styles.btnReset}`}
@@ -239,12 +243,13 @@ function DailyTrainingPage() {
                     <div className={styles.boardWrapper}>
                         {currentPuzzle ? (
                             <ChessBoard
-                                key={`${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}`}
+                                key={`${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-${resetKey}`}
                                 fen={currentPuzzle.fen}
                                 solution={currentPuzzle.solution || currentPuzzle.solutionMoves}
                                 alternativeSolutions={currentPuzzle.alternativeSolutions}
                                 puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
-                                kidsConfig={currentPuzzle.kidsConfig}
+                                captureConfig={currentPuzzle.captureConfig || currentPuzzle.kidsConfig}
+                                illegalConfig={currentPuzzle.illegalConfig}
                                 firstMoveBy={currentPuzzle.firstMoveBy}
                                 onPuzzleSolved={handlePuzzleSolved}
                                 onWrongMove={handleWrongMove}

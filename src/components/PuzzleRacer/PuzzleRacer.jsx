@@ -1,7 +1,8 @@
 import React, { useMemo, useCallback } from "react";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { deduplicateLeaderboard } from "../../features/liveCompetition/leaderboardUtils";
+import { deduplicateLeaderboard, normalizeUserId } from "../../features/liveCompetition/leaderboardUtils";
+import { FaGlobeAmericas, FaStar } from "react-icons/fa";
 import "./PuzzleRacer.css";
 
 /* ========================================================
@@ -20,12 +21,29 @@ const PLANET_DATA = [
 ];
 
 const VISIBLE_SLOTS = 9; // 1 sun + 8 planets
+const ORBITS = [180, 280, 380, 480, 580, 680, 780, 880]; // Mercury to Neptune radii
 
 /* ========================================================
    COMPONENT
 ======================================================== */
-const PuzzleRacer = () => {
-  const { leaderboard, competition, participant, puzzles: contextPuzzles, getSolvedPuzzlesCount } = useLiveCompetition();
+const PuzzleRacer = ({
+  leaderboard: propLeaderboard,
+  competition: propCompetition,
+  participant: propParticipant,
+  puzzles: propPuzzles
+}) => {
+  const { 
+    leaderboard: ctxLeaderboard, 
+    competition: ctxCompetition, 
+    participant: ctxParticipant, 
+    puzzles: ctxPuzzles 
+  } = useLiveCompetition();
+
+  const leaderboard = propLeaderboard !== undefined ? propLeaderboard : ctxLeaderboard;
+  const competition = propCompetition !== undefined ? propCompetition : ctxCompetition;
+  const participant = propParticipant !== undefined ? propParticipant : ctxParticipant;
+  const contextPuzzles = propPuzzles !== undefined ? propPuzzles : ctxPuzzles;
+  
   const { user } = useAuth();
 
   const totalPuzzles = useMemo(() => {
@@ -54,8 +72,9 @@ const PuzzleRacer = () => {
   const isCurrentUser = useCallback(
     (racer) => {
       if (!racer || !user) return false;
-      const racerId = racer.userId && typeof racer.userId === 'object' ? (racer.userId._id || racer.userId.id) : racer.userId;
-      return String(racerId) === String(currentUserId) || racer.username === user?.username;
+      const racerId = normalizeUserId(racer.userId);
+      return (racerId && String(currentUserId) && racerId === String(currentUserId)) ||
+        racer.username === user?.username;
     },
     [currentUserId, user]
   );
@@ -130,14 +149,14 @@ const PuzzleRacer = () => {
       {/* Header */}
       <div className="racer-header">
         <h4>
-          <span className="race-icon">🪐</span>
+          <span className="race-icon"><FaGlobeAmericas /></span>
           Puzzle Galaxy
         </h4>
         <div className="race-info">
           <span className="puzzle-count">{totalPuzzles} Puzzles</span>
           {othersCount > 0 && (
             <span className="others-badge">
-              <span className="others-icon">🌟</span>
+              <span className="others-icon"><FaStar /></span>
               +{othersCount} more
             </span>
           )}
@@ -148,17 +167,30 @@ const PuzzleRacer = () => {
       <div className="solar-system-scene">
         {/* Orbit ellipses anchored at sun position */}
         <svg className="orbit-svg" viewBox="0 0 1000 260" preserveAspectRatio="none">
-          {[130, 175, 220, 265, 310, 355, 400, 445].map((rx, i) => (
-            <ellipse
-              key={i}
-              cx="940"
-              cy="130"
-              rx={rx}
-              ry={rx * 0.38}
-              fill="none"
-              stroke="rgba(255,255,255,0.045)"
-              strokeWidth="1"
-            />
+          {ORBITS.map((rx, i) => (
+            <React.Fragment key={i}>
+              {/* Outer Glow */}
+              <ellipse
+                cx="940"
+                cy="130"
+                rx={rx}
+                ry={rx * 0.38}
+                fill="none"
+                stroke="rgba(255,255,255,0.02)"
+                strokeWidth="3"
+                style={{ filter: 'blur(2px)' }}
+              />
+              {/* Core Line */}
+              <ellipse
+                cx="940"
+                cy="130"
+                rx={rx}
+                ry={rx * 0.38}
+                fill="none"
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth="1"
+              />
+            </React.Fragment>
           ))}
         </svg>
 
@@ -173,11 +205,19 @@ const PuzzleRacer = () => {
             // Use local ground truth for current user
             const solved = isCurrent ? localSolvedCount : (racer?.puzzlesSolved || 0);
 
+            // Calculate exact horizontal position based on orbit radius
+            const rx = ORBITS[ORBITS.length - 1 - idx];
+            const leftCoord = 940 - rx;
+            const leftPercent = `${leftCoord / 10}%`;
+
             return (
               <div
                 key={planet.key}
                 className={`planet-slot ${isCurrent ? "planet-slot-you" : ""} ${!racer ? "planet-slot-empty" : ""}`}
-                style={{ animationDelay: `${idx * 0.4}s` }}
+                style={{ 
+                  left: leftPercent,
+                  animationDelay: `${idx * 0.4}s` 
+                }}
               >
                 {/* The sphere */}
                 <div
@@ -214,10 +254,10 @@ const PuzzleRacer = () => {
                   {racer ? (
                     <>
                       <span className={`planet-slot-name ${isCurrent ? "name-you" : ""}`} title={isCurrent ? "You" : racer.username}>
-                        {isCurrent ? "⭐ You" : racer.username}
+                        {isCurrent ? <><FaStar /> You</> : racer.username}
                       </span>
                       <span className={`planet-slot-score ${isCurrent ? "score-you" : ""}`}>
-                        {solved}/{totalPuzzles}
+                        {solved * 10} pts
                       </span>
                     </>
                   ) : (
@@ -240,10 +280,10 @@ const PuzzleRacer = () => {
             {sunRacer ? (
               <>
                 <span className="sun-player-name" title={isCurrentUser(sunRacer) ? "You" : sunRacer.username}>
-                  {isCurrentUser(sunRacer) ? "⭐ You" : sunRacer.username}
+                  {isCurrentUser(sunRacer) ? <><FaStar /> You</> : sunRacer.username}
                 </span>
                 <span className="sun-player-score">
-                  {isCurrentUser(sunRacer) ? localSolvedCount : (sunRacer.puzzlesSolved || 0)}/{totalPuzzles}
+                  {(isCurrentUser(sunRacer) ? localSolvedCount : (sunRacer.puzzlesSolved || 0)) * 10} pts
                 </span>
               </>
             ) : (
@@ -258,9 +298,9 @@ const PuzzleRacer = () => {
         <div className="current-user-star-3d">
           <div className="star-glow-3d" />
           <div className="star-info-3d">
-            <span className="star-username-3d">⭐ You</span>
+            <span className="star-username-3d"><FaStar /> You</span>
             <span className="star-rank-3d">
-              Rank #{currentUserRacer.rank} · {localSolvedCount}/{totalPuzzles} solved
+              Rank #{currentUserRacer.rank} · {localSolvedCount * 10} pts
             </span>
           </div>
         </div>

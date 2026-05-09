@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaMedal, FaTrophy, FaCircle, FaSyncAlt, FaUsers } from 'react-icons/fa';
 import { useLiveCompetition } from '../../contexts/LiveCompetitionContext';
 import './LiveLeaderboard.css';
 
@@ -51,11 +52,11 @@ const LiveLeaderboard = () => {
   const getRankDisplay = (rank) => {
     switch (rank) {
       case 1:
-        return <span className="rank gold">🥇 #{rank}</span>;
+        return <span className="rank gold" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FaMedal style={{ color: '#FFD700' }} /> #{rank}</span>;
       case 2:
-        return <span className="rank silver">🥈 #{rank}</span>;
+        return <span className="rank silver" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FaMedal style={{ color: '#C0C0C0' }} /> #{rank}</span>;
       case 3:
-        return <span className="rank bronze">🥉 #{rank}</span>;
+        return <span className="rank bronze" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FaMedal style={{ color: '#CD7F32' }} /> #{rank}</span>;
       default:
         return <span className="rank">#{rank}</span>;
     }
@@ -65,10 +66,10 @@ const LiveLeaderboard = () => {
     <div className={`live-leaderboard ${highlightUpdate ? 'updated' : ''}`}>
       <div className="leaderboard-header">
         <div className="header-left">
-          <h3>🏆 Live Leaderboard</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaTrophy /> Live Leaderboard</h3>
           <div className="connection-status">
-            <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
-              {isConnected ? '🟢 Live' : '🔴 Offline'}
+            <span className={`status-indicator ${isConnected ? 'connected' : 'disconnected'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <FaCircle style={{ color: isConnected ? '#22c55e' : '#ef4444', fontSize: '10px' }} /> {isConnected ? 'Live' : 'Offline'}
             </span>
           </div>
         </div>
@@ -85,7 +86,7 @@ const LiveLeaderboard = () => {
             disabled={isRefreshing}
             title="Refresh leaderboard"
           >
-            🔄
+            <FaSyncAlt />
           </button>
         </div>
       </div>
@@ -151,7 +152,7 @@ const LiveLeaderboard = () => {
           ) : (
             <div className="no-participants">
               <div className="empty-state">
-                <span className="empty-icon">👥</span>
+                <span className="empty-icon"><FaUsers size={32} /></span>
                 <p>No participants yet</p>
                 <small>Be the first to solve a puzzle!</small>
               </div>

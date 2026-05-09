@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FaUserGraduate, FaEye, FaTrash, FaUser, FaFilter } from 'react-icons/fa';
 import { PageHeader, SearchBar, FilterSelect, DataTable, Badge, IconButton } from '../../../components/Admin';
 import { adminAPI } from '../../../services/api';
 import styles from './StudentList.module.css';
 
 function StudentList() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [filterStatus, setFilterStatus] = useState(searchParams.get('status') || 'all');
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -16,6 +18,14 @@ function StudentList() {
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  // Sync filters to URL
+  useEffect(() => {
+    const params = {};
+    if (searchTerm) params.search = searchTerm;
+    if (filterStatus !== 'all') params.status = filterStatus;
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, filterStatus, setSearchParams]);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -174,7 +184,7 @@ function StudentList() {
             <>
               <IconButton
                 icon={FaEye}
-                to={`/admin/students/${student._id}`}
+                to={`/admin/students/${student._id}${window.location.search}`}
                 title="View Details"
                 variant="primary"
               />

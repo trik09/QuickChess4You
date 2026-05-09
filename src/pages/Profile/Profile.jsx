@@ -159,11 +159,9 @@ function Profile() {
             </button>
             <button
               className={styles.headerLogoutBtn}
-              onClick={() => {
-                import('../../services/authStorage').then(({ clearUserAuth }) => {
-                  clearUserAuth();
-                  window.location.href = '/';
-                });
+              onClick={async () => {
+                await logout?.();
+                window.location.href = '/';
               }}
             >
               <FaSignOutAlt /> <span>Logout</span>
@@ -346,11 +344,9 @@ function Profile() {
                   </button>
                   <button
                     className={styles.logoutBtn}
-                    onClick={() => {
-                      import('../../services/authStorage').then(({ clearUserAuth }) => {
-                        clearUserAuth();
-                        window.location.href = '/';
-                      });
+                    onClick={async () => {
+                      await logout?.();
+                      window.location.href = '/';
                     }}
                   >
                     <FaSignOutAlt /> Logout

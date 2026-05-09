@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaTrophy,
   FaPlus,
@@ -12,15 +12,20 @@ import {
   FaTimes,
   FaChess,
   FaSearch,
-  FaFilter,
   FaLayerGroup,
   FaLock,
   FaCalendarAlt,
   FaHourglassHalf,
+  FaChevronLeft,
+  FaChevronRight,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+  FaMagic,
+  FaCalendarPlus
 } from "react-icons/fa";
+import { LuFilter } from "react-icons/lu";
 import toast, { Toaster } from "react-hot-toast";
 import {
-  PageHeader,
   Button,
   DataTable,
   Badge,
@@ -33,9 +38,27 @@ import { competitionAPI } from "../../../services/api";
 import { liveCompetitionAPI } from "../../../services/liveCompetitionAPI";
 import styles from "./CompetitionList.module.css";
 
+// Constants for Auto Variation
+const VARIATIONS = {
+  1: ["Mate in One", "Fork", "Mate in Two", "Skewer", "Pin"],
+  2: ["Mate in One", "Pawn Endgame", "Discover Attack", "Overloading", "Rook Endgame"],
+  3: ["Mate in One", "Mate in Two", "Fork", "Pin", "Pawn Endgame", "Skewer", "Overloading", "Opening Traps", "Discover Attack"]
+};
+
+// Puzzle distribution per sequence level
+const DISTRIBUTION = {
+  1: 3,
+  2: 3,
+  3: 2,
+  4: 2
+};
+
+const genId = () => Math.random().toString(36).slice(2, 9);
+
 function CompetitionList() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('status') || "all");
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,8 +87,20 @@ function CompetitionList() {
   const [selectedCompetition, setSelectedCompetition] = useState(null);
 
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
+  const itemsPerPage = 10;
+
+  // Search & Filter State
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || "");
+  const [filterDate, setFilterDate] = useState(searchParams.get('date') || "");
+  const [filterTime, setFilterTime] = useState(searchParams.get('time') || "");
+
+  const statusOptions = [
+    { value: "all", label: "All" },
+    { value: "live", label: "Live" },
+    { value: "upcoming", label: "Upcoming" },
+    { value: "ENDED", label: "Ended" },
+  ];
 
   const formatDuration = (minutes) => {
     if (!minutes && minutes !== 0) return "N/A";
@@ -82,7 +117,7 @@ function CompetitionList() {
     setLoading(true);
     try {
       // console.log("🔍 Fetching competitions...");
-      const response = await competitionAPI.getAll();
+      const response = await competitionAPI.getAll({ limit: 1000 });
       // console.log("📦 API Response:", response);
       // console.log("✅ Response success:", response.success);
       // console.log("📊 Response data:", response.data);
@@ -96,7 +131,13 @@ function CompetitionList() {
           name: comp.title || comp.name,
           status: getCompetitionStatus(comp),
           startTime: comp.startTime
-            ? new Date(comp.startTime).toLocaleDateString()
+            ? new Date(comp.startTime).toLocaleString([], {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "N/A",
           startTimeFull: comp.startTime
             ? new Date(comp.startTime).toLocaleString()
@@ -112,6 +153,7 @@ function CompetitionList() {
           maxPlayers: comp.maxPlayers || 100,
           puzzles: comp.puzzles || [],
           accessCode: comp.accessCode,
+          players: comp.participantCount || 0,
         })).sort((a, b) => b.startTimeRaw - a.startTimeRaw);
         setCompetitions(mappedCompetitions);
       } else {
@@ -151,10 +193,31 @@ function CompetitionList() {
     fetchCompetitions();
   }, [fetchCompetitions]);
 
+  // Sync filters to URL search params
+  useEffect(() => {
+    const params = {};
+    if (activeTab !== 'all') params.status = activeTab;
+    if (searchTerm) params.search = searchTerm;
+    if (filterDate) params.date = filterDate;
+    if (filterTime) params.time = filterTime;
+    if (currentPage > 1) params.page = currentPage;
+    setSearchParams(params, { replace: true });
+  }, [activeTab, searchTerm, filterDate, filterTime, currentPage, setSearchParams]);
+
   const getCompetitionStatus = (competition) => {
     const now = new Date();
     const startDate = new Date(competition.startTime);
-    const endDate = new Date(competition.endTime);
+
+    // endTime may not exist — derive it from startTime + duration (in minutes)
+    let endDate;
+    if (competition.endTime) {
+      endDate = new Date(competition.endTime);
+    } else if (competition.duration) {
+      endDate = new Date(startDate.getTime() + competition.duration * 60 * 1000);
+    } else {
+      // No duration info — treat as 1 hour default
+      endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    }
 
     if (now < startDate) return "Upcoming";
     if (now > endDate) return "ENDED";
@@ -233,6 +296,76 @@ function CompetitionList() {
     } catch (error) {
       console.error('Failed to start live competition:', error);
       toast.error(error.message || 'Failed to start live competition');
+    }
+  };
+
+  const handleCreate5DaySeries = async () => {
+    const loadingToast = toast.loading("Creating 5-Day Series...");
+    try {
+      let createdCount = 0;
+      for (let i = 1; i <= 5; i++) {
+        const variationNum = ((i - 1) % 3) + 1; // 1, 2, 3, 1, 2
+        const categories = VARIATIONS[variationNum];
+        const newChapters = [];
+        const usedIds = new Set();
+        const selectedPuzzles = [];
+
+        for (const category of categories) {
+          const response = await competitionAPI.getPuzzlesForCompetition({ category, limit: 1000 });
+          if (!response.success) continue;
+          
+          const categoryPuzzles = response.data || [];
+          const chapterPuzzles = [];
+
+          Object.entries(DISTRIBUTION).forEach(([levelStr, count]) => {
+            const level = parseInt(levelStr);
+            const availablePuzzles = categoryPuzzles.filter(
+              p => p.level === level && !usedIds.has(p._id)
+            );
+
+            const shuffled = availablePuzzles.sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, count);
+
+            selected.forEach(p => {
+              chapterPuzzles.push(p._id);
+              selectedPuzzles.push(p._id);
+              usedIds.add(p._id);
+            });
+          });
+
+          newChapters.push({
+            name: category,
+            puzzleIds: chapterPuzzles
+          });
+        }
+
+        const startTime = new Date();
+        startTime.setDate(startTime.getDate() + (i - 1)); // today, tomorrow, etc.
+        startTime.setHours(19, 0, 0, 0); // Default to 19:00
+
+        const compData = {
+          name: `Auto Series - Day ${i} (Var ${variationNum})`,
+          startTime: startTime.toISOString(),
+          duration: 15,
+          maxParticipants: 100,
+          description: "Automated 5-day series competition.",
+          puzzles: selectedPuzzles,
+          chapters: newChapters
+        };
+
+        const createRes = await competitionAPI.createCompetition(compData);
+        if (createRes.success) createdCount++;
+      }
+      
+      if (createdCount > 0) {
+        toast.success(`${createdCount} competitions created successfully!`, { id: loadingToast });
+        fetchCompetitions();
+      } else {
+        toast.error("Failed to create competitions (No puzzles found)", { id: loadingToast });
+      }
+    } catch (error) {
+      console.error("Series creation failed:", error);
+      toast.error(error.message || "Series creation failed", { id: loadingToast });
     }
   };
 
@@ -321,10 +454,33 @@ function CompetitionList() {
     },
   ];
 
-  const filteredCompetitions =
-    activeTab === "all"
-      ? competitions
-      : competitions.filter((c) => c.status.toLowerCase() === activeTab);
+  const filteredCompetitions = competitions.filter((c) => {
+    // Tab Filter
+    const matchesTab = activeTab === "all" || c.status.toLowerCase() === activeTab.toLowerCase();
+    
+    // Search Filter
+    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Date & Time Filter
+    let matchesDate = true;
+    let matchesTime = true;
+    
+    if (filterDate || filterTime) {
+      const compDate = new Date(c.startTimeRaw);
+      
+      if (filterDate) {
+        const targetDate = new Date(filterDate);
+        matchesDate = compDate.toDateString() === targetDate.toDateString();
+      }
+      
+      if (filterTime) {
+        const [hours, minutes] = filterTime.split(':').map(Number);
+        matchesTime = compDate.getHours() === hours && compDate.getMinutes() === minutes;
+      }
+    }
+
+    return matchesTab && matchesSearch && matchesDate && matchesTime;
+  });
 
   const columns = [
     { key: "name", label: "Name" },
@@ -361,15 +517,6 @@ function CompetitionList() {
       key: "players",
       label: "Players",
       render: (players, row) => (
-        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <FaUsers /> {players}/{row.maxPlayers}
-        </span>
-      ),
-    },
-    {
-      key: "participantsLink",
-      label: "Participants",
-      render: (_, row) => (
         <Button
           size="small"
           variant="secondary"
@@ -378,168 +525,179 @@ function CompetitionList() {
             navigate(`/admin/competitions/${row._id || row.id}/participants`)
           }
         >
-          View ({row.players})
+          View ({players}/{row.maxPlayers})
         </Button>
       ),
     },
   ];
 
+  // Get current items for pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCompetitions = filteredCompetitions.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <div className={styles.competitionList}>
       <Toaster position="top-right" />
-      <PageHeader
-        icon={FaTrophy}
-        title="Competition Management"
-        subtitle="Manage all competitions and tournaments"
-        action={
-          <Button
-            onClick={() => navigate("/admin/competitions/create")}
-            icon={FaPlus}
-          >
-            Create Competition
-          </Button>
-        }
-      />
+      <div className={styles.compactHeader}>
+        <div className={styles.titleArea}>
+          <div className={styles.titleWithIcon}>
+            <FaTrophy className={styles.headerIcon} />
+            <h2>Competition Management</h2>
+          </div>
+          <p className={styles.subtitle}>Manage all competitions and tournaments</p>
+        </div>
+        
+        <div className={styles.headerActions}>
+          <div className={styles.tabsCompact}>
+            <button
+              className={`${styles.tab} ${activeTab === "all" ? styles.active : ""}`}
+              onClick={() => { setActiveTab("all"); setCurrentPage(1); }}
+            >
+              All
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === "upcoming" ? styles.active : ""}`}
+              onClick={() => { setActiveTab("upcoming"); setCurrentPage(1); }}
+            >
+              Upcoming
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === "live" ? styles.active : ""}`}
+              onClick={() => { setActiveTab("live"); setCurrentPage(1); }}
+            >
+              Live
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === "ENDED" ? styles.active : ""}`}
+              onClick={() => { setActiveTab("ENDED"); setCurrentPage(1); }}
+            >
+              ENDED
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <Button
+              onClick={handleCreate5DaySeries}
+              icon={FaCalendarPlus}
+              variant="secondary"
+              size="small"
+            >
+              Create 5-Day Series
+            </Button>
+            <Button
+              onClick={() => navigate("/admin/competitions/create")}
+              icon={FaPlus}
+              size="small"
+            >
+              Create
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === "all" ? styles.active : ""
-            }`}
-          onClick={() => {
-            setActiveTab("all");
-            setCurrentPage(1);
-          }}
-        >
-          All
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "upcoming" ? styles.active : ""
-            }`}
-          onClick={() => {
-            setActiveTab("upcoming");
-            setCurrentPage(1);
-          }}
-        >
-          Upcoming
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "live" ? styles.active : ""
-            }`}
-          onClick={() => {
-            setActiveTab("live");
-            setCurrentPage(1);
-          }}
-        >
-          Live
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === "ENDED" ? styles.active : ""
-            }`}
-          onClick={() => {
-            setActiveTab("ENDED");
-            setCurrentPage(1);
-          }}
-        >
-          ENDED
-        </button>
+      <div className={styles.filterSectionCompact}>
+        <div className={styles.searchBarWrapperCompact}>
+          <div className={styles.searchIconInside}>
+            <FaSearch />
+          </div>
+          <input
+            type="text"
+            className={styles.compactInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search competitions..."
+          />
+        </div>
+
+        <FilterSelect
+          value={activeTab}
+          onChange={(val) => { setActiveTab(val); setCurrentPage(1); }}
+          options={statusOptions}
+          icon={LuFilter}
+          label="Status"
+          className={styles.statusFilterDropdown}
+        />
+        
+        <div className={styles.dateInputGroupCompact}>
+          <FaCalendarAlt />
+          <input 
+            type="date" 
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className={styles.compactDateInput}
+          />
+          {filterDate && (
+            <button className={styles.clearDateCompact} onClick={() => setFilterDate("")}>
+              <FaTimes />
+            </button>
+          )}
+        </div>
+
+        {/* <div className={styles.dateInputGroupCompact}>
+          <FaClock />
+          <input 
+            type="time" 
+            value={filterTime}
+            onChange={(e) => setFilterTime(e.target.value)}
+            className={styles.compactDateInput}
+          />
+          {filterTime && (
+            <button className={styles.clearDateCompact} onClick={() => setFilterTime("")}>
+              <FaTimes />
+            </button>
+          )}
+        </div> */}
       </div>
 
       {loading ? (
         <div className={styles.loading}>Loading competitions...</div>
       ) : (
         <>
-          <div className={styles.competitionGrid}>
-            {filteredCompetitions
-              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-              .map((comp) => (
-                <div key={comp.id} className={styles.competitionCard}>
-                  <div className={styles.cardHeader}>
-                    <Badge variant={
-                      comp.status === "Live" ? "live" :
-                        comp.status === "Upcoming" ? "warning" : "info"
-                    }>
-                      {comp.status}
-                    </Badge>
-                    <div className={styles.cardActions}>
-                      <button
-                        className={styles.actionIcon}
-                        onClick={() => handleView(comp)}
-                        title="View Details"
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        className={styles.actionIcon}
-                        onClick={() => navigate(`/admin/competitions/edit/${comp._id || comp.id}`)}
-                        title="Edit"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className={`${styles.actionIcon} ${styles.delete}`}
-                        onClick={() => handleDelete(comp)}
-                        title="Delete"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className={styles.cardBody}>
-                    <h3 className={styles.cardTitle}>{comp.name}</h3>
-                    <div className={styles.infoRow}>
-                      <FaCalendarAlt />
-                      <span>{comp.startDate} • {comp.startTimeOnly}</span>
-                    </div>
-                    <div className={styles.infoRow}>
-                      <FaHourglassHalf />
-                      <span>Duration: {comp.duration}</span>
-                    </div>
-                    {comp.accessCode && (
-                      <div className={styles.infoRow}>
-                        <FaLock />
-                        <span>Passcode: {comp.accessCode}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={styles.cardFooter}>
-                    {comp.status === 'upcoming' && (
-                      <Button
-                        size="small"
-                        variant="success"
-                        icon={FaTrophy}
-                        onClick={() => handleStartLiveCompetition(comp)}
-                        className={styles.footerBtn}
-                      >
-                        Start Live
-                      </Button>
-                    )}
-                    {comp.status === 'ENDED' && (
-                      <Button
-                        size="small"
-                        variant="secondary"
-                        icon={FaTrophy}
-                        onClick={() => handleShowResult(comp)}
-                        className={styles.footerBtn}
-                      >
-                        View Result
-                      </Button>
-                    )}
-                    {comp.status === 'Live' && (
-                      <Button
-                        size="small"
-                        variant="primary"
-                        icon={FaEye}
-                        onClick={() => handleView(comp)}
-                        className={styles.footerBtn}
-                      >
-                        View Live
-                      </Button>
-                    )}
-                  </div>
+          <div className={styles.tableSection}>
+            <DataTable
+              columns={columns}
+              data={currentCompetitions}
+              actions={(comp) => (
+                <div className={styles.actionButtons}>
+                  <IconButton
+                    icon={FaEye}
+                    onClick={() => handleView(comp)}
+                    title="View Details"
+                    variant="primary"
+                  />
+                  <IconButton
+                    icon={FaEdit}
+                    onClick={() => navigate(`/admin/competitions/edit/${comp._id || comp.id}${window.location.search}`)}
+                    title="Edit"
+                    variant="primary"
+                  />
+                  {comp.status === 'Upcoming' && (
+                    <IconButton
+                      icon={FaTrophy}
+                      onClick={() => handleStartLiveCompetition(comp)}
+                      title="Start Live"
+                      variant="success"
+                    />
+                  )}
+                  {comp.status === 'ENDED' && (
+                    <IconButton
+                      icon={FaTrophy}
+                      onClick={() => handleShowResult(comp)}
+                      title="View Result"
+                      variant="info"
+                    />
+                  )}
+                  <IconButton
+                    icon={FaTrash}
+                    onClick={() => handleDelete(comp)}
+                    title="Delete"
+                    variant="danger"
+                  />
                 </div>
-              ))}
+              )}
+              emptyMessage="No competitions found match your search/filters."
+            />
           </div>
 
           {filteredCompetitions.length > itemsPerPage && (
@@ -549,7 +707,7 @@ function CompetitionList() {
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
-                &laquo;
+                <FaChevronLeft/>
               </button>
               
               <span className={styles.pageInfo}>
@@ -561,7 +719,7 @@ function CompetitionList() {
                 onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredCompetitions.length / itemsPerPage), prev + 1))}
                 disabled={currentPage === Math.ceil(filteredCompetitions.length / itemsPerPage)}
               >
-                &raquo;
+                <FaChevronRight/>
               </button>
             </div>
           )}

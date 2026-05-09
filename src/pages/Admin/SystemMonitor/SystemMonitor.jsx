@@ -1,3 +1,4 @@
+import { FaPlug, FaDatabase, FaBolt, FaWifi } from 'react-icons/fa';
 import styles from './SystemMonitor.module.css';
 
 function SystemMonitor() {
@@ -22,22 +23,22 @@ function SystemMonitor() {
         <h2>System Monitoring</h2>
         <p>Monitor system health and performance</p>
       </div>
-
+      bv
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <h3>🔌 Active Connections</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaPlug /> Active Connections</h3>
           <p className={styles.bigNumber}>1,234</p>
         </div>
         <div className={styles.statCard}>
-          <h3>💾 Memory Usage</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaDatabase /> Memory Usage</h3>
           <p className={styles.bigNumber}>65%</p>
         </div>
         <div className={styles.statCard}>
-          <h3>⚡ CPU Usage</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaBolt /> CPU Usage</h3>
           <p className={styles.bigNumber}>42%</p>
         </div>
         <div className={styles.statCard}>
-          <h3>📡 Network</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaWifi /> Network</h3>
           <p className={styles.bigNumber}>125 MB/s</p>
         </div>
       </div>

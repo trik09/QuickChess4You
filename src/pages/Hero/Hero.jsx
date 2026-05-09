@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { FaChessKing, FaChessQueen, FaChessPawn } from 'react-icons/fa';
+import { FaChessKing, FaChessQueen, FaChessPawn, FaTrophy } from 'react-icons/fa';
 import { BsArrowRight, BsPlayCircle } from "react-icons/bs";
 import styles from './Hero.module.css';
 import chess1 from "../../assets/Chess-1.png";
@@ -159,7 +159,7 @@ const Hero = ({ handleLoginClick }) => {
                             {/* Floating Stats Card */}
                             <div className={`${styles.floatingCard} ${styles.fadeIn}`}>
                                 <div className={styles.floatingCardInner}>
-                                    <div className={styles.floatingIcon}>🏆</div>
+                                    <div className={styles.floatingIcon}><FaTrophy /></div>
                                     <div className={styles.floatingContent}>
                                         <span className={styles.floatingNumber}>2,847</span>
                                         <span className={styles.floatingLabel}>Solutions Today</span>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 import styles from './PrivacyPolicy.module.css';
 
 const PrivacyPolicy = () => {
@@ -157,8 +158,8 @@ const PrivacyPolicy = () => {
                 <section className={styles.section}>
                     <h2>Contact Details for Privacy Requests</h2>
                     <div className={styles.contactInfo}>
-                        <p><strong>📧 Email:</strong> support@quickchess4you.com</p>
-                        <p><strong>📍 Address:</strong> Odisha, India</p>
+                        <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><strong><FaEnvelope /> Email:</strong> support@quickchess4you.com</p>
+                        <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><strong><FaMapMarkerAlt /> Address:</strong> Odisha, India</p>
                     </div>
                 </section>
 

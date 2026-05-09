@@ -1,0 +1,160 @@
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f3f5;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  background: #fff8f1;
+  color: #b58863;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  flex: 1;
+}
+
+.addBtn {
+  width: 32px;
+  height: 32px;
+  background: #fff8f1;
+  color: #b58863;
+  border: 1px dashed #b58863;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.addBtn:hover {
+  background: #b58863;
+  color: white;
+  border-style: solid;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.optionItem.correct {
+  background: #f0fff4;
+  border-color: #22c55e;
+}
+
+.optionLabel {
+  font-size: 14px;
+  font-weight: 800;
+  color: #adb5bd;
+  width: 20px;
+  text-align: center;
+}
+
+.optionItem.correct .optionLabel {
+  color: #22c55e;
+}
+
+.inputWrapper {
+  flex: 1;
+}
+
+.textInput {
+  width: 100%;
+  border: 1px solid #e9ecef;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a2e;
+  transition: all 0.2s;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: #b58863;
+  box-shadow: 0 0 0 3px rgba(181, 136, 99, 0.05);
+}
+
+.optionActions {
+  display: flex;
+  gap: 6px;
+}
+
+.checkBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: #dee2e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  font-size: 14px;
+}
+
+.checkBtn.active {
+  background: #22c55e;
+  color: white;
+}
+
+.removeBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #fa5252;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.5;
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: #fff5f5;
+  opacity: 1;
+}
+
+.removeBtn:disabled {
+  display: none;
+}

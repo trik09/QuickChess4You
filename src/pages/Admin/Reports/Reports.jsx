@@ -1,3 +1,4 @@
+import { FaChartBar, FaTrophy, FaUsers, FaChartLine, FaDownload } from 'react-icons/fa';
 import styles from './Reports.module.css';
 
 function Reports() {
@@ -10,22 +11,22 @@ function Reports() {
 
       <div className={styles.grid}>
         <div className={styles.card}>
-          <h3>📊 Puzzle Submissions</h3>
+          <h3><FaChartBar style={{ marginRight: '8px' }} />Puzzle Submissions</h3>
           <p>Track puzzle completion rates and user performance</p>
           <button className={styles.viewBtn}>View Report</button>
         </div>
         <div className={styles.card}>
-          <h3>🏆 Competition Analytics</h3>
+          <h3><FaTrophy style={{ marginRight: '8px' }} />Competition Analytics</h3>
           <p>Analyze competition participation and outcomes</p>
           <button className={styles.viewBtn}>View Report</button>
         </div>
         <div className={styles.card}>
-          <h3>👥 User Activity</h3>
+          <h3><FaUsers style={{ marginRight: '8px' }} />User Activity</h3>
           <p>Monitor user engagement and activity patterns</p>
           <button className={styles.viewBtn}>View Report</button>
         </div>
         <div className={styles.card}>
-          <h3>📈 Growth Metrics</h3>
+          <h3><FaChartLine style={{ marginRight: '8px' }} />Growth Metrics</h3>
           <p>Track platform growth and key metrics</p>
           <button className={styles.viewBtn}>View Report</button>
         </div>
@@ -34,9 +35,9 @@ function Reports() {
       <div className={styles.exportSection}>
         <h3>Export Data</h3>
         <div className={styles.exportOptions}>
-          <button className={styles.exportBtn}>📥 Export as CSV</button>
-          <button className={styles.exportBtn}>📥 Export as PDF</button>
-          <button className={styles.exportBtn}>📥 Export as Excel</button>
+          <button className={styles.exportBtn} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaDownload /> Export as CSV</button>
+          <button className={styles.exportBtn} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaDownload /> Export as PDF</button>
+          <button className={styles.exportBtn} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaDownload /> Export as Excel</button>
         </div>
       </div>
     </div>

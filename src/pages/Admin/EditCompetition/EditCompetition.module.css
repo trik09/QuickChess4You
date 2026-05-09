@@ -126,14 +126,48 @@
 
 .inputIcon {
   position: absolute;
-  left: 12px;
+  left: 1px;
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .inputIconWrapper input {
   padding-left: 36px;
+}
+
+/* Date + Time split row — cross-browser safe, works in Safari */
+.dateTimeRow {
+  display: flex;
+  gap: 8px;
+}
+
+.dateTimeRow .inputIconWrapper {
+  flex: 1;
+}
+
+.dateInput,
+.timeInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  background: white;
+  color: #1f2937;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dateInput:focus,
+.timeInput:focus {
+  outline: none;
+  border-color: #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
 /* Table Section Styling */
@@ -849,6 +883,25 @@
 .chapterDeleteBtn:hover {
   color: #ef4444;
   background: #fee2e2;
+}
+
+.chapterEditBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  color: #d1d5db;
+  font-size: 11px;
+  border-radius: 50%;
+  transition: all 0.15s;
+  margin-left: 2px;
+}
+
+.chapterEditBtn:hover {
+  color: #3b82f6;
+  background: #dbeafe;
 }
 
 /* Instruction text */

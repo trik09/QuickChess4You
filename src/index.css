@@ -10,6 +10,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 html {
@@ -47,6 +48,8 @@ html {
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
 
+  --animation-fade-in: fadeIn 0.4s ease-out forwards;
+
   /* Default Dark Theme Variables */
   --bg-light: #161512;
   --bg-white: #262421;
@@ -69,6 +72,16 @@ html {
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px rgba(181, 136, 99, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Light Theme Overrides */

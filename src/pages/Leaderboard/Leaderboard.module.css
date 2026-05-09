@@ -7,13 +7,114 @@
 
 /* ========== PAGE ROOT ========== */
 .leaderboardPage {
-  padding: 0.25rem 1rem;
+
   max-width: 100%;
   margin: 0 auto;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-primary);
   min-height: calc(100vh - 40px);
   background: transparent;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ========== BACKGROUND ANIMATION LAYER ========== */
+.bgAnimationLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #1a1612 0%, #0a0908 100%);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: floatBg 20s ease-in-out infinite;
+}
+
+.blob1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(212, 163, 115, 0.4), transparent 70%);
+  top: -100px;
+  left: -100px;
+}
+
+.blob2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.3), transparent 70%);
+  bottom: -150px;
+  right: -100px;
+  animation-delay: -5s;
+}
+
+.blob3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-duration: 25s;
+  animation-delay: -10s;
+}
+
+@keyframes floatBg {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 40px) scale(0.9);
+  }
+}
+
+.particlesContainer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.particle {
+  position: absolute;
+  bottom: -20px;
+  width: 2px;
+  height: 2px;
+  background: #fbbf24;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #fbbf24;
+  animation: floatUp 10s linear infinite;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-100vh) scale(0.5);
+    opacity: 0;
+  }
 }
 
 [data-theme='light'] .leaderboardPage {
@@ -27,7 +128,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
+  height: 95vh;
 }
 
 /* ========== LEFT PANEL ========== */
@@ -38,25 +140,45 @@
 
 /* --- Podium Section --- */
 .podiumSection {
-  background: #171412;
-  border-radius: 12px;
+  background: #0f0d0b;
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(212, 163, 115, 0.08);
-  /* subtle warm border */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 163, 115, 0.1);
+  border: 1px solid rgba(212, 163, 115, 0.12);
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  justify-content: space-evenly;
+  gap: 140px;
+}
+
+/* Radial glow behind center trophy */
+.podiumSection::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(ellipse, rgba(255, 191, 20, 0.12) 0%, rgba(255, 191, 20, 0.04) 50%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .topChampionsHeader {
   background: transparent;
   border-bottom: none;
   color: #fff;
-  padding: 1.5rem 2rem 0.5rem 2rem;
+  /* padding: 1.5rem 2rem 0.5rem 2rem; */
+  padding-top: 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 [data-theme="light"] .podiumSection {
@@ -70,8 +192,7 @@
 }
 
 .headerTrophyIcon {
-  font-size: 1.8rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.6rem;
   color: #fbbf24;
   filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
 }
@@ -92,9 +213,8 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: 12px;
-  /* height: 290px; */
-  padding: 3rem 2rem 2rem 2rem;
+  gap: 0;
+  padding-bottom: 2.5rem;
 }
 
 .podiumPlace {
@@ -102,36 +222,61 @@
   flex-direction: column;
   align-items: center;
   flex: 1;
-  max-width: 120px;
+  max-width: 140px;
   position: relative;
+  /* bottom-align so bars touch the floor together */
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Trophies instead of avatars */
-.podiumAvatar {
-  position: relative;
-  margin-bottom: 0.5rem;
+
+
+/* ===== TROPHY ON BAR ===== */
+/* Trophy is absolutely positioned at the top of the barWrapper */
+.trophyOnBar {
+  position: absolute;
+  bottom: 100%;
+  /* sits right on top of the bar */
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  /* slight overlap with bar cap */
+  z-index: 4;
   display: flex;
-  justify-content: center;
   align-items: flex-end;
-  height: 80px;
+  justify-content: center;
+}
+
+/* 1st-place trophy gets glow + pulse handled by Framer Motion */
+.trophyOnBar1 {
+  z-index: 5;
+}
+
+@keyframes trophyPulse {
+  /* Animation handled by Framer Motion */
 }
 
 .trophyImg {
-  width: 75px;
+  width: 100px;
   height: auto;
   object-fit: contain;
-  /* filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.5)); */
+  position: relative;
+  z-index: 2;
   transition: transform 0.3s ease;
 }
 
+
 .first .goldTrophy {
-  width: 95px;
-  /* filter: drop-shadow(0 6px 12px rgba(251, 191, 36, 0.5)); */
-  /* animation: float 3.5s ease-in-out infinite; */
+  width: 140px;
 }
 
-/* Optional: Small rank dots if desired, but image handles it natively well. 
-   Leaving class in case we need it, but it's removed from JSX. */
+.silverTrophy {
+  width: 120px;
+}
+
+.bronzeTrophy {
+  width: 100px;
+}
+
+/* Rank badge hidden — unused */
 .rankBadge {
   display: none;
 }
@@ -174,93 +319,204 @@
   }
 }
 
-.podiumName {
-  font-weight: 700;
-  font-size: 0.8rem;
+/* ===== WHITE PLAYER INFO CARD ===== */
+.playerInfoCard {
+  width: 90%;
+  margin-top: 10px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 8px 12px;
   text-align: center;
-  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.playerInfoCard:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  background: #fffdfa;
+}
+
+/* 1st place card gets a subtle gold background and border */
+.playerInfoCard1 {
+  background: #f3e096;
+  border: 1.5px solid rgba(251, 191, 36, 0.6);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(251, 191, 36, 0.2);
+}
+
+.playerInfoCard1:hover {
+  background: #fde68a;
+  border-color: rgba(251, 191, 36, 0.9);
+  box-shadow: 0 12px 35px rgba(251, 191, 36, 0.3);
+}
+
+/* 2nd place card: light silver theme */
+.second .playerInfoCard {
+  background: #d2dbe7;
+  border: 1.5px solid rgba(148, 163, 184, 0.6);
+}
+
+.second .playerInfoCard:hover {
+  background: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.8);
+}
+
+/* 3rd place card: light bronze theme */
+.third .playerInfoCard {
+  background: #e7bd86;
+  border: 1.5px solid rgba(205, 127, 50, 0.6);
+}
+
+.third .playerInfoCard:hover {
+  background: #fed7aa;
+  border-color: rgba(205, 127, 50, 0.8);
+}
+
+/* ===== STATS PILLS ROW ===== */
+.statsPills {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Score inside the white card */
+.podiumScore {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #1a1a1a;
+  margin: 0 0 2px 0;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.firstScore {
+  color: #000000;
+  /* amber-800 — readable on light amber */
+  font-size: 1.05rem;
+}
+
+/* Username inside the white card */
+.podiumName {
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-align: center;
+  color: #000000;
+  /* gray-600 — readable on white */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  margin-top: 0.25rem;
-}
-
-[data-theme="light"] .podiumName {
-  color: #2d3748;
-}
-
-.podiumScore {
-  font-weight: 800;
-  font-size: 0.9rem;
-  color: #d4a373;
-  margin-top: 2px;
+  margin: 0;
   letter-spacing: 0.01em;
 }
 
-/* Podium bars — solid dark theme matching reference */
-.podiumBar {
-  width: 90%;
-  border-radius: 12px;
+/* 2nd place (Silver) text colors */
+.second .podiumScore {
+  color: #000000;
+}
+
+.second .podiumName {
+  color: #000000;
+}
+
+/* 3rd place (Bronze) text colors */
+.third .podiumScore {
+  color: #000000;
+}
+
+.third .podiumName {
+  color: #000000;
+}
+
+.firstName {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #000000;
+  /* amber-900 on white */
+}
+
+[data-theme="light"] .podiumName {
+  color: #374151;
+}
+
+/* ===== SVG BAR WRAPPERS ===== */
+.barWrapper {
+  width: 100%;
   position: relative;
+  /* anchor for .trophyOnBar */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  /* anchor stats to the bottom */
-  margin-top: 0.8rem;
-  padding-bottom: 0.75rem;
-  /* consistent bottom breathing room */
-  background: #25201d;
-  /* Solid dark */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  /* extra top space so trophy doesn't clip above parent */
+  padding-top: 0;
+  /* trophy uses bottom:100%, no padding needed */
+  margin-top: 0;
+  z-index: 1;
 }
 
-.bar1 {
-  height: 140px;
-  /* was 120px — tallest, kept as reference */
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  box-shadow: inset 0 8px 16px -8px rgba(251, 191, 36, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
+.barSvgImg {
+  width: 100%;
+  height: auto;
+  display: block;
+  /* Preserve SVG's intrinsic proportions */
+  object-fit: fill;
+  max-width: 120px;
+  /* let SVG aspect ratio decide height */
 }
 
-[data-theme="dark"] .bar1 {
-  background: #25201d;
+.barSvg1 {
+  /* 1st bar is slightly larger */
+  max-width: 130px;
+  filter: drop-shadow(0 4px 16px rgba(255, 191, 20, 0.35));
 }
 
-.bar2 {
-  height: 115px;
-  /* was 90px — medium */
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: inset 0 8px 16px -8px rgba(148, 163, 184, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
+/* Stats overlaid on bar */
+.barStatsOverlay {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  z-index: 3;
+  white-space: nowrap;
 }
 
-[data-theme="dark"] .bar2 {
-  background: #25201d;
-}
-
-.bar3 {
-  height: 90px;
-  /* was 65px — increased so stats have breathing room */
-  border: 1px solid rgba(205, 127, 50, 0.2);
-  box-shadow: inset 0 8px 16px -8px rgba(205, 127, 50, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="dark"] .bar3 {
-  background: #25201d;
-}
-
-[data-theme="light"] .podiumBar {
-  background: #f8fafc;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 0, 0, 0.05);
-}
-
+/* Keep old barStats for non-SVG fallback */
 .barStats {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  /* consistent gap between Acc and Time badges */
+}
+
+/* Old CSS bars removed — now handled by SVG images */
+.podiumBar {
+  display: none;
+}
+
+.bar1 {
+  display: none;
+}
+
+.bar2 {
+  display: none;
+}
+
+.bar3 {
+  display: none;
 }
 
 .accBadge {
@@ -315,7 +571,11 @@
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(212, 163, 115, 0.08);
-  margin-top: 0.75rem;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
 }
 
 [data-theme="light"] .fastestSolverSection {
@@ -323,72 +583,57 @@
   border-color: #e2e8f0;
 }
 
-.fastestSolverHeader {
-  background: transparent;
-  padding: 1rem 1.5rem 0.5rem;
+.fastestSolverLeft {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
+  gap: 0.75rem;
 }
 
 .headerBoltIcon {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #fbbf24;
   filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
 }
 
-.fastestSolverHeader h2 {
+.fastestSolverLeft h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #fff;
 }
 
-[data-theme="light"] .fastestSolverHeader h2 {
+[data-theme="light"] .fastestSolverLeft h2 {
   color: #1a202c;
 }
 
-.fastestSolverBox {
-  padding: 0 1.25rem 1.25rem;
-}
-
-.userStatsFooter {
-  background: #25201d;
-  border: 1px solid rgba(212, 163, 115, 0.15);
-  border-radius: 10px;
-  padding: 1rem;
+.fastestSolverRight {
   display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="light"] .userStatsFooter {
-  background: #f8fafc;
-  border-color: rgba(181, 136, 99, 0.2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.userStatsFooter {
-  text-align: left;
+  align-items: center;
+  gap: 1.25rem;
 }
 
 .footerName {
   font-weight: 800;
   font-size: 1rem;
-  color: var(--text-heading);
+  color: #fff;
+}
+
+[data-theme="light"] .footerName {
+  color: #1a202c;
 }
 
 .footerAcc {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  color: var(--text-heading);
-  margin-top: 0.4rem;
+  color: #94a3b8;
+}
+
+[data-theme="light"] .footerAcc {
+  color: #64748b;
 }
 
 /* ========== RIGHT PANEL AREA ========== */
@@ -1060,6 +1305,7 @@
   .leftPanel {
     width: 100%;
     gap: 0.75rem;
+    height: 100vh;
   }
 
   /* Podium section: fit within screen */
@@ -1081,13 +1327,13 @@
     font-size: 1.5rem;
   }
 
-  /* Podium: scale trophies for narrow screens */
+  /* Podium: scale for narrow screens */
   .podium {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 8px;
-    padding: 1.5rem 0.5rem 0.75rem;
+    gap: 0;
+    padding: 1.5rem 0.25rem 0.75rem 0.25rem;
     height: auto;
   }
 
@@ -1097,59 +1343,87 @@
     min-width: 0;
   }
 
-  .podiumAvatar {
-    height: 64px;
+  .trophyOnBar {
+    transform: translateX(-50%) translateY(5px);
   }
 
   .trophyImg {
-    width: 58px;
+    width: 52px;
   }
 
   .first .goldTrophy {
-    width: 76px;
+    width: 68px;
   }
 
-  .podiumName {
-    font-size: 0.7rem;
-    white-space: normal;
-    word-break: break-word;
-    text-align: center;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
+  .silverTrophy {
+    width: 60px;
+  }
+
+  .bronzeTrophy {
+    width: 52px;
+  }
+
+  /* White info card — mobile */
+  .playerInfoCard {
+    width: 92%;
+    padding: 6px 8px;
+    border-radius: 10px;
+    margin-top: 7px;
+    min-height: 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .podiumScore {
-    font-size: 0.78rem;
+    font-size: 0.68rem;
   }
 
-  /* Bar heights scaled for mobile */
-  .bar1 {
-    height: 120px;
+  .podiumName {
+    font-size: 0.58rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
   }
 
-  .bar2 {
-    height: 98px;
-  }
-
-  .bar3 {
-    height: 78px;
-  }
-
-  .barStats {
+  .statsPills {
+    margin-top: 6px;
     gap: 4px;
   }
 
+  /* SVG bar image mobile sizes */
+  .barSvgImg {
+    max-width: 100px;
+  }
+
+  .barSvg1 {
+    max-width: 110px;
+  }
+
+  .barStatsOverlay {
+    bottom: 10px;
+  }
+
+  .barStats {
+    gap: 3px;
+  }
+
   .accBadge {
-    font-size: 0.65rem;
-    padding: 3px 6px;
+    font-size: 0.6rem;
+    padding: 2px 5px;
   }
 
   .timeBadge {
-    font-size: 0.58rem;
-    padding: 2px 6px;
+    font-size: 0.55rem;
+    padding: 2px 5px;
+  }
+
+  /* Mobile sparkle — only 1st place, smaller */
+  .sparkle1 {
+    width: 220px;
+    height: 220px;
   }
 
   /* Fastest Solver */

@@ -57,8 +57,7 @@ function Navbar({ onLoginClick, onSignupClick }) {
 
   const handleLogout = async () => {
     setIsOpen(false);
-    const { clearUserAuth } = await import("../../services/authStorage");
-    clearUserAuth();
+    await logout?.();
     window.location.href = "/";
   };
 

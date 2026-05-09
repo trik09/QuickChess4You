@@ -23,7 +23,7 @@
 }
 
 .table td {
-  padding: 18px 20px;
+  padding: 6px 20px;
   border-bottom: 1px solid #f0f0f0;
   color: #333;
   font-size: 0.95rem;
@@ -73,4 +73,32 @@
     min-width: 800px;
     /* Ensure table doesn't squash on small screens */
   }
+}
+
+/* Dark Premium Table Variant */
+.darkTableContainer {
+  background: #262421;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  border: 1px solid #3d3935;
+}
+
+.darkTable th {
+  background: #2d2a26;
+  color: #f7d070;
+  border-bottom: 2px solid #b58863;
+}
+
+.darkTable td {
+  background: #262421;
+  color: #f5f0eb;
+  border-bottom: 1px solid #3d3935;
+}
+
+.darkTable tbody tr:hover td {
+  background: #33302b;
+}
+
+.darkTable .emptyState {
+  color: #a99e91;
+  background: #262421;
 }

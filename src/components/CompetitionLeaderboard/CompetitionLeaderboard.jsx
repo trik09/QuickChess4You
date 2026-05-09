@@ -77,7 +77,8 @@ const CompetitionLeaderboard = ({
         // Fallback to regular competition API
         try {
           const fallbackResponse = await fetch(
-            `http://localhost:4000/api/competition/${competitionId}/leaderboard`,
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'}/competition/${competitionId}/leaderboard`,
+            { credentials: "include" }
           );
           const fallbackData = await fallbackResponse.json();
 

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { competitionAPI } from "../../services/api";
+import { competitionAPI, eventAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
+import { liveEventAPI } from "../../services/liveEventAPI";
 import socketService from "../../services/socketService";
 import { useAuth } from "../../contexts/AuthContext";
-import { useLiveCompetition } from "../../contexts/LiveCompetitionContext"; // Import Context
+import { useLiveCompetition } from "../../contexts/LiveCompetitionContext";
+import { useLiveEvent } from "../../contexts/LiveEventContext";
 import {
   FaClock,
   FaTrophy,
@@ -20,7 +22,9 @@ import {
   FaCrown,
   FaFire,
   FaChessKnight,
+  FaTimes,
 } from "react-icons/fa";
+import { MdWarning } from "react-icons/md";
 import { useRef } from "react";
 import toast from "react-hot-toast";
 import styles from "./CompetitionLobby.module.css";
@@ -28,18 +32,18 @@ import ParticipantList from "./components/ParticipantList";
 import CompetitionTimer from "./components/CompetitionTimer";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
 
-const CompetitionLobby = () => {
+const CompetitionLobby = ({ isEvent = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Use Context for Real-time updates
-  const {
-    leaderboard: liveLeaderboard,
-    competitionEnded,
-    isConnected,
-    participateInCompetition, // Ensure we can connect if not already
-  } = useLiveCompetition();
+  const compContext = useLiveCompetition();
+  const eventContext = useLiveEvent();
+
+  const liveLeaderboard = isEvent ? eventContext.leaderboard : compContext.leaderboard;
+  const competitionEnded = isEvent ? eventContext.eventEnded : compContext.competitionEnded;
+  const isConnected = isEvent ? eventContext.isConnected : compContext.isConnected;
+  const participateInCompetition = isEvent ? eventContext.participateInEvent : compContext.participateInCompetition;
 
   const [competition, setCompetition] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -64,10 +68,25 @@ const CompetitionLobby = () => {
   const participantStateRef = useRef(participantState);
   participantStateRef.current = participantState;
 
+  const competitionRef = useRef(competition);
+  competitionRef.current = competition;
+
   // Access Code Modal State
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [codeError, setCodeError] = useState("");
+
+  // Event Registration State
+  const [regStatus, setRegStatus] = useState(null);
+  const [showRegModal, setShowRegModal] = useState(false);
+  const [isSubmittingReg, setIsSubmittingReg] = useState(false);
+  const [regForm, setRegForm] = useState({
+    fullName: "",
+    whatsappNumber: "",
+    age: "",
+    gender: "Male",
+    fideRating: ""
+  });
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,9 +109,17 @@ const CompetitionLobby = () => {
         hasAutoRedirectedRef.current = true;
         sessionStorage.setItem(`redirected_${id}`, "true");
 
-        toast.success("Competition Started! Redirecting...");
+        toast.success(`${isEvent ? "Event" : "Competition"} Started! Redirecting...`);
 
-        navigate(`/competition/${id}/puzzle`, { replace: true });
+        navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, { 
+          replace: true,
+          state: {
+            competitionId: competitionRef.current?._id || id,
+            competitionTitle: competitionRef.current?.title || competitionRef.current?.name,
+            puzzles: competitionRef.current?.puzzles || [],
+            time: competitionRef.current?.duration,
+          }
+        });
       }
     };
 
@@ -103,7 +130,7 @@ const CompetitionLobby = () => {
         setParticipants(data.leaderboard);
       }
       toast.success("Competition Ended! Redirecting to Leaderboard...");
-      navigate(`/leaderboard/${id}`, { replace: true });
+      navigate(isEvent ? `/event-leaderboard/${id}` : `/leaderboard/${id}`, { replace: true });
     };
 
     const onLeaderboardUpdate = (leaderboard) => {
@@ -172,7 +199,7 @@ const CompetitionLobby = () => {
 
   useEffect(() => {
     if (competitionState === "ENDED") {
-      navigate(`/leaderboard/${id}`, { replace: true });
+      navigate(isEvent ? `/event-leaderboard/${id}` : `/leaderboard/${id}`, { replace: true });
     }
   }, [competitionState, id, navigate]);
 
@@ -185,7 +212,15 @@ const CompetitionLobby = () => {
     ) {
       hasAutoRedirectedRef.current = true;
       sessionStorage.setItem(`redirected_${id}`, "true");
-      navigate(`/competition/${id}/puzzle`, { replace: true });
+      navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, { 
+        replace: true,
+        state: {
+          competitionId: competitionRef.current?._id || id,
+          competitionTitle: competitionRef.current?.title || competitionRef.current?.name,
+          puzzles: competitionRef.current?.puzzles || [],
+          time: competitionRef.current?.duration,
+        }
+      });
     }
   }, [competitionState, participantState, navigate, id]);
 
@@ -195,9 +230,8 @@ const CompetitionLobby = () => {
 
     async function loadLobby() {
       try {
-        // FAST PATH: Try to get data with cache entirely bypassed first
-        // If the cache hits (either Memory or SessionStorage), it returns instantly.
-        const res = await liveCompetitionAPI.getLobbyState(id, false);
+        const api = isEvent ? liveEventAPI : liveCompetitionAPI;
+        const res = await api.getLobbyState(id, false);
 
         if (isMounted && res.success) {
           setCompetition(res.competition);
@@ -209,13 +243,31 @@ const CompetitionLobby = () => {
             timeOffsetRef.current = res.serverTime - Date.now();
           }
 
-          // Clear the loading screen IMMEDAIATELY since we have acceptable data.
+          if (isEvent && user) {
+            try {
+              const regRes = await eventAPI.getUserRegistrations();
+              if (regRes.success && isMounted) {
+                const myReg = regRes.data.find(r => r.eventId === id || r.eventId?._id === id);
+                setRegStatus(myReg || null);
+                if (!myReg) {
+                  setParticipantState("NOT_JOINED");
+                } else if (!myReg.isApproved) {
+                  setParticipantState("PENDING");
+                } else {
+                  setParticipantState("JOINED");
+                }
+              }
+            } catch (err) {
+              console.error("Failed to load registrations", err);
+            }
+          }
+
           setLoading(false);
 
           // If the data came from cache (it was fast), silently trigger a background 
           // fetch to ensure we have the absolute latest accurate leaderboard/timer.
           // This ensures instant UX but fresh data.
-          liveCompetitionAPI.getLobbyState(id, true).then((freshRes) => {
+          api.getLobbyState(id, true).then((freshRes) => {
             if (isMounted && freshRes.success) {
               setCompetition(freshRes.competition);
               setParticipants(freshRes.leaderboard);
@@ -230,13 +282,13 @@ const CompetitionLobby = () => {
           }).catch(console.error);
 
         } else if (isMounted) {
-          setError(res.message || "Failed to load lobby.");
+          setError(res.message || `Failed to load lobby.`);
           setLoading(false);
         }
       } catch (err) {
         if (isMounted) {
           console.error(err);
-          setError("Error loading competition.");
+          setError(`Error loading ${isEvent ? "event" : "competition"}.`);
           setLoading(false);
         }
       }
@@ -246,7 +298,8 @@ const CompetitionLobby = () => {
 
     // Poll occasionally to sync server time/state if socket fails (bypass cache)
     const interval = setInterval(() => {
-      liveCompetitionAPI
+      const api = isEvent ? liveEventAPI : liveCompetitionAPI;
+      api
         .getLobbyState(id, true)
         .then((res) => {
           if (res.success) {
@@ -318,12 +371,12 @@ const CompetitionLobby = () => {
     ) {
       const diffToStart = start - now;
 
-      // Auto-redirect when 10 seconds left
-      if (diffToStart <= 10000 && diffToStart > 0) {
+      // Auto-redirect when 20 seconds left
+      if (diffToStart <= 20000 && diffToStart > 0) {
         hasAutoRedirectedRef.current = true;
         sessionStorage.setItem(`redirected_${id}`, "true");
-        toast.success("Competition starting in 10s! Redirecting...");
-        navigate(`/competition/${id}/puzzle`, {
+        toast.success("Competition starting in 20s! Redirecting...");
+        navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, {
           replace: true,
           state: {
             competitionId: competition._id,
@@ -354,7 +407,7 @@ const CompetitionLobby = () => {
                 hasAutoRedirectedRef.current = true;
                 sessionStorage.setItem(`redirected_${id}`, "true");
                 toast.success("Competition Started! Redirecting...");
-                navigate(`/competition/${id}/puzzle`, { replace: true });
+                navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, { replace: true });
               }
             }
           })
@@ -382,7 +435,7 @@ const CompetitionLobby = () => {
         setTimeLeft("Starting...");
       } else if (competitionState === "ENDED") {
         setTimeLeft("Competition Ended!");
-        navigate(`/leaderboard/${id}`);
+        navigate(isEvent ? `/event-leaderboard/${id}` : `/leaderboard/${id}`);
       }
       return;
     }
@@ -434,6 +487,7 @@ const CompetitionLobby = () => {
               status: "Waiting",
               puzzlesSolved: 0,
               timeSpent: 0,
+              joinedAt: new Date(),
             },
           ];
         });
@@ -479,7 +533,7 @@ const CompetitionLobby = () => {
               ) {
                 hasAutoRedirectedRef.current = true;
                 toast.success("Competition Active! Redirecting...");
-                navigate(`/competition/${id}/puzzle`, { replace: true });
+                navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, { replace: true });
               }
             }
           })
@@ -536,13 +590,46 @@ const CompetitionLobby = () => {
     }
   };
 
+  const handleRegSubmit = async (e) => {
+    e.preventDefault();
+    if (!regForm.fullName || !regForm.whatsappNumber || !regForm.age) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    setIsSubmittingReg(true);
+    try {
+      const res = await eventAPI.registerForEvent(id, regForm);
+      if (res.success || res.participant) {
+        toast.success("Registration submitted! Waiting for approval.");
+        setShowRegModal(false);
+        
+        const regRes = await eventAPI.getUserRegistrations();
+        if (regRes.success) {
+          const myReg = regRes.data.find(r => r.eventId === id || r.eventId?._id === id);
+          setRegStatus(myReg || null);
+          if (myReg && !myReg.isApproved) {
+            setParticipantState("PENDING");
+          }
+        }
+      }
+    } catch (err) {
+      toast.error(err.message || "Failed to register");
+    } finally {
+      setIsSubmittingReg(false);
+    }
+  };
+
   const handleJoin = () => {
     if (!user) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${id}/lobby`)}`);
+      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/event/${id}/lobby` : `/competition/${id}/lobby`)}`);
       return;
     }
 
-    // Check if access code is required (from competition data)
+    if (isEvent) {
+      setShowRegModal(true);
+      return;
+    }
+
     if (competition && competition.requiresAccessCode) {
       setShowCodeModal(true);
       setAccessCodeInput("");
@@ -571,7 +658,7 @@ const CompetitionLobby = () => {
       return;
     }
 
-    navigate(`/competition/${id}/puzzle`, {
+    navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, {
       state: {
         competitionId: competition._id,
         competitionTitle: competition.title || competition.name,
@@ -609,7 +696,7 @@ const CompetitionLobby = () => {
     return (
       <div className={styles.premiumLoaderOverlay}>
         <div className={styles.errorBox}>
-          <div className={styles.errorIcon}>⚠</div>
+          <div className={styles.errorIcon}><MdWarning /></div>
           <h3>Lobby Access Failed</h3>
           <p>{error}</p>
         </div>
@@ -675,6 +762,80 @@ const CompetitionLobby = () => {
         </div>
       )}
 
+      {isEvent && showRegModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <button className={styles.modalCloseBtn} onClick={() => setShowRegModal(false)}>
+              <FaTimes />
+            </button>
+            <h3>Register for Event</h3>
+            <form onSubmit={handleRegSubmit} className={styles.regForm}>
+              <div className={styles.formGroup}>
+                <label>Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={regForm.fullName}
+                  onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
+                  placeholder="Enter your full name"
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>WhatsApp Number *</label>
+                <input
+                  type="text"
+                  required
+                  value={regForm.whatsappNumber}
+                  onChange={(e) => setRegForm({ ...regForm, whatsappNumber: e.target.value })}
+                  placeholder="e.g. +91 9876543210"
+                />
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Age *</label>
+                  <input
+                    type="number"
+                    required
+                    min="4"
+                    value={regForm.age}
+                    onChange={(e) => setRegForm({ ...regForm, age: e.target.value })}
+                    placeholder="Your Age"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Gender *</label>
+                  <select
+                    value={regForm.gender}
+                    onChange={(e) => setRegForm({ ...regForm, gender: e.target.value })}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>FIDE Rating (Optional)</label>
+                <input
+                  type="number"
+                  value={regForm.fideRating}
+                  onChange={(e) => setRegForm({ ...regForm, fideRating: e.target.value })}
+                  placeholder="Enter FIDE Rating if any"
+                />
+              </div>
+
+              <button type="submit" disabled={isSubmittingReg} className={styles.submitRegBtn}>
+                {isSubmittingReg ? "Submitting..." : "Submit Registration"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Header Card */}
       <div className={`${styles.lobbyCard} ${styles.headerCard}`}>
         <div className={styles.headerLeft}>
@@ -715,8 +876,19 @@ const CompetitionLobby = () => {
                   onClick={handleJoin}
                   disabled={isJoinProcessing}
                 >
-                  {isJoinProcessing ? "Joining..." : "Join Competition"}
+                  {isJoinProcessing ? "Joining..." : isEvent ? "Register For Event" : "Join Competition"}
                 </button>
+              ) : participantState === "PENDING" ? (
+                <span
+                  className={styles.joinedText}
+                  style={{
+                    color: "#f59e0b",
+                    backgroundColor: "rgba(245, 158, 11, 0.1)",
+                    borderColor: "rgba(245, 158, 11, 0.2)",
+                  }}
+                >
+                  ⏳ Waiting for Approval
+                </span>
               ) : (
                 <>
                   {/* If joined, we show 'Joined' status OR 'Enter' if it's Live/Playing */}

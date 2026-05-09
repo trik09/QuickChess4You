@@ -1,0 +1,453 @@
+.eventLobby {
+    --bg-primary: #161512;
+    --bg-card: #262421;
+    --bg-card-hover: #302e2c;
+    --text-primary: #e0e0e0;
+    --text-secondary: #bababa;
+    --text-accent: #fbbf24;
+    --border-color: #404040;
+    --accent-gold: #b58863;
+    --accent-gold-gradient: linear-gradient(135deg, #b58863 0%, #d97706 100%);
+
+    max-width: 100%;
+    margin: 0 auto;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    min-height: calc(100vh - 60px);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.lobbyCard {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #b58863;
+}
+
+.headerCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    min-height: 70px;
+}
+
+.headerCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--accent-gold-gradient);
+    border-radius: 16px 0 0 16px;
+}
+
+.headerLeft {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.compTitle {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.15rem 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.compDate {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.statusBadgeContainer {
+    margin-top: 8px;
+}
+
+.statusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statusPill.live {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.headerRight {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.timerSection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.timerBox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.timerLabel {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.timerVal {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.actionButtons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 2px solid var(--border-color);
+    padding-left: 1.5rem;
+}
+
+.actionBtn {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+}
+
+.enterBtnLive {
+    background: var(--accent-gold);
+    color: white;
+}
+
+.enterBtnLive:hover {
+    background: var(--text-accent);
+    transform: translateY(-2px);
+}
+
+.spectateBtn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.spectateBtn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.pendingNotice {
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.1);
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lobbyMainContent {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+}
+
+.participantsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.participantRow {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.participantRow:hover {
+    border-color: var(--accent-gold);
+    background: var(--bg-card-hover);
+}
+
+.partIndex {
+    font-weight: bold;
+    color: var(--text-secondary);
+    width: 40px;
+}
+
+.partAvatar {
+    font-size: 1.5rem;
+    color: var(--accent-gold);
+    margin-right: 12px;
+}
+
+.partDetails {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.partUsername {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.partRating {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.partStatus {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.approvedBadge {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.pendingBadge {
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.1);
+}
+
+.noParticipants {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.rulesList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rulesList li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.9rem;
+}
+
+.ruleIconWrapper {
+    color: var(--accent-gold);
+    margin-top: 3px;
+}
+
+@media (max-width: 768px) {
+    .lobbyMainContent {
+        grid-template-columns: 1fr;
+    }
+
+    .headerCard {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .timerSection {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .actionButtons {
+        border-left: none;
+        border-top: 2px solid var(--border-color);
+        padding-left: 0;
+        padding-top: 0.5rem;
+    }
+
+    .registerBtn {
+        background: #10b981;
+        color: white;
+    }
+
+    .registerBtn:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    /* Modal Styles */
+    .modalOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .regModal {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modalHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .modalHeader h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: #fff;
+    }
+
+    .closeBtn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+    .closeBtn:hover {
+        color: #fff;
+    }
+
+    .regForm {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    .formGroup {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .formRow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .formGroup label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .formGroup input,
+    .formGroup select {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: #fff;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .formGroup input:focus,
+    .formGroup select:focus {
+        border-color: var(--accent-gold);
+    }
+
+    .submitRegBtn {
+        background: var(--accent-gold-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 1rem;
+        transition: transform 0.2s;
+    }
+
+    .submitRegBtn:hover {
+        transform: translateY(-2px);
+    }
+
+    .submitRegBtn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}

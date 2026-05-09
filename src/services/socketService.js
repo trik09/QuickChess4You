@@ -123,6 +123,28 @@ class SocketService {
       this.emit("competitionJoined", data);
     });
 
+    // ── EVENT-SPECIFIC LISTENERS ──
+    // Server emits these for event rooms (event_<id>)
+    this.socket.on("eventJoined", (data) => {
+      console.log("Joined event:", data);
+      this.emit("eventJoined", data);
+    });
+
+    this.socket.on("eventLeaderboardUpdate", (leaderboard) => {
+      console.log("Event leaderboard updated:", leaderboard?.length, "entries");
+      this.emit("eventLeaderboardUpdate", leaderboard);
+    });
+
+    this.socket.on("eventEnded", (finalResults) => {
+      console.log("Event ended:", finalResults);
+      this.emit("eventEnded", finalResults);
+    });
+
+    this.socket.on("eventStarted", (data) => {
+      console.log("Event started:", data);
+      this.emit("eventStarted", data);
+    });
+
     // Error handling
     this.socket.on("error", (error) => {
       console.error("Socket error:", error);

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from "../../contexts/AuthContext"
 import { authAPI } from '../../services/api';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import styles from './Login.module.css';
 
 function Login() {
@@ -242,7 +243,7 @@ function Login() {
                     className={styles.eyeIcon}
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
-                    {showNewPassword ? '👁️' : '👁'}
+                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                 </div>
 

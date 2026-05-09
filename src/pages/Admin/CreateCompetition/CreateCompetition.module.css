@@ -55,7 +55,7 @@
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-bottom: 24px;
-  overflow: hidden;
+  /* overflow: hidden removed — was clipping date/time picker popups */
 }
 
 .cardHeader {
@@ -130,18 +130,310 @@
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .inputIconWrapper input {
   padding-left: 36px;
 }
 
+/* Date + Time split row — cross-browser safe, works in Safari */
+.dateTimeRow {
+  display: flex;
+  gap: 8px;
+}
+
+.dateTimeRow .inputIconWrapper {
+  flex: 1;
+  height: 42px;
+}
+
+/* Remove old dateInput styles — replaced by custom calendar */
+
+/* Custom date picker popup — matches time picker style exactly */
+.datePickerPopup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 12px;
+  min-width: 280px;
+}
+
+.datePickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.datePickerMonthYear {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dateNavBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dateNavBtn:hover {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.datePickerGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.datePickerDayLabel {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.datePickerCell {
+  text-align: center;
+  padding: 7px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.datePickerCell:hover {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.datePickerCellOutside {
+  color: #d1d5db;
+}
+
+.datePickerCellOutside:hover {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.datePickerCellToday {
+  border: 1.5px solid #d97706;
+  color: #d97706;
+  font-weight: 700;
+}
+
+.datePickerCellSelected {
+  background: #d97706 !important;
+  color: white !important;
+  font-weight: 700;
+}
+
+.datePickerFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.datePickerTodayBtn,
+.datePickerClearBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.datePickerTodayBtn {
+  color: #d97706;
+}
+
+.datePickerTodayBtn:hover {
+  background: #fef3c7;
+}
+
+.datePickerClearBtn {
+  color: #6b7280;
+}
+
+.datePickerClearBtn:hover {
+  background: #f3f4f6;
+}
+
+/* Custom single-click time picker — works in Safari, Chrome, Firefox */
+.timeDisplayInput {
+  width: 100%;
+  height: 100%;
+  min-height: 42px;
+  padding: 0 12px 0 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+  color: #1f2937;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.timeDisplayInput:hover {
+  border-color: #9ca3af;
+}
+
+.timeDisplayInput.open {
+  border-color: #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.timeDisplayValue {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.timeDisplayPlaceholder {
+  color: #9ca3af;
+}
+
+.timePickerPopup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  min-width: 240px;
+}
+
+.timePickerCols {
+  display: flex;
+  gap: 8px;
+}
+
+.timePickerCol {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.timePickerColLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.timePickerScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px;
+  border-radius: 6px;
+  background: #f9fafb;
+}
+
+.timePickerScroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.timePickerScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.timePickerScroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.timePickerItem {
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.timePickerItem:hover {
+  background: #e5e7eb;
+}
+
+.timePickerItemActive {
+  background: #d97706 !important;
+  color: white !important;
+}
+
+.timePickerDivider {
+  width: 1px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+.timePickerDoneBtn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #d97706;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.timePickerDoneBtn:hover {
+  background: #b45309;
+}
+
+
 /* Table Section Styling */
 .tableCard {
   display: flex;
   flex-direction: column;
   height: 600px;
-  /* Fixed height for internal scrolling */
+  overflow: hidden; /* clips table content to rounded card corners */
 }
 
 .toolbar {
@@ -738,6 +1030,45 @@
   color: #9ca3af;
 }
 
+.chapterActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.variationButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.varBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.varBtn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.varBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Add Chapter button */
 .addChapterBtn {
   display: flex;
@@ -1045,4 +1376,40 @@
 .chapterModalCreate:disabled {
   background: #d1d5db;
   cursor: not-allowed;
+}
+
+/* Usage count badge — shows how many competitions a puzzle has been used in */
+.usageCountBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  cursor: default;
+}
+
+/* 0 uses — green (fresh, never used) */
+.usageCountBadge[data-level='none'] {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+/* 1–2 uses — amber (used a couple of times) */
+.usageCountBadge[data-level='low'] {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+/* 3+ uses — red (heavily reused) */
+.usageCountBadge[data-level='high'] {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
 }

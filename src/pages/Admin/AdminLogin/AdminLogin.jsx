@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserShield, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUserShield, FaLock, FaEye, FaEyeSlash, FaExclamationTriangle } from 'react-icons/fa';
 import { adminAPI } from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import logo from '../../../assets/logo.png';
@@ -67,7 +67,7 @@ function AdminLogin() {
 
             {error && (
               <div className={styles.errorAlert}>
-                <span>⚠️</span>
+                <FaExclamationTriangle />
                 <span>{error}</span>
               </div>
             )}

@@ -1,3 +1,4 @@
+import { FaLock, FaTrophy, FaPalette, FaEnvelope } from 'react-icons/fa';
 import styles from './Settings.module.css';
 
 function Settings() {
@@ -10,7 +11,7 @@ function Settings() {
 
       <div className={styles.sections}>
         <div className={styles.section}>
-          <h3>🔐 System Settings</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaLock /> System Settings</h3>
           <div className={styles.formGroup}>
             <label>JWT Token Expiry (hours)</label>
             <input type="number" defaultValue="24" />
@@ -27,7 +28,7 @@ function Settings() {
         </div>
 
         <div className={styles.section}>
-          <h3>🏆 Scoring Settings</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaTrophy /> Scoring Settings</h3>
           <div className={styles.formGroup}>
             <label>Points per Puzzle (Easy)</label>
             <input type="number" defaultValue="10" />
@@ -48,7 +49,7 @@ function Settings() {
         </div>
 
         <div className={styles.section}>
-          <h3>🎨 Branding</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaPalette /> Branding</h3>
           <div className={styles.formGroup}>
             <label>Platform Name</label>
             <input type="text" defaultValue="Chess Puzzle Platform" />
@@ -65,7 +66,7 @@ function Settings() {
         </div>
 
         <div className={styles.section}>
-          <h3>📧 Email Settings</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaEnvelope /> Email Settings</h3>
           <div className={styles.formGroup}>
             <label>SMTP Server</label>
             <input type="text" placeholder="smtp.example.com" />

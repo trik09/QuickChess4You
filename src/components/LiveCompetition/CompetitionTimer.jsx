@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { FaClock } from 'react-icons/fa';
+import { MdWarning } from 'react-icons/md';
 import { useLiveCompetition } from '../../contexts/LiveCompetitionContext';
 import './CompetitionTimer.css';
 
@@ -84,7 +86,7 @@ const CompetitionTimer = () => {
   return (
     <div className={`competition-timer ${isWarning ? 'warning' : ''} ${isCritical ? 'critical' : ''}`}>
       <div className="timer-header">
-        <h4 className="timer-title">⏱️ {competition.name}</h4>
+        <h4 className="timer-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaClock /> {competition.name}</h4>
         <span className={`status-badge ${isCompetitionActive() ? 'active' : 'inactive'}`}>
           {statusMessage}
         </span>
@@ -97,8 +99,8 @@ const CompetitionTimer = () => {
         </div>
         
         {isCritical && (
-          <div className="critical-warning">
-            ⚠️ Hurry up!
+          <div className="critical-warning" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <MdWarning /> Hurry up!
           </div>
         )}
       </div>

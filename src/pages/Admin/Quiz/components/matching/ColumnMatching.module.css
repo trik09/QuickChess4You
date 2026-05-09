@@ -1,0 +1,168 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.titleInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mainIcon {
+  font-size: 1.5rem;
+  color: #b58863;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d2520;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: #8b6242;
+  margin: 0;
+}
+
+.addBtn {
+  background: #f5f0eb;
+  color: #b58863;
+  border: 1px solid #e5d5c5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.addBtn:hover {
+  background: #b58863;
+  color: white;
+  border-color: #b58863;
+}
+
+.hintBox {
+  background: #fff8f1;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #b58863;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(181, 136, 99, 0.2);
+}
+
+.pairsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pairCard {
+  background: white;
+  border: 1px solid #e5d5c5;
+  border-radius: 12px;
+  padding: 15px;
+  transition: all 0.2s;
+}
+
+.pairCard:hover {
+  border-color: #b58863;
+  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.08);
+}
+
+.pairHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pairIndex {
+  font-size: 11px;
+  font-weight: 800;
+  color: #adb5bd;
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.deleteBtn:hover {
+  color: #fa5252;
+}
+
+.cardInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputGroup label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #8b6242;
+  text-transform: uppercase;
+}
+
+.inputGroup input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5d5c5;
+  font-size: 0.85rem;
+  color: #2d2520;
+  background: #fafafa;
+  width: 100%;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: #b58863;
+  background: white;
+}
+
+.correctLabel {
+  color: #22c55e !important;
+}
+
+.correctInput {
+  border-color: #d1fae5 !important;
+  background: #f0fff4 !important;
+}
+
+.correctInput:focus {
+  border-color: #22c55e !important;
+}
+
+@media (max-width: 600px) {
+  .cardInputs {
+    grid-template-columns: 1fr;
+  }
+}

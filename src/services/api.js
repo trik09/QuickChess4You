@@ -1,5 +1,5 @@
 import { apiRequest as baseRequest } from "./http";
-import { getAdminToken } from "./authStorage";
+import { getAdminToken, getUserToken } from "./authStorage";
 
 const apiRequest = (endpoint, options = {}, token = null) => {
   const authToken = token || getAdminToken();
@@ -106,7 +106,7 @@ export const authAPI = {
 
   // Get current user data
   getCurrentUser: async () => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     return apiRequest(
       "/user/me",
       {
@@ -118,7 +118,7 @@ export const authAPI = {
 
   // Update user profile (name, username, avatar)
   updateUser: async (userData, avatarFile) => {
-    const userToken = localStorage.getItem("token");
+    const userToken = getUserToken();
     const formData = new FormData();
 
     if (userData.name) formData.append('name', userData.name);
@@ -135,6 +135,14 @@ export const authAPI = {
         body: formData,
       },
       userToken
+    );
+  },
+
+  // Check if a username is available (real-time availability check)
+  checkUsername: async (username) => {
+    return apiRequest(
+      `/user/check-username?username=${encodeURIComponent(username)}`,
+      { method: "GET" }
     );
   },
 };
@@ -164,6 +172,7 @@ export const adminAPI = {
       category: params.category || '',
       difficulty: params.difficulty || '',
       level: params.level || '',
+      isDailyTraining: params.isDailyTraining !== undefined ? params.isDailyTraining : '',
     }).toString();
     return apiRequest(`/puzzle/get-puzzles?${query}`, { method: "GET" }, adminToken);
   },
@@ -341,6 +350,19 @@ export const adminAPI = {
       `/admin/users/${id}`,
       {
         method: "DELETE",
+      },
+      adminToken
+    );
+  },
+
+  // Toggle daily training status
+  toggleDailyTraining: async (id, isDailyTraining) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/puzzle/toggle-daily/${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ isDailyTraining }),
       },
       adminToken
     );
@@ -592,6 +614,219 @@ export const competitionAPI = {
       adminToken
     );
   },
+
+  // Get puzzles by IDs (for fetching assigned puzzles)
+  getPuzzlesByIds: async (puzzleIds = []) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/competition/puzzles/by-ids`,
+      {
+        method: "POST",
+        body: JSON.stringify({ puzzleIds }),
+      },
+      adminToken
+    );
+  },
+};
+
+export const eventAPI = {
+  getAll: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(
+      `/event/?${queryParams}`,
+      { method: "GET" },
+      null
+    );
+  },
+
+  getEvents: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(
+      `/event/?${queryParams}`,
+      { method: "GET" },
+      null
+    );
+  },
+
+  getById: async (id) => {
+    return apiRequest(`/event/${id}`, { method: "GET" });
+  },
+
+  createEvent: async (eventData) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      "/event/create-event",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventData),
+      },
+      adminToken
+    );
+  },
+
+  updateEvent: async (id, eventData) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/event/update-event/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(eventData),
+      },
+      adminToken
+    );
+  },
+
+  deleteEvent: async (id) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/event/delete-event/${id}`,
+      { method: "DELETE" },
+      adminToken
+    );
+  },
+
+  registerForEvent: async (id, details) => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      `/event/${id}/register`,
+      {
+        method: "POST",
+        body: JSON.stringify(details),
+      },
+      userToken
+    );
+  },
+
+  getUserRegistrations: async () => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(
+      `/event/user/registrations`,
+      { method: "GET" },
+      userToken
+    );
+  },
+
+
+  getParticipants: async (id) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/event/${id}/participants`,
+      { method: "GET" },
+      adminToken
+    );
+  },
+
+  approveParticipant: async (id, participantId, isApproved) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/event/${id}/approve/${participantId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ isApproved }),
+      },
+      adminToken
+    );
+  },
+
+  getPuzzlesForEvent: async (filters = {}) => {
+    const adminToken = localStorage.getItem("atoken");
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(
+      `/event/admin/puzzles/for-event?${queryParams}`,
+      { method: "GET" },
+      adminToken
+    );
+  },
+
+  // Get puzzles by IDs (for fetching assigned puzzles)
+  getPuzzlesByIds: async (puzzleIds = []) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/event/admin/puzzles/by-ids`,
+      {
+        method: "POST",
+        body: JSON.stringify({ puzzleIds }),
+      },
+      adminToken
+    );
+  },
+};
+
+export const quizCategoryAPI = {
+
+  getAll: async (includeInactive = false) => {
+    return apiRequest(`/quiz-category/get-categories?includeInactive=${includeInactive}`, { method: "GET" }, null);
+  },
+  getById: async (id) => {
+    return apiRequest(`/quiz-category/get-category/${id}`, { method: "GET" }, null);
+  },
+  createCategory: async (categoryData) => {
+    return apiRequest("/quiz-category/create-category", { method: "POST", body: JSON.stringify(categoryData) }, localStorage.getItem("atoken"));
+  },
+  updateCategory: async (id, categoryData) => {
+    return apiRequest(`/quiz-category/update-category/${id}`, { method: "PUT", body: JSON.stringify(categoryData) }, localStorage.getItem("atoken"));
+  },
+  deleteCategory: async (id) => {
+    return apiRequest(`/quiz-category/delete-category/${id}`, { method: "DELETE" }, localStorage.getItem("atoken"));
+  }
+};
+
+export const quizAPI = {
+  getQuizzes: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(`/quiz/get-quizzes?${queryParams}`, { method: "GET" }, null);
+  },
+  getById: async (id) => {
+    return apiRequest(`/quiz/get-quiz/${id}`, { method: "GET" }, null);
+  },
+  createQuiz: async (quizData) => {
+    return apiRequest("/quiz/create-quiz", { method: "POST", body: JSON.stringify(quizData) }, localStorage.getItem("atoken"));
+  },
+  updateQuiz: async (id, quizData) => {
+    return apiRequest(`/quiz/update-quiz/${id}`, { method: "PUT", body: JSON.stringify(quizData) }, localStorage.getItem("atoken"));
+  },
+  deleteQuiz: async (id) => {
+    return apiRequest(`/quiz/delete-quiz/${id}`, { method: "DELETE" }, localStorage.getItem("atoken"));
+  }
+};
+
+export const examAPI = {
+  getAdminExams: async () => {
+    return apiRequest("/exam/admin/get-exams", { method: "GET" }, localStorage.getItem("atoken"));
+  },
+  getAdminExamById: async (id) => {
+    return apiRequest(`/exam/admin/get-exam/${id}`, { method: "GET" }, localStorage.getItem("atoken"));
+  },
+  // Alias used by CreateExam.jsx
+  getAdminExam: async (id) => {
+    return apiRequest(`/exam/admin/get-exam/${id}`, { method: "GET" }, localStorage.getItem("atoken"));
+  },
+  createExam: async (examData) => {
+    return apiRequest("/exam/create-exam", { method: "POST", body: JSON.stringify(examData) }, localStorage.getItem("atoken"));
+  },
+  updateExam: async (id, examData) => {
+    return apiRequest(`/exam/update-exam/${id}`, { method: "PUT", body: JSON.stringify(examData) }, localStorage.getItem("atoken"));
+  },
+  deleteExam: async (id) => {
+    return apiRequest(`/exam/delete-exam/${id}`, { method: "DELETE" }, localStorage.getItem("atoken"));
+  },
+  getPublicExams: async (filters = {}) => {
+    const queryParams = new URLSearchParams(filters).toString();
+    return apiRequest(`/exam/public/get-exams?${queryParams}`, { method: "GET" }, null);
+  },
+  getExamDetails: async (id) => {
+    return apiRequest(`/exam/public/get-exam/${id}`, { method: "GET" }, localStorage.getItem("token"));
+  },
+  submitExam: async (id, data) => {
+    return apiRequest(`/exam/public/submit-exam/${id}`, { method: "POST", body: JSON.stringify(data) }, localStorage.getItem("token"));
+  },
+  getExamResults: async (id) => {
+    return apiRequest(`/exam/public/exam-results/${id}`, { method: "GET" }, localStorage.getItem("token"));
+  },
+  joinExam: async (id) => {
+    return apiRequest(`/exam/public/join-exam/${id}`, { method: "POST" }, localStorage.getItem("token"));
+  }
 };
 
 export default {
@@ -600,4 +835,9 @@ export default {
   puzzleAPI,
   categoryAPI,
   competitionAPI,
+  quizCategoryAPI,
+  quizAPI,
+  examAPI,
+  eventAPI,
 };
+

@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import socketService from "../services/socketService";
 import { liveCompetitionAPI } from "../services/liveCompetitionAPI";
+import { liveEventAPI } from "../services/liveEventAPI";
 import puzzleStateManager from "../services/puzzleStateManager";
+import { normalizeUserId } from "../features/liveCompetition/leaderboardUtils";
 import toast from "react-hot-toast";
 
 const LiveCompetitionContext = createContext();
@@ -28,6 +30,12 @@ export const LiveCompetitionProvider = ({ children }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [totalPuzzleCount, setTotalPuzzleCount] = useState(0); // Add total puzzle count state
   const [forceRenderTick, setForceRenderTick] = useState(0);
+
+  // Track whether we're in event mode (set on init, used by all API calls)
+  const isEventModeRef = useRef(window.location.pathname.includes('/event/'));
+
+  // Helper: pick correct API based on mode
+  const getAPI = () => isEventModeRef.current ? liveEventAPI : liveCompetitionAPI;
 
   // Exact transition trigger to eliminate the 5-8 second polling delay when a competition starts
   useEffect(() => {
@@ -64,57 +72,55 @@ export const LiveCompetitionProvider = ({ children }) => {
   // Initialize state on mount - restore from localStorage if available
   useEffect(() => {
     const initializeState = async () => {
-      // Check if we're on a competition page
       const currentPath = window.location.pathname;
       console.log("Current path:", currentPath);
 
-      // Match both /competition/:id and /competition/:id/puzzle patterns
-      const competitionMatch = currentPath.match(/\/competition\/([^\/]+)/);
+      const isEventPath = currentPath.includes("/event/");
+      isEventModeRef.current = isEventPath;
 
-      if (competitionMatch) {
-        const competitionId = competitionMatch[1];
-        console.log("Initializing competition state for:", competitionId);
+      const idMatch = currentPath.match(/\/(competition|event)\/([^\/]+)/);
+
+      if (idMatch) {
+        const competitionId = idMatch[2];
+        console.log("Initializing state for:", competitionId, "isEvent:", isEventPath);
+
+        // 1. Establish socket connection FIRST (independent of API calls)
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (token && user && !socketService.isConnected) {
+          console.log("[LiveComp] Auto-reconnecting socket after page refresh");
+          try {
+            const compData = { competition: { id: competitionId, name: "" } };
+            await socketService.connect(compData);
+            setIsConnected(true);
+
+            if (isEventPath) {
+              socketService.emit("joinEvent", { eventId: competitionId });
+            } else {
+              socketService.emit("joinCompetition", { competitionId });
+            }
+            console.log("[LiveComp] Socket reconnected successfully");
+          } catch (sockErr) {
+            console.error("[LiveComp] Socket reconnect failed:", sockErr.message);
+          }
+        }
+
+        // 2. Load puzzles + leaderboard (non-blocking, uses correct API)
+        try {
+          await loadCompetitionPuzzles(competitionId);
+          console.log("State restored successfully");
+        } catch (error) {
+          console.error("Failed to restore puzzle state:", error);
+        }
 
         try {
-          // Try to load competition puzzles to restore state
-          await loadCompetitionPuzzles(competitionId);
-          console.log("Competition state restored successfully");
-
-          // Fetch leaderboard immediately on initialization
           console.log("Fetching initial leaderboard on mount");
           await getLeaderboard(competitionId);
-
-          // AUTO-RECONNECT SOCKET on page refresh if user is already a participant
-          // This ensures real-time updates continue after refresh
-          const token = localStorage.getItem("token");
-          const user = JSON.parse(localStorage.getItem("user") || "{}");
-          if (token && user && !socketService.isConnected) {
-            console.log(
-              "[LiveComp] Auto-reconnecting socket after page refresh",
-            );
-            try {
-              const compData = { competition: { id: competitionId, name: "" } };
-              await socketService.connect(compData);
-              setIsConnected(true);
-              socketService.emit("joinCompetition", {
-                competitionId,
-              });
-
-              console.log("[LiveComp] Socket reconnected successfully");
-            } catch (sockErr) {
-              console.error(
-                "[LiveComp] Socket reconnect failed:",
-                sockErr.message,
-              );
-              // Not critical — REST polling will cover us
-            }
-          }
         } catch (error) {
-          console.error("Failed to restore competition state:", error);
-          // This is expected if user hasn't participated yet
+          console.error("Failed to restore leaderboard:", error);
         }
       } else {
-        console.log("Not on a competition page, skipping state restoration");
+        console.log("Not on a valid target page, skipping state restoration");
       }
     };
 
@@ -139,17 +145,12 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     const handleLiveScoreUpdate = (data) => {
       console.log("[LiveComp] Socket: liveScoreUpdate", data.username, data.score);
-      // Normalize incoming userId to a plain string regardless of whether it's an object or string
-      const incomingId = data.userId?._id
-        ? String(data.userId._id)
-        : data.userId
-          ? String(data.userId)
-          : null;
+      const incomingId = normalizeUserId(data.userId);
 
       setLeaderboard((prev) => {
         let found = false;
         const updated = prev.map((entry) => {
-          const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
+          const entryId = normalizeUserId(entry.userId);
           const isMatch =
             (incomingId && entryId && incomingId === entryId) ||
             (data.username && entry.username && data.username === entry.username);
@@ -197,13 +198,11 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     const handleParticipantJoined = (data) => {
       console.log("[LiveComp] Socket: participantJoined", data.username);
-      // Add the new participant to the leaderboard immediately so participant count
-      // and galaxy update before they make their first move
       if (data.userId || data.username) {
-        const incomingId = data.userId?._id ? String(data.userId._id) : data.userId ? String(data.userId) : null;
+        const incomingId = normalizeUserId(data.userId);
         setLeaderboard((prev) => {
           const alreadyIn = prev.some((entry) => {
-            const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
+            const entryId = normalizeUserId(entry.userId);
             return (incomingId && entryId && incomingId === entryId) ||
               (data.username && entry.username && data.username === entry.username);
           });
@@ -235,18 +234,24 @@ export const LiveCompetitionProvider = ({ children }) => {
     };
 
     socketService.on("competitionJoined", handleCompetitionJoined);
+    socketService.on("eventJoined", handleCompetitionJoined);
     socketService.on("leaderboardUpdate", handleLeaderboardUpdate);
+    socketService.on("eventLeaderboardUpdate", handleLeaderboardUpdate);
     socketService.on("liveScoreUpdate", handleLiveScoreUpdate);
     socketService.on("competitionEnded", handleCompetitionEnded);
+    socketService.on("eventEnded", handleCompetitionEnded);
     socketService.on("participantJoined", handleParticipantJoined);
     socketService.on("participantSubmitted", handleParticipantSubmitted);
     socketService.on("error", handleError);
 
     return () => {
       socketService.off("competitionJoined", handleCompetitionJoined);
+      socketService.off("eventJoined", handleCompetitionJoined);
       socketService.off("leaderboardUpdate", handleLeaderboardUpdate);
+      socketService.off("eventLeaderboardUpdate", handleLeaderboardUpdate);
       socketService.off("liveScoreUpdate", handleLiveScoreUpdate);
       socketService.off("competitionEnded", handleCompetitionEnded);
+      socketService.off("eventEnded", handleCompetitionEnded);
       socketService.off("participantJoined", handleParticipantJoined);
       socketService.off("participantSubmitted", handleParticipantSubmitted);
       socketService.off("error", handleError);
@@ -256,18 +261,30 @@ export const LiveCompetitionProvider = ({ children }) => {
   const ensureSocketConnection = async (competitionId) => {
     if (!competitionId) return;
 
+    const isEventPath = window.location.pathname.includes("/event/");
+    isEventModeRef.current = isEventPath;
+
     if (!socketService.isConnected) {
       try {
-        console.log(`[LiveComp] ensureSocketConnection: Manually connecting socket for ${competitionId}`);
+        console.log(`[LiveComp] ensureSocketConnection: Manually connecting socket for ${competitionId} isEvent: ${isEventPath}`);
         const compData = { competition: { id: competitionId, name: "" } };
         await socketService.connect(compData);
         setIsConnected(true);
-        socketService.emit("joinCompetition", { competitionId });
+        
+        if (isEventPath) {
+          socketService.emit("joinEvent", { eventId: competitionId });
+        } else {
+          socketService.emit("joinCompetition", { competitionId });
+        }
       } catch (err) {
         console.error(`[LiveComp] ensureSocketConnection: Failed`, err);
       }
     } else {
-      socketService.emit("joinCompetition", { competitionId });
+      if (isEventPath) {
+        socketService.emit("joinEvent", { eventId: competitionId });
+      } else {
+        socketService.emit("joinCompetition", { competitionId });
+      }
       setIsConnected(true);
     }
   };
@@ -378,7 +395,8 @@ export const LiveCompetitionProvider = ({ children }) => {
 
     try {
       console.log("Loading competition puzzles for:", competitionId);
-      const response = await liveCompetitionAPI.getPuzzles(competitionId);
+      const api = getAPI();
+      const response = await api.getPuzzles(competitionId);
 
       if (response.success) {
         console.log(
@@ -640,7 +658,7 @@ export const LiveCompetitionProvider = ({ children }) => {
   };
 
   // Get leaderboard via REST API (fallback)
-  const getLeaderboard = async (competitionIdOverride = null) => {
+  const getLeaderboard = React.useCallback(async (competitionIdOverride = null) => {
     try {
       const compId = competitionIdOverride || competition?.id;
       if (!compId) {
@@ -649,7 +667,8 @@ export const LiveCompetitionProvider = ({ children }) => {
       }
 
       console.log("Fetching leaderboard for competition:", compId);
-      const response = await liveCompetitionAPI.getLeaderboard(compId);
+      const api = getAPI();
+      const response = await api.getLeaderboard(compId);
 
       if (response.success) {
         console.log(
@@ -663,24 +682,23 @@ export const LiveCompetitionProvider = ({ children }) => {
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
     }
-  };
+  }, [competition?.id, isEventModeRef.current]); // Dependencies for callback
 
-  // Periodic leaderboard sync as safety net (every 15 seconds while live)
+  // Periodic leaderboard sync as safety net (every 10 seconds while live)
   useEffect(() => {
     if (!competition?.id || competitionEnded) return;
 
-    // Only poll if competition is live
-    const isLive =
-      competition.status === "LIVE" || competition.status === "live";
+    // Use isCompetitionActive helper which accounts for time transitions
+    const isLive = isCompetitionActive();
     if (!isLive) return;
 
     const syncInterval = setInterval(() => {
-      console.log("[LiveComp] Periodic leaderboard sync");
+      console.log(`[LiveComp] Background refresh trigger (ID: ${competition.id})`);
       getLeaderboard(competition.id);
-    }, 5000);
+    }, 10000); // 10 seconds as requested for professional background refresh
 
     return () => clearInterval(syncInterval);
-  }, [competition?.id, competition?.status, competitionEnded]);
+  }, [competition?.id, competitionEnded, forceRenderTick, getLeaderboard]);
 
   // Disconnect from competition
   const disconnectFromCompetition = () => {
@@ -701,10 +719,10 @@ export const LiveCompetitionProvider = ({ children }) => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     if (!storedUser || (!storedUser.id && !storedUser._id && !storedUser.username)) return null;
 
-    const targetId = storedUser.id ? String(storedUser.id) : storedUser._id ? String(storedUser._id) : null;
+    const targetId = normalizeUserId(storedUser.id || storedUser._id);
 
     const userEntry = leaderboard.find((entry) => {
-      const entryId = entry.userId?._id ? String(entry.userId._id) : entry.userId ? String(entry.userId) : null;
+      const entryId = normalizeUserId(entry.userId);
       const idMatch = targetId && entryId && entryId === targetId;
       const usernameMatch = entry.username && storedUser.username && entry.username === storedUser.username;
       return idMatch || usernameMatch;

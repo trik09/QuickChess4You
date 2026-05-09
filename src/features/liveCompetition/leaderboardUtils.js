@@ -1,16 +1,21 @@
+// Normalize a userId field (string, object with _id/id, or null) to a plain string
+export const normalizeUserId = (userId) => {
+  if (!userId) return null;
+  if (typeof userId === 'object') return String(userId._id || userId.id || '');
+  return String(userId);
+};
+
 export const deduplicateLeaderboard = (list) => {
   if (!list || !Array.isArray(list)) return [];
   const map = new Map();
   
-  // Reverse to ensure "first come first" default insertion order for equal scores
-  const processedList = [...list].reverse();
+  // Process in forward order to maintain natural join sequence
+  const processedList = [...list];
   
   processedList.forEach(p => {
-    // Correctly handle both string IDs and populated object IDs to ensure 100% uniqueness
-    const extractedId = p.userId && typeof p.userId === 'object' 
-      ? (p.userId._id || p.userId.id) 
-      : p.userId;
-    const idToUse = String(extractedId || p.username);
+    const extractedId = normalizeUserId(p.userId);
+    // Only fall back to username if we genuinely have no ID
+    const idToUse = (extractedId && extractedId !== '') ? extractedId : String(p.username || '');
     
     if (map.has(idToUse)) {
       const existing = map.get(idToUse);
@@ -32,7 +37,18 @@ export const deduplicateLeaderboard = (list) => {
     if ((b.score || 0) !== (a.score || 0)) {
       return (b.score || 0) - (a.score || 0);
     }
-    return (a.timeSpent || 0) - (b.timeSpent || 0);
+    if ((a.timeSpent || 0) !== (b.timeSpent || 0)) {
+      return (a.timeSpent || 0) - (b.timeSpent || 0);
+    }
+    
+    // Tiebreaker: joinedAt ascending (earlier join gets lower rank/comes first)
+    const timeA = a.joinedAt ? new Date(a.joinedAt).getTime() : 0;
+    const timeB = b.joinedAt ? new Date(b.joinedAt).getTime() : 0;
+    if (timeA !== timeB) {
+      return timeA - timeB;
+    }
+    
+    return 0;
   });
 
   // Reassign ranks dynamically

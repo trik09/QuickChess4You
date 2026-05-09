@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaFolder, FaPlus, FaEdit, FaTrash, FaTimes, FaSave, FaSearch, FaChess, FaTrophy, FaGraduationCap, FaChalkboardTeacher, FaTags, FaInfoCircle, FaEnvelope } from 'react-icons/fa';
-import * as FaIcons from 'react-icons/fa';
-import { PageHeader, Button } from '../../../components/Admin';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { PageHeader, Button, DataTable, IconButton } from '../../../components/Admin';
 import { categoryAPI } from '../../../services/api';
+import { FaFolder, FaPlus, FaEdit, FaTrash, FaTimes, FaSave, FaSearch, FaChess, FaEye } from 'react-icons/fa';
+import * as FaIcons from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import styles from './CategoryList.module.css';
 
 function CategoryList() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [formData, setFormData] = useState({
     name: '',
     title: '',
@@ -21,11 +23,16 @@ function CategoryList() {
     icon: 'FaChess'
   });
 
-  const navigate = useNavigate();
-
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Sync search to URL
+  useEffect(() => {
+    const params = {};
+    if (searchTerm) params.search = searchTerm;
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, setSearchParams]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -144,28 +151,33 @@ function CategoryList() {
     <div className={styles.categoryList}>
       <Toaster position="top-center" />
 
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <FaFolder className={styles.headerIcon} />
-          <div>
-            <h1 className={styles.title}>Category Management</h1>
-            <p className={styles.subtitle}>Manage categories and view puzzles</p>
+      <div className={styles.compactHeader}>
+        <div className={styles.titleArea}>
+          <div className={styles.titleWithIcon}>
+            <FaFolder className={styles.headerIcon} />
+            <h2>Category Management</h2>
           </div>
+          <p className={styles.subtitle}>Manage categories and view puzzles</p>
         </div>
-        <Button icon={FaPlus} onClick={() => handleOpenModal()}>
-          Create Category
-        </Button>
+        
+        <div className={styles.headerActions}>
+          <Button icon={FaPlus} onClick={() => handleOpenModal()} size="small">
+            Create Category
+          </Button>
+        </div>
       </div>
 
-      <div className={styles.controls}>
-        <div className={styles.searchBox}>
-          <FaSearch className={styles.searchIcon} />
+      <div className={styles.filterSectionCompact}>
+        <div className={styles.searchBarWrapperCompact}>
+          <div className={styles.searchIconInside}>
+            <FaSearch />
+          </div>
           <input
             type="text"
-            placeholder="Search categories..."
+            className={styles.compactInput}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
+            placeholder="Search categories..."
           />
         </div>
       </div>
@@ -180,47 +192,52 @@ function CategoryList() {
           </Button>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {filteredCategories.map((category) => (
-            <div
-              key={category._id}
-              className={styles.card}
-              onClick={() => handleCardClick(category.name)}
-            >
-              <div className={styles.cardHeader}>
-                <div className={styles.iconWrapper}>
-                  {renderIcon(category.icon)}
-                </div>
-                <div className={styles.cardActions}>
-                  <button
-                    className={styles.iconBtn}
-                    onClick={(e) => handleOpenModal(category, e)}
-                    title="Edit"
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    className={`${styles.iconBtn} ${styles.deleteBtn}`}
-                    onClick={(e) => handleDelete(category._id, category.name, e)}
-                    title="Delete"
-                  >
-                    <FaTrash />
-                  </button>
-                </div>
+        <div className={styles.tableSection}>
+          <DataTable
+            columns={[
+              { 
+                key: 'icon', 
+                label: 'Icon', 
+                width: '60px',
+                render: (icon) => <div className={styles.tableIcon}>{renderIcon(icon)}</div>
+              },
+              { key: 'name', label: 'Category Name' },
+              { 
+                key: 'totalPuzzles', 
+                label: 'Puzzles',
+                width: '120px',
+                render: (count) => (
+                  <div className={styles.puzzleCountCell}>
+                    <FaChess /> {count || 0}
+                  </div>
+                )
+              }
+            ]}
+            data={filteredCategories}
+            actions={(category) => (
+              <div className={styles.actionButtons}>
+                <IconButton
+                  icon={FaEye}
+                  onClick={() => handleCardClick(category.name)}
+                  title="View Puzzles"
+                  variant="primary"
+                />
+                <IconButton
+                  icon={FaEdit}
+                  onClick={(e) => handleOpenModal(category, e)}
+                  title="Edit"
+                  variant="primary"
+                />
+                <IconButton
+                  icon={FaTrash}
+                  onClick={(e) => handleDelete(category._id, category.name, e)}
+                  title="Delete"
+                  variant="danger"
+                />
               </div>
-
-              <div className={styles.cardBody}>
-                <h3 className={styles.cardTitle}>{category.name}</h3>
-              </div>
-
-              <div className={styles.cardFooter}>
-                <span className={styles.puzzleCount}>
-                  <FaChess /> {category.totalPuzzles || 0} Puzzles
-                </span>
-                <span className={styles.arrow}>→</span>
-              </div>
-            </div>
-          ))}
+            )}
+            emptyMessage={`No categories found matching "${searchTerm}"`}
+          />
         </div>
       )}
 

@@ -1,0 +1,726 @@
+/* Reuse exact same classes from CreateCompetition.module.css */
+.container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.header p {
+  color: #718096;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.cancelBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: #f7fafc;
+  color: #e53e3e;
+  border-color: #fc8181;
+}
+
+.mainLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 100px; /* space for sticky footer */
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #edf2f7;
+  background: #f8fafc;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+
+.iconGold {
+  color: #d97706;
+  font-size: 1.5rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.inputGroup label {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.inputGroup input,
+.inputGroup textarea {
+  padding: 12px 16px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.inputIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIconWrapper input {
+  padding-left: 40px;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: #a0aec0;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+/* Chapters Section */
+.chapterSection {
+  padding: 24px;
+  border-bottom: 1px solid #edf2f7;
+  background: #fff;
+}
+
+.chapterSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chapterSectionLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chapterSectionIcon {
+  color: #4f46e5;
+  font-size: 1.5rem;
+}
+
+.chapterSectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.chapterSectionHint {
+  color: #64748b;
+  font-size: 0.9rem;
+  padding-left: 8px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.addChapterBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addChapterBtn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+/* Chapter Bubble list */
+.chapterBubbleBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chapterBubble {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+
+.chapterBubble:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.chapterBubbleActive {
+  background: #ffffff;
+  box-shadow: 0 4px 12px -2px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+.chapterDotIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+}
+
+.chapterBubbleName {
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.chapterBubbleCount {
+  background: #e2e8f0;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.chapterBubbleActive .chapterBubbleCount {
+  /* color set by inline style based on ch-color */
+  color: #fff;
+}
+
+.chapterDeleteBtn {
+  display: none;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.chapterBubble:hover .chapterDeleteBtn {
+  display: flex;
+}
+
+.chapterDeleteBtn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.chapterInstruction {
+  margin-top: 16px;
+  padding: 12px;
+  background: #eff6ff;
+  border-radius: 8px;
+  color: #1d4ed8;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Active Strip Indicator */
+.activeChapterStrip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: #fafaf9;
+  border-bottom: 1px solid #edf2f7;
+  border-left: 4px solid transparent; 
+  font-size: 0.95rem;
+  color: #44403c;
+}
+
+.activeChapterDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor;
+  opacity: 0.7;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #edf2f7;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.toolbarLeft {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 250px;
+}
+
+.searchBox svg {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+}
+
+.searchBox input {
+  width: 100%;
+  padding: 10px 10px 10px 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.searchBox input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+}
+
+.filters select {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  font-size: 0.95rem;
+  color: #475569;
+  cursor: pointer;
+  outline: none;
+}
+
+.toolbarRight {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.viewToggle {
+  display: flex;
+  background: #e2e8f0;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.viewToggle button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viewToggle button.activeView {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  background: #f1f5f9;
+  padding: 12px 24px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table td {
+  padding: 16px 24px;
+  vertical-align: middle;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.table tr {
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.table tr:hover:not(.disabledRow) {
+  background: #f8fafc;
+}
+
+.selectedRow {
+  background: #f0fdf4 !important;
+}
+
+.disabledRow {
+  opacity: 0.6;
+  background: #f8fafc;
+}
+
+.checkCell {
+  padding-left: 20px !important;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.checkbox.checked {
+  /* Border and text color injected via style */
+  background: transparent;
+}
+
+.checkbox svg {
+  font-size: 1.2rem;
+}
+
+.puzzleTitle {
+  font-weight: 600;
+  color: #334155;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.puzzleId {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.typeText {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.unassignedText {
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+.chapterPill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.emptyCell {
+  text-align: center;
+  padding: 48px;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  background: #f8fafc;
+}
+
+.loadingCell {
+  text-align: center;
+  padding: 48px;
+  color: #64748b;
+}
+
+/* Sticky Footer */
+.stickyFooter {
+  position: fixed;
+  bottom: 0;
+  left: 280px; /* offset sidebar roughly */
+  right: 0;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  z-index: 100;
+}
+
+.footerInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.selectionCount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.footerInfo small {
+  color: #64748b;
+}
+
+.submitBtn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+}
+
+.submitBtn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Modal Shared */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+/* Chapter Modal */
+.chapterModalContent {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalScaleIn 0.2s ease-out;
+}
+
+@keyframes modalScaleIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.chapterModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.chapterModalIcon {
+  font-size: 2rem;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.chapterModalHeader h4 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.formGroupModal {
+  margin-bottom: 20px;
+}
+.formGroupModal label {
+  display:block;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.chapterNameInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.chapterNameInput:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.chapterModalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.chapterModalCancel,
+.chapterModalCreate {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chapterModalCancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.chapterModalCancel:hover {
+  background: #e2e8f0;
+}
+
+.chapterModalCreate {
+  background: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chapterModalCreate:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.chapterModalCreate:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .stickyFooter {
+    left: 0;
+  }
+}

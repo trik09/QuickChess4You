@@ -9,13 +9,16 @@ import {
     FaPuzzlePiece,
     FaCog,
     FaSun,
-    FaMoon
+    FaTrophy,
+    FaMoon,
+    FaClipboardList
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeModal from '../../components/ThemeModal/ThemeModal';
 import styles from './StudentLayout.module.css';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
+import NetworkStatus from '../../components/NetworkStatus/NetworkStatus';
 
 const StudentLayout = () => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -26,11 +29,12 @@ const StudentLayout = () => {
 
     const openSettings = () => setIsThemeModalOpen(true);
 
-    // Desktop Sidebar Navigation: Arena first
     const sidebarNavItems = [
         { path: '/Dashboard', label: 'Arena', icon: <FaThLarge /> },
         { path: '/play', label: 'Play', icon: <FaPuzzlePiece /> },
+        { path: '/events', label: 'Events', icon: <FaTrophy /> },
         { path: '/Dashboard/courses', label: 'Learn', icon: <FaGraduationCap /> },
+        { path: '/Dashboard/exams', label: 'Exams', icon: <FaClipboardList /> },
         { path: '/profile', label: 'Profile', icon: <FaUser /> },
         { label: 'Settings', icon: <FaCog />, action: openSettings },
     ];
@@ -38,14 +42,14 @@ const StudentLayout = () => {
     // Mobile Bottom Nav: Arena in the center as the special raised button
     const mobileNavItems = [
         { path: '/play', label: 'Play', icon: <FaPuzzlePiece /> },
-        { path: '/Dashboard/courses', label: 'Learn', icon: <FaGraduationCap /> },
+        { path: '/events', label: 'Events', icon: <FaTrophy /> },
         { path: '/Dashboard', label: 'Arena', icon: <FaThLarge />, isSpecial: true },
+        { path: '/Dashboard/exams', label: 'Exams', icon: <FaClipboardList /> },
         { path: '/profile', label: 'Profile', icon: <FaUser /> },
-        { label: 'Settings', icon: <FaCog />, action: openSettings },
     ];
 
-    const handleLogout = () => {
-        if (logout) logout();
+    const handleLogout = async () => {
+        await logout?.();
         navigate('/');
     };
 
@@ -86,6 +90,7 @@ const StudentLayout = () => {
                     <img src={logo} alt="Logo" />
                 </Link>
                 <div className={styles.mobileHeaderActions}>
+                    {/* <NetworkStatus isCollapsed={true} /> */}
                     <Link to="/profile" className={styles.mobileAvatar}>
                         {user?.avatar ? (
                             <img src={user.avatar} alt="User" />
@@ -133,6 +138,8 @@ const StudentLayout = () => {
                         {darkMode ? <FaSun /> : <FaMoon />}
                         {!isSidebarCollapsed && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
                     </button>
+
+                    {/* <NetworkStatus isCollapsed={isSidebarCollapsed} /> */}
 
                     <div className={styles.userProfile}>
                         <div className={styles.avatar}>

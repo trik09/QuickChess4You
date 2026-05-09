@@ -14,7 +14,8 @@ import {
   FaBookOpen,
   FaTrash,
   FaSearch,
-  FaPencilAlt
+  FaPencilAlt,
+  FaCalendarAlt
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import styles from "./CreateCompetition.module.css";
@@ -34,22 +35,162 @@ const CHAPTER_COLORS = [
   "#ea580c", // orange
 ];
 
+// Constants for Auto Variation
+const VARIATIONS = {
+  1: ["Mate in One", "Fork", "Mate in Two", "Skewer", "Pin"],
+  2: ["Mate in One", "Pawn Endgame", "Discover Attack", "Overloading", "Rook Endgame"],
+  3: ["Mate in One", "Mate in Two", "Fork", "Pin", "Pawn Endgame", "Skewer", "Overloading", "Opening Traps", "Discover Attack"]
+};
+
+// Puzzle distribution per sequence level
+const DISTRIBUTION = {
+  1: 3,
+  2: 3,
+  3: 2,
+  4: 2
+};
+
 function CreateCompetition() {
   const navigate = useNavigate();
 
   // Form State
   const [formData, setFormData] = useState({
     name: "",
+    startDate: "",
     startTime: "",
     duration: "15",
     maxParticipants: "",
     description: "",
   });
 
+  // Time picker state (for Safari compatibility) — default to current local time
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [timePickerState, setTimePickerState] = useState(() => {
+    const now = new Date();
+    const hour24 = now.getHours();
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    return {
+      hour: hour12.toString(),
+      minute: now.getMinutes().toString().padStart(2, '0'),
+      period: hour24 >= 12 ? 'PM' : 'AM',
+    };
+  });
+  const timePickerRef = useRef(null);
+  const hourScrollRef = useRef(null);
+  const minuteScrollRef = useRef(null);
+
+  // Close time picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (timePickerRef.current && !timePickerRef.current.contains(event.target)) {
+        setShowTimePicker(false);
+      }
+    };
+    if (showTimePicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      // Auto-scroll to selected hour and minute
+      setTimeout(() => {
+        if (hourScrollRef.current) {
+          const activeBtn = hourScrollRef.current.querySelector('[data-active="true"]');
+          if (activeBtn) activeBtn.scrollIntoView({ block: 'center' });
+        }
+        if (minuteScrollRef.current) {
+          const activeBtn = minuteScrollRef.current.querySelector('[data-active="true"]');
+          if (activeBtn) activeBtn.scrollIntoView({ block: 'center' });
+        }
+      }, 30);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showTimePicker]);
+
+  // Update formData.startTime whenever time picker changes
+  useEffect(() => {
+    let hour24 = parseInt(timePickerState.hour);
+    if (timePickerState.period === "PM" && hour24 !== 12) {
+      hour24 += 12;
+    } else if (timePickerState.period === "AM" && hour24 === 12) {
+      hour24 = 0;
+    }
+    const timeString = `${hour24.toString().padStart(2, '0')}:${timePickerState.minute}`;
+    setFormData(prev => ({ ...prev, startTime: timeString }));
+  }, [timePickerState]);
+
+  // Format display time
+  const getDisplayTime = () => {
+    if (!formData.startTime) return "Select time";
+    const [hours, minutes] = formData.startTime.split(':');
+    const hour24 = parseInt(hours);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const period = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12.toString().padStart(2, '0')}:${minutes} ${period}`;
+  };
+
+  const handleTimeSelect = () => {
+    setShowTimePicker(false);
+  };
+
+  // Custom date picker state
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const datePickerRef = useRef(null);
+  const [calendarView, setCalendarView] = useState(() => {
+    const now = new Date();
+    return { month: now.getMonth(), year: now.getFullYear() };
+  });
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) {
+        setShowDatePicker(false);
+      }
+    };
+    if (showDatePicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showDatePicker]);
+
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DAYS = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+  const getDisplayDate = () => {
+    if (!formData.startDate) return "dd / mm / yyyy";
+    const [y, m, d] = formData.startDate.split('-');
+    return `${d} / ${m} / ${y}`;
+  };
+
+  const handleDateSelect = (dateStr) => {
+    setFormData(prev => ({ ...prev, startDate: dateStr }));
+    setShowDatePicker(false);
+  };
+
+  const buildCalendarDays = () => {
+    const { month, year } = calendarView;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrev = new Date(year, month, 0).getDate();
+    const cells = [];
+    // prev month padding
+    for (let i = firstDay - 1; i >= 0; i--) {
+      cells.push({ day: daysInPrev - i, month: month - 1, year: month === 0 ? year - 1 : year, outside: true });
+    }
+    // current month
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ day: d, month, year, outside: false });
+    }
+    // next month padding to fill grid
+    const remaining = 42 - cells.length;
+    for (let d = 1; d <= remaining; d++) {
+      cells.push({ day: d, month: month + 1, year: month === 11 ? year + 1 : year, outside: true });
+    }
+    return cells;
+  };
+
   // Puzzle State
   const [puzzles, setPuzzles] = useState([]);
   const [loadingPuzzles, setLoadingPuzzles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAutoGenerating, setIsAutoGenerating] = useState(false);
   const [previewPuzzle, setPreviewPuzzle] = useState(null);
 
   // Chapter State
@@ -99,8 +240,14 @@ function CreateCompetition() {
   useEffect(() => {
     if (viewMode === 'library') {
       fetchPuzzles();
+    } else if (viewMode === 'selected') {
+      // Fetch assigned puzzles for the active chapter
+      const activeChapterPuzzleIds = chapters.find(ch => ch.id === activeChapterId)?.puzzleIds || [];
+      if (activeChapterPuzzleIds.length > 0) {
+        fetchAssignedPuzzles(activeChapterPuzzleIds);
+      }
     }
-  }, [filters, pagination.current, viewMode]);
+  }, [filters, pagination.current, viewMode, chapters, activeChapterId]);
 
   // Focus chapter name input when modal opens
   useEffect(() => {
@@ -127,6 +274,28 @@ function CreateCompetition() {
       }
     } catch (error) {
       toast.error("Failed to load puzzles");
+    } finally {
+      setLoadingPuzzles(false);
+    }
+  };
+
+  const fetchAssignedPuzzles = async (puzzleIds) => {
+    if (!puzzleIds || puzzleIds.length === 0) {
+      setLoadingPuzzles(false);
+      return;
+    }
+
+    setLoadingPuzzles(true);
+    try {
+      // Fetch puzzles by IDs for the active chapter
+      const response = await competitionAPI.getPuzzlesByIds(puzzleIds);
+      if (response.success) {
+        // Update cache with fetched puzzles
+        response.data.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
+      }
+    } catch (error) {
+      console.error("Failed to load assigned puzzles:", error);
+      toast.error("Failed to load assigned puzzles");
     } finally {
       setLoadingPuzzles(false);
     }
@@ -206,6 +375,83 @@ function CreateCompetition() {
     setEditingChapter(null);
   };
 
+  // --- Auto Variation Logic ---
+  const handleAutoVariation = async (variationNum) => {
+    setIsAutoGenerating(true);
+    toast.loading(`Generating Variation ${variationNum}...`, { id: "auto-gen" });
+
+    try {
+      const categories = VARIATIONS[variationNum];
+      const newChapters = [];
+      const usedIds = new Set();
+      let hasError = false;
+
+      for (const category of categories) {
+        // Fetch up to 1000 puzzles for this category to ensure a large pool for sampling
+        const response = await competitionAPI.getPuzzlesForCompetition({ category, limit: 1000 });
+        if (!response.success) {
+          hasError = true;
+          continue;
+        }
+
+        const categoryPuzzles = response.data || [];
+
+        // Add to global cache so assigned view correctly displays data
+        categoryPuzzles.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
+
+        const selectedPuzzleIds = [];
+
+        Object.entries(DISTRIBUTION).forEach(([levelStr, count]) => {
+          const level = parseInt(levelStr);
+          // Find available puzzles for this level, excluding already assigned ones
+          const availablePuzzles = categoryPuzzles.filter(
+            p => p.level === level && !usedIds.has(p._id)
+          );
+
+          // Shuffle array for random selection
+          const shuffled = availablePuzzles.sort(() => Math.random() - 0.5);
+
+          // Pick the required count or whatever is available
+          const selected = shuffled.slice(0, count);
+
+          selected.forEach(p => {
+            selectedPuzzleIds.push(p._id);
+            usedIds.add(p._id);
+          });
+        });
+
+        // Always create a chapter even if no puzzles match (maintain variation structure)
+        // Add chapter number prefix (1-indexed)
+        const chapterNumber = newChapters.length + 1;
+        newChapters.push({
+          id: genId(),
+          name: `${chapterNumber}. ${category}`,
+          puzzleIds: selectedPuzzleIds
+        });
+      }
+
+      // Replace existing chapters with new selection
+      setChapters(newChapters);
+
+      if (newChapters.length > 0) {
+        setActiveChapterId(newChapters[0].id);
+      } else {
+        setActiveChapterId(null);
+      }
+
+      if (hasError) {
+        toast.error("Variation generated with errors fetching some categories.", { id: "auto-gen" });
+      } else {
+        toast.success(`Variation ${variationNum} generated successfully!`, { id: "auto-gen" });
+      }
+    } catch (err) {
+      console.error("Auto Generation Error:", err);
+      toast.error("Failed to generate variation.", { id: "auto-gen" });
+    } finally {
+      setIsAutoGenerating(false);
+    }
+  };
+
   // --- Puzzle toggle in active chapter ---
   const handlePuzzleToggle = (puzzle) => {
     if (chapters.length === 0) {
@@ -267,7 +513,8 @@ function CreateCompetition() {
     e.preventDefault();
 
     if (!formData.name.trim()) return toast.error("Enter competition name");
-    if (!formData.startTime) return toast.error("Select start time");
+    if (!formData.startDate) return toast.error("Select a start date");
+    if (!formData.startTime) return toast.error("Select a start time");
 
     const totalPuzzles = chapters.flatMap(ch => ch.puzzleIds);
 
@@ -282,12 +529,14 @@ function CreateCompetition() {
     try {
       const competitionData = {
         ...formData,
-        startTime: new Date(formData.startTime).toISOString(),
+        startTime: new Date(`${formData.startDate}T${formData.startTime}`).toISOString(),
         duration: parseInt(formData.duration),
         maxParticipants: parseInt(formData.maxParticipants) || 0,
-        puzzles: totalPuzzles, // flat array for backward compat
+        puzzles: totalPuzzles,
         chapters: chapters.map(ch => ({ name: ch.name, puzzleIds: ch.puzzleIds })),
       };
+      // Remove the split fields before sending
+      delete competitionData.startDate;
 
       await competitionAPI.createCompetition(competitionData);
       toast.success("Competition created!");
@@ -338,7 +587,7 @@ function CreateCompetition() {
           </div>
           <div className={styles.formGrid}>
             <div className={styles.inputGroup}>
-              <label>Puzzle Arena </label>
+              <label>Competition Name</label>
               <input
                 type="text"
                 placeholder="e.g. Winter Blitz 2024"
@@ -350,12 +599,192 @@ function CreateCompetition() {
 
             <div className={styles.inputGroup}>
               <label>Start Date & Time</label>
-              <input
-                type="datetime-local"
-                value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                required
-              />
+              <div className={styles.dateTimeRow}>
+                {/* Custom date picker — same style as time picker, no browser chrome */}
+                <div className={styles.inputIconWrapper} ref={datePickerRef} style={{ position: 'relative' }}>
+                  <FaCalendarAlt className={styles.inputIcon} />
+                  <div
+                    className={`${styles.timeDisplayInput} ${showDatePicker ? styles.open : ''}`}
+                    onClick={() => setShowDatePicker(prev => !prev)}
+                  >
+                    <span className={formData.startDate ? styles.timeDisplayValue : styles.timeDisplayPlaceholder}>
+                      {getDisplayDate()}
+                    </span>
+                  </div>
+
+                  {showDatePicker && (
+                    <div className={styles.datePickerPopup}>
+                      {/* Month / Year header */}
+                      <div className={styles.datePickerHeader}>
+                        <button
+                          type="button"
+                          className={styles.dateNavBtn}
+                          onClick={() => setCalendarView(v => {
+                            const d = new Date(v.year, v.month - 1, 1);
+                            return { month: d.getMonth(), year: d.getFullYear() };
+                          })}
+                        >‹</button>
+                        <span className={styles.datePickerMonthYear}>
+                          {MONTHS[calendarView.month]} {calendarView.year}
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.dateNavBtn}
+                          onClick={() => setCalendarView(v => {
+                            const d = new Date(v.year, v.month + 1, 1);
+                            return { month: d.getMonth(), year: d.getFullYear() };
+                          })}
+                        >›</button>
+                      </div>
+
+                      {/* Day labels */}
+                      <div className={styles.datePickerGrid}>
+                        {DAYS.map(d => (
+                          <div key={d} className={styles.datePickerDayLabel}>{d}</div>
+                        ))}
+                        {/* Calendar cells */}
+                        {buildCalendarDays().map((cell, idx) => {
+                          const cellMonth = ((cell.month % 12) + 12) % 12;
+                          const cellYear = cell.month < 0 ? cell.year - 1 : cell.month > 11 ? cell.year + 1 : cell.year;
+                          const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2,'0')}-${String(cell.day).padStart(2,'0')}`;
+                          const isSelected = formData.startDate === dateStr;
+                          const isToday = dateStr === new Date().toISOString().slice(0,10);
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              className={`
+                                ${styles.datePickerCell}
+                                ${cell.outside ? styles.datePickerCellOutside : ''}
+                                ${isSelected ? styles.datePickerCellSelected : ''}
+                                ${isToday && !isSelected ? styles.datePickerCellToday : ''}
+                              `}
+                              onClick={() => handleDateSelect(dateStr)}
+                            >
+                              {cell.day}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Today shortcut */}
+                      <div className={styles.datePickerFooter}>
+                        <button
+                          type="button"
+                          className={styles.datePickerTodayBtn}
+                          onClick={() => {
+                            const today = new Date();
+                            const todayStr = today.toISOString().slice(0,10);
+                            setCalendarView({ month: today.getMonth(), year: today.getFullYear() });
+                            handleDateSelect(todayStr);
+                          }}
+                        >
+                          Today
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.datePickerClearBtn}
+                          onClick={() => { setFormData(prev => ({ ...prev, startDate: '' })); setShowDatePicker(false); }}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.inputIconWrapper} ref={timePickerRef} style={{ position: 'relative' }}>
+                  <FaClock className={styles.inputIcon} />
+                  {/* Single-click time picker — works on all browsers including Safari */}
+                  <div
+                    className={`${styles.timeDisplayInput} ${showTimePicker ? styles.open : ''}`}
+                    onClick={() => setShowTimePicker(prev => !prev)}
+                  >
+                    <span className={formData.startTime ? styles.timeDisplayValue : styles.timeDisplayPlaceholder}>
+                      {getDisplayTime()}
+                    </span>
+                  </div>
+
+                  {showTimePicker && (
+                    <div className={styles.timePickerPopup}>
+                      <div className={styles.timePickerCols}>
+                        {/* Hours */}
+                        <div className={styles.timePickerCol}>
+                          <div className={styles.timePickerColLabel}>Hour</div>
+                          <div className={styles.timePickerScroll} ref={hourScrollRef}>
+                            {Array.from({ length: 12 }, (_, i) => {
+                              const h = (i + 1).toString();
+                              const isActive = timePickerState.hour === h;
+                              return (
+                                <button
+                                  key={h}
+                                  type="button"
+                                  data-active={isActive}
+                                  className={`${styles.timePickerItem} ${isActive ? styles.timePickerItemActive : ''}`}
+                                  onClick={() => setTimePickerState(prev => ({ ...prev, hour: h }))}
+                                >
+                                  {h.padStart(2, '0')}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className={styles.timePickerDivider} />
+
+                        {/* Minutes — every minute 00–59 */}
+                        <div className={styles.timePickerCol}>
+                          <div className={styles.timePickerColLabel}>Min</div>
+                          <div className={styles.timePickerScroll} ref={minuteScrollRef}>
+                            {Array.from({ length: 60 }, (_, i) => {
+                              const m = i.toString().padStart(2, '0');
+                              const isActive = timePickerState.minute === m;
+                              return (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  data-active={isActive}
+                                  className={`${styles.timePickerItem} ${isActive ? styles.timePickerItemActive : ''}`}
+                                  onClick={() => setTimePickerState(prev => ({ ...prev, minute: m }))}
+                                >
+                                  {m}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className={styles.timePickerDivider} />
+
+                        {/* AM / PM */}
+                        <div className={styles.timePickerCol}>
+                          <div className={styles.timePickerColLabel}>Period</div>
+                          <div className={styles.timePickerScroll}>
+                            {["AM", "PM"].map(p => (
+                              <button
+                                key={p}
+                                type="button"
+                                className={`${styles.timePickerItem} ${timePickerState.period === p ? styles.timePickerItemActive : ''}`}
+                                onClick={() => setTimePickerState(prev => ({ ...prev, period: p }))}
+                              >
+                                {p}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Done button */}
+                      <button
+                        type="button"
+                        className={styles.timePickerDoneBtn}
+                        onClick={handleTimeSelect}
+                      >
+                        Done
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className={styles.inputGroup}>
@@ -425,13 +854,21 @@ function CreateCompetition() {
                     : `${chapters.length} chapter${chapters.length !== 1 ? 's' : ''} · ${allAssignedPuzzleIds.length} puzzle${allAssignedPuzzleIds.length !== 1 ? 's' : ''} assigned`}
                 </span>
               </div>
-              <button
-                type="button"
-                className={styles.addChapterBtn}
-                onClick={() => setShowChapterModal(true)}
-              >
-                <FaPlus /> Add Chapter
-              </button>
+              <div className={styles.chapterActions}>
+                <div className={styles.variationButtons}>
+                  <button type="button" className={styles.varBtn} onClick={() => handleAutoVariation(1)} disabled={isAutoGenerating}>Var 1</button>
+                  <button type="button" className={styles.varBtn} onClick={() => handleAutoVariation(2)} disabled={isAutoGenerating}>Var 2</button>
+                  <button type="button" className={styles.varBtn} onClick={() => handleAutoVariation(3)} disabled={isAutoGenerating}>Var 3</button>
+                </div>
+                <button
+                  type="button"
+                  className={styles.addChapterBtn}
+                  onClick={() => setShowChapterModal(true)}
+                  disabled={isAutoGenerating}
+                >
+                  <FaPlus /> Add Chapter
+                </button>
+              </div>
             </div>
 
             {/* Chapter Bubbles */}
@@ -519,6 +956,16 @@ function CreateCompetition() {
                 </select>
 
                 <select
+                  value={filters.type}
+                  onChange={(e) => handleFilterChange("type", e.target.value)}
+                >
+                  <option value="all">Type: All</option>
+                  <option value="normal">Normal</option>
+                  <option value="kids">Kids</option>
+                  <option value="illegal">Illegal Move</option>
+                </select>
+
+                <select
                   value={filters.level}
                   onChange={(e) => handleFilterChange("level", e.target.value)}
                 >
@@ -598,6 +1045,7 @@ function CreateCompetition() {
                   <th>Category</th>
                   <th>Difficulty</th>
                   <th>Type</th>
+                  <th width="80">Used In</th>
                   <th width="100">Chapter</th>
                   <th width="80">Preview</th>
                 </tr>
@@ -605,13 +1053,13 @@ function CreateCompetition() {
               <tbody>
                 {loadingPuzzles ? (
                   <tr>
-                    <td colSpan="7" className={styles.loadingCell}>
+                    <td colSpan="8" className={styles.loadingCell}>
                       <div className={styles.spinner} /> Loading library...
                     </td>
                   </tr>
                 ) : tableData.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className={styles.emptyCell}>
+                    <td colSpan="8" className={styles.emptyCell}>
                       {viewMode === 'selected'
                         ? "No puzzles assigned to any chapter yet."
                         : "No puzzles found matching filters."}
@@ -656,6 +1104,21 @@ function CreateCompetition() {
                           </span>
                         </td>
                         <td><span className={styles.typeText}>{puzzle.type}</span></td>
+                        <td>
+                          <span
+                            className={styles.usageCountBadge}
+                            data-level={
+                              (puzzle.competitionUsageCount || 0) === 0
+                                ? 'none'
+                                : (puzzle.competitionUsageCount || 0) <= 2
+                                ? 'low'
+                                : 'high'
+                            }
+                            title={`Used in ${puzzle.competitionUsageCount || 0} competition(s)`}
+                          >
+                            {puzzle.competitionUsageCount || 0}
+                          </span>
+                        </td>
                         <td>
                           {ownerChapter ? (
                             <span

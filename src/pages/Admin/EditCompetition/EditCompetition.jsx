@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   FaTrophy,
   FaClock,
@@ -14,7 +14,9 @@ import {
   FaBookOpen,
   FaTrash,
   FaSearch,
-  FaSave
+  FaSave,
+  FaPencilAlt,
+  FaCalendarAlt
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import styles from "./EditCompetition.module.css";
@@ -37,10 +39,12 @@ const CHAPTER_COLORS = [
 function EditCompetition() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
 
   // Form State
   const [formData, setFormData] = useState({
     name: "",
+    startDate: "",
     startTime: "",
     duration: "60",
     maxParticipants: "",
@@ -62,6 +66,14 @@ function EditCompetition() {
   const [newChapterName, setNewChapterName] = useState("");
   const chapterInputRef = useRef(null);
 
+  // Chapter rename state
+  const [editingChapter, setEditingChapter] = useState(null); // { id, name }
+  const editChapterInputRef = useRef(null);
+
+  // Cache for all puzzles (to support assigned view)
+  const allPuzzlesCacheRef = useRef({});
+  const [cacheLoaded, setCacheLoaded] = useState(false); // Track when cache is populated
+
   // View State
   const [viewMode, setViewMode] = useState("library"); // 'library' or 'selected'
 
@@ -71,7 +83,7 @@ function EditCompetition() {
     difficulty: "all",
     type: "all",
     level: "all",
-    rating: "all",
+    // rating: "all",
   });
 
   // Pagination
@@ -95,8 +107,14 @@ function EditCompetition() {
   useEffect(() => {
     if (viewMode === 'library') {
       fetchPuzzles();
+    } else if (viewMode === 'selected') {
+      // Fetch assigned puzzles for the active chapter
+      const activeChapterPuzzleIds = chapters.find(ch => ch.id === activeChapterId)?.puzzleIds || [];
+      if (activeChapterPuzzleIds.length > 0) {
+        fetchAssignedPuzzles(activeChapterPuzzleIds);
+      }
     }
-  }, [filters, pagination.current, viewMode]);
+  }, [filters, pagination.current, viewMode, chapters, activeChapterId]);
 
   // 1. Load Existing Competition Data
   useEffect(() => {
@@ -111,17 +129,20 @@ function EditCompetition() {
       if (response.success) {
         const comp = response.data;
 
-        // Format date for datetime-local input (using local time)
-        let formattedDate = "";
+        // Split into separate date and time fields (Safari-safe)
+        let startDate = "";
+        let startTime = "";
         if (comp.startTime) {
           const d = new Date(comp.startTime);
           const pad = (n) => (n < 10 ? "0" + n : n);
-          formattedDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          startDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+          startTime = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
         }
 
         setFormData({
           name: comp.name || "",
-          startTime: formattedDate,
+          startDate,
+          startTime,
           duration: comp.duration?.toString() || "",
           maxParticipants: comp.maxParticipants?.toString() || "",
           description: comp.description || "",
@@ -137,10 +158,52 @@ function EditCompetition() {
           }));
           setChapters(normalized);
           setActiveChapterId(normalized[0].id);
+          
+          // Fetch all assigned puzzles and populate cache
+          const allPuzzleIds = normalized.flatMap(ch => ch.puzzleIds || []);
+          console.log('Chapter puzzle IDs:', allPuzzleIds);
+          if (allPuzzleIds.length > 0) {
+            try {
+              const puzzlesResponse = await competitionAPI.getPuzzlesByIds(allPuzzleIds);
+              console.log('Puzzles response:', puzzlesResponse);
+              if (puzzlesResponse.success) {
+                puzzlesResponse.data.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
+                setCacheLoaded(true); // Trigger re-render
+                console.log(`Loaded ${puzzlesResponse.data.length} assigned puzzles into cache`);
+                console.log('Cache contents:', Object.keys(allPuzzlesCacheRef.current));
+              } else {
+                console.error('Failed to fetch puzzles:', puzzlesResponse);
+                toast.error(puzzlesResponse.message || "Failed to load assigned puzzles");
+              }
+            } catch (error) {
+              console.error("Failed to load assigned puzzles:", error);
+              toast.error("Failed to load assigned puzzles");
+            }
+          } else {
+            console.log('No puzzle IDs found in chapters');
+            setCacheLoaded(true); // No puzzles to load, but mark as loaded
+          }
         } else {
           const legacyChapter = { id: crypto.randomUUID(), name: "Chapter 1", puzzleIds: comp.puzzles || [] };
           setChapters([legacyChapter]);
           setActiveChapterId(legacyChapter.id);
+          
+          // Fetch legacy puzzles and populate cache
+          if (comp.puzzles && comp.puzzles.length > 0) {
+            try {
+              const puzzlesResponse = await competitionAPI.getPuzzlesByIds(comp.puzzles);
+              if (puzzlesResponse.success) {
+                puzzlesResponse.data.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
+                setCacheLoaded(true); // Trigger re-render
+                console.log(`Loaded ${puzzlesResponse.data.length} legacy puzzles into cache`);
+              }
+            } catch (error) {
+              console.error("Failed to load assigned puzzles:", error);
+              toast.error("Failed to load assigned puzzles");
+            }
+          } else {
+            setCacheLoaded(true); // No puzzles to load, but mark as loaded
+          }
         }
       }
     } catch (error) {
@@ -170,11 +233,36 @@ function EditCompetition() {
       const response = await competitionAPI.getPuzzlesForCompetition(params);
       if (response.success) {
         setPuzzles(response.data);
+        // Merge into cache so Assigned view can find puzzles from any page
+        response.data.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
         setPagination((prev) => ({ ...prev, ...response.pagination }));
         if (response.filters) setFilterOptions(response.filters);
       }
     } catch (error) {
       toast.error("Failed to load puzzles");
+    } finally {
+      setLoadingPuzzles(false);
+    }
+  };
+
+  const fetchAssignedPuzzles = async (puzzleIds) => {
+    if (!puzzleIds || puzzleIds.length === 0) {
+      setLoadingPuzzles(false);
+      return;
+    }
+
+    setLoadingPuzzles(true);
+    try {
+      // Fetch puzzles by IDs for the active chapter
+      const response = await competitionAPI.getPuzzlesByIds(puzzleIds);
+      if (response.success) {
+        // Update cache with fetched puzzles
+        response.data.forEach(p => { allPuzzlesCacheRef.current[p._id] = p; });
+        setCacheLoaded(prev => !prev); // Toggle to force re-render
+      }
+    } catch (error) {
+      console.error("Failed to load assigned puzzles:", error);
+      toast.error("Failed to load assigned puzzles");
     } finally {
       setLoadingPuzzles(false);
     }
@@ -210,9 +298,11 @@ function EditCompetition() {
   // All puzzles that are assigned to any chapter (flat)
   const allAssignedPuzzleIds = chapters.flatMap(ch => ch.puzzleIds);
 
-  // Puzzles assigned to the currently active chapter only
+  // Puzzles assigned to the currently active chapter only — pulled from cache
   const activeChapterPuzzleIds = chapters.find(ch => ch.id === activeChapterId)?.puzzleIds || [];
-  const selectedPuzzles = puzzles.filter(p => activeChapterPuzzleIds.includes(p._id));
+  const selectedPuzzles = activeChapterPuzzleIds
+    .map(id => allPuzzlesCacheRef.current[id])
+    .filter(Boolean);
 
   // --- Chapter CRUD ---
   const handleAddChapter = () => {
@@ -236,6 +326,20 @@ function EditCompetition() {
       const remaining = chapters.filter(ch => ch.id !== chapterId);
       setActiveChapterId(remaining.length > 0 ? remaining[0].id : null);
     }
+  };
+
+  const handleOpenRenameChapter = (ch, e) => {
+    e.stopPropagation();
+    setEditingChapter({ id: ch.id, name: ch.name });
+    setTimeout(() => editChapterInputRef.current?.focus(), 50);
+  };
+
+  const handleRenameChapter = () => {
+    const name = editingChapter?.name?.trim();
+    if (!name) { toast.error("Chapter name cannot be empty"); return; }
+    setChapters(prev => prev.map(ch => ch.id === editingChapter.id ? { ...ch, name } : ch));
+    toast.success(`Renamed to "${name}"`);
+    setEditingChapter(null);
   };
 
   // --- Puzzle toggle in active chapter ---
@@ -298,6 +402,8 @@ function EditCompetition() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return toast.error("Enter competition name");
+    if (!formData.startDate) return toast.error("Select a start date");
+    if (!formData.startTime) return toast.error("Select a start time");
 
     const allPuzzles = chapters.flatMap(c => c.puzzleIds);
     if (allPuzzles.length === 0) return toast.error("Assign at least one puzzle to a chapter");
@@ -306,7 +412,7 @@ function EditCompetition() {
     try {
       const payload = {
         ...formData,
-        startTime: new Date(formData.startTime).toISOString(),
+        startTime: new Date(`${formData.startDate}T${formData.startTime}`).toISOString(),
         duration: parseInt(formData.duration),
         maxParticipants: parseInt(formData.maxParticipants) || 0,
         puzzles: allPuzzles,
@@ -316,10 +422,12 @@ function EditCompetition() {
           puzzleIds: c.puzzleIds
         }))
       };
+      // Remove the split field before sending
+      delete payload.startDate;
 
       await competitionAPI.updateCompetition(id, payload);
       toast.success("Competition updated!");
-      setTimeout(() => navigate("/admin/competitions"), 1500);
+      setTimeout(() => navigate({ pathname: "/admin/competitions", search: location.search }), 1500);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update competition");
     } finally {
@@ -384,12 +492,28 @@ function EditCompetition() {
 
               <div className={styles.inputGroup}>
                 <label>Start Date & Time</label>
-                <input
-                  type="datetime-local"
-                  value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                  required
-                />
+                <div className={styles.dateTimeRow}>
+                  <div className={styles.inputIconWrapper}>
+                    
+                    <input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      required
+                      className={styles.dateInput}
+                    />
+                  </div>
+                  <div className={styles.inputIconWrapper}>
+                    
+                    <input
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                      required
+                      className={styles.timeInput}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className={styles.inputGroup}>
@@ -494,6 +618,14 @@ function EditCompetition() {
                         </span>
                         <button
                           type="button"
+                          className={styles.chapterEditBtn}
+                          onClick={(e) => handleOpenRenameChapter(ch, e)}
+                          title="Rename chapter"
+                        >
+                          <FaPencilAlt />
+                        </button>
+                        <button
+                          type="button"
                           className={styles.chapterDeleteBtn}
                           onClick={(e) => handleDeleteChapter(ch.id, e)}
                           title="Delete chapter"
@@ -545,19 +677,21 @@ function EditCompetition() {
                   </select>
 
                   <select
+                    value={filters.type}
+                    onChange={(e) => handleFilterChange("type", e.target.value)}
+                  >
+                    <option value="all">Type: All</option>
+                    <option value="normal">Normal</option>
+                    <option value="kids">Kids</option>
+                    <option value="illegal">Illegal Move</option>
+                  </select>
+
+                  <select
                     value={filters.level}
                     onChange={(e) => handleFilterChange("level", e.target.value)}
                   >
                     <option value="all">Level: All</option>
                     {filterOptions.levels?.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
-
-                  <select
-                    value={filters.rating}
-                    onChange={(e) => handleFilterChange("rating", e.target.value)}
-                  >
-                    <option value="all">Rating: All</option>
-                    {filterOptions.ratings?.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
               </div>
@@ -694,7 +828,7 @@ function EditCompetition() {
                               <span className={styles.unassignedText}>—</span>
                             )}
                           </td>
-                        <td>
+                          <td>
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                               <button
                                 type="button"
@@ -820,6 +954,45 @@ function EditCompetition() {
           </div>
 
         </form>
+      )}
+
+      {/* --- Chapter Rename Modal --- */}
+      {editingChapter && (
+        <div className={styles.modalOverlay} onClick={() => setEditingChapter(null)}>
+          <div className={styles.chapterModalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.chapterModalHeader}>
+              <FaPencilAlt className={styles.chapterModalIcon} />
+              <h4>Rename Chapter</h4>
+            </div>
+            <input
+              ref={editChapterInputRef}
+              type="text"
+              className={styles.chapterNameInput}
+              placeholder="Chapter name..."
+              value={editingChapter.name}
+              onChange={e => setEditingChapter(prev => ({ ...prev, name: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && handleRenameChapter()}
+              maxLength={40}
+            />
+            <div className={styles.chapterModalActions}>
+              <button
+                type="button"
+                className={styles.chapterModalCancel}
+                onClick={() => setEditingChapter(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.chapterModalCreate}
+                onClick={handleRenameChapter}
+                disabled={!editingChapter.name.trim()}
+              >
+                <FaCheckCircle /> Save
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* --- Chapter Name Modal --- */}

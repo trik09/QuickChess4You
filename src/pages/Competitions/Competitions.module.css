@@ -4,6 +4,7 @@
   max-width: 1200px;
   margin: 0 auto;
   color: #e0e0e0;
+  position: relative;
 }
 
 .header {
@@ -22,10 +23,198 @@
   gap: 0.5rem;
 }
 
-.header p {
+.headerTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.viewModeToggle {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
+.toggleBtn {
+  background: transparent;
+  border: none;
+  color: #a0a0a0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.toggleBtn:hover {
+  color: #fff;
+}
+
+.toggleBtnActive {
+  background: #b58863;
+  color: white;
+  box-shadow: 0 4px 12px rgba(181, 136, 99, 0.3);
+}
+
+/* Table Layout */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid #333;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e0e0e0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #333;
+}
+
+.table td {
+  padding: 18px 24px;
+  border-bottom: 1px solid #2a2a2a;
+  color: #ccc;
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.tableNameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tableNameText {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.tableDescText {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableIconBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
   color: #a0a0a0;
 }
+
+.tableIconBox svg {
+  color: #b58863;
+}
+
+.joinBtnSmall,
+.playBtnSmall,
+.loginBtnSmall {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.joinBtnSmall {
+  background: #3b82f6;
+  color: white;
+}
+
+.joinBtnSmall:hover {
+  background: #2563eb;
+}
+
+.joinBtnSmall:disabled {
+  background: #374151;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.playBtnSmall {
+  background: #10b981;
+  color: white;
+}
+
+.playBtnSmall:hover {
+  background: #059669;
+}
+
+.loginBtnSmall {
+  background: #6366f1;
+  color: white;
+}
+
+.loginBtnSmall:hover {
+  background: #4f46e5;
+}
+
+.registeredText {
+  font-size: 0.85rem;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+/* Light Mode Adjustments */
+[data-theme="light"] .container { color: #2d2520; }
+[data-theme="light"] .header h1 { color: #2d2520; }
+[data-theme="light"] .header p { color: #6c757d; }
+[data-theme="light"] .sectionTitle { color: #2d2520; }
+[data-theme="light"] .card { background: #fff; border-color: #e5d5c5; }
+[data-theme="light"] .card:hover { border-color: #b58863; }
+[data-theme="light"] .cardHeader h3 { color: #2d2520; }
+[data-theme="light"] .infoRow { color: #6c757d; }
+[data-theme="light"] .description { color: #5a4a3a; }
+[data-theme="light"] .viewModeToggle { background: rgba(0, 0, 0, 0.05); border-color: rgba(0, 0, 0, 0.1); }
+[data-theme="light"] .toggleBtn { color: #6c757d; }
+[data-theme="light"] .toggleBtn:hover { color: #2d2520; }
+[data-theme="light"] .tableWrapper { background: #fff; border-color: #e5d5c5; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+[data-theme="light"] .table th { background: rgba(181, 136, 99, 0.1); color: #5a4a3a; border-bottom-color: rgba(181, 136, 99, 0.2); }
+[data-theme="light"] .table td { border-bottom-color: #f1f3f5; color: #5a4a3a; }
+[data-theme="light"] .tableNameText { color: #2d2520; }
+[data-theme="light"] .tableDescText { color: #6c757d; }
+[data-theme="light"] .tableIconBox { color: #6c757d; }
+[data-theme="light"] .table tbody tr:hover { background-color: rgba(181, 136, 99, 0.03); }
 
 .section {
   margin-bottom: 3rem;

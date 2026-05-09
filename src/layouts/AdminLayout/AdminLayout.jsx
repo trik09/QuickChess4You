@@ -1,10 +1,24 @@
 import { useState } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import {
-  FaChartLine, FaPuzzlePiece, FaFolder, FaChess, FaTrophy,
-  FaList, FaPlus, FaCircle, FaHistory, FaMedal, FaUsers,
-  FaUserGraduate, FaUserShield, FaChartBar, FaDesktop,
-  FaCog, FaHome, FaBars, FaTimes, FaBell, FaUser, FaSignOutAlt
+  LayoutDashboard,
+  Layers,
+  Puzzle,
+  CalendarDays,
+  List,
+  ListCheck,
+  Trophy,
+  Calendar,
+  FileText,
+  Car,
+  Users,
+  ArrowLeft,
+  LogOut,
+  Menu,
+  X
+} from "lucide-react";
+import {
+  FaBars, FaTimes
 } from 'react-icons/fa';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 import styles from './AdminLayout.module.css';
@@ -29,38 +43,40 @@ function AdminLayout() {
   };
 
   const menuItems = [
-    { path: '/admin/', icon: FaChartLine, label: 'Dashboard', exact: true },
+    { path: '/admin/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     {
       label: 'Puzzle Management',
-      icon: FaPuzzlePiece,
+      icon: Puzzle,
       submenu: [
-        // { path: '/admin/puzzle-library', icon: FaFolder, label: 'Puzzle Library' },
-        { path: '/admin/categories', icon: FaFolder, label: 'Categories' },
-        { path: '/admin/puzzles', icon: FaChess, label: 'Puzzles' },
+        { path: '/admin/categories', icon: Layers, label: 'Puzzle Categories' },
+        { path: '/admin/puzzles', icon: Puzzle, label: 'Puzzles' },
+        { path: '/admin/daily-training', icon: CalendarDays, label: 'Daily Training' },
       ]
     },
     {
-      label: 'Competition',
-      icon: FaTrophy,
+      label: 'Quiz',
+      icon: List,
       submenu: [
-        { path: '/admin/competitions', icon: FaList, label: 'All Competitions' },
-        // { path: '/admin/competitions/create', icon: FaPlus, label: 'Create Competition' },
-        { path: '/admin/competitions/live', icon: FaCircle, label: 'Live Tournaments' },
-        { path: '/admin/competitions/history', icon: FaHistory, label: 'History' },
+        { path: '/admin/quiz-categories', icon: List, label: 'Quiz Categories' },
+        { path: '/admin/quiz/list', icon: ListCheck, label: 'Quiz List' },
       ]
     },
-    { path: '/admin/leaderboard', icon: FaMedal, label: 'Leaderboard' },
+    {
+      label: 'Competitions',
+      icon: Trophy,
+      submenu: [
+        { path: '/admin/competitions', icon: Trophy, label: 'Manage Arena ' },
+        { path: '/admin/events', icon: Calendar, label: 'Manage Events' },
+        { path: '/admin/exams', icon: FileText, label: 'Manage Exams' },
+      ]
+    },
     {
       label: 'User Management',
-      icon: FaUsers,
+      icon: Users,
       submenu: [
-        { path: '/admin/students', icon: FaUserGraduate, label: 'Students' },
-        { path: '/admin/admins', icon: FaUserShield, label: 'Admins' },
+        { path: '/admin/students', icon: Users, label: 'Students' },
       ]
     },
-    { path: '/admin/reports', icon: FaChartBar, label: 'Reports' },
-    { path: '/admin/monitoring', icon: FaDesktop, label: 'System Monitor' },
-    { path: '/admin/settings', icon: FaCog, label: 'Settings' },
   ];
 
   const isActive = (path, exact = false) => {
@@ -82,7 +98,7 @@ function AdminLayout() {
             className={styles.toggleBtn}
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           >
-            {sidebarCollapsed ? <FaBars /> : <FaTimes />}
+            {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
@@ -92,7 +108,7 @@ function AdminLayout() {
               <div key={index} className={styles.menuGroup}>
                 {!sidebarCollapsed && (
                   <div className={styles.menuGroupLabel}>
-                    <item.icon />
+                    <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
                   </div>
                 )}
@@ -103,7 +119,7 @@ function AdminLayout() {
                     className={`${styles.menuItem} ${isActive(subItem.path) ? styles.active : ''}`}
                     title={sidebarCollapsed ? subItem.label : ''}
                   >
-                    <span className={styles.menuIcon}><subItem.icon /></span>
+                    <span className={styles.menuIcon}><subItem.icon className="w-5 h-5" /></span>
                     {!sidebarCollapsed && <span>{subItem.label}</span>}
                   </Link>
                 ))}
@@ -115,7 +131,7 @@ function AdminLayout() {
                 className={`${styles.menuItem} ${isActive(item.path, item.exact) ? styles.active : ''}`}
                 title={sidebarCollapsed ? item.label : ''}
               >
-                <span className={styles.menuIcon}><item.icon /></span>
+                <span className={styles.menuIcon}><item.icon className="w-5 h-5" /></span>
                 {!sidebarCollapsed && <span>{item.label}</span>}
               </Link>
             )
@@ -124,7 +140,7 @@ function AdminLayout() {
 
         <div className={styles.sidebarFooter}>
           <Link to="/" className={styles.menuItem}>
-            <span className={styles.menuIcon}><FaHome /></span>
+            <span className={styles.menuIcon}><ArrowLeft className="w-5 h-5" /></span>
             {!sidebarCollapsed && <span>Back to Site</span>}
           </Link>
           <button
@@ -132,7 +148,7 @@ function AdminLayout() {
             onClick={() => setShowLogoutConfirm(true)}
             title={sidebarCollapsed ? "Logout" : ""}
           >
-            <span className={styles.menuIcon}><FaSignOutAlt /></span>
+            <span className={styles.menuIcon}><LogOut className="w-5 h-5" /></span>
             {!sidebarCollapsed && <span>Logout</span>}
           </button>
         </div>
@@ -151,7 +167,7 @@ function AdminLayout() {
         <div className={styles.modal} onClick={() => setShowLogoutConfirm(false)}>
           <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.confirmHeader}>
-              <FaSignOutAlt className={styles.logoutIcon} />
+              <LogOut className={styles.logoutIcon} />
               <h3>Confirm Logout</h3>
             </div>
             <div className={styles.confirmBody}>
@@ -168,7 +184,7 @@ function AdminLayout() {
                 className={styles.confirmBtn}
                 onClick={handleLogout}
               >
-                <FaSignOutAlt /> Logout
+                <LogOut className="w-5 h-5" /> Logout
               </button>
             </div>
           </div>

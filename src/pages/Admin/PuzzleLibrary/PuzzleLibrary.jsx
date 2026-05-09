@@ -11,7 +11,7 @@ function PuzzleLibrary() {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
-    type: '', // 'normal' or 'kids'
+    type: '', // 'normal', 'capture', or 'illegal'
     search: '',
     page: 1,
     limit: 20
@@ -138,7 +138,8 @@ function PuzzleLibrary() {
         >
           <option value="">All Types</option>
           <option value="normal">Normal</option>
-          <option value="kids">Kids</option>
+          <option value="capture">Capture</option>
+          <option value="illegal">Illegal Move</option>
         </select>
       </div>
 
@@ -175,8 +176,10 @@ function PuzzleLibrary() {
                   <ChessBoard
                     fen={puzzle.fen}
                     interactive={false}
-                    puzzleType={puzzle.type || 'normal'}
-                    kidsConfig={puzzle.kidsConfig}
+                    puzzleType={puzzle.type === 'kids' ? 'capture' : (puzzle.type || 'normal')}
+                    captureConfig={puzzle.captureConfig || puzzle.kidsConfig}
+                    illegalConfig={puzzle.illegalConfig}
+                    firstMoveBy={puzzle.firstMoveBy}
                     width="100%" // Ensure it takes full container
                   />
                 </div>
@@ -194,7 +197,7 @@ function PuzzleLibrary() {
                       {puzzle.category || 'Tactics'}
                     </span>
                     <span className={`${styles.badge} ${styles.type}`}>
-                      {puzzle.type === 'kids' ? 'Kids' : 'Normal'}
+                      {puzzle.type === 'kids' || puzzle.type === 'capture' ? 'Capture' : (puzzle.type === 'illegal' ? 'Illegal' : 'Normal')}
                     </span>
                     <span
                       className={`${styles.badge} ${styles.difficulty}`}

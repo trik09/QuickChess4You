@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import styles from './DataTable.module.css';
 
-function DataTable({ columns, data, actions, emptyMessage = 'No data available' }) {
+function DataTable({ columns, data, actions, emptyMessage = 'No data available', variant = 'default' }) {
   //console.log(data);
   return (
-    <div className={styles.tableContainer}>
-      <table className={styles.table}>
+    <div className={`${styles.tableContainer} ${variant === 'dark' ? styles.darkTableContainer : ''}`}>
+      <table className={`${styles.table} ${variant === 'dark' ? styles.darkTable : ''}`}>
         <thead>
           <tr>
             {columns.map((column) => (

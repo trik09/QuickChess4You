@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { deduplicateLeaderboard } from "../../../features/liveCompetition/leaderboardUtils";
 import styles from "../CompetitionLobby.module.css";
 
@@ -108,13 +108,7 @@ const ParticipantList = ({
                                         <td className={styles.tdPuzzles}>
                                             <div className={styles.scoreContainer}>
                                                 <span className={styles.scoreHighlight}>
-                                                    {p.puzzlesSolved || 0}
-                                                </span>
-                                                <span className={styles.scoreSeparator}>/</span>
-                                                <span className={styles.scoreTotal}>
-                                                    {competition?.totalPuzzles ||
-                                                        competition?.puzzles?.length ||
-                                                        0}
+                                                    {(p.puzzlesSolved || 0) * 10}
                                                 </span>
                                             </div>
                                         </td>
@@ -162,7 +156,8 @@ const ParticipantList = ({
                             fontWeight: "bold",
                         }}
                     >
-                        Prev
+                        <FaArrowLeft/>
+                        
                     </button>
                     <span
                         style={{
@@ -190,7 +185,7 @@ const ParticipantList = ({
                             fontWeight: "bold",
                         }}
                     >
-                        Next
+                       <FaArrowRight/>
                     </button>
                 </div>
             )}

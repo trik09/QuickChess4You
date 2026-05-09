@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import styles from './Gallery.module.css';
 
 const Gallery = () => {
@@ -78,7 +78,7 @@ const Gallery = () => {
                             className={`${styles.navBtn} ${styles.prevBtn}`}
                             onClick={() => navigateImage('prev')}
                         >
-                            ❮
+                        <FaChevronLeft />
                         </button>
 
                         <img
@@ -91,7 +91,7 @@ const Gallery = () => {
                             className={`${styles.navBtn} ${styles.nextBtn}`}
                             onClick={() => navigateImage('next')}
                         >
-                            ❯
+                        <FaChevronRight />
                         </button>
 
                         <div className={styles.imageCounter}>

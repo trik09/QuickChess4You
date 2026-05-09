@@ -59,8 +59,9 @@ const MainLayout = () => {
         { path: '/settings', label: 'Settings', icon: <FaCog /> },
     ];
 
-    const handleLogout = () => {
-        if (logout) logout();
+    const handleLogout = async () => {
+        await logout?.();
+        navigate('/');
     };
 
     return (

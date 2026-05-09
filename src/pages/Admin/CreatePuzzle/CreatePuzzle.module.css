@@ -13,8 +13,19 @@
   background: white;
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 2px solid #ffd9d9;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid #eaeaea;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
 }
 
 .formGroup {
@@ -25,10 +36,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
-  color: #333;
+  margin-bottom: 8px;
+  color: #4a5568;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .labelHint {
@@ -42,10 +53,10 @@
 .formGroup textarea,
 .formGroup select {
   width: 100%;
-  padding: 12px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.95rem;
   transition: all 0.3s;
   font-family: inherit;
 }
@@ -124,10 +135,10 @@
   background: white;
   border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   position: sticky;
   top: 20px;
-  border: 2px solid #ffd9d9;
+  border: 1px solid #eaeaea;
 }
 
 .previewHeader {
@@ -146,9 +157,10 @@
 }
 
 .previewBadge {
-  padding: 5px 12px;
-  background: #ffd9d9;
-  color: #8b7332;
+  padding: 6px 14px;
+  background: #f8f9fa;
+  color: #4a5568;
+  border: 1px solid #eaeaea;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -157,8 +169,9 @@
 .boardContainer {
   margin-bottom: 25px;
   padding: 15px;
-  background: linear-gradient(135deg, #faf8f3 0%, #ffd9d9 100%);
+  background: #faf8f3;
   border-radius: 12px;
+  border: 1px solid #eaeaea;
 }
 
 .chessboard {
@@ -313,9 +326,65 @@
 }
 
 .modeBtn.active {
-  background: #ffd9d9;
-  color: #8b7332;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #f0f4f8;
+  color: #2b6cb0;
+  border: 1px solid #bee3f8;
+  box-shadow: 0 2px 8px rgba(43, 108, 176, 0.1);
+  transform: translateY(-1px);
+}
+
+.captureControls {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.horizontalGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.selectionStep {
+  background: #fffafa;
+  border: 1px solid #ffeaea;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.selectionStep:hover {
+  border-color: #ffd1d1;
+  box-shadow: 0 4px 15px rgba(255, 209, 209, 0.15);
+}
+
+.stepTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepTitle span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #4a5568;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+}
+
+.selectionSection {
+  margin-bottom: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 .selectionSection {
@@ -344,34 +413,33 @@
 
 .pieceOption,
 .targetOption {
-  width: 50px;
-  height: 50px;
+  width: 54px;
+  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #ddd;
-  border-radius: 8px;
+  border: 2px solid #f0f0f0;
+  border-radius: 10px;
   background: white;
   cursor: grab;
-  transition: all 0.2s;
-  font-size: 1.5rem;
-}
-
-.pieceOption:active,
-.targetOption:active {
-  cursor: grabbing;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-size: 1.8rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .pieceOption:hover,
 .targetOption:hover {
-  border-color: #d2b561;
+  border-color: #ffc5c5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 197, 197, 0.3);
 }
 
 .pieceOption.selected,
 .targetOption.selected {
-  border-color: #8b7332;
-  background: #ffd9d9;
-  box-shadow: 0 2px 5px rgba(139, 115, 50, 0.2);
+  border-color: #4a5568;
+  background: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(74, 85, 104, 0.15);
+  transform: scale(1.05);
 }
 
 .pieceOption img {

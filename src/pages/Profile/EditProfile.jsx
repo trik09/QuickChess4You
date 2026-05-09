@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authAPI } from '../../services/api';
+import { FaCamera } from 'react-icons/fa';
 import styles from './EditProfile.module.css';
 
 // Helper function to construct avatar URL
@@ -13,10 +14,13 @@ const getAvatarUrl = (avatarPath) => {
   return `${baseUrl}/${avatarPath}`;
 };
 
+// Username format: 3–20 chars, letters/numbers/underscores only
+const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
+
 function EditProfile() {
   const navigate = useNavigate();
   const { user: contextUser, userLogin } = useAuth();
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(null);
@@ -26,6 +30,11 @@ function EditProfile() {
     name: '',
     username: ''
   });
+
+  // Username availability state
+  const [usernameStatus, setUsernameStatus] = useState(null); // null | 'checking' | 'available' | 'taken' | 'invalid' | 'unchanged'
+  const [usernameMessage, setUsernameMessage] = useState('');
+  const debounceTimer = useRef(null);
 
   // Initialize form with user data
   useEffect(() => {
@@ -45,7 +54,6 @@ function EditProfile() {
     const file = e.target.files[0];
     if (file) {
       setSelectedAvatar(file);
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result);
@@ -57,47 +65,109 @@ function EditProfile() {
   // Handle form input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     setError('');
+
+    if (name === 'username') {
+      const trimmed = value.trim();
+
+      // Clear previous debounce
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+      // Same as current username — no need to check
+      if (trimmed === (contextUser?.username || '')) {
+        setUsernameStatus('unchanged');
+        setUsernameMessage('');
+        return;
+      }
+
+      if (!trimmed) {
+        setUsernameStatus(null);
+        setUsernameMessage('');
+        return;
+      }
+
+      // Validate format immediately
+      if (!USERNAME_REGEX.test(trimmed)) {
+        setUsernameStatus('invalid');
+        setUsernameMessage('3–20 characters, letters, numbers, and underscores only');
+        return;
+      }
+
+      // Debounce the availability check
+      setUsernameStatus('checking');
+      setUsernameMessage('Checking availability...');
+      debounceTimer.current = setTimeout(async () => {
+        try {
+          const result = await authAPI.checkUsername(trimmed);
+          if (result.available) {
+            setUsernameStatus('available');
+            setUsernameMessage('Username is available');
+          } else {
+            setUsernameStatus('taken');
+            setUsernameMessage(result.message || 'Username is already taken');
+          }
+        } catch {
+          setUsernameStatus(null);
+          setUsernameMessage('');
+        }
+      }, 500);
+    }
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
+    const trimmedUsername = formData.username.trim();
+    const trimmedName = formData.name.trim();
+
+    // Block submit if username format is invalid
+    if (trimmedUsername && !USERNAME_REGEX.test(trimmedUsername)) {
+      setError('Username must be 3–20 characters and contain only letters, numbers, or underscores');
+      return;
+    }
+
+    // Block submit if username is known to be taken
+    if (usernameStatus === 'taken') {
+      setError('That username is already taken. Please choose a different one.');
+      return;
+    }
+
+    // Block submit while availability is still being checked
+    if (usernameStatus === 'checking') {
+      setError('Please wait while we check username availability.');
+      return;
+    }
+
+    if (!trimmedName && !trimmedUsername && !selectedAvatar) {
+      setError('Please make at least one change to save');
+      return;
+    }
+
+    setLoading(true);
     try {
       const updateData = {};
-      if (formData.name && formData.name.trim()) {
-        updateData.name = formData.name.trim();
-      }
-      if (formData.username && formData.username.trim()) {
-        updateData.username = formData.username.trim();
-      }
-
-      // Validate required fields
-      if (!updateData.name && !updateData.username && !selectedAvatar) {
-        setError('Please make at least one change to save');
-        setLoading(false);
-        return;
-      }
+      if (trimmedName) updateData.name = trimmedName;
+      if (trimmedUsername) updateData.username = trimmedUsername;
 
       const response = await authAPI.updateUser(updateData, selectedAvatar);
-      
+
       if (response.user) {
-        // Update user in context and localStorage
-        const updatedUser = response.user;
-        userLogin(updatedUser, localStorage.getItem('token'));
-        
-        // Navigate back to profile page
+        userLogin(response.user, localStorage.getItem('token'));
         navigate('/profile');
       }
     } catch (err) {
-      setError(err.message || 'Failed to update profile. Please try again.');
+      // Surface the backend error message clearly
+      const msg = err.message || '';
+      if (msg.toLowerCase().includes('username')) {
+        setError('That username is already taken. Please choose a different one.');
+        setUsernameStatus('taken');
+        setUsernameMessage('Username is already taken');
+      } else {
+        setError(msg || 'Failed to update profile. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -107,6 +177,21 @@ function EditProfile() {
   const handleCancel = () => {
     navigate('/profile');
   };
+
+  // Determine username input border style
+  const getUsernameInputStyle = () => {
+    if (usernameStatus === 'available') return { borderColor: '#22c55e' };
+    if (usernameStatus === 'taken' || usernameStatus === 'invalid') return { borderColor: '#ef4444' };
+    return {};
+  };
+
+  const getUsernameHintStyle = () => {
+    if (usernameStatus === 'available') return { color: '#22c55e' };
+    if (usernameStatus === 'taken' || usernameStatus === 'invalid') return { color: '#ef4444' };
+    return { color: '#a0a0a0' };
+  };
+
+  const isSaveDisabled = loading || usernameStatus === 'taken' || usernameStatus === 'invalid' || usernameStatus === 'checking';
 
   return (
     <div className={styles.container}>
@@ -130,9 +215,9 @@ function EditProfile() {
               <div className={styles.avatarContainer}>
                 <div className={styles.avatar}>
                   {avatarPreview || getAvatarUrl(contextUser?.avatar) ? (
-                    <img 
-                      src={avatarPreview || getAvatarUrl(contextUser?.avatar)} 
-                      alt={contextUser?.name || 'User'} 
+                    <img
+                      src={avatarPreview || getAvatarUrl(contextUser?.avatar)}
+                      alt={contextUser?.name || 'User'}
                     />
                   ) : (
                     <span className={styles.avatarPlaceholder}>
@@ -140,8 +225,8 @@ function EditProfile() {
                     </span>
                   )}
                 </div>
-                <label htmlFor="avatar-upload" className={styles.avatarUploadBtn}>
-                  📷 Change Photo
+                <label htmlFor="avatar-upload" className={styles.avatarUploadBtn} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <FaCamera /> Change Photo
                   <input
                     type="file"
                     id="avatar-upload"
@@ -181,7 +266,17 @@ function EditProfile() {
                 onChange={handleInputChange}
                 placeholder="Enter your username"
                 required
+                style={getUsernameInputStyle()}
               />
+              {usernameMessage && (
+                <small style={getUsernameHintStyle()}>
+                  {usernameStatus === 'checking' ? '⏳ ' : usernameStatus === 'available' ? '✓ ' : '✗ '}
+                  {usernameMessage}
+                </small>
+              )}
+              {!usernameMessage && (
+                <small className={styles.hint}>3–20 characters, letters, numbers, and underscores only</small>
+              )}
             </div>
 
             {/* Email Field (Read-only) */}
@@ -210,7 +305,7 @@ function EditProfile() {
               <button
                 type="submit"
                 className={styles.saveBtn}
-                disabled={loading}
+                disabled={isSaveDisabled}
               >
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
@@ -223,4 +318,3 @@ function EditProfile() {
 }
 
 export default EditProfile;
-

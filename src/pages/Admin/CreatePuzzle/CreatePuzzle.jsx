@@ -7,6 +7,7 @@ import { adminAPI, categoryAPI } from "../../../services/api";
 import styles from "./CreatePuzzle.module.css";
 import { useAuth } from "../../../contexts/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
+import ChessBoard from "../../../components/ChessBoard/ChessBoard";
 
 // Import chess pieces
 import whitePawn from '../../../assets/pieces/whitepawn.svg';
@@ -38,7 +39,7 @@ function CreatePuzzle() {
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // 'normal', 'kids', or 'illegal'
+  // 'normal', 'capture', or 'illegal'
   const [puzzleType, setPuzzleType] = useState('normal');
 
   const [formData, setFormData] = useState({
@@ -51,15 +52,19 @@ function CreatePuzzle() {
     description: "",
     hints: "",
     level: 1,
-    rating: 300
+    rating: 300,
+    firstMoveBy: 'w'
   });
 
-  // Kids Mode State
-  const [kidsState, setKidsState] = useState({
+  const [possibleSolutions, setPossibleSolutions] = useState([]);
+  const [isCalculatingSolutions, setIsCalculatingSolutions] = useState(false);
+
+  // Capture Mode State (Unified Object/Piece Capture)
+  const [captureState, setCaptureState] = useState({
     pieceType: 'n', // Default Knight
     pieceColor: 'w',
-    startSquare: null,
-    targets: [], // { square: 'e5', item: 'pizza' }
+    playerPieces: [], // [{ square: 'e4', type: 'n', color: 'w' }]
+    targets: [], // { square: 'e5', item: 'pizza' or 'p' }
     targetType: 'pizza' // Current target type to place
   });
 
@@ -69,9 +74,21 @@ function CreatePuzzle() {
   const [fenError, setFenError] = useState("");
   const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTestMode, setIsTestMode] = useState(false);
+  const [testStatus, setTestStatus] = useState('playing'); // 'playing', 'solved', 'failed'
+  const [testBoardKey, setTestBoardKey] = useState(0);
 
   // First Move control: 'human' (default) or 'computer'
   const [firstMoveBy, setFirstMoveBy] = useState('human');
+
+  // Illegal Move Mode State
+  const [illegalPlayerSide, setIllegalPlayerSide] = useState('w'); // 'w' or 'b'
+  const [illegalSubType, setIllegalSubType] = useState('normal'); // 'normal' | 'source_destination'
+  const [sourceSquare, setSourceSquare] = useState('');
+  const [destinationSquare, setDestinationSquare] = useState('');
+
+  // Active Palette Item for Click-To-Place Editor
+  const [activePaletteItem, setActivePaletteItem] = useState(null); // e.g. { type: 'piece', pieceType: 'r', pieceColor: 'w' } | { type: 'trash' }
 
   // Fetch categories on mount
   useEffect(() => {
@@ -95,7 +112,8 @@ function CreatePuzzle() {
     }
   };
 
-  // Validate FEN using chess.js
+  // ── FEN validation ─────────────────────────────────────────────────────────────
+  // Strict validation (requires kings) — used for normal puzzles
   const validateFEN = (fen) => {
     try {
       new Chess(fen);
@@ -107,9 +125,76 @@ function CreatePuzzle() {
     }
   };
 
+  // Lenient validation for illegal move puzzles (no kings required).
+  // Just checks the FEN string has the right number of parts and the
+  // piece placement part contains only valid characters.
+  const validateIllegalFEN = (fen) => {
+    if (!fen || !fen.trim()) {
+      setFenError("FEN is required");
+      return false;
+    }
+    const parts = fen.trim().split(' ');
+    if (parts.length < 1) {
+      setFenError("Invalid FEN notation");
+      return false;
+    }
+    // Basic character check on piece placement
+    const piecePart = parts[0];
+    if (!/^[pnbrqkPNBRQK1-8/]+$/.test(piecePart)) {
+      setFenError("Invalid FEN notation");
+      return false;
+    }
+    setFenError("");
+    return true;
+  };
+
+  // ── Helper: inject phantom kings at safe corner squares ──────────────────
+  // chess.js needs kings for legal move generation during gameplay.
+  // We place them in corners that aren't already occupied.
+  const injectKingsForIllegal = (state, playerSide) => {
+    const chess = new Chess();
+    chess.clear();
+    // Place all user-defined pieces first
+    const usedSquares = [];
+    let whiteKingExists = false;
+    let blackKingExists = false;
+
+    Object.entries(state).forEach(([sq, piece]) => {
+      try { 
+        chess.put({ type: piece.type, color: piece.color }, sq); 
+        usedSquares.push(sq); 
+        if (piece.type === 'k') {
+          if (piece.color === 'w') whiteKingExists = true;
+          else blackKingExists = true;
+        }
+      } catch (e) {}
+    });
+
+    // Add phantom kings to free corners ONLY if they don't exist
+    const corners = ['a1', 'h1', 'a8', 'h8'];
+    for (const corner of corners) {
+      if (whiteKingExists && blackKingExists) break;
+      if (!usedSquares.includes(corner)) {
+        if (!whiteKingExists) {
+          try { chess.put({ type: 'k', color: 'w' }, corner); usedSquares.push(corner); whiteKingExists = true; } catch(e){}
+        } else if (!blackKingExists) {
+          try { chess.put({ type: 'k', color: 'b' }, corner); usedSquares.push(corner); blackKingExists = true; } catch(e){}
+        }
+      }
+    }
+    // Set turn to player's side
+    const fenParts = chess.fen().split(' ');
+    fenParts[1] = playerSide || 'w';
+    return fenParts.join(' ');
+  };
+
   const handleFENChange = (value) => {
     setFormData((prev) => ({ ...prev, fen: value }));
-    validateFEN(value);
+    if (puzzleType === 'illegal' || puzzleType === 'capture') {
+      validateIllegalFEN(value);
+    } else {
+      validateFEN(value);
+    }
   };
 
   // Logic to determine Level and Difficulty from Rating
@@ -138,69 +223,43 @@ function CreatePuzzle() {
     }));
   };
 
-  // Generate FEN for Kids Mode
+  // Generate FEN for Capture Mode
   useEffect(() => {
-    if (puzzleType === 'kids') {
+    if (puzzleType === 'capture') {
       const chess = new Chess();
       chess.clear();
-
-      // Place the main piece
-      if (kidsState.startSquare) {
-        chess.put({ type: kidsState.pieceType, color: kidsState.pieceColor }, kidsState.startSquare);
-      }
-
-      // Place targets as opposite color pawns
-      const targetColor = kidsState.pieceColor === 'w' ? 'b' : 'w';
-      kidsState.targets.forEach(t => {
-        chess.put({ type: 'p', color: targetColor }, t.square);
+      
+      // Put player pieces
+      captureState.playerPieces.forEach(p => {
+        try {
+          chess.put({ type: p.type, color: p.color }, p.square);
+        } catch (e) {}
+      });
+      
+      const enemyColor = captureState.pieceColor === 'w' ? 'b' : 'w';
+      captureState.targets.forEach(t => {
+        // If item is a chess piece type, use it; otherwise use pawn 'p' as placeholder for objects
+        const pieceType = ['p', 'n', 'b', 'r', 'q', 'k'].includes(t.item) ? t.item : 'p';
+        chess.put({ type: pieceType, color: enemyColor }, t.square);
       });
 
-      // ADD KINGS to make FEN valid for chess.js engine
-      // Find safe squares for kings (corners usually safe, but check)
-      const corners = ['h8', 'a1', 'h1', 'a8'];
-      const usedSquares = [kidsState.startSquare, ...kidsState.targets.map(t => t.square)].filter(Boolean);
+      // Add phantom kings to make chess.js happy (ensure they don't block moves)
+      const usedSquares = [
+        ...captureState.playerPieces.map(p => p.square),
+        ...captureState.targets.map(t => t.square)
+      ].filter(Boolean);
+      
+      const corners = ['a1', 'h1', 'a8', 'h8'];
+      let wKPos = corners.find(c => !usedSquares.includes(c));
+      if (wKPos) { chess.put({ type: 'k', color: 'w' }, wKPos); usedSquares.push(wKPos); }
+      let bKPos = corners.find(c => !usedSquares.includes(c));
+      if (bKPos) { chess.put({ type: 'k', color: 'b' }, bKPos); }
 
-      let whiteKingPos = corners.find(c => !usedSquares.includes(c));
-      if (!whiteKingPos) {
-        // Fallback search if corners taken
-        const ranks = ['1', '8'];
-        const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        for (let r of ranks) {
-          for (let f of files) {
-            if (!usedSquares.includes(f + r)) { whiteKingPos = f + r; break; }
-          }
-          if (whiteKingPos) break;
-        }
-      }
-      if (whiteKingPos) {
-        chess.put({ type: 'k', color: 'w' }, whiteKingPos);
-        usedSquares.push(whiteKingPos);
-      }
-
-      let blackKingPos = corners.find(c => !usedSquares.includes(c));
-      if (!blackKingPos) {
-        // Fallback search
-        const ranks = ['8', '1'];
-        const files = ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-        for (let r of ranks) {
-          for (let f of files) {
-            if (!usedSquares.includes(f + r)) { blackKingPos = f + r; break; }
-          }
-          if (blackKingPos) break;
-        }
-      }
-      if (blackKingPos) {
-        chess.put({ type: 'k', color: 'b' }, blackKingPos);
-      }
-
-      // Set turn to player's color
       const fenParts = chess.fen().split(' ');
-      fenParts[1] = kidsState.pieceColor;
-      const newFen = fenParts.join(' ');
-
-      setFormData(prev => ({ ...prev, fen: newFen }));
+      fenParts[1] = captureState.pieceColor;
+      setFormData(prev => ({ ...prev, fen: fenParts.join(' ') }));
     }
-  }, [kidsState, puzzleType]);
+  }, [captureState, puzzleType]);
 
   const parseSolutionMoves = (raw) =>
     raw
@@ -244,8 +303,7 @@ function CreatePuzzle() {
       return;
     }
 
-    // Specific Validation
-    if (puzzleType === 'normal' || puzzleType === 'illegal') {
+    if (puzzleType === 'normal') {
       if (!validateFEN(formData.fen)) {
         setApiError("Please enter a valid FEN notation.");
         return;
@@ -276,34 +334,109 @@ function CreatePuzzle() {
       };
       submitPayload(payload);
 
-    } else {
-      // Kids Validation
-      if (!kidsState.startSquare) {
-        setApiError("Please place the starting piece on the board.");
-        return;
+    } else if (puzzleType === 'capture') {
+      if (captureState.playerPieces.length === 0 || captureState.targets.length === 0) {
+        setApiError('Please configure the board properly.'); return;
       }
-      if (kidsState.targets.length === 0) {
-        setApiError("Please place at least one target on the board.");
-        return;
-      }
-
-      // Build Payload
       const payload = {
         title: formData.title.trim(),
         fen: formData.fen.trim(),
         difficulty: formData.difficulty.toLowerCase(),
         category: formData.category,
-        description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join("\n\n"),
-        type: 'kids',
-        kidsConfig: {
-          piece: kidsState.pieceType,
-          startSquare: kidsState.startSquare,
-          targets: kidsState.targets
+        description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join('\n\n'),
+        type: 'capture',
+        captureConfig: {
+          mode: 'objects',
+          piece: captureState.pieceType, // Maintain for compatibility if needed
+          playerSide: captureState.pieceColor,
+          startSquare: captureState.playerPieces[0]?.square || '', // Maintain for compatibility
+          playerPieces: captureState.playerPieces,
+          targets: captureState.targets,
+          enemyPieces: []
         },
         level: Number(formData.level),
         rating: Number(formData.rating)
       };
       submitPayload(payload);
+
+    } else if (puzzleType === 'illegal') {
+      if (!formData.fen.trim()) {
+        setApiError("Please set up a board position.");
+        return;
+      }
+
+      let finalFen = formData.fen.trim();
+      
+      if (setupMode === 'manual') {
+        finalFen = injectKingsForIllegal(editorState, formData.firstMoveBy);
+      } else {
+        // FEN mode: ensure turn matches firstMoveBy if possible
+        const fenParts = finalFen.split(' ');
+        if (fenParts.length < 2) finalFen += ` ${formData.firstMoveBy} - - 0 1`;
+        else {
+          fenParts[1] = formData.firstMoveBy;
+          finalFen = fenParts.join(' ');
+        }
+      }
+
+      const payload = {
+        title: formData.title.trim(),
+        fen: finalFen,
+        difficulty: formData.difficulty.toLowerCase(),
+        category: formData.category,
+        description: [formData.description.trim(), formData.hints.trim()].filter(Boolean).join("\n\n"),
+        type: 'illegal',
+        level: Number(formData.level),
+        rating: Number(formData.rating),
+        firstMoveBy: formData.firstMoveBy,
+        illegalConfig: {
+          subType: illegalSubType,
+          sourceSquare: illegalSubType === 'source_destination' ? sourceSquare : undefined,
+          destinationSquare: illegalSubType === 'source_destination' ? destinationSquare : undefined,
+          playerSide: formData.firstMoveBy
+        }
+      };
+      submitPayload(payload);
+    }
+  };
+
+  const calculatePossibleSolutions = () => {
+    setIsCalculatingSolutions(true);
+    setPossibleSolutions([]);
+
+    try {
+      let fenToVerify = formData.fen.trim();
+      if (setupMode === 'manual') {
+        fenToVerify = injectKingsForIllegal(editorState, formData.firstMoveBy);
+      } else {
+        const fenParts = fenToVerify.split(' ');
+        if (fenParts.length < 2) fenToVerify += ` ${formData.firstMoveBy} - - 0 1`;
+        else {
+          fenParts[1] = formData.firstMoveBy;
+          fenToVerify = fenParts.join(' ');
+        }
+      }
+
+      const chess = new Chess(fenToVerify);
+      if (chess.turn() !== formData.firstMoveBy) {
+        // Force the turn to match firstMoveBy if it doesn't
+        const parts = chess.fen().split(' ');
+        parts[1] = formData.firstMoveBy;
+        chess.load(parts.join(' '));
+      }
+      
+      const moves = chess.moves({ verbose: true });
+      const solutions = moves.map(m => m.san);
+      setPossibleSolutions(solutions);
+      
+      if (solutions.length === 0) {
+        toast.error("No legal moves found! Is the king in checkmate or stalemate?");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Invalid board position for calculating solutions.");
+    } finally {
+      setIsCalculatingSolutions(false);
     }
   };
 
@@ -326,71 +459,77 @@ function CreatePuzzle() {
   };
 
   const handleSquareClick = (square) => {
-    if (puzzleType !== 'kids') {
-      if (setupMode === 'manual') {
-        const newEditorState = { ...editorState };
+    if (puzzleType === 'capture') {
+      // Toggle logic for player pieces vs targets
+      const existingPlayerIndex = captureState.playerPieces.findIndex(p => p.square === square);
+      if (existingPlayerIndex !== -1) {
+        setCaptureState(prev => ({
+          ...prev,
+          playerPieces: prev.playerPieces.filter((_, i) => i !== existingPlayerIndex)
+        }));
+        return;
+      }
+
+      const existingTargetIndex = captureState.targets.findIndex(t => t.square === square);
+      if (existingTargetIndex !== -1) {
+        setCaptureState(prev => ({
+          ...prev,
+          targets: prev.targets.filter((_, i) => i !== existingTargetIndex)
+        }));
+        return;
+      }
+
+      // Default behavior: toggle placement of currently active piece/target
+      // If we clicked an empty square, we place either a player piece or a target
+      // based on which tab was last interacted with or just toggle placement.
+      // But for better UX, let's just allow placement.
+      setCaptureState(prev => ({
+        ...prev,
+        playerPieces: [...prev.playerPieces, { square, type: prev.pieceType, color: prev.pieceColor }]
+      }));
+    } else if (setupMode === 'manual') {
+      const newEditorState = { ...editorState };
+      
+      if (activePaletteItem) {
+        if (activePaletteItem.type === 'trash') {
+          // Delete piece
+          if (newEditorState[square]) {
+            delete newEditorState[square];
+            setEditorState(newEditorState);
+            updateFenFromEditor(newEditorState);
+          }
+        } else if (activePaletteItem.type === 'piece') {
+          // Place piece
+          newEditorState[square] = { type: activePaletteItem.pieceType, color: activePaletteItem.pieceColor };
+          setEditorState(newEditorState);
+          updateFenFromEditor(newEditorState);
+        }
+      } else {
+        // Fallback: original toggle-delete behavior if nothing is actively selected in palette
         if (newEditorState[square]) {
           delete newEditorState[square];
           setEditorState(newEditorState);
           updateFenFromEditor(newEditorState);
         }
       }
-      return;
-    }
-
-    // Kids Mode Logic
-
-    // 1. If clicking the main piece -> Remove it (to allow moving it)
-    if (kidsState.startSquare === square) {
-      setKidsState(prev => ({ ...prev, startSquare: null }));
-      return;
-    }
-
-    // 2. If clicking an existing target -> Remove it
-    const existingTargetIndex = kidsState.targets.findIndex(t => t.square === square);
-    if (existingTargetIndex !== -1) {
-      setKidsState(prev => ({
-        ...prev,
-        targets: prev.targets.filter((_, i) => i !== existingTargetIndex)
-      }));
-      return;
-    }
-
-    // 3. Placement Logic
-    // If we have selected a 'piece' from palette (implicit state) or just defaulting?
-    // The palette updates 'pieceType' or 'targetType'. Use that intent.
-
-    // Actually, logic was: If piece not placed, place piece. If piece placed, place target.
-    // User wants "1 main piece and rest all anything he can add freely".
-
-    // Let's refine:
-    // User selects what they want to place from palette (implicitly via last click/drag).
-    // Current UI sets 'pieceType' or 'targetType' when clicking palette.
-    // We should probably track "active tool" (Piece vs Target).
-    // But currently we only have `pieceType` and `targetType` state, not "what is selected".
-
-    // Default behavior for click:
-    // If no main piece, assume placing main piece.
-    // If main piece exists, assume placing target.
-    if (!kidsState.startSquare) {
-      setKidsState(prev => ({ ...prev, startSquare: square }));
-    } else {
-      // Allow unlimited targets
-      setKidsState(prev => ({
-        ...prev,
-        targets: [...prev.targets, { square, item: prev.targetType }]
-      }));
     }
   };
 
   const updateFenFromEditor = (state) => {
+    // For illegal puzzles: auto-inject kings so chess.js can compute moves during gameplay
+    if (puzzleType === 'illegal') {
+      const fen = injectKingsForIllegal(state, formData.firstMoveBy);
+      setFormData(prev => ({ ...prev, fen }));
+      return;
+    }
+    // Normal / other: build FEN directly (requires kings to be placed manually)
     const chess = new Chess();
     chess.clear();
     Object.entries(state).forEach(([sq, piece]) => {
       try {
         chess.put({ type: piece.type, color: piece.color }, sq);
       } catch (e) {
-        // Ignore invalid placements (e.g. pawn on 1st/8th rank if engine strictly forbids, though chess.js might allow)
+        // Ignore invalid placements
       }
     });
     setFormData(prev => ({ ...prev, fen: chess.fen() }));
@@ -414,10 +553,11 @@ function CreatePuzzle() {
   };
 
   // Drag and Drop Logic for Kids Mode & Manual Editor
-  const handlePaletteDragStart = (e, type, value, color) => {
+  const handlePaletteDragStart = (e, type, value, color, sourceSquare = null) => {
     e.dataTransfer.setData('type', type);
     e.dataTransfer.setData('value', value);
     if (color) e.dataTransfer.setData('color', color);
+    if (sourceSquare) e.dataTransfer.setData('sourceSquare', sourceSquare);
     e.dataTransfer.effectAllowed = 'copy';
   };
 
@@ -431,26 +571,69 @@ function CreatePuzzle() {
     const type = e.dataTransfer.getData('type');
     const value = e.dataTransfer.getData('value');
     const color = e.dataTransfer.getData('color');
+    const sourceSquare = e.dataTransfer.getData('sourceSquare');
 
     if (!type || !value) return;
 
-    if (puzzleType === 'kids') {
+    if (puzzleType === 'capture') {
       if (type === 'piece') {
-        setKidsState(prev => ({ ...prev, pieceType: value, pieceColor: color || kidsState.pieceColor, startSquare: square }));
-      } else if (type === 'target') {
-        const existingIndex = kidsState.targets.findIndex(t => t.square === square);
-        if (existingIndex === -1) {
-          setKidsState(prev => ({ ...prev, targets: [...prev.targets, { square, item: value }] }));
+        const isPlayerPiece = color === captureState.pieceColor;
+        if (isPlayerPiece) {
+          setCaptureState(prev => {
+            let playerPieces = [...prev.playerPieces];
+            if (sourceSquare && sourceSquare !== square) playerPieces = playerPieces.filter(p => p.square !== sourceSquare);
+            const existingIndex = playerPieces.findIndex(p => p.square === square);
+            if (existingIndex === -1) {
+              return { ...prev, playerPieces: [...playerPieces, { square, type: value, color }] };
+            } else {
+              const newPieces = [...playerPieces];
+              newPieces[existingIndex] = { square, type: value, color };
+              return { ...prev, playerPieces: newPieces };
+            }
+          });
         } else {
-          const newTargets = [...kidsState.targets];
-          newTargets[existingIndex].item = value;
-          setKidsState(prev => ({ ...prev, targets: newTargets }));
+          // Treat enemy piece as a target object
+          setCaptureState(prev => {
+            let targets = prev.targets;
+            if (sourceSquare && sourceSquare !== square) targets = targets.filter(t => t.square !== sourceSquare);
+            const existingIndex = targets.findIndex(t => t.square === square);
+            if (existingIndex === -1) {
+              return { ...prev, targets: [...targets, { square, item: value }] };
+            } else {
+              const newTargets = [...targets];
+              newTargets[existingIndex].item = value;
+              return { ...prev, targets: newTargets };
+            }
+          });
         }
+      } else if (type === 'target') {
+        setCaptureState(prev => {
+          let targets = prev.targets;
+          if (sourceSquare && sourceSquare !== square) targets = targets.filter(t => t.square !== sourceSquare);
+          const existingIndex = targets.findIndex(t => t.square === square);
+          if (existingIndex === -1) {
+            return { ...prev, targets: [...targets, { square, item: value }] };
+          } else {
+            const newTargets = [...targets];
+            newTargets[existingIndex].item = value;
+            return { ...prev, targets: newTargets };
+          }
+        });
+      } else if (type === 'trash') {
+        setCaptureState(prev => ({
+          ...prev,
+          targets: prev.targets.filter(t => t.square !== square),
+          playerPieces: prev.playerPieces.filter(p => p.square !== square)
+        }));
       }
     } else if (setupMode === 'manual') {
       // Normal Mode Manual Setup
       if (type === 'piece') {
-        const newEditorState = { ...editorState, [square]: { type: value, color } };
+        const newEditorState = { ...editorState };
+        if (sourceSquare && sourceSquare !== square) {
+          delete newEditorState[sourceSquare];
+        }
+        newEditorState[square] = { type: value, color };
         setEditorState(newEditorState);
         updateFenFromEditor(newEditorState);
       } else if (type === 'trash') {
@@ -472,7 +655,7 @@ function CreatePuzzle() {
         const chess = new Chess(formData.fen);
         board = chess.board();
       } catch (e) {
-        if (puzzleType === 'kids' || ((puzzleType === 'normal' || puzzleType === 'illegal') && setupMode === 'manual')) {
+        if (puzzleType === 'capture' || ((puzzleType === 'normal' || puzzleType === 'illegal') && setupMode === 'manual')) {
           board = Array(8).fill(null).map(() => Array(8).fill(null));
         } else {
           return (
@@ -486,6 +669,9 @@ function CreatePuzzle() {
     }
 
     const previewUserColor = (() => {
+      if (puzzleType === 'illegal') return formData.firstMoveBy;
+      if (puzzleType === 'capture') return captureState.pieceColor;
+      
       try {
         const chess = new Chess(formData.fen);
         const turn = chess.turn();
@@ -498,7 +684,7 @@ function CreatePuzzle() {
     const files = previewUserColor === 'w' ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
 
     return (
-      <div className={`${styles.chessboard} ${puzzleType === 'kids' || (setupMode === 'manual' && (puzzleType === 'normal' || puzzleType === 'illegal')) ? styles.interactiveBoard : ''}`}>
+      <div className={`${styles.chessboard} ${puzzleType === 'capture' || (setupMode === 'manual' && (puzzleType === 'normal' || puzzleType === 'illegal')) ? styles.interactiveBoard : ''}`}>
         {ranks.map((rank, rankIndex) => (
           <div key={rank} className={styles.row}>
             {files.map((file, fileIndex) => {
@@ -510,25 +696,34 @@ function CreatePuzzle() {
               const isLight = (r + c) % 2 === 0;
 
               let content = null;
-
-              if (puzzleType === 'kids') {
-                const target = kidsState.targets.find(t => t.square === squareName);
-                if (target) {
-                  content = <span style={{ fontSize: '32px' }}>{target.item === 'pizza' ? '🍕' : '🍫'}</span>;
-                }
-                else if (kidsState.startSquare === squareName) {
-                  content = <img src={getPieceImage(kidsState.pieceType, kidsState.pieceColor)} className={styles.piece} alt="piece" />;
-                }
+              if (puzzleType === 'capture') {
+                  const playerPiece = captureState.playerPieces.find(p => p.square === squareName);
+                  if (playerPiece) {
+                    content = <img src={getPieceImage(playerPiece.type, playerPiece.color)} className={styles.piece} alt="piece" draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', playerPiece.type, playerPiece.color, squareName)} style={{ cursor: 'grab' }} />;
+                  } else {
+                    const target = captureState.targets.find(t => t.square === squareName);
+                    if (target) {
+                      const icons = { pizza: '🍕', chocolate: '🍫', star: '⭐', burger: '🍔' };
+                      const icon = icons[target.item];
+                      if (icon) {
+                        content = <span style={{ fontSize: '32px', cursor: 'grab' }} draggable onDragStart={(e) => handlePaletteDragStart(e, 'target', target.item, null, squareName)}>{icon}</span>;
+                      } else {
+                        // Piece target
+                        const enemyColor = captureState.pieceColor === 'w' ? 'b' : 'w';
+                        content = <img src={getPieceImage(target.item, enemyColor)} className={styles.piece} alt="target" draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', target.item, enemyColor, squareName)} style={{ cursor: 'grab' }} />;
+                      }
+                    }
+                  }
               } else if (setupMode === 'manual') {
                 // Check editor state
                 const piece = editorState[squareName];
                 if (piece) {
-                  content = <img src={getPieceImage(piece.type, piece.color)} className={styles.piece} alt={`${piece.color}${piece.type}`} />;
+                  content = <img src={getPieceImage(piece.type, piece.color)} className={styles.piece} alt={`${piece.color}${piece.type}`} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', piece.type, piece.color, squareName)} style={{ cursor: 'grab' }} />;
                 } else if (sq) {
                   // Fallback to FEN-derived sq if editorState not populated (e.g. init from FEN)
                 }
               } else if (sq) {
-                content = <img src={getPieceImage(sq.type, sq.color)} className={styles.piece} alt={`${sq.color}${sq.type}`} />;
+                content = <img src={getPieceImage(sq.type, sq.color)} className={styles.piece} alt={`${sq.color}${sq.type}`} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', sq.type, sq.color, squareName)} style={{ cursor: 'grab' }} />;
               }
 
               return (
@@ -536,7 +731,7 @@ function CreatePuzzle() {
                   key={c}
                   className={`${styles.square} ${isLight ? styles.light : styles.dark}`}
                   onClick={() => {
-                    if (setupMode === 'manual' || puzzleType === 'kids') {
+                    if (setupMode === 'manual' || puzzleType === 'capture') {
                       handleSquareClick(squareName);
                     }
                   }}
@@ -596,10 +791,10 @@ function CreatePuzzle() {
             </button>
             <button
               type="button"
-              className={`${styles.modeBtn} ${puzzleType === 'kids' ? styles.active : ''}`}
-              onClick={() => setPuzzleType('kids')}
+              className={`${styles.modeBtn} ${puzzleType === 'capture' ? styles.active : ''}`}
+              onClick={() => setPuzzleType('capture')}
             >
-              Kids Puzzle 🍕
+              Capture Puzzle 🎯
             </button>
             <button
               type="button"
@@ -622,76 +817,196 @@ function CreatePuzzle() {
               />
             </div>
 
-            {/* NORMAL vs KIDS Logic */}
-            {puzzleType === 'kids' ? (
-              // KIDS MODE CONTROLS
-              <div className={styles.kidsControls}>
-                <div className={styles.controlGroup}>
-                  <label>1. Select Player Piece</label>
-                  <div className={styles.colorToggle} style={{ marginBottom: '10px' }}>
-                    <div
-                      className={`${styles.colorBtn} ${styles.white} ${kidsState.pieceColor === 'w' ? styles.selected : ''}`}
-                      onClick={() => setKidsState({ ...kidsState, pieceColor: 'w' })}
-                    />
-                    <div
-                      className={`${styles.colorBtn} ${styles.black} ${kidsState.pieceColor === 'b' ? styles.selected : ''}`}
-                      onClick={() => setKidsState({ ...kidsState, pieceColor: 'b' })}
-                    />
-                  </div>
-                  <div className={styles.piecePalette}>
-                    {['n', 'b', 'r', 'q', 'k', 'p'].map(p => (
-                      <div
-                        key={p}
-                        className={`${styles.pieceOption} ${kidsState.pieceType === p ? styles.selected : ''}`}
-                        onClick={() => setKidsState(prev => ({ ...prev, pieceType: p }))}
-                        draggable
-                        onDragStart={(e) => handlePaletteDragStart(e, 'piece', p)}
-                      >
-                        <img src={getPieceImage(p, kidsState.pieceColor)} alt={p} />
+            {/* CONTROLS */}
+            {puzzleType === 'capture' ? (
+              <div className={styles.captureControls}>
+                <div className={styles.horizontalGroup}>
+                  {/* STEP 1: PLAYER PIECE */}
+                  <div className={styles.selectionStep}>
+                    <h4 className={styles.stepTitle}><span>1</span> Select Player Piece</h4>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '500' }}>Choose Color:</span>
+                      <div className={styles.colorToggle}>
+                        <div className={`${styles.colorBtn} ${styles.white} ${captureState.pieceColor === 'w' ? styles.selected : ''}`} 
+                          onClick={() => setCaptureState({ ...captureState, pieceColor: 'w' })} title="White Piece" />
+                        <div className={`${styles.colorBtn} ${styles.black} ${captureState.pieceColor === 'b' ? styles.selected : ''}`} 
+                          onClick={() => setCaptureState({ ...captureState, pieceColor: 'b' })} title="Black Piece" />
                       </div>
-                    ))}
-                  </div>
-                  <p className={styles.instruction}>Select a piece and click on the board to place it, or drag and drop onto the board.</p>
-                </div>
+                    </div>
 
-                <div className={styles.controlGroup}>
-                  <label>2. Select Targets</label>
-                  <div className={styles.targetPalette}>
-                    <div
-                      className={`${styles.targetOption} ${kidsState.targetType === 'pizza' ? styles.selected : ''}`}
-                      onClick={() => setKidsState(prev => ({ ...prev, targetType: 'pizza' }))}
-                      draggable
-                      onDragStart={(e) => handlePaletteDragStart(e, 'target', 'pizza')}
-                    >
-                      🍕
+                    <div className={styles.pieceGrid}>
+                      {['n', 'b', 'r', 'q', 'k', 'p'].map(p => (
+                        <div key={p} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, captureState.pieceColor)}
+                          className={`${styles.pieceOption} ${captureState.pieceType === p ? styles.selected : ''}`}
+                          onClick={() => setCaptureState(prev => ({ ...prev, pieceType: p }))}>
+                          <img src={getPieceImage(p, captureState.pieceColor)} alt={p} />
+                        </div>
+                      ))}
                     </div>
-                    <div
-                      className={`${styles.targetOption} ${kidsState.targetType === 'chocolate' ? styles.selected : ''}`}
-                      onClick={() => setKidsState(prev => ({ ...prev, targetType: 'chocolate' }))}
-                      draggable
-                      onDragStart={(e) => handlePaletteDragStart(e, 'target', 'chocolate')}
-                    >
-                      🍫
-                    </div>
+                    <p className={styles.instruction} style={{ marginTop: '12px' }}><small>Drag player piece to board or click board to place/move.</small></p>
                   </div>
-                  <p className={styles.instruction}>Select a target type and click on empty squares to place targets, or drag and drop.</p>
+
+                  {/* STEP 2: TARGETS */}
+                  <div className={styles.selectionStep}>
+                    <h4 className={styles.stepTitle}><span>2</span> Select Targets (Objects or Pieces)</h4>
+                    
+                    <div className={styles.targetGrid}>
+                      {[
+                        { id: 'pizza', icon: '🍕' },
+                        { id: 'chocolate', icon: '🍫' },
+                        { id: 'star', icon: '⭐' },
+                        { id: 'burger', icon: '🍔' }
+                      ].map(item => (
+                        <div key={item.id} draggable onDragStart={(e) => handlePaletteDragStart(e, 'target', item.id)}
+                          className={`${styles.targetOption} ${captureState.targetType === item.id ? styles.selected : ''}`}
+                          onClick={() => setCaptureState(prev => ({ ...prev, targetType: item.id }))}>{item.icon}</div>
+                      ))}
+                    </div>
+
+                    <div className={styles.pieceGrid} style={{ marginTop: '10px' }}>
+                      {['p', 'n', 'b', 'r', 'q'].map(p => {
+                        const enemyColor = captureState.pieceColor === 'w' ? 'b' : 'w';
+                        return (
+                          <div key={`enemy${p}`} className={styles.pieceOption} draggable 
+                            onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, enemyColor)}>
+                            <img src={getPieceImage(p, enemyColor)} alt="" />
+                          </div>
+                        );
+                      })}
+                      <div className={styles.trashOption} draggable onDragStart={(e) => handlePaletteDragStart(e, 'trash', 'trash', null)}><FaTrash /></div>
+                    </div>
+                    <p className={styles.instruction} style={{ marginTop: '12px' }}><small>Drag objects or enemy pieces to board.</small></p>
+                  </div>
                 </div>
               </div>
-            ) : (
-              // NORMAL / ILLEGAL MODE CONTROLS (FEN or Manual)
-              <>
-                <div className={styles.setupToggle}>
+            ) : puzzleType === 'illegal' ? (
+              <div className={styles.illegalControls}>
+                 <div className={styles.setupToggle} style={{ marginBottom: '15px' }}>
+                  <label>Puzzle Sub-Type:</label>
+                  <div className={styles.toggleBtns}>
+                    <button type="button" className={illegalSubType === 'normal' ? styles.active : ''} onClick={() => setIllegalSubType('normal')}>Normal Illegal</button>
+                    <button type="button" className={illegalSubType === 'source_destination' ? styles.active : ''} onClick={() => setIllegalSubType('source_destination')}>Source & Destination</button>
+                  </div>
+                </div>
+
+                {illegalSubType === 'source_destination' && (
+                  <div className={styles.formGrid} style={{ marginBottom: '15px' }}>
+                    <div className={styles.formGroup}>
+                      <label>Source Square *</label>
+                      <input type="text" value={sourceSquare} onChange={e => setSourceSquare(e.target.value)} placeholder="e.g. a5" required={illegalSubType === 'source_destination'} />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Destination Square *</label>
+                      <input type="text" value={destinationSquare} onChange={e => setDestinationSquare(e.target.value)} placeholder="e.g. e6" required={illegalSubType === 'source_destination'} />
+                    </div>
+                  </div>
+                )}
+
+                 <div className={styles.setupToggle}>
                   <label>Setup Method:</label>
                   <div className={styles.toggleBtns}>
                     <button type="button" className={setupMode === 'fen' ? styles.active : ''} onClick={() => setSetupMode('fen')}>FEN String</button>
                     <button type="button" className={setupMode === 'manual' ? styles.active : ''} onClick={() => { setSetupMode('manual'); setEditorState({}); setFormData(p => ({ ...p, fen: '' })); }}>Board Editor</button>
+                    <button type="button" onClick={() => window.open('https://lichess.org/editor', '_blank')} className={styles.lichessBtn}>
+                      <img src="https://lichess1.org/assets/_H8963X/logo/lichess-favicon-32.png" alt="" style={{ width: '16px', marginRight: '6px' }} />
+                      Lichess Editor
+                    </button>
                   </div>
                 </div>
 
                 {setupMode === 'fen' && (
                   <div className={styles.formGroup}>
+                    <label>FEN Position (e.g., King in Check) *</label>
+                    <textarea
+                      disabled={isTestMode}
+                      rows="2"
+                      value={formData.fen}
+                      onChange={(e) => handleFENChange(e.target.value)}
+                      className={fenError ? styles.error : ""}
+                      required={setupMode === 'fen'}
+                      placeholder="Paste FEN here..."
+                    />
+                    {fenError && <span className={styles.errorText}>{fenError}</span>}
+                  </div>
+                )}
+
+                  {/* Palette moved to right preview section */}
+
+                <div className={`${styles.formGroup} ${styles.fullWidth}`} style={{ marginTop: '20px' }}>
+                  <button 
+                    type="button" 
+                    onClick={calculatePossibleSolutions}
+                    className={styles.viewSolutionsBtn}
+                    disabled={isCalculatingSolutions}
+                    style={{ 
+                      width: '100%', 
+                      padding: '12px', 
+                      background: '#4a5568', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '10px', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 2px 8px rgba(74, 85, 104, 0.2)'
+                    }}
+                  >
+                    <FaLightbulb /> {isCalculatingSolutions ? 'Calculating...' : 'View Possible Solutions (Legal Moves)'}
+                  </button>
+                  
+                  {possibleSolutions.length > 0 && (
+                    <div className={styles.solutionsList} style={{ 
+                      marginTop: '15px', 
+                      padding: '16px', 
+                      background: '#f8f9fa', 
+                      borderRadius: '10px', 
+                      border: '1px solid #eaeaea' 
+                    }}>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#4a5568', display: 'block', marginBottom: '10px' }}>
+                        Legal Moves ({possibleSolutions.length}):
+                      </span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {possibleSolutions.map((sol, idx) => (
+                          <span key={idx} style={{ 
+                            padding: '4px 10px', 
+                            background: '#f0f4f8', 
+                            color: '#2b6cb0', 
+                            borderRadius: '6px', 
+                            fontSize: '0.9rem',
+                            border: '1px solid #bee3f8'
+                          }}>{sol}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // NORMAL MODE CONTROLS (FEN or Manual)
+              <>
+                {/* Board Setup Toggle */}
+                <div className={styles.setupToggle}>
+                  <label>Setup Method:</label>
+                  <div className={styles.toggleBtns}>
+                    <button type="button" className={setupMode === 'fen' ? styles.active : ''} onClick={() => setSetupMode('fen')}>FEN String</button>
+                    <button type="button" className={setupMode === 'manual' ? styles.active : ''} onClick={() => { setSetupMode('manual'); setEditorState({}); setFormData(p => ({ ...p, fen: '' })); }}>Board Editor</button>
+                    <button type="button" onClick={() => window.open('https://lichess.org/editor', '_blank')} className={styles.lichessBtn}>
+                      <img src="https://lichess1.org/assets/_H8963X/logo/lichess-favicon-32.png" alt="" style={{ width: '16px', marginRight: '6px' }} />
+                      Lichess Editor
+                    </button>
+                  </div>
+                </div>
+
+                {setupMode === 'fen' && (
+                  <div className={`${styles.formGroup} ${styles.fullWidth}`}>
                     <label>FEN Position *</label>
                     <textarea
+                      disabled={isTestMode}
                       rows="2"
                       value={formData.fen}
                       onChange={(e) => handleFENChange(e.target.value)}
@@ -702,104 +1017,115 @@ function CreatePuzzle() {
                   </div>
                 )}
 
-                {setupMode === 'manual' && (
-                  <div className={styles.editorPalette}>
-                    <p className={styles.instruction}>Drag pieces to the board. Drag 'Trash' to remove.</p>
-                    <div className={styles.paletteRow}>
-                      {['k', 'q', 'r', 'b', 'n', 'p'].map(p => (
-                        <div key={`w${p}`} className={styles.pieceOption} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, 'w')}>
-                          <img src={getPieceImage(p, 'w')} alt="" />
-                        </div>
-                      ))}
-                    </div>
-                    <div className={styles.paletteRow}>
-                      {['k', 'q', 'r', 'b', 'n', 'p'].map(p => (
-                        <div key={`b${p}`} className={styles.pieceOption} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, 'b')}>
-                          <img src={getPieceImage(p, 'b')} alt="" />
-                        </div>
-                      ))}
-                      <div className={styles.trashOption} draggable onDragStart={(e) => handlePaletteDragStart(e, 'trash', 'trash', null)}>
-                        <FaTrash />
+                  {/* Palette moved to right preview section */}
+
+                {/* SOLUTION MOVES — only for Normal puzzles */}
+                {puzzleType === 'normal' && (
+                  <div className={`${styles.formGroup} ${styles.fullWidth}`}>
+                    <label>Correct Move(s) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.correctMove}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, correctMove: e.target.value }))}
+                      placeholder="e.g., Qh5, e2e4"
+                    />
+                    <div style={{ marginTop: '15px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label style={{ fontSize: '0.9em', color: '#666', fontWeight: '600' }}>Alternative Solutions (Optional)</label>
+                        <button
+                          type="button"
+                          onClick={handleAddAlternative}
+                          style={{ fontSize: '0.85em', background: '#f0f4f8', border: '1px solid #bee3f8', color: '#2b6cb0', cursor: 'pointer', padding: '6px 12px', borderRadius: '8px', fontWeight: '600' }}
+                        >
+                          + Add Alternative
+                        </button>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
-                      <button type="button" onClick={clearEditor} className={styles.clearBtn}>Clear Board</button>
-                    </div>
-                    <div className={styles.generatedFen}>
-                      <small>Generated FEN: {formData.fen || 'Empty'}</small>
+                      {formData.alternativeSolutions.map((sol, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                          <input
+                            type="text"
+                            value={sol}
+                            onChange={(e) => handleAlternativeChange(index, e.target.value)}
+                            placeholder="e.g., Qf7#"
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAlternative(index)}
+                            style={{ background: '#fff0f0', color: '#e53e3e', border: '1px solid #fed7d7', borderRadius: '8px', padding: '0 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-
-                <div className={styles.formGroup}>
-                  <label>Correct Move(s) *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.correctMove}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, correctMove: e.target.value }))}
-                    placeholder="e.g., Qh5, e2e4"
-                  />
-                  <div style={{ marginTop: '15px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <label style={{ fontSize: '0.9em', color: '#666', fontWeight: '500' }}>Alternative Solutions (Optional)</label>
-                      <button
-                        type="button"
-                        onClick={handleAddAlternative}
-                        style={{ fontSize: '0.85em', background: '#e2e8f0', border: 'none', color: '#2d3748', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}
-                      >
-                        + Add Alternative
-                      </button>
-                    </div>
-                    {formData.alternativeSolutions.map((sol, index) => (
-                      <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                        <input
-                          type="text"
-                          value={sol}
-                          onChange={(e) => handleAlternativeChange(index, e.target.value)}
-                          placeholder="e.g., Qf7#"
-                          style={{ flex: 1 }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAlternative(index)}
-                          style={{ background: '#feb2b2', color: '#c53030', border: 'none', borderRadius: '4px', padding: '0 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <FaTimes />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
               </>
             )}
 
-            <div className={styles.formGroup}>
-              <label>Category *</label>
-              {loadingCategories ? (
-                <p>Loading categories...</p>
-              ) : (
-                <select
-                  required
-                  value={formData.category}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat.name}>{cat.title}</option>
-                  ))}
-                </select>
+            {/* COMMON FORM FIELDS WRAPPED IN RESPONSIVE GRID */}
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>Category *</label>
+                {loadingCategories ? (
+                  <p>Loading categories...</p>
+                ) : (
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat.name}>{cat.title}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Who should play to solve? (Only for Illegal Move) */}
+              {puzzleType === 'illegal' && (
+                <div className={styles.formGroup}>
+                  <label>Who should play to solve? *</label>
+                  <div className={styles.toggleBtns}>
+                    <button type="button" className={formData.firstMoveBy === 'w' ? styles.active : ''} onClick={() => setFormData(p => ({ ...p, firstMoveBy: 'w' }))}>White</button>
+                    <button type="button" className={formData.firstMoveBy === 'b' ? styles.active : ''} onClick={() => setFormData(p => ({ ...p, firstMoveBy: 'b' }))}>Black</button>
+                  </div>
+                  <p className={styles.instruction}><small>In 'Avoid Illegal Move' puzzles, the side to move (White or Black) must make any legal move to solve.</small></p>
+                </div>
               )}
-            </div>
 
+              {/* Difficulty selector — manual for Illegal Move puzzles */}
+              {puzzleType === 'illegal' && (
+                <div className={styles.formGroup}>
+                  <label>Difficulty *</label>
+                  <div className={styles.toggleBtns}>
+                    {['easy', 'medium', 'hard'].map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className={formData.difficulty === d ? styles.active : ''}
+                        onClick={() => setFormData(p => ({ ...p, difficulty: d }))}
+                        style={{
+                          textTransform: 'capitalize',
+                          ...(formData.difficulty === d && d === 'easy'   ? { background: '#d1fae5', color: '#065f46', borderColor: '#6ee7b7' } : {}),
+                          ...(formData.difficulty === d && d === 'medium' ? { background: '#fef3c7', color: '#92400e', borderColor: '#fcd34d' } : {}),
+                          ...(formData.difficulty === d && d === 'hard'   ? { background: '#fee2e2', color: '#991b1b', borderColor: '#fca5a5' } : {}),
+                        }}
+                      >
+                        {d.charAt(0).toUpperCase() + d.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-
-            {/* Reordered: Rating -> Level -> Difficulty (hidden for Illegal Move) */}
-            {puzzleType !== 'illegal' && (
-              <div className={styles.formGroup} style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                <div style={{ marginBottom: '15px' }}>
-                  <label style={{ color: '#2d3748', fontWeight: '600' }}>Rating (300 - 3500) *</label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {/* Rating (Hidden for Illegal Move) */}
+              {puzzleType !== 'illegal' && (
+                <div className={styles.formGroup}>
+                  <label>Rating (300 - 3500) *</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <input
                       type="number"
                       min="300"
@@ -807,53 +1133,55 @@ function CreatePuzzle() {
                       required
                       value={formData.rating}
                       onChange={(e) => handleRatingChange(e.target.value)}
-                      style={{ border: '2px solid #4a5568', fontSize: '1.1em' }}
                     />
-                    <small style={{ color: '#4a5568' }}>
+                    <small className={styles.instruction}>
                       Entering rating automatically selects the appropriate Level and Difficulty.
                     </small>
                   </div>
                 </div>
+              )}
+            </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                  <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                    <label style={{ fontSize: '0.9em' }}>Level (Auto)</label>
-                    <select
-                      required
-                      value={formData.level}
-                      disabled // Auto-selected
-                      style={{ background: '#edf2f7', cursor: 'not-allowed' }}
-                    >
-                      {[
-                        { value: 1, label: "Level 1 (Beginner)" },
-                        { value: 2, label: "Level 2 (Beginner +)" },
-                        { value: 3, label: "Level 3 (Intermediate)" },
-                        { value: 4, label: "Level 4 (Advanced)" },
-                        { value: 5, label: "Level 5 (Expert)" },
-                        { value: 6, label: "Level 6 (Master)" },
-                        { value: 7, label: "Level 7 (Elite)" }
-                      ].map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup} style={{ marginBottom: 0 }}>
-                    <label style={{ fontSize: '0.9em' }}>Difficulty (Auto)</label>
-                    <select
-                      required
-                      value={formData.difficulty}
-                      disabled // Auto-selected
-                      style={{ background: '#edf2f7', cursor: 'not-allowed' }}
-                    >
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
-                  </div>
+            {/* Level and Difficulty side-by-side (Hidden for Illegal Move) */}
+            {puzzleType !== 'illegal' && (
+              <div className={styles.formGrid} style={{ background: '#f8f9fa', padding: '15px 20px', borderRadius: '10px', border: '1px solid #eaeaea', marginBottom: '25px' }}>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.85rem' }}>Level (Auto)</label>
+                  <select
+                    required
+                    value={formData.level}
+                    disabled // Auto-selected
+                    style={{ background: '#edf2f7', cursor: 'not-allowed', color: '#718096' }}
+                  >
+                    {[
+                      { value: 1, label: "Level 1 (Beginner)" },
+                      { value: 2, label: "Level 2 (Beginner +)" },
+                      { value: 3, label: "Level 3 (Intermediate)" },
+                      { value: 4, label: "Level 4 (Advanced)" },
+                      { value: 5, label: "Level 5 (Expert)" },
+                      { value: 6, label: "Level 6 (Master)" },
+                      { value: 7, label: "Level 7 (Elite)" }
+                    ].map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div style={{ marginTop: '10px', fontSize: '0.85em', color: '#718096', fontStyle: 'italic' }}>
+                <div className={styles.formGroup} style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.85rem' }}>Difficulty (Auto)</label>
+                  <select
+                    required
+                    value={formData.difficulty}
+                    disabled // Auto-selected
+                    style={{ background: '#edf2f7', cursor: 'not-allowed', color: '#718096' }}
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+
+                <div className={styles.fullWidth} style={{ marginTop: '5px', fontSize: '0.85em', color: '#718096', fontStyle: 'italic' }}>
                   Current Range: {LEVEL_RANGES[formData.level]?.[formData.difficulty]
                     ? `${LEVEL_RANGES[formData.level][formData.difficulty][0]} - ${LEVEL_RANGES[formData.level][formData.difficulty][1]}`
                     : 'N/A'}
@@ -880,7 +1208,7 @@ function CreatePuzzle() {
                 Cancel
               </Button>
 
-              <Button type="submit" icon={FaSave} disabled={isSubmitting}>
+              <Button type="submit" icon={FaSave} disabled={isSubmitting || isTestMode}>
                 {isSubmitting ? "Creating..." : "Create Puzzle"}
               </Button>
             </div>
@@ -892,23 +1220,171 @@ function CreatePuzzle() {
         {/* RIGHT: LIVE PREVIEW */}
         <div className={styles.previewSection}>
           <div className={styles.previewHeader}>
-            <h3>Live Preview</h3>
+            <h3>Live Preview {isTestMode && <span style={{ color: '#e53e3e', fontSize: '0.9em', marginLeft: '10px' }}>[TEST MODE]</span>}</h3>
             <span className={styles.previewBadge}>
               {formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1)} | Lvl {formData.level} ({formData.rating})
             </span>
           </div>
 
-          <div className={styles.boardContainer}>{renderChessBoard()}</div>
+          {!isTestMode && setupMode === 'manual' && (
+            <div className={`${styles.editorPalette} ${styles.fullWidth}`} style={{ marginBottom: '15px' }}>
+              <p className={styles.instruction} style={{ marginBottom: '10px' }}>
+                <strong>Click</strong> a piece below to select it, then <strong>click</strong> squares on the board to place it. <br/>
+                Or freely drag and drop items.
+              </p>
+              <div className={styles.paletteRow} style={{ justifyContent: 'center' }}>
+                {['k', 'q', 'r', 'b', 'n', 'p'].map(p => {
+                  const isActive = activePaletteItem?.pieceType === p && activePaletteItem?.pieceColor === 'w';
+                  return (
+                    <div 
+                      key={`w${p}`} 
+                      className={styles.pieceOption} 
+                      style={{ 
+                        border: isActive ? '2px solid #3182ce' : '2px solid transparent', 
+                        background: isActive ? '#ebf8ff' : 'transparent',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                      }}
+                      draggable 
+                      onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, 'w')}
+                      onClick={() => setActivePaletteItem({ type: 'piece', pieceType: p, pieceColor: 'w' })}
+                    >
+                      <img src={getPieceImage(p, 'w')} alt="" />
+                    </div>
+                  )
+                })}
+              </div>
+              <div className={styles.paletteRow} style={{ justifyContent: 'center' }}>
+                {['k', 'q', 'r', 'b', 'n', 'p'].map(p => {
+                  const isActive = activePaletteItem?.pieceType === p && activePaletteItem?.pieceColor === 'b';
+                  return (
+                    <div 
+                      key={`b${p}`} 
+                      className={styles.pieceOption} 
+                      style={{ 
+                        border: isActive ? '2px solid #3182ce' : '2px solid transparent', 
+                        background: isActive ? '#ebf8ff' : 'transparent',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                      }}
+                      draggable 
+                      onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, 'b')}
+                      onClick={() => setActivePaletteItem({ type: 'piece', pieceType: p, pieceColor: 'b' })}
+                    >
+                      <img src={getPieceImage(p, 'b')} alt="" />
+                    </div>
+                  )
+                })}
+                <div 
+                  className={styles.trashOption} 
+                  style={{
+                    border: activePaletteItem?.type === 'trash' ? '2px solid #e53e3e' : '2px solid transparent',
+                    background: activePaletteItem?.type === 'trash' ? '#fff5f5' : 'transparent',
+                    cursor: 'pointer'
+                  }}
+                  draggable 
+                  onDragStart={(e) => handlePaletteDragStart(e, 'trash', 'trash', null)}
+                  onClick={() => setActivePaletteItem({ type: 'trash' })}
+                >
+                  <FaTrash />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px', justifyContent: 'center' }}>
+                <button type="button" onClick={clearEditor} className={styles.clearBtn} style={{ borderRadius: '8px' }}>Clear Board</button>
+              </div>
+              <div className={styles.generatedFen} style={{ textAlign: 'center', marginTop: '8px' }}>
+                <small>Generated FEN: {formData.fen || 'Empty'}</small>
+              </div>
+            </div>
+          )}
+
+          <div className={styles.boardContainer}>
+             {isTestMode ? (
+               <ChessBoard
+                 key={`test-board-${testBoardKey}`}
+                 fen={formData.fen}
+                 solution={formData.correctMove ? formData.correctMove.split(',').map(m => m.trim()).filter(Boolean) : []}
+                 alternativeSolutions={[]}
+                 isSolved={testStatus === 'solved'}
+                 isFailed={testStatus === 'failed'}
+                 onPuzzleSolved={() => setTestStatus('solved')}
+                 onWrongMove={() => setTestStatus('failed')}
+                 onMoveMade={() => {}}
+                 type={puzzleType}
+                 puzzleType={puzzleType}
+                 captureConfig={puzzleType === 'capture' ? {
+                   mode: 'objects',
+                   piece: captureState.pieceType,
+                   playerSide: captureState.pieceColor,
+                   startSquare: captureState.startSquare,
+                   targets: captureState.targets,
+                   enemyPieces: []
+                 } : null}
+                 illegalConfig={puzzleType === 'illegal' ? {
+                    subType: illegalSubType,
+                    sourceSquare: sourceSquare,
+                    destinationSquare: destinationSquare
+                 } : {}}
+                 firstMoveBy={formData.firstMoveBy}
+                 interactive={true}
+                 reviewMode={false}
+                 testSolveMode={true}
+               />
+             ) : (
+               renderChessBoard()
+             )}
+          </div>
+          
+          {isTestMode && (
+             <div style={{ marginTop: '15px', padding: '12px', borderRadius: '8px', textAlign: 'center', transition: 'all 0.3s', backgroundColor: testStatus === 'playing' ? '#f0f4f8' : testStatus === 'solved' ? '#c6f6d5' : '#fed7d7', color: testStatus === 'playing' ? '#2b6cb0' : testStatus === 'solved' ? '#276749' : '#c53030' }}>
+               <div style={{ fontWeight: '600', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                 {testStatus === 'playing' && "Play any legal move to test..."}
+                 {testStatus === 'solved' && "✔️ Valid Move!"}
+                 {testStatus === 'failed' && "❌ Illegal Move!"}
+               </div>
+
+               {/* Exit / Reset Buttons */}
+               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                 <button type="button" title="Reset Test" onClick={() => { setTestBoardKey(k => k + 1); setTestStatus('playing'); }} style={{ padding: '6px 12px', background: '#fff', color: '#4a5568', border: '1px solid #cbd5e0', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', display: 'flex', alignItems: 'center' }}><FaUndo style={{ marginRight: '6px', fontSize: '0.85em' }}/> Reset Test</button>
+                 <button type="button" title="Exit Test" onClick={() => { setIsTestMode(false); setTestStatus('playing'); }} style={{ padding: '6px 12px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', display: 'flex', alignItems: 'center' }}><FaTimes style={{ marginRight: '6px', fontSize: '0.85em' }}/> Exit Test</button>
+               </div>
+             </div>
+          )}
+
+          {!isTestMode && (
+             <div style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+               <Button
+                 type="button"
+                 variant="secondary"
+                 icon={FaLightbulb}
+                 onClick={() => {
+                     const fenToTest = formData.fen.trim();
+                     if (!fenToTest) return toast.error("Please enter a FEN position first.");
+                     if (puzzleType !== 'illegal' && !validateFEN(fenToTest)) return toast.error("Invalid FEN position.");
+                     setIsTestMode(true); 
+                     setTestStatus('playing'); 
+                     setTestBoardKey(k => k + 1); 
+                 }}
+               >
+                 Test Solve
+               </Button>
+             </div>
+          )}
 
           <div className={styles.previewInfo}>
             <div><strong>Title:</strong> {formData.title || "Untitled"}</div>
-            <div><strong>Type:</strong> {puzzleType === 'kids' ? 'Kids' : puzzleType === 'illegal' ? 'Illegal Move' : 'Normal'}</div>
-            {(puzzleType === 'normal' || puzzleType === 'illegal') && formData.correctMove && (
+            <div><strong>Type:</strong> {puzzleType === 'capture' ? 'Capture' : puzzleType === 'illegal' ? 'Illegal Move' : 'Normal'}</div>
+            {puzzleType === 'normal' && formData.correctMove && (
               <div><strong>Solution:</strong> {formData.correctMove}</div>
             )}
-            {puzzleType === 'kids' && (
+            {puzzleType === 'capture' && (
               <div>
-                <strong>Setup:</strong> {kidsState.startSquare ? 'Piece Placed' : 'No Piece'}, {kidsState.targets.length} Targets
+                <strong>Setup:</strong> {captureState.startSquare ? 'Piece Placed' : 'No Piece'}, {captureState.targets.length} Targets
+              </div>
+            )}
+            {puzzleType === 'illegal' && illegalSubType === 'source_destination' && (
+              <div>
+                <strong>Source:</strong> {sourceSquare || 'None'} <strong>Dest:</strong> {destinationSquare || 'None'}
               </div>
             )}
           </div>

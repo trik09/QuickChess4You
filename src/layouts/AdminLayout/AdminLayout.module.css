@@ -152,7 +152,7 @@
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 30px;
+  padding: 12px;
   background: #faf8f3;
 }
 

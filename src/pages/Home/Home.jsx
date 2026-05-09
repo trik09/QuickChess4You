@@ -9,6 +9,7 @@ import Contact from '../Contact/Contact';
 import Footer from '../../components/Footer/Footer';
 import styles from './Home.module.css';
 import HighlightsStrip from '../HighlightsStrip/HighlightsStrip';
+import FaqSection from '../../components/Faq/FaqSection';
 
 const Home = () => {
   const { handleLoginClick, handleSignupClick } = useOutletContext();
@@ -40,6 +41,10 @@ const Home = () => {
 
       <div id="contact" className={styles.sectionWrapper}>
         <Contact />
+      </div>
+
+      <div id="faq" className={styles.sectionWrapper}>
+        <FaqSection />
       </div>
 
       <Footer />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaTrophy, FaClock, FaUsers, FaChartLine, FaPause, FaStop } from 'react-icons/fa';
+import { FaTrophy, FaClock, FaUsers, FaChartLine, FaPause, FaStop, FaCircle, FaUser, FaCarSide, FaTools } from 'react-icons/fa';
 import { competitionAPI } from '../../../services/api';
 import toast from 'react-hot-toast';
 import styles from './LiveTournament.module.css';
@@ -55,7 +55,7 @@ function LiveTournament() {
   };
 
   const handlePause = (id) => {
-    toast('Pause functionality coming soon (requires Backend update)', { icon: '🚧' });
+    toast('Pause functionality coming soon (requires Backend update)', { icon: <FaTools /> });
   };
 
   const handleEnd = async (id) => {
@@ -102,7 +102,7 @@ function LiveTournament() {
               >
                 <div className={styles.cardHeader}>
                   <h3>{tournament.name}</h3>
-                  <span className={styles.liveBadge}>🔴 LIVE</span>
+                  <span className={styles.liveBadge} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}><FaCircle style={{ color: 'red', fontSize: '10px' }} /> LIVE</span>
                 </div>
 
                 <div className={styles.tournamentInfo}>
@@ -135,7 +135,7 @@ function LiveTournament() {
                     <div key={player.user?._id || player.rank} className={styles.leaderboardItem}>
                       <div className={styles.rankBadge}>#{player.rank}</div>
                       <div className={styles.playerInfo}>
-                        <div className={styles.playerAvatar}>👤</div>
+                        <div className={styles.playerAvatar}><FaUser /></div>
                         <div>
                           <div className={styles.playerName}>{player.user?.name || player.user?.email || 'Unknown'}</div>
                           <div className={styles.playerScore}>{player.score} points</div>
@@ -143,7 +143,7 @@ function LiveTournament() {
                       </div>
                       <div className={styles.progressTrack}>
                         {/* Visualizing progress based on score relative to top score or fixed max */}
-                        <div className={styles.car} style={{ left: `${Math.min(player.score / 5, 95)}%` }}>🏎️</div>
+                        <div className={styles.car} style={{ left: `${Math.min(player.score / 5, 95)}%` }}><FaCarSide /></div>
                       </div>
                     </div>
                   ))

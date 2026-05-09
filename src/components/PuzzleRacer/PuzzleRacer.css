@@ -194,11 +194,16 @@
 }
 
 .orbit-svg ellipse {
-    stroke: rgba(255, 255, 255, 0.05);
+    stroke: rgba(255, 255, 255, 0.08);
+    transition: stroke 0.3s ease;
+}
+
+.orbit-svg ellipse:hover {
+    stroke: rgba(255, 255, 255, 0.2);
 }
 
 [data-theme='light'] .orbit-svg ellipse {
-    stroke: rgba(181, 136, 99, 0.15);
+    stroke: rgba(181, 136, 99, 0.18);
 }
 
 .comet {
@@ -290,29 +295,28 @@
    PLANETS LINEUP (Left → Center)
    ======================================== */
 .planets-lineup {
-    display: flex;
-    align-items: center;
-    gap: 4px;
     flex: 1;
     z-index: 5;
     position: relative;
-    padding: 10px 4px 10px 10px;
-    justify-content: space-around;
+    height: 100%;
+    min-height: 200px;
 }
 
 .planet-slot {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    position: relative;
-    min-width: 50px;
-    flex-shrink: 0;
-    transition: transform 0.3s ease;
+    gap: 12px;
+    position: absolute;
+    top: calc(50% + 3px); /* Adjusted down to align with orbit lines */
+    transform: translate(-50%, -50%);
+    min-width: 80px;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    z-index: 10;
 }
 
 .planet-slot:hover {
-    transform: translateY(-4px);
+    transform: translate(-50%, calc(-50% - 2px)); /* Subtle hover lift */
 }
 
 .planet-slot-empty {
@@ -320,7 +324,11 @@
 }
 
 .planet-slot-you .planet-orb {
-    box-shadow: 0 0 16px rgba(100, 181, 246, 0.6), 0 0 32px rgba(100, 181, 246, 0.2) !important;
+    box-shadow: 
+        0 0 20px rgba(100, 181, 246, 0.5), 
+        0 0 40px rgba(100, 181, 246, 0.2),
+        inset 0 0 15px rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.1);
 }
 
 /* ---------- Planet Orb ---------- */
@@ -328,6 +336,10 @@
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
+    box-shadow: inset -8px -8px 20px rgba(0, 0, 0, 0.6), inset 8px 8px 20px rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Shine highlight on planet */
@@ -640,14 +652,18 @@
    SUN (Right Side)
    ======================================== */
 .sun-region {
-    position: relative;
+    position: absolute;
+    right: 0;
+    top: calc(50% + 3px); /* Align with planets and orbits */
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    z-index: 5;
-    padding: 0 15px 0 25px;
+    z-index: 15;
+    padding: 0 20px 0 0;
+    width: 140px;
 }
 
 .sun-body {
@@ -943,14 +959,18 @@
         gap: 0px;
         padding: 5px;
         overflow-x: auto;
+        display: flex;
+        align-items: center;
     }
 
     .planet-slot {
-        min-width: unset;
-        width: 12.5%;
-        /* Fit 8 planets */
+        position: relative;
+        top: unset;
+        left: unset !important;
         transform: scale(0.7);
         transform-origin: center center;
+        min-width: 70px;
+        flex-shrink: 0;
     }
 
     .planet-slot-name {

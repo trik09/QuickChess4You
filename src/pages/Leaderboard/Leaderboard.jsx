@@ -22,17 +22,23 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
-import { competitionAPI } from "../../services/api";
+import { liveEventAPI } from "../../services/liveEventAPI";
+import { competitionAPI, eventAPI } from "../../services/api";
 import socketService from "../../services/socketService";
 import { deduplicateLeaderboard } from "../../features/liveCompetition/leaderboardUtils";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
+import confetti from "canvas-confetti";
+import { motion, AnimatePresence } from "framer-motion";
 import styles from "./Leaderboard.module.css";
 
 import silver from "../../assets/Trophy/silver-trophy.svg"
 import gold from "../../assets/Trophy/gold-trophy.svg"
 import bronze from "../../assets/Trophy/bronze-trophy.svg"
+import bar1Svg from "../../assets/Trophy/1st bar.svg"
+import bar2Svg from "../../assets/Trophy/2nd bar.svg"
+import bar3Svg from "../../assets/Trophy/3rd bar.svg"
 
-function Leaderboard() {
+function Leaderboard({ isEvent }) {
   const { competitionId } = useParams();
   const navigate = useNavigate();
   const { isUserAuthenticated } = useAuth();
@@ -46,12 +52,16 @@ function Leaderboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
   const hasAutoPaginatedRef = React.useRef(false);
+  const hasFiredConfettiRef = React.useRef(false);
 
   useEffect(() => {
     if (competitionId) {
       loadCompetitionData();
       loadLeaderboard();
     }
+
+    // Immediate "Congrats" burst on mount
+    triggerCelebration(true);
 
     // Cleanup on unmount
     return () => {
@@ -85,7 +95,9 @@ function Leaderboard() {
 
   const loadCompetitionData = async () => {
     try {
-      const response = await competitionAPI.getById(competitionId);
+      const response = isEvent
+        ? await eventAPI.getById(competitionId)
+        : await competitionAPI.getById(competitionId);
       if (response.success) {
         setCompetition(response.data);
         const competitionIsLive = response.data.status === 'live' || response.data.status === 'LIVE';
@@ -102,7 +114,9 @@ function Leaderboard() {
   const loadLeaderboard = async (showLoader = true) => {
     try {
       if (showLoader) setLoading(true);
-      const response = await liveCompetitionAPI.getLeaderboard(competitionId);
+      const response = isEvent
+        ? await liveEventAPI.getLeaderboard(competitionId)
+        : await liveCompetitionAPI.getLeaderboard(competitionId);
       if (response.success && response.leaderboard) {
         const dedupedList = deduplicateLeaderboard(response.leaderboard);
         setLeaderboard(dedupedList);
@@ -127,7 +141,52 @@ function Leaderboard() {
       console.error('Failed to load leaderboard:', error);
     } finally {
       if (showLoader) setLoading(false);
+      
+      // Trigger refined celebration once data is loaded
+      if (response?.success && response?.leaderboard?.length > 0 && !hasFiredConfettiRef.current) {
+        triggerCelebration();
+        hasFiredConfettiRef.current = true;
+      }
     }
+  };
+
+  const triggerCelebration = (isInitial = false) => {
+    const duration = isInitial ? 1.5 * 1000 : 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 10000 };
+
+    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+    // Initial big burst
+    confetti({
+      ...defaults,
+      particleCount: 150,
+      origin: { y: 0.6 },
+      colors: ['#FFD700', '#FFA500', '#FFFFFF']
+    });
+
+    const interval = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 40 * (timeLeft / duration);
+      
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#FFD700', '#FFA500', '#FFFFFF']
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#FFD700', '#FFA500', '#FFFFFF']
+      });
+    }, 250);
   };
 
   const setupLiveUpdates = async () => {
@@ -160,10 +219,10 @@ function Leaderboard() {
 
   const handleReview = () => {
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${competitionId}/puzzle`)}`);
+      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/live-event/${competitionId}` : `/competition/${competitionId}/puzzle`)}`);
       return;
     }
-    navigate(`/competition/${competitionId}/puzzle`, { state: { reviewMode: true } });
+    navigate(isEvent ? `/live-event/${competitionId}` : `/competition/${competitionId}/puzzle`, { state: { reviewMode: true } });
   };
 
   const isCurrentUser = (userId) => {
@@ -262,18 +321,72 @@ function Leaderboard() {
     setCurrentPage(1); // Reset to first page when searching
   };
 
+  // Animation Variants
+  const barVariants = {
+    hidden: { y: 100, opacity: 0 },
+    visible: (i) => ({
+      y: 0,
+      opacity: 1,
+      transition: {
+        delay: i * 0.2,
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    })
+  };
+
+  const trophyVariants = {
+    hidden: { scale: 0, opacity: 0, x: "-50%", y: 12 },
+    visible: (i) => ({
+      scale: 1,
+      opacity: 1,
+      x: "-50%",
+      y: 12,
+      transition: {
+        delay: 0.5 + (i * 0.2),
+        type: "spring",
+        stiffness: 120,
+        damping: 12
+      }
+    })
+  };
+
+  const glowPulseVariants = {
+    animate: {
+      filter: [
+        "drop-shadow(0 0 10px rgba(255, 191, 20, 0.4)) drop-shadow(0 0 18px rgba(255, 191, 20, 0.2))",
+        "drop-shadow(0 0 16px rgba(255, 191, 20, 0.7)) drop-shadow(0 0 30px rgba(255, 191, 20, 0.35))",
+        "drop-shadow(0 0 10px rgba(255, 191, 20, 0.4)) drop-shadow(0 0 18px rgba(255, 191, 20, 0.2))"
+      ],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
+  };
+
   return (
     <div className={styles.leaderboardPage}>
+      {/* Background Animation Layer */}
+      <div className={styles.bgAnimationLayer}>
+        <div className={`${styles.blob} ${styles.blob1}`}></div>
+        <div className={`${styles.blob} ${styles.blob2}`}></div>
+        <div className={`${styles.blob} ${styles.blob3}`}></div>
+        <div className={styles.particlesContainer}>
+          {[...Array(20)].map((_, i) => (
+            <div key={i} className={styles.particle} style={{
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              opacity: Math.random() * 0.5 + 0.2
+            }}></div>
+          ))}
+        </div>
+      </div>
+
       {/* Remove generic page header layout from here, moving elements individually */}
 
-      {leaderboard.length === 0 ? (
-        <div className={styles.emptyState}>
-          <FaTrophy className={styles.emptyIcon} />
-          <h3>No Participants Yet</h3>
-          <p>Be the first to join and compete!</p>
-        </div>
-      ) : (
-        <div className={styles.mainContent}>
+      <div className={styles.mainContent}>
           {/* LEFT: Podium */}
           <div className={styles.leftPanel}>
             <div className={styles.podiumSection}>
@@ -285,78 +398,176 @@ function Leaderboard() {
 
               <div className={styles.podium}>
                 {/* 2nd Place */}
-                <div className={`${styles.podiumPlace} ${styles.second}`}>
-                  <div className={styles.podiumAvatar}>
-                    <img src={silver} alt="2nd Place" className={styles.trophyImg} />
+                <motion.div 
+                  className={`${styles.podiumPlace} ${styles.second}`}
+                  custom={1}
+                  initial="hidden"
+                  animate="visible"
+                  variants={barVariants}
+                >
+                  {/* SVG Bar with trophy sitting on top */}
+                  <div className={styles.barWrapper}>
+                    <motion.div 
+                      className={styles.trophyOnBar}
+                      custom={1}
+                      initial="hidden"
+                      animate="visible"
+                      variants={trophyVariants}
+                    >
+                      <img src={silver} alt="2nd Place" className={`${styles.trophyImg} ${styles.silverTrophy}`} />
+                    </motion.div>
+                    <img src={bar2Svg} alt="2nd place bar" className={styles.barSvgImg} />
                   </div>
-                  <div className={styles.podiumName}>{(top3[1] && top3[1].score > 0) ? (top3[1].username || '—') : '—'}</div>
-                  <div className={styles.podiumScore}>{top3[1]?.score || 0} pts</div>
-                  <div className={`${styles.podiumBar} ${styles.bar2}`}>
-                    {top3[1] && (
-                      <div className={styles.barStats}>
-                        <span className={styles.accBadge}>{calculateAccuracy(top3[1].puzzlesSolved, totalPuzzles)}% Acc</span>
-                        <span className={styles.timeBadge}>{formatTime(top3[1].timeSpent)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  {/* White info card: Score + Username */}
+                  <motion.div 
+                    className={styles.playerInfoCard}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2 }}
+                  >
+                    <div className={styles.podiumScore}>{top3[1] ? `${top3[1].score || 0} pts` : "N/A"}</div>
+                    <div className={styles.podiumName}>{top3[1]?.username || "N/A"}</div>
+                  </motion.div>
+                  {/* Accuracy + Time pills */}
+                  <motion.div 
+                    className={styles.statsPills}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.4 }}
+                  >
+                    <span className={styles.accBadge}>
+                      {top3[1] ? `${calculateAccuracy(top3[1].puzzlesSolved, totalPuzzles)}% Acc` : "N/A"}
+                    </span>
+                    <span className={styles.timeBadge}>
+                      {top3[1] ? formatTime(top3[1].timeSpent) : "N/A"}
+                    </span>
+                  </motion.div>
+                </motion.div>
 
                 {/* 1st Place */}
-                <div className={`${styles.podiumPlace} ${styles.first}`}>
-                  <div className={styles.podiumAvatar}>
-                    <img src={gold} alt="1st Place" className={`${styles.trophyImg} ${styles.goldTrophy}`} />
+                <motion.div 
+                  className={`${styles.podiumPlace} ${styles.first}`}
+                  custom={0}
+                  initial="hidden"
+                  animate="visible"
+                  variants={barVariants}
+                >
+                  {/* SVG Bar with trophy sitting on top */}
+                  <div className={styles.barWrapper}>
+                    <motion.div 
+                      className={`${styles.trophyOnBar} ${styles.trophyOnBar1}`}
+                      custom={0}
+                      initial="hidden"
+                      animate="visible"
+                      variants={trophyVariants}
+                    >
+                      <motion.img 
+                        src={gold} 
+                        alt="1st Place" 
+                        className={`${styles.trophyImg} ${styles.goldTrophy}`}
+                        animate="animate"
+                        variants={glowPulseVariants}
+                      />
+                    </motion.div>
+                    <img src={bar1Svg} alt="1st place bar" className={`${styles.barSvgImg} ${styles.barSvg1}`} />
                   </div>
-                  <div className={styles.podiumName}>{(top3[0] && top3[0].score > 0) ? (top3[0].username || '—') : '—'}</div>
-                  <div className={styles.podiumScore}>{top3[0]?.score || 0} pts</div>
-                  <div className={`${styles.podiumBar} ${styles.bar1}`}>
-                    {top3[0] && (
-                      <div className={styles.barStats}>
-                        <span className={styles.accBadge}>{calculateAccuracy(top3[0].puzzlesSolved, totalPuzzles)}% Acc</span>
-                        <span className={styles.timeBadge}>{formatTime(top3[0].timeSpent)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  {/* White info card: Score + Username */}
+                  <motion.div 
+                    className={`${styles.playerInfoCard} ${styles.playerInfoCard1}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.0 }}
+                  >
+                    <div className={`${styles.podiumScore} ${styles.firstScore}`}>{top3[0] ? `${top3[0].score || 0} pts` : "N/A"}</div>
+                    <div className={`${styles.podiumName} ${styles.firstName}`}>{top3[0]?.username || "N/A"}</div>
+                  </motion.div>
+                  {/* Accuracy + Time pills */}
+                  <motion.div 
+                    className={styles.statsPills}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                  >
+                    <span className={styles.accBadge}>
+                      {top3[0] ? `${calculateAccuracy(top3[0].puzzlesSolved, totalPuzzles)}% Acc` : "N/A"}
+                    </span>
+                    <span className={styles.timeBadge}>
+                      {top3[0] ? formatTime(top3[0].timeSpent) : "N/A"}
+                    </span>
+                  </motion.div>
+                </motion.div>
 
                 {/* 3rd Place */}
-                <div className={`${styles.podiumPlace} ${styles.third}`}>
-                  <div className={styles.podiumAvatar}>
-                    <img src={bronze} alt="3rd Place" className={styles.trophyImg} />
+                <motion.div 
+                  className={`${styles.podiumPlace} ${styles.third}`}
+                  custom={2}
+                  initial="hidden"
+                  animate="visible"
+                  variants={barVariants}
+                >
+                  {/* SVG Bar with trophy sitting on top */}
+                  <div className={styles.barWrapper}>
+                    <motion.div 
+                      className={styles.trophyOnBar}
+                      custom={2}
+                      initial="hidden"
+                      animate="visible"
+                      variants={trophyVariants}
+                    >
+                      <img src={bronze} alt="3rd Place" className={`${styles.trophyImg} ${styles.bronzeTrophy}`} />
+                    </motion.div>
+                    <img src={bar3Svg} alt="3rd place bar" className={styles.barSvgImg} />
                   </div>
-                  <div className={styles.podiumName}>{(top3[2] && top3[2].score > 0) ? (top3[2].username || '—') : '—'}</div>
-                  <div className={styles.podiumScore}>{top3[2]?.score || 0} pts</div>
-                  <div className={`${styles.podiumBar} ${styles.bar3}`}>
-                    {top3[2] && (
-                      <div className={styles.barStats}>
-                        <span className={styles.accBadge}>{calculateAccuracy(top3[2].puzzlesSolved, totalPuzzles)}% Acc</span>
-                        <span className={styles.timeBadge}>{formatTime(top3[2].timeSpent)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  {/* White info card: Score + Username */}
+                  <motion.div 
+                    className={styles.playerInfoCard}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4 }}
+                  >
+                    <div className={styles.podiumScore}>{top3[2] ? `${top3[2].score || 0} pts` : "N/A"}</div>
+                    <div className={styles.podiumName}>{top3[2]?.username || "N/A"}</div>
+                  </motion.div>
+                  {/* Accuracy + Time pills */}
+                  <motion.div 
+                    className={styles.statsPills}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.6 }}
+                  >
+                    <span className={styles.accBadge}>
+                      {top3[2] ? `${calculateAccuracy(top3[2].puzzlesSolved, totalPuzzles)}% Acc` : "N/A"}
+                    </span>
+                    <span className={styles.timeBadge}>
+                      {top3[2] ? formatTime(top3[2].timeSpent) : "N/A"}
+                    </span>
+                  </motion.div>
+                </motion.div>
               </div>
             </div>
 
             {/* Fastest Solver section - Header type with data box */}
-            {fastestSolver && (
-              <div className={styles.fastestSolverSection}>
-                <div className={styles.fastestSolverHeader}>
-                  <FaBolt className={styles.headerBoltIcon} />
-                  <h2>FASTEST SOLVER</h2>
-                </div>
+            <div className={styles.fastestSolverSection}>
+              <div className={styles.fastestSolverLeft}>
+                <FaBolt className={styles.headerBoltIcon} />
+                <h2>FASTEST SOLVER</h2>
+              </div>
 
-                <div className={styles.fastestSolverBox}>
-                  <div className={styles.userStatsFooter}>
-                    <div className={styles.footerName}>{fastestSolver.username}</div>
-                    <div className={styles.footerAcc}>
+              <div className={styles.fastestSolverRight}>
+                <div className={styles.footerName}>{fastestSolver?.username || "N/A"}</div>
+                <div className={styles.footerAcc}>
+                  {fastestSolver ? (
+                    <>
                       Avg Accuracy {calculateAccuracy(fastestSolver.puzzlesSolved, totalPuzzles)}%
-                      <FaArrowUp style={{ color: '#10b981', marginLeft: '4px', marginRight: '4px' }} />
+                      <FaArrowUp style={{ color: "#10b981", marginLeft: "4px", marginRight: "4px" }} />
                       <span>{`+${Math.max(1, calculateAccuracy(fastestSolver.puzzlesSolved, totalPuzzles) - averageAccuracy)}% Vs Avg`}</span>
-                    </div>
-                  </div>
+                    </>
+                  ) : (
+                    "Avg Accuracy N/A"
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* RIGHT: Competition Info + Full Rankings */}
@@ -481,9 +692,8 @@ function Leaderboard() {
                 })}
               </div>
             </div>
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

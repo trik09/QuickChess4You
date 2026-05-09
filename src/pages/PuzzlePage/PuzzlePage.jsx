@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Chess } from "chess.js";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   FaClock,
@@ -12,35 +13,80 @@ import {
   FaCaretRight,
   FaStar,
   FaRegStar,
+  FaChartBar,
+  FaTrophy,
+  FaSyncAlt
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import socketService from "../../services/socketService";
 
 import ChessBoard from "../../components/ChessBoard/ChessBoard";
 import { FaArrowLeft } from "react-icons/fa";
-import { puzzleAPI, competitionAPI } from "../../services/api";
+import { puzzleAPI, competitionAPI, eventAPI } from "../../services/api";
 import { liveCompetitionAPI } from "../../services/liveCompetitionAPI";
+import { liveEventAPI } from "../../services/liveEventAPI";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext";
+import { useLiveEvent } from "../../contexts/LiveEventContext";
 import PuzzleRacer from "../../components/PuzzleRacer/PuzzleRacer";
 import GameTimer from "./components/GameTimer";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
 import styles from "./PuzzlePage.module.css";
+import blackKingSvg from "../../assets/pieces/blackking.svg";
+import whiteKingSvg from "../../assets/pieces/whiteking.svg";
 
-function PuzzlePage() {
+// Convert an array of UCI moves (e.g. "e2e4", "a8a2") to SAN notation
+// by replaying them from the given FEN position using chess.js
+function uciMovesToSan(fen, uciMoves) {
+  if (!fen || !uciMoves?.length) return uciMoves || [];
+  try {
+    const chess = new Chess(fen);
+    return uciMoves.map((uci) => {
+      // Already SAN if it contains piece letters or special chars beyond 4 chars
+      if (!uci || uci.length < 4) return uci;
+      const from = uci.slice(0, 2);
+      const to = uci.slice(2, 4);
+      const promotion = uci.length === 5 ? uci[4] : undefined;
+      try {
+        const result = chess.move({ from, to, promotion });
+        return result ? result.san : uci;
+      } catch {
+        return uci;
+      }
+    });
+  } catch {
+    return uciMoves;
+  }
+}
+
+function toSentenceCase(str) {
+  if (!str) return "";
+  const cleaned = str.trim();
+  const aimMatch = cleaned.match(/^AIM\s*[-:]\s*(.*)/i);
+  if (aimMatch) {
+    const rest = aimMatch[1].trim();
+    if (!rest) return "Aim";
+    return "Aim - " + rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
+  }
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
+}
+
+function PuzzlePage({ isEvent = false }) {
   const { id: paramCompetitionId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const {
-    participateInCompetition,
-    disconnectFromCompetition,
-    getLeaderboard,
-    leaderboard,
-    getCurrentUserRank,
-    ensureSocketConnection,
-    updateParticipant,
-  } = useLiveCompetition();
+
+  const compCtx = useLiveCompetition();
+  const eventCtx = useLiveEvent();
+
+  const participateInCompetition = isEvent ? eventCtx.participateInEvent : compCtx.participateInCompetition;
+  const disconnectFromCompetition = isEvent ? eventCtx.disconnectFromEvent : compCtx.disconnectFromCompetition;
+  const getLeaderboard = isEvent ? eventCtx.getLeaderboard : compCtx.getLeaderboard;
+  const leaderboard = isEvent ? eventCtx.leaderboard : compCtx.leaderboard;
+  const getCurrentUserRank = isEvent ? eventCtx.getCurrentUserRank : compCtx.getCurrentUserRank;
+  const ensureSocketConnection = isEvent ? (() => { }) : compCtx.ensureSocketConnection;
+  const updateParticipant = isEvent ? eventCtx.updateParticipant : compCtx.updateParticipant;
 
   // State - Initialize instantly from location.state if available to eliminate loading delays
   const [competitionData, setCompetitionData] = useState(() => {
@@ -74,9 +120,11 @@ function PuzzlePage() {
         solution: p.solutionMoves || [],
         alternativeSolutions: p.alternativeSolutions || [],
         title: p.title || `Puzzle ${index + 1}`,
-        type: p.type === "kids" ? "Kids" : p.title || "Puzzle",
+        type: p.type === "kids" || p.type === "capture" ? "Capture" : p.title || "Puzzle",
         difficulty: p.difficulty || "medium",
-        puzzleType: p.type || "normal",
+        puzzleType: p.type === "kids" ? "capture" : (p.type || "normal"),
+        captureConfig: p.captureConfig || p.kidsConfig || null,
+        illegalConfig: p.illegalConfig || null,
         firstMoveBy: p.firstMoveBy || "human",
         isSolved: false,
         isFailed: false,
@@ -112,13 +160,13 @@ function PuzzlePage() {
   useEffect(() => {
     if (chapterScrollRef.current) {
       const activeTab = chapterScrollRef.current.querySelector(
-        `.${styles.chapterTabActive}`,
+        `.${styles.chapterPillActive}`,
       );
       if (activeTab) {
         activeTab.scrollIntoView({
           behavior: "smooth",
           block: "nearest",
-          inline: "center",
+          inline: "nearest",
         });
       }
     }
@@ -200,6 +248,9 @@ function PuzzlePage() {
     setReviewResetKey(0); // reset manual-reset counter when switching puzzles
   }, [currentPuzzleIndex]);
 
+  const [notParticipated, setNotParticipated] = useState(false);
+  const [participationMessage, setParticipationMessage] = useState("");
+
   // Refs for tracking without re-renders
   const timerRef = useRef(null);
   const isLoadedRef = useRef(false);
@@ -262,6 +313,11 @@ function PuzzlePage() {
     loadPuzzleContext();
     return () => {
       clearInterval(timerRef.current);
+      // Close the countdown AudioContext to free resources
+      if (countdownAudioCtxRef.current) {
+        countdownAudioCtxRef.current.close().catch(() => { });
+        countdownAudioCtxRef.current = null;
+      }
       // Clean up live competition connection on unmount/change
       if (paramCompetitionId) {
         disconnectFromCompetition();
@@ -353,20 +409,27 @@ function PuzzlePage() {
 
   const loadPuzzleContext = async () => {
     try {
-      // Only show loading spinner if we don't have instant state from the Lobby
-      if (!location.state?.competitionId) {
+      if (!location.state?.competitionId || puzzles.length === 0) {
         setLoading(true);
       }
 
-      // Check if this is a competition
       if (paramCompetitionId) {
-        // PERFORMANCE: Parallel fetch of competition data + puzzles
-        const [compResponse, puzzleRes] = await Promise.all([
-          competitionAPI.getById(paramCompetitionId),
-          liveCompetitionAPI
-            .getPuzzles(paramCompetitionId)
-            .catch(() => ({ success: false })),
-        ]);
+        const compResponse = isEvent
+          ? await eventAPI.getById(paramCompetitionId)
+          : await competitionAPI.getById(paramCompetitionId);
+        const puzzleRes = await (async () => {
+          try {
+            return isEvent
+              ? await liveEventAPI.getPuzzles(paramCompetitionId)
+              : await liveCompetitionAPI.getPuzzles(paramCompetitionId);
+          } catch (err) {
+            console.error("Error fetching puzzles:", err);
+            return {
+              success: false,
+              message: err.message || "Failed to load puzzles"
+            };
+          }
+        })();
 
         if (!compResponse.success || !compResponse.data) {
           throw new Error("Failed to load competition data");
@@ -398,16 +461,18 @@ function PuzzlePage() {
         setIsReviewMode(reviewMode);
 
         const diffToStart = start - Date.now();
-        const isAboutToStart = diffToStart > 0 && diffToStart <= 12000; // 12s buffer for clock drift
+        const isAboutToStart = diffToStart > 0 && diffToStart <= 25000; // 25s buffer covers the 20s early redirect from lobby
         setIsBeforeStartTime(!isLive && diffToStart > 0);
         targetStartTimeRef.current = start;
 
-        // CRITICAL: Hide loading as soon as we have competition data to show the layout
+        // Hide loading immediately
         setLoading(false);
 
         if (!reviewMode) {
-          if (!isLive && !isAboutToStart) {
-            navigate(`/competition/${paramCompetitionId}/lobby`);
+          // Allow entry if: live, about to start (within 25s), or lobby sent us here early
+          const isEarlyRedirect = location.state?.isEarlyRedirect === true;
+          if (!isLive && !isAboutToStart && !isEarlyRedirect) {
+            navigate(isEvent ? `/event/${paramCompetitionId}/lobby` : `/competition/${paramCompetitionId}/lobby`);
             return;
           }
         }
@@ -440,11 +505,12 @@ function PuzzlePage() {
                 solution: p.solutionMoves || [],
                 alternativeSolutions: p.alternativeSolutions || [],
                 title: p.title || `Puzzle ${index + 1}`,
-                type: p.type === "kids" ? "Kids" : p.title || "Puzzle",
+                type: p.type === "kids" || p.type === "capture" ? "Capture" : (p.type || "Puzzle"),
                 difficulty: p.difficulty || "medium",
                 description: p.description || "",
-                kidsConfig: p.kidsConfig,
-                puzzleType: p.type || "normal",
+                captureConfig: p.captureConfig || p.kidsConfig || null,
+                illegalConfig: p.illegalConfig || null,
+                puzzleType: p.type === "kids" ? "capture" : (p.type || "normal"),
                 level: p.level || 1,
                 rating: p.rating || 400,
                 firstMoveBy: p.firstMoveBy || "human",
@@ -521,6 +587,14 @@ function PuzzlePage() {
                 // All puzzles are solved, stay on current or go to first
                 setCurrentPuzzleIndex(0);
               }
+            } else {
+              // If we are in Review Mode and puzzles failed to load, it's likely due to participation
+              if (reviewMode && puzzleRes.message?.toLowerCase().includes("participant")) {
+                setNotParticipated(true);
+                setParticipationMessage(puzzleRes.message || "You didn't participate in this competition.");
+                setLoading(false);
+                return;
+              }
             }
           } catch (err) {
             console.error("Error syncing live competition data", err);
@@ -538,11 +612,12 @@ function PuzzlePage() {
                 solution: p.solutionMoves || [],
                 alternativeSolutions: p.alternativeSolutions || [],
                 title: p.title || `Puzzle ${index + 1}`,
-                type: p.type === "kids" ? "Kids" : p.title || "Puzzle",
+                type: p.type === "kids" || p.type === "capture" ? "Capture" : (p.type || "Puzzle"),
                 difficulty: p.difficulty || "medium",
                 description: p.description || "",
-                kidsConfig: p.kidsConfig,
-                puzzleType: p.type || "normal",
+                captureConfig: p.captureConfig || p.kidsConfig || null,
+                illegalConfig: p.illegalConfig || null,
+                puzzleType: p.type === "kids" ? "capture" : (p.type || "normal"),
                 firstMoveBy: p.firstMoveBy || "human",
                 isSolved: false,
                 isFailed: false,
@@ -599,11 +674,12 @@ function PuzzlePage() {
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
               solution: p.solutionMoves || [],
               alternativeSolutions: p.alternativeSolutions || [],
-              title: p.title,
-              type: p.type,
+              title: p.title || `Puzzle ${index + 1}`,
+              type: p.type === "kids" || p.type === "capture" ? "Capture" : (p.type || "Puzzle"),
               difficulty: p.difficulty,
-              kidsConfig: p.kidsConfig,
-              puzzleType: p.type || "normal",
+              captureConfig: p.captureConfig || p.kidsConfig || null,
+              illegalConfig: p.illegalConfig || null,
+              puzzleType: p.type === "kids" ? "capture" : (p.type || "normal"),
               level: p.level || 1,
               rating: p.rating || 400,
             }));
@@ -617,20 +693,22 @@ function PuzzlePage() {
         }
       } else {
         // Casual Mode (Dashboard link)
-        const data = await puzzleAPI.getAll();
         const normalized = data
-          .filter((p) => p.fen && (p.solutionMoves?.length || p.kidsConfig))
-
+          // Include normal puzzles (need solutionMoves), capture puzzles (need captureConfig), and illegal puzzles
+          .filter((p) => p.fen && (p.solutionMoves?.length || p.captureConfig || p.kidsConfig || p.type === 'illegal' || p.type === 'capture' || p.type === 'kids'))
           .map((p, i) => ({
             id: p._id,
+            _id: p._id,
             index: i + 1,
             fen: p.fen,
             solution: p.solutionMoves,
             alternativeSolutions: p.alternativeSolutions,
-            type: p.type,
+            title: p.title || `Puzzle ${i + 1}`,
+            type: p.type === 'kids' || p.type === 'capture' ? 'Capture' : (p.type || 'Puzzle'),
             description: p.description,
-            kidsConfig: p.kidsConfig,
-            puzzleType: p.type,
+            captureConfig: p.captureConfig || p.kidsConfig || null,
+            illegalConfig: p.illegalConfig || null,
+            puzzleType: p.type === 'kids' ? 'capture' : (p.type || 'normal'),
             level: p.level || 1,
             rating: p.rating || 400,
             firstMoveBy: p.firstMoveBy || "human",
@@ -681,9 +759,68 @@ function PuzzlePage() {
 
   const targetStartTimeRef = useRef(null);
   const targetEndTimeRef = useRef(null);
+  const lastSpokenSecondRef = useRef(null); // tracks last spoken countdown number
+  const countdownAudioCtxRef = useRef(null); // shared AudioContext for countdown
+  const countdownScheduledRef = useRef(false); // true once full schedule is queued
+  const voiceBuffersRef = useRef({}); // { "1": AudioBuffer, "2": AudioBuffer, ... "20": AudioBuffer, "Go": AudioBuffer }
+  const voiceBuffersLoadedRef = useRef(false);
+
+  // Returns a running AudioContext, resuming it if suspended (autoplay policy)
+  const getAudioCtx = () => {
+    if (!countdownAudioCtxRef.current) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      countdownAudioCtxRef.current = new AC();
+    }
+    const ctx = countdownAudioCtxRef.current;
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  };
+
+  // Schedule a voice utterance at a precise wall-clock time using setTimeout.
+  // This is more accurate than calling speechSynthesis in the interval loop.
+  const scheduleVoiceAtTime = (text, fireAtMs) => {
+    const nowMs = Date.now();
+    const delayMs = fireAtMs - nowMs;
+    if (delayMs < 0) return; // already past
+
+    setTimeout(() => {
+      try {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(String(text));
+        utt.rate = 1.5;
+        utt.volume = 1.0;
+        window.speechSynthesis.speak(utt);
+      } catch (e) { /* ignore */ }
+    }, delayMs);
+  };
+
+  // Schedule the entire countdown: voice via setTimeout scheduled to wall-clock times.
+  const scheduleCountdownAudio = (targetStartTime) => {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    const nowMs = Date.now();
+
+    for (let s = 20; s >= 1; s--) {
+      const fireAtMs = targetStartTime - s * 1000; // wall-clock ms when this should fire
+      if (fireAtMs - nowMs < 0) continue; // already past, skip
+
+      // Schedule voice via setTimeout (uses wall-clock, ~10-50ms accuracy)
+      // Pre-fire by 150ms to compensate for speechSynthesis startup latency
+      scheduleVoiceAtTime(String(s), fireAtMs - 150);
+    }
+
+    // "Go!" at exactly start time
+    if (targetStartTime - nowMs >= 0) {
+      scheduleVoiceAtTime("Competition started!", targetStartTime - 150);
+    }
+  };
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
+    countdownScheduledRef.current = false; // reset so we reschedule on next tick
     timerRef.current = setInterval(() => {
       // Check if we are still before start time
       // Use Ref to avoid closure issues and force unlock when countdown hits 0 for responsiveness
@@ -698,8 +835,21 @@ function PuzzlePage() {
             setIsLiveCompetition(true); // Unlock UI components
             // If it just started, we might need to refresh data or just ensure UI is unlocked
             isLiveRef.current = true;
+            // Voice "Go!" already scheduled
+            if (lastSpokenSecondRef.current !== 0) {
+              lastSpokenSecondRef.current = 0;
+            }
           } else {
             setIsBeforeStartTime(true);
+            // Schedule all voice once as soon as we know the start time.
+            // Voice uses setTimeout for precise wall-clock timing.
+            if (!countdownScheduledRef.current && diffToStart <= 21000) {
+              countdownScheduledRef.current = true;
+              scheduleCountdownAudio(targetStartTimeRef.current);
+            }
+            // Still track seconds for the visual display ref
+            const secondsLeft = Math.floor(diffToStart / 1000);
+            lastSpokenSecondRef.current = secondsLeft;
           }
         }
       }
@@ -729,7 +879,7 @@ function PuzzlePage() {
     // Redirect to lobby for competition, or home for casual
     setTimeout(() => {
       if (paramCompetitionId) {
-        navigate(`/competition/${paramCompetitionId}/lobby`); // Lobby will show as leaderboard
+        navigate(isEvent ? `/event/${paramCompetitionId}/lobby` : `/competition/${paramCompetitionId}/lobby`); // Lobby will show as leaderboard
       } else {
         navigate("/");
       }
@@ -748,12 +898,14 @@ function PuzzlePage() {
     const currentPuzzle = puzzles[currentPuzzleIndex];
     if (!currentPuzzle) return;
 
-    // Use passed winning moves or fallback to default solution
-    // If winningMoves is an array of strings (SAN), use it.
-    const solutionToSend =
-      Array.isArray(winningMoves) && winningMoves.length > 0
+    // Use passed winning moves or fallback to default solution.
+    // For illegal puzzles, we send the string 'solved' — not move arrays.
+    const isIllegalPuzzle = currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal';
+    const solutionToSend = isIllegalPuzzle
+      ? 'solved'
+      : (Array.isArray(winningMoves) && winningMoves.length > 0
         ? winningMoves
-        : currentPuzzle.solution;
+        : currentPuzzle.solution);
 
     // ─── Competition lock: use ref so we always read latest status ───────────
     // isReviewMode check first — review mode never blocks re-solving
@@ -833,14 +985,23 @@ function PuzzlePage() {
               boardMoveHistory ||
               puzzleBoardStates[currentPuzzle.id]?.moveHistory ||
               [];
-            const res = await liveCompetitionAPI.submitSolution(
-              competitionData._id,
-              currentPuzzle.id,
-              solutionToSend,
-              timeTaken,
-              null,
-              movesPlayed,
-            );
+            const res = isEvent
+              ? await liveEventAPI.submitSolution(
+                competitionData._id,
+                currentPuzzle.id,
+                solutionToSend,
+                timeTaken,
+                null,
+                movesPlayed,
+              )
+              : await liveCompetitionAPI.submitSolution(
+                competitionData._id,
+                currentPuzzle.id,
+                solutionToSend,
+                timeTaken,
+                null,
+                movesPlayed,
+              );
 
             if (res && res.success && res.scoreEarned) {
               setScore((prev) => {
@@ -941,24 +1102,36 @@ function PuzzlePage() {
           if (competitionData) navigate("/");
         }
       }
-    }, 200); // 200ms delay to show red error state on board explicitly
+    }, 800); // 0.8s delay to show red error state on board before moving next
 
     // --- BACKGROUND SUBMISSION ---
     // Submit failed attempt to backend if it's a live competition
     if (competitionData && isLiveCompetition) {
       (async () => {
         try {
-          // Submit wrong solution to backend to mark as failed
+          // For illegal puzzles, send 'failed' string; for normal/kids send wrong move array
+          const isIllegalPuzzle = currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal';
           const movesPlayed =
             boardMoveHistory || puzzleBoardStates[puzzleId]?.moveHistory || [];
-          await liveCompetitionAPI.submitSolution(
-            competitionData._id,
-            currentPuzzle.id,
-            ["wrong", "move"], // Send wrong moves
-            timeTaken,
-            null,
-            movesPlayed,
-          );
+          if (isEvent) {
+            await liveEventAPI.submitSolution(
+              competitionData._id,
+              currentPuzzle.id,
+              isIllegalPuzzle ? 'failed' : ["wrong", "move"],
+              timeTaken,
+              null,
+              movesPlayed,
+            );
+          } else {
+            await liveCompetitionAPI.submitSolution(
+              competitionData._id,
+              currentPuzzle.id,
+              isIllegalPuzzle ? 'failed' : ["wrong", "move"],
+              timeTaken,
+              null,
+              movesPlayed,
+            );
+          }
         } catch (error) {
           console.error("Failed to submit wrong move in background:", error);
         }
@@ -973,9 +1146,9 @@ function PuzzlePage() {
     try {
       setSubmitting(true);
 
-      const response = await liveCompetitionAPI.submitCompetition(
-        competitionData._id,
-      );
+      const response = isEvent
+        ? await liveEventAPI.submitEvent(competitionData._id)
+        : await liveCompetitionAPI.submitCompetition(competitionData._id);
 
       if (response.success) {
         toast.success("Submitted! Returning to lobby...");
@@ -986,7 +1159,7 @@ function PuzzlePage() {
         localStorage.removeItem(stateKey);
 
         // Navigate back to Lobby (player waits there with live scores)
-        navigate(`/competition/${competitionData._id}/lobby`);
+        navigate(isEvent ? `/event/${competitionData._id}/lobby` : `/competition/${competitionData._id}/lobby`);
       } else {
         toast.error(response.message || "Submission failed");
       }
@@ -1094,14 +1267,42 @@ function PuzzlePage() {
     return true;
   })();
 
+  if (notParticipated) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.notParticipatedOverlay}>
+          <div className={styles.notParticipatedCard}>
+            <div className={styles.lockIconWrapper}>
+              <FaTrophy className={styles.lockIcon} />
+              <div className={styles.lockSlash}></div>
+            </div>
+            <h2 className={styles.notParticipatedTitle}>Analysis Unavailable</h2>
+            <p className={styles.notParticipatedText}>
+              {participationMessage || "You didn't participate in this competition."}
+            </p>
+            <p className={styles.notParticipatedSubtext}>
+              To analyze puzzles and review your performance, you must join the competition while it is live.
+            </p>
+            <button
+              className={styles.goBackBtn}
+              onClick={() => navigate(isEvent ? "/events" : "/Dashboard")}
+            >
+              <FaArrowLeft /> Go Back to Arena
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${isReviewMode ? styles.analysisPage : styles.competitionPage}`}>
       <Toaster position="top-right" />
       {/* THIN TITLE HEADERBAR */}
       {competitionData && (
         <div className={styles.titleHeader}>
           <div className={styles.titleHeaderLeft}>
-            <button className={styles.backBtnHeader} onClick={() => navigate(-1)} title="Go back">
+            <button className={styles.backBtnHeader} onClick={() => paramCompetitionId ? navigate(isEvent ? `/event/${paramCompetitionId}/lobby` : `/competition/${paramCompetitionId}/lobby`) : navigate("/dashboard")} title="Go back">
               <FaArrowLeft />
             </button>
             <h2 className={styles.mainTitle}>{competitionData.name}</h2>
@@ -1208,38 +1409,88 @@ function PuzzlePage() {
           )}
 
           {currentPuzzle && (() => {
-            const fenTurn = currentPuzzle.fen?.split(" ")[1];
-            const uColor = fenTurn === "w" ? "b" : "w";
-            return (
-              <div className={`${styles.infoCard} ${uColor === "w" ? styles.turnWhite : styles.turnBlack}`}>
-                <div className={styles.toPlayRow}>
-                  <span className={`${styles.kingIcon} ${uColor === "w" ? styles.kingWhite : styles.kingBlack}`}>
-                    {uColor === "w" ? "♔" : "♚"}
-                  </span>
-                  <span className={styles.toPlayText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
-                </div>
-                <div className={styles.infoMeta}>
-                  <div className={styles.infoMetaItem}>
-                    <span className={styles.infoMetaLabel}>Level  <span className={styles.levelNumber}>{(currentPuzzle.level || 1)}/7</span></span>
-                    <div className={styles.starRating}>
-                      {[...Array(7)].map((_, i) => (
-                        i < (currentPuzzle.level || 1) ? (
-                          <FaStar key={i} className={styles.starFilled} />
-                        ) : (
-                          <FaRegStar key={i} className={styles.starEmpty} />
-                        )
-                      ))}
+            let uColor = "w";
+            const fenTurn = currentPuzzle.fen?.split(" ")[1] || "w";
 
+            if (currentPuzzle.type === 'illegal' || currentPuzzle.puzzleType === 'illegal') {
+              uColor = currentPuzzle.illegalConfig?.playerSide || (['w', 'b'].includes(currentPuzzle.firstMoveBy) ? currentPuzzle.firstMoveBy : fenTurn);
+            } else if (currentPuzzle.type === 'capture' || currentPuzzle.puzzleType === 'capture') {
+              uColor = currentPuzzle.captureConfig?.playerSide || (['w', 'b'].includes(currentPuzzle.firstMoveBy) ? currentPuzzle.firstMoveBy : fenTurn);
+            } else {
+              // Normal puzzles: user plays the opposite of the current FEN turn (computer moves first)
+              uColor = (currentPuzzle.firstMoveBy && ['w', 'b'].includes(currentPuzzle.firstMoveBy))
+                ? currentPuzzle.firstMoveBy
+                : (fenTurn === "w" ? "b" : "w");
+            }
+
+            return (
+              <div className={`${styles.premiumInfoCard} ${uColor === "w" ? styles.turnWhiteCard : styles.turnBlackCard}`}>
+                <div className={styles.premiumContent}>
+                  <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
+                    <div className={styles.turnCapsuleInner}>
+                      <span className={styles.turnIcon}>
+                        <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
+                      </span>
+                      <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
                     </div>
                   </div>
+
+                  {(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal') ? (
+                    <div className={styles.premiumTitleRow}>
+                      <div className={styles.metaIconWrapper}>
+                        <FaPuzzlePiece />
+                      </div>
+                      <div className={styles.puzzleTitleContainer}>
+                        {/* <span className={styles.puzzleTitleLabel}>CHALLENGE</span> */}
+                        <span className={styles.puzzleTitleValue}>{toSentenceCase(currentPuzzle.title) || `Challenge #${currentPuzzleIndex + 1}`}</span>
+                        {currentPuzzle.difficulty && (
+                          <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty}`]}`}>
+                            {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.premiumMetaRow}>
+                      <div className={styles.metaBox}>
+                        <div className={styles.metaIconWrapper}>
+                          <FaChartBar />
+                        </div>
+                        <div className={styles.metaText}>
+                          <span className={styles.metaLabel}>LEVEL</span>
+                          <span className={styles.metaValue}>{(currentPuzzle.level || 1)}/7</span>
+                        </div>
+                      </div>
+                      <div className={styles.starBox}>
+                        <div className={styles.starsWrapper}>
+                          {[...Array(7)].map((_, i) => (
+                            <FaStar
+                              key={i}
+                              className={i < (currentPuzzle.level || 1) ? styles.starActive : styles.starInactive}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                {/* <div className={styles.premiumIllustration}>
+                  <div className={styles.checkerOverlay}></div>
+                  <div className={styles.kingGlow}></div>
+                  <img
+                    src={uColor === "w" ? whiteKingSvg : blackKingSvg}
+                    alt="King"
+                    className={styles.goldKing}
+                  />
+                </div> */}
               </div>
             );
           })()}
           {competitionData && isLiveCompetition && !isReviewMode && (
             <div className={styles.rankCard}>
               <div className={styles.rankRow}>
-                <div className={styles.rankLabel}><span>🏆</span> YOUR RANK</div>
+                <div className={styles.rankLabel}><span>🏆</span> Your Rank</div>
                 <div className={styles.rankNumber}>#{stableRank || "–"}</div>
               </div>
               <div className={styles.rankProgressBar}>
@@ -1303,18 +1554,15 @@ function PuzzlePage() {
                   solution={currentPuzzle.solution}
                   alternativeSolutions={currentPuzzle.alternativeSolutions}
                   puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
-                  kidsConfig={currentPuzzle.kidsConfig}
-                  firstMoveBy={
-                    isBeforeStartTime && !isReviewMode
-                      ? "human"
-                      : currentPuzzle.firstMoveBy
-                  }
+                  captureConfig={currentPuzzle.captureConfig}
+                  illegalConfig={currentPuzzle.illegalConfig}
+                  firstMoveBy={currentPuzzle.firstMoveBy}
                   onPuzzleSolved={handlePuzzleSolved}
                   onWrongMove={handleWrongMove}
-                  onBoardStateChange={(fen, moveHistory) => {
+                  onBoardStateChange={(fen, moveHistory, trackedSquare) => {
                     if (isBeforeStartTime && !isReviewMode) return;
                     const puzzleId = currentPuzzle.id || currentPuzzle._id;
-                    setPuzzleBoardStates(prev => ({ ...prev, [puzzleId]: { fen, moveHistory } }));
+                    setPuzzleBoardStates(prev => ({ ...prev, [puzzleId]: { fen, moveHistory, trackedSquare } }));
                   }}
                   savedBoardState={
                     isReviewMode
@@ -1351,8 +1599,8 @@ function PuzzlePage() {
             {/* CHAPTERS BOX — all visible, wrapping */}
             {competitionData.chapters?.length > 0 && (
               <div className={styles.chaptersBox}>
-                <div className={styles.chaptersBoxTitle}>CHAPTERS</div>
-                <div className={styles.chaptersWrap}>
+                <div className={styles.chaptersBoxTitle}>Chapters</div>
+                <div className={styles.chaptersWrap} ref={chapterScrollRef}>
                   {competitionData.chapters.map((chapter, idx) => {
                     const ids = (chapter.puzzleIds || []).map(id => id.toString());
                     const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
@@ -1390,7 +1638,7 @@ function PuzzlePage() {
             )}
 
             <div className={styles.navCard}>
-              <div className={styles.navCardTitle}>PUZZLES</div>
+              <div className={styles.navCardTitle}>Puzzles</div>
               {totalPages > 1 && <div className={styles.paginationInfo}>Page {currentFrame + 1} of {totalPages}</div>}
 
               {!isReviewMode && (
@@ -1459,7 +1707,7 @@ function PuzzlePage() {
                     }
                   }}
                   disabled={(chapterCurrentIndex <= 0 && activeChapterIndex <= 0) || (isBeforeStartTime && !isReviewMode)}
-                >← Prev</button>
+                ><FaChevronLeft /></button>
                 <button className={styles.navArrow}
                   onClick={() => {
                     if (chapterCurrentIndex >= navPuzzles.length - 1) {
@@ -1476,77 +1724,98 @@ function PuzzlePage() {
                     }
                   }}
                   disabled={(chapterCurrentIndex >= navPuzzles.length - 1 && activeChapterIndex >= (competitionData.chapters?.length || 1) - 1) || (isBeforeStartTime && !isReviewMode)}
-                >Next →</button>
+                ><FaChevronRight /></button>
               </div>
 
               {totalPages > 1 && (
                 <div className={styles.paginationContainer}>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(0)} disabled={currentFrame === 0}>«</button>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))} disabled={currentFrame === 0}>‹</button>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.min(totalPages - 1, currentFrame + 1))} disabled={currentFrame >= totalPages - 1}>›</button>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(totalPages - 1)} disabled={currentFrame >= totalPages - 1}>»</button>
+                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(0)} disabled={currentFrame === 0}><FaAngleDoubleLeft /></button>
+                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))} disabled={currentFrame === 0}><FaChevronLeft /></button>
+                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.min(totalPages - 1, currentFrame + 1))} disabled={currentFrame >= totalPages - 1}><FaChevronRight /></button>
+                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(totalPages - 1)} disabled={currentFrame >= totalPages - 1}><FaAngleDoubleRight /></button>
                 </div>
               )}
 
               {/* ─── FIX 2: Review Mode — Reset + Solution ─────────────────────────── */}
               {isReviewMode && (
-                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-                  {/* Reset Puzzle button — always shown in review mode */}
-                  <button
-                    className={styles.resetPuzzleBtn}
-                    onClick={() => {
-                      // Clear this puzzle's practice status so the nav dot resets too
-                      const pid = currentPuzzle?.id || currentPuzzle?._id;
-                      if (pid) {
-                        setPracticeStatuses(prev => {
-                          const next = { ...prev };
-                          delete next[pid];
-                          return next;
-                        });
-                      }
-                      // Force ChessBoard remount
-                      setReviewResetKey(k => k + 1);
-                      setShowInlineSolution(false);
-                      toast("Puzzle reset!", { icon: "🔄", duration: 1200 });
-                    }}
-                  >
-                    🔄 Reset Puzzle
-                  </button>
+                <>
+                  <div className={styles.reviewActionsRow}>
+                    <button
+                      className={styles.resetPuzzleBtn}
+                      onClick={() => {
+                        const pid = currentPuzzle?.id || currentPuzzle?._id;
+                        if (pid) {
+                          setPracticeStatuses(prev => {
+                            const next = { ...prev };
+                            delete next[pid];
+                            return next;
+                          });
+                        }
+                        setReviewResetKey(k => k + 1);
+                        setShowInlineSolution(false);
+                        toast("Puzzle reset!", { icon: "🔄", duration: 1200 });
+                      }}
+                    >
+                      <FaSyncAlt /> Reset Puzzle
+                    </button>
 
-                  <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
-                    {showInlineSolution ? "Hide Solution" : "View Solution"}
-                  </button>
+                    <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
+                      {showInlineSolution ? "Hide Solution" : "View Solution"}
+                    </button>
+                  </div>
 
-                  {showInlineSolution && (
-                    <div className={styles.solutionBox}>
-                      {currentPuzzle?.moveHistory?.length > 0 && (() => {
-                        const pid = currentPuzzle.id || currentPuzzle._id;
-                        const wasSolved = puzzleStatuses[pid] === "success";
-                        const accent = wasSolved ? "#4ade80" : "#f87171";
-                        return (
-                          <div className={styles.userAttemptSection}>
-                            <div className={styles.sectionTitle} style={{ color: accent }}>Your Moves</div>
-                            <div className={styles.solutionMoves}>
-                              {currentPuzzle.moveHistory.map((move, i) => i % 2 === 0
-                                ? <span key={`am${i}`} style={{ color: "rgba(255,255,255,0.35)", fontFamily: "monospace", fontSize: "0.78rem" }}>{Math.floor(i / 2) + 1}. {move}</span>
-                                : <span key={`am${i}`} className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent, textDecoration: wasSolved ? "none" : "line-through" }}>{move}</span>
-                              )}
-                            </div>
+                  <div className={styles.solutionBox}>
+                    {currentPuzzle && (() => {
+                      const pid = currentPuzzle.id || currentPuzzle._id;
+                      const wasSolved = puzzleStatuses[pid] === "success";
+                      const accent = wasSolved ? "#4ade80" : "#f87171";
+                      const userMoves = currentPuzzle.moveHistory || [];
+                      return (
+                        <div className={styles.userAttemptSection}>
+                          <div className={styles.sectionTitle} style={{ color: accent }}>Your Moves</div>
+                          <div className={styles.movesList}>
+                            {userMoves.length > 0 ? userMoves.map((move, i) => {
+                              const moveNum = Math.floor(i / 2) + 1;
+                              const isWhiteMove = i % 2 === 0;
+                              return (
+                                <div key={`am${i}`} className={styles.moveRow}>
+                                  <span className={styles.moveNumber}>{isWhiteMove ? `${moveNum}.` : '...'}</span>
+                                  <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>
+                                    {move}
+                                  </span>
+                                </div>
+                              );
+                            }) : <span className={styles.noMoves}>No moves yet.</span>}
                           </div>
-                        );
-                      })()}
-                      <div className={styles.correctSolutionSection}>
-                        <div className={styles.sectionTitle} style={{ color: "#4ade80", marginTop: 8 }}>Correct Solution</div>
-                        <div className={styles.solutionMoves}>
-                          {currentPuzzle?.solution?.length > 0
-                            ? currentPuzzle.solution.map((move, i) => i % 2 === 0 ? null : <span key={`sol${i}`} className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{Math.floor(i / 2) + 1}. {move}</span>)
-                            : <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.78rem" }}>No solution available.</span>
-                          }
                         </div>
+                      );
+                    })()}
+
+                    <div className={styles.correctSolutionSection}>
+                      <div className={styles.sectionTitle} style={{ color: "#4ade80" }}>Correct Solution</div>
+                      <div className={styles.movesList}>
+                        {showInlineSolution ? (
+                          currentPuzzle?.solution?.length > 0 ? (() => {
+                            const sanMoves = uciMovesToSan(currentPuzzle.fen, currentPuzzle.solution);
+                            return sanMoves.map((move, i) => {
+                              const moveNum = Math.floor(i / 2) + 1;
+                              const isWhiteMove = i % 2 === 0;
+                              return (
+                                <div key={`sol${i}`} className={styles.moveRow}>
+                                  <span className={styles.moveNumber}>{isWhiteMove ? `${moveNum}.` : '...'}</span>
+                                  <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>
+                                    {move}
+                                  </span>
+                                </div>
+                              );
+                            });
+                          })()
+                            : <span className={styles.noMoves}>No solution available.</span>
+                        ) : <span className={styles.noMoves}>Hidden</span>}
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -1559,7 +1828,12 @@ function PuzzlePage() {
       {/* GALAXY — Full Width */}
       {isLiveCompetition && !isReviewMode && showGalaxy && (
         <div className={styles.galaxySection}>
-          <PuzzleRacer />
+          <PuzzleRacer
+            leaderboard={isEvent ? eventCtx.leaderboard : compCtx.leaderboard}
+            competition={isEvent ? eventCtx.event : compCtx.competition}
+            participant={isEvent ? eventCtx.participant : compCtx.participant}
+            puzzles={isEvent ? eventCtx.puzzles : compCtx.puzzles}
+          />
         </div>
       )}
 

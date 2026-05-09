@@ -24,6 +24,8 @@
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
   width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .tab {
@@ -56,123 +58,286 @@
   font-size: 1.1rem;
 }
 
-/* Grid and Card Styles */
-.competitionGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
-}
-
-.competitionCard {
-  background: white;
-  border-radius: 20px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  border: 1px solid #f1f3f5;
-  overflow: hidden;
-  position: relative;
-}
-
-.competitionCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-}
-
-.cardHeader {
-  padding: 16px 20px;
+/* Compact Header Styles */
+.compactHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f1f3f5;
-  background: #fafbfc;
+  margin-bottom: 16px;
+  background: white;
+  padding: 16px 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f3f5;
 }
 
-.cardActions {
+.titleArea {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
 }
 
-.actionIcon {
+.titleWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleWithIcon h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #b58863, #8e5a30);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.headerIcon {
+  color: #f6ad55;
+  font-size: 24px;
+}
+
+.subtitle {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.tabsCompact {
+  display: flex;
+  gap: 6px;
   background: #f8f9fa;
-  border: none;
-  width: 32px;
-  height: 32px;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.tabsCompact .tab {
+  padding: 6px 16px;
+  font-size: 13px;
   border-radius: 8px;
+}
+
+.filterSectionCompact {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.statusFilterDropdown {
+  min-width: 150px;
+  max-width: 180px;
+}
+
+.statusFilterDropdown select {
+  padding: 8px 30px 8px 40px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  border: 1px solid #e9ecef !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1a1a2e !important;
+  background-position: right 12px center !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s !important;
+}
+
+.statusFilterDropdown select:focus {
+  border-color: #1a1a2e !important;
+  box-shadow: 0 0 0 4px rgba(26, 26, 46, 0.05) !important;
+}
+
+.statusFilterDropdown svg {
+  left: 14px !important;
+  font-size: 14px !important;
+  color: #b58863 !important; /* Match brand gold/brown */
+}
+
+.searchBarWrapperCompact {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIconInside {
+  position: absolute;
+  left: 14px;
+  color: #adb5bd;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.compactInput {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a2e;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.compactInput:focus {
+  border-color: #1a1a2e;
+  box-shadow: 0 0 0 4px rgba(26, 26, 46, 0.05);
+  outline: none;
+}
+
+.dateInputGroupCompact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.dateInputGroupCompact svg {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.compactDateInput {
+  border: none;
+  background: transparent;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  /* Safari specific fixes */
+  min-width: 120px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: auto;
+}
+
+input[type="time"].compactDateInput {
+  min-width: 90px;
+}
+
+.clearDateCompact {
+  background: #f1f3f5;
+  border: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 8px;
+  color: #495057;
+  cursor: pointer;
+}
+
+/* Filter Section Styles */
+.filterSection {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+  background: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchBarWrapper {
+  flex: 1;
+  min-width: 300px;
+}
+
+.dateFilterWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.dateInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.dateInputGroup:focus-within {
+  border-color: #1a1a2e;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(26, 26, 46, 0.05);
+}
+
+.dateInputGroup svg {
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.dateInput {
+  border: none;
+  background: transparent;
+  color: #1a1a2e;
+  font-weight: 600;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.clearDate {
+  background: #e9ecef;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
   color: #495057;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.actionIcon:hover {
-  background: #e9ecef;
+.clearDate:hover {
+  background: #dee2e6;
   color: #1a1a2e;
 }
 
-.actionIcon.delete:hover {
-  background: #fff5f5;
-  color: #fa5252;
-}
-
-.cardBody {
-  padding: 24px;
-  flex: 1;
-}
-
-.cardTitle {
-  margin: 0 0 12px 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  line-height: 1.4;
-  height: 2.8em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+/* Table Section Styles */
+.tableSection {
+  background: white;
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f3f5;
+  margin-bottom: 30px;
   overflow: hidden;
 }
 
-.infoRow {
+.actionButtons {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  color: #495057;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.infoRow svg {
-  color: #1a1a2e;
-  font-size: 1rem;
-  background: #f1f3f5;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
+  gap: 8px;
   justify-content: center;
-  padding: 8px;
-  flex-shrink: 0;
 }
 
-.cardFooter {
-  padding: 20px 24px;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  gap: 12px;
-}
 
-.footerBtn {
-  flex: 1;
-}
 
 /* Pagination Styles */
 .pagination {
@@ -332,7 +497,7 @@
 /* View Modal Specifics */
 .viewDetailsGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
 }
 
