@@ -1770,45 +1770,103 @@ function PuzzlePage({ isEvent = false }) {
                       const wasSolved = puzzleStatuses[pid] === "success";
                       const accent = wasSolved ? "#4ade80" : "#f87171";
                       const userMoves = currentPuzzle.moveHistory || [];
+
+                      // Determine if white or black moves first from FEN
+                      // FEN second field: 'w' = white to move, 'b' = black to move
+                      const fenTurn = (() => {
+                        try {
+                          const parts = (currentPuzzle.fen || '').split(' ');
+                          return parts[1] === 'b' ? 'b' : 'w';
+                        } catch { return 'w'; }
+                      })();
+                      const blackFirst = fenTurn === 'b';
+
+                      // Build horizontal move pairs: [{num, white, black}]
+                      const buildMovePairs = (moves) => {
+                        const pairs = [];
+                        let moveNum = 1;
+                        let i = 0;
+                        if (blackFirst) {
+                          // First move is black's — white slot shows "..."
+                          pairs.push({ num: moveNum, white: null, black: moves[0] || null });
+                          moveNum++;
+                          i = 1;
+                        }
+                        while (i < moves.length) {
+                          pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
+                          moveNum++;
+                          i += 2;
+                        }
+                        return pairs;
+                      };
+
+                      const userPairs = buildMovePairs(userMoves);
+
                       return (
                         <div className={styles.userAttemptSection}>
                           <div className={styles.sectionTitle} style={{ color: accent }}>Your Moves</div>
-                          <div className={styles.movesList}>
-                            {userMoves.length > 0 ? userMoves.map((move, i) => {
-                              const moveNum = Math.floor(i / 2) + 1;
-                              const isWhiteMove = i % 2 === 0;
-                              return (
-                                <div key={`am${i}`} className={styles.moveRow}>
-                                  <span className={styles.moveNumber}>{isWhiteMove ? `${moveNum}.` : '...'}</span>
-                                  <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>
-                                    {move}
-                                  </span>
-                                </div>
-                              );
-                            }) : <span className={styles.noMoves}>No moves yet.</span>}
+                          <div className={styles.movesListHorizontal}>
+                            {userPairs.length > 0 ? userPairs.map((pair, idx) => (
+                              <span key={`am${idx}`} className={styles.movePair}>
+                                <span className={styles.moveNumber}>{pair.num}.</span>
+                                {pair.white
+                                  ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.white}</span>
+                                  : <span className={styles.moveEllipsis}>...</span>
+                                }
+                                {pair.black
+                                  ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.black}</span>
+                                  : null
+                                }
+                              </span>
+                            )) : <span className={styles.noMoves}>No moves yet.</span>}
                           </div>
                         </div>
                       );
                     })()}
 
                     <div className={styles.correctSolutionSection}>
-                      <div className={styles.sectionTitle} style={{ color: "#4ade80" }}>Correct Solution</div>
-                      <div className={styles.movesList}>
+                      <div className={styles.sectionTitle} style={{ color: "#4ade80" }}> Solution</div>
+                      <div className={styles.movesListHorizontal}>
                         {showInlineSolution ? (
                           currentPuzzle?.solution?.length > 0 ? (() => {
                             const sanMoves = uciMovesToSan(currentPuzzle.fen, currentPuzzle.solution);
-                            return sanMoves.map((move, i) => {
-                              const moveNum = Math.floor(i / 2) + 1;
-                              const isWhiteMove = i % 2 === 0;
-                              return (
-                                <div key={`sol${i}`} className={styles.moveRow}>
-                                  <span className={styles.moveNumber}>{isWhiteMove ? `${moveNum}.` : '...'}</span>
-                                  <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>
-                                    {move}
-                                  </span>
-                                </div>
-                              );
-                            });
+                            const fenTurn = (() => {
+                              try {
+                                const parts = (currentPuzzle.fen || '').split(' ');
+                                return parts[1] === 'b' ? 'b' : 'w';
+                              } catch { return 'w'; }
+                            })();
+                            const blackFirst = fenTurn === 'b';
+                            const buildMovePairs = (moves) => {
+                              const pairs = [];
+                              let moveNum = 1;
+                              let i = 0;
+                              if (blackFirst) {
+                                pairs.push({ num: moveNum, white: null, black: moves[0] || null });
+                                moveNum++;
+                                i = 1;
+                              }
+                              while (i < moves.length) {
+                                pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
+                                moveNum++;
+                                i += 2;
+                              }
+                              return pairs;
+                            };
+                            const solPairs = buildMovePairs(sanMoves);
+                            return solPairs.map((pair, idx) => (
+                              <span key={`sol${idx}`} className={styles.movePair}>
+                                <span className={styles.moveNumber}>{pair.num}.</span>
+                                {pair.white
+                                  ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.white}</span>
+                                  : <span className={styles.moveEllipsis}>...</span>
+                                }
+                                {pair.black
+                                  ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.black}</span>
+                                  : null
+                                }
+                              </span>
+                            ));
                           })()
                             : <span className={styles.noMoves}>No solution available.</span>
                         ) : <span className={styles.noMoves}>Hidden</span>}

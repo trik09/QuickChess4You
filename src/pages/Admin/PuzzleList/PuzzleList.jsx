@@ -34,6 +34,7 @@ function PuzzleList() {
   const [validationResult, setValidationResult] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const isInitialMount = useRef(true);
 
   const fileInputRef = useRef(null);
@@ -132,36 +133,56 @@ function PuzzleList() {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    // Reset input immediately so the same file can be re-selected later
+    // We capture the file reference first, then reset
+    event.target.value = '';
+
     const reader = new FileReader();
     reader.onload = async (e) => {
+      let json;
       try {
-        const json = JSON.parse(e.target.result);
-        if (!Array.isArray(json)) { alert('Invalid JSON: Root must be an array of puzzles.'); return; }
-        if (confirm(`Ready to import ${json.length} puzzles?`)) {
-          setIsImporting(true);
-          const response = await adminAPI.bulkCreatePuzzles(json);
-          setIsImporting(false);
-          alert(response.message || 'Import successful!');
-          if (response.results?.failed > 0) {
-            console.error('Import errors:', response.results.errors);
-            alert(`Import finished with ${response.results.failed} errors. Check console for details.`);
-          }
-          fetchPuzzles(currentPage, searchTerm, filterCategory, filterDifficulty, filterLevel);
+        json = JSON.parse(e.target.result);
+      } catch (parseErr) {
+        alert('Invalid JSON file: ' + parseErr.message);
+        return;
+      }
+
+      if (!Array.isArray(json)) {
+        alert('Invalid JSON: Root must be an array of puzzles.');
+        return;
+      }
+
+      if (!confirm(`Ready to import ${json.length} puzzles?`)) return;
+
+      setIsImporting(true);
+      try {
+        const response = await adminAPI.bulkCreatePuzzles(json);
+        alert(response.message || 'Import successful!');
+        if (response.results?.failed > 0) {
+          console.error('Import errors:', response.results.errors);
+          alert(`Import finished with ${response.results.failed} errors. Check console for details.`);
         }
-      } catch (err) {
-        alert('Failed to parse JSON file: ' + err.message);
+        fetchPuzzles(currentPage, searchTerm, filterCategory, filterDifficulty, filterLevel);
+      } catch (apiErr) {
+        alert('Import failed: ' + (apiErr.message || 'Unknown error'));
+      } finally {
         setIsImporting(false);
       }
     };
+
+    reader.onerror = () => {
+      alert('Failed to read file.');
+    };
+
     reader.readAsText(file);
-    event.target.value = '';
   };
 
   const handleExport = async () => {
     try {
-      setIsLoading(true);
+      setIsExporting(true);
       const data = await adminAPI.exportPuzzles();
-      if (!data || data.length === 0) { alert("No puzzles to export."); setIsLoading(false); return; }
+      if (!data || data.length === 0) { alert("No puzzles to export."); return; }
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -169,10 +190,10 @@ function PuzzleList() {
       a.download = `puzzles_export_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setIsLoading(false);
     } catch (error) {
-      alert("Failed to export puzzles.");
-      setIsLoading(false);
+      alert("Failed to export puzzles: " + (error.message || 'Unknown error'));
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -345,8 +366,8 @@ function PuzzleList() {
         <div className={styles.headerActions}>
           <div className={styles.headerButtonGroup}>
             <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-            <IconButton icon={FaUpload} onClick={() => fileInputRef.current.click()} title="Import JSON" variant="secondary" />
-            <IconButton icon={FaDownload} onClick={handleExport} title="Export JSON" variant="secondary" />
+            <IconButton icon={FaDownload} onClick={() => fileInputRef.current.click()} title={isImporting ? "Importing..." : "Import JSON"} variant="secondary" disabled={isImporting} />
+            <IconButton icon={FaUpload} onClick={handleExport} title={isExporting ? "Exporting..." : "Export JSON"} variant="secondary" disabled={isExporting} />
             <Button size="small" variant="secondary" onClick={handleValidatePuzzles} disabled={isValidating}>
               {isValidating ? 'Validating...' : 'Validate'}
             </Button>

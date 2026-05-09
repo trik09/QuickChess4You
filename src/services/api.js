@@ -192,29 +192,19 @@ export const adminAPI = {
   // Create a puzzle
   createPuzzle: async (puzzleData) => {
     const adminToken = localStorage.getItem("atoken");
-
     return apiRequest("/puzzle/create-puzzle", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${adminToken}`,
-      },
       body: JSON.stringify(puzzleData),
-    });
+    }, adminToken);
   },
 
   // Bulk create puzzles
   bulkCreatePuzzles: async (puzzles) => {
     const adminToken = localStorage.getItem("atoken");
-
     return apiRequest("/puzzle/bulk-create-puzzle", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${adminToken}`,
-      },
       body: JSON.stringify(puzzles),
-    });
+    }, adminToken);
   },
 
   // Export puzzles
