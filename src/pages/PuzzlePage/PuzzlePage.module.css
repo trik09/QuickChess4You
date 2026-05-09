@@ -989,6 +989,7 @@
 .rightColumn>.navCard {
   /* background-color: red; */
   height: 100%;
+  padding: 6px;
 }
 
 
@@ -1874,12 +1875,12 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-dim);
   border-radius: 8px;
-  padding: 10px 12px;
-  margin-top: 6px;
+  padding: 6px;
+  margin-top: 10px;
   display: flex;
   flex-direction: row;
   gap: 12px;
-  max-height: 160px;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -1905,7 +1906,7 @@
 .movePair {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 2px;
   flex-wrap: nowrap;
 }
 
@@ -1944,7 +1945,7 @@
 /* Divider between the two columns */
 .userAttemptSection {
   border-right: 1px solid var(--border-dim);
-  padding-right: 12px;
+  padding-right: 2px;
 }
 
 .correctSolutionSection {
@@ -1990,7 +1991,8 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.3);
-  min-width: 28px;
+  min-width: 14px;
+  /* background-color: red; */
   font-weight: 500;
 }
 
