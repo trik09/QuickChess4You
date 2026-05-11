@@ -35,7 +35,7 @@ function Dashboard({ isEvent = false }) {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState("Upcoming");
   const [filteredCompetitions, setFilteredCompetitions] = useState([]);
   const [viewMode, setViewMode] = useState('list');
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,10 +58,20 @@ function Dashboard({ isEvent = false }) {
         limit: itemsPerPage,
       };
 
-      // Add status filter if not "All"
-      if (activeTab !== "All") {
-        params.status = activeTab.toLowerCase();
+      // Send status filter to backend for all tabs except "All"
+      if (activeTab === "Live") {
+        params.status = "live";
+      } else if (activeTab === "Upcoming") {
+        params.status = "upcoming";
+        // Limit upcoming to the next 7 days for regular users to avoid
+        // paginating through months of scheduled competitions.
+        const oneWeekFromNow = new Date();
+        oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+        params.startBefore = oneWeekFromNow.toISOString();
+      } else if (activeTab === "Ended") {
+        params.status = "ended";
       }
+      // "All" tab: no status filter — fetch everything
 
       // Add search query if present
       if (searchQuery.trim()) {
@@ -92,21 +102,16 @@ function Dashboard({ isEvent = false }) {
           let status;
           const backendStatus = (comp.status || "").toLowerCase();
 
-          if (backendStatus === "ended") {
-            status = "Ended";
-          } else if (backendStatus === "live") {
-            // Double-check: if the end time has already passed on the client,
-            // also treat as Ended (handles edge cases where backend is slightly behind)
-            status = now > endDate ? "Ended" : "Live";
+          // Always derive status from the clock first — the backend can have
+          // stale "LIVE" entries whose end time has already passed.
+          if (now < startDate) {
+            status = "Upcoming";
+          } else if (now >= startDate && now <= endDate) {
+            // Within the time window — but if backend explicitly says ended, trust it
+            status = backendStatus === "ended" ? "Ended" : "Live";
           } else {
-            // "upcoming" or anything else — derive from clock
-            if (now < startDate) {
-              status = "Upcoming";
-            } else if (now >= startDate && now <= endDate) {
-              status = "Live";
-            } else {
-              status = "Ended";
-            }
+            // End time has passed — always Ended regardless of backend status
+            status = "Ended";
           }
 
           const durationMs = endDate - startDate;
@@ -133,18 +138,30 @@ function Dashboard({ isEvent = false }) {
           };
         });
 
-        // Backend already handles sorting, but we can apply client-side sort for consistency
-        const sorted = formattedCompetitions.sort((a, b) => {
+        // Client-side filter as a safety net (backend already filters by status,
+        // but the clock-based re-evaluation above may reclassify edge cases).
+        let filtered = formattedCompetitions;
+
+        if (activeTab === "Live") {
+          filtered = formattedCompetitions.filter((c) => c.status === "Live");
+        } else if (activeTab === "Upcoming") {
+          filtered = formattedCompetitions.filter((c) => c.status === "Upcoming");
+        } else if (activeTab === "Ended") {
+          filtered = formattedCompetitions.filter((c) => c.status === "Ended");
+        }
+        // "All" tab: show everything
+
+        const sorted = filtered.sort((a, b) => {
           const statusOrder = { Live: 1, Upcoming: 2, Ended: 3 };
           if (statusOrder[a.status] !== statusOrder[b.status]) {
             return statusOrder[a.status] - statusOrder[b.status];
           }
 
-          if (a.status === 'Ended') {
+          if (a.status === "Ended") {
             // Latest ended competitions first (descending)
             return new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate);
           }
-          // Upcoming and Live: soonest first (ascending)
+          // Live and Upcoming: soonest start time first (ascending)
           return new Date(a.startDate) - new Date(b.startDate);
         });
 
@@ -290,7 +307,7 @@ function Dashboard({ isEvent = false }) {
         {/* Filter & Search Bar */}
         <div className={styles.controlsRow}>
           <div className={styles.filterTabs}>
-            {["All", "Live", "Upcoming", "Ended"].map((tab) => (
+            {["Upcoming", "Live", "Ended", "All"].map((tab) => (
               <button
                 key={tab}
                 className={`${styles.tab} ${activeTab === tab ? styles.activeTab : ""}`}
@@ -529,7 +546,8 @@ function Dashboard({ isEvent = false }) {
               <FaArrowLeft />
             </button>
             <span className={styles.pageInfo}>
-              Page {currentPage} of {totalPages} ({totalRecords} total)
+              Page {currentPage} of {totalPages} 
+             {/*  Page {currentPage} of {totalPages} ({totalRecords} total) */}
             </span>
             <button
               className={styles.pageBtn}
