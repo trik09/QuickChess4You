@@ -1444,11 +1444,11 @@ function ChessBoard({
   useEffect(() => {
     mouseHandlersRef.current.arrowMove = (e) => {
       if (!arrowDragStateRef.current.isDrawing || !boardRef.current) return;
-      
+
       if (arrowDragStateRef.current.rafId) {
         cancelAnimationFrame(arrowDragStateRef.current.rafId);
       }
-      
+
       arrowDragStateRef.current.rafId = requestAnimationFrame(() => {
         const rect = boardRef.current.getBoundingClientRect();
         const rawX = ((e.clientX - rect.left) / rect.width) * 100;
@@ -1456,17 +1456,17 @@ function ChessBoard({
 
         const startX = arrowDragStateRef.current.startX;
         const startY = arrowDragStateRef.current.startY;
-        
+
         const dx = rawX - startX;
         const dy = rawY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
-        
+
         const lineNode = document.getElementById("current-arrow-line");
         if (lineNode && length > 0) {
           const ratio = Math.max(0, (length - 4.5)) / length;
           const endX = startX + dx * ratio;
           const endY = startY + dy * ratio;
-          
+
           lineNode.setAttribute("x2", endX);
           lineNode.setAttribute("y2", endY);
         }
@@ -1622,14 +1622,14 @@ function ChessBoard({
 
   const startArrowDrag = (square, e) => {
     const center = getSquareCenter(square);
-    arrowDragStateRef.current = { 
-      isDrawing: true, 
-      startSquare: square, 
-      startX: center.x, 
+    arrowDragStateRef.current = {
+      isDrawing: true,
+      startSquare: square,
+      startX: center.x,
       startY: center.y,
       rafId: null
     };
-    
+
     const lineNode = document.getElementById("current-arrow-line");
     if (lineNode) {
       lineNode.setAttribute("x1", center.x);
@@ -1780,7 +1780,7 @@ function ChessBoard({
             />
           );
         })}
-        
+
         {/* Permanent line for active drawing (avoids React re-renders during drag) */}
         <line
           id="current-arrow-line"
@@ -1802,7 +1802,7 @@ function ChessBoard({
           const dx = end.x - start.x;
           const dy = end.y - start.y;
           const length = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (length === 0) return null;
 
           // Shortening ratio adjusted for seamless marker connection

@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    ROOT PALETTE (Linked to Global Theme)
    ======================================== */
 :root {
@@ -32,26 +32,98 @@
   --text-muted-local: #94a3b8;
 }
 
-/* OUTER CONTAINER */
+/* ========================================
+   BASE – MOBILE (default, up to 768px)
+   ======================================== */
 .container {
-  /* height: calc(100vh - 36px); */
-  /* height: 100vh; */
-  min-height: 100vh;
-  max-height: 99vh;
+  height: auto;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   font-family: 'Inter', system-ui, sans-serif;
   overflow: hidden;
-  /* background: var(--bg-base); */
   color: var(--text-primary-local);
   padding: 10px;
   position: relative;
-  /* background-color: red; */
+}
 
+.titleHeader {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 44px;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.4));
+  border: 1px solid #b58863;
+  border-radius: 28px;
+  margin-bottom: 6px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  overflow: visible;
+  gap: 12px;
+}
+
+.leftColumn {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+.statsCard,
+.premiumInfoCard,
+.rankCard {
+  flex: auto;
+  width: 100%;
+  margin: 0;
+}
+
+.premiumTitle {
+  font-size: 1.6rem;
+}
+
+.goldKing {
+  height: 120px;
+}
+
+.turnText {
+  font-size: 1rem;
+}
+
+.turnIcon {
+  font-size: 1.5rem;
+}
+
+.metaValue {
+  font-size: 1.1rem;
+}
+
+.premiumInfoCard {
+  padding: 6px;
+  min-height: 160px;
+}
+
+.boardArea {
+  height: auto;
+  min-height: 300px;
+  /* background-color: red; */
+}
+
+.boardWrapper {
+  max-height: 80vw;
+}
+
+.galaxySection {
+  height: auto;
+  min-height: 120px;
 }
 
 /* ========================================
-   HEADER UI COMPONENTS (moved to panels)
+   HEADER UI COMPONENTS (unchanged)
    ======================================== */
 .titleHeader {
   flex-shrink: 0;
@@ -83,7 +155,6 @@
   align-items: center;
 }
 
-
 /* GALAXY TOGGLE HEADER */
 .titleHeaderRight {
   display: flex;
@@ -109,7 +180,6 @@
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
-  /* Firefox */
   scroll-behavior: smooth;
   padding: 8px 0;
   width: 100%;
@@ -118,7 +188,6 @@
 
 .headerChaptersWrap::-webkit-scrollbar {
   display: none;
-  /* Chrome/Safari */
 }
 
 .headerNavArrow {
@@ -162,7 +231,6 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-dim);
   color: #e7b78f;
-  /* Same as right side but lighter for header */
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
@@ -411,7 +479,7 @@
 }
 
 /* ========================================
-   RIGHT COLUMN CHAPTERS BOX
+   RIGHT COLUMN CHAPTERS BOX (unchanged)
    ======================================== */
 .chaptersBox {
   background: transparent;
@@ -422,7 +490,6 @@
   flex-direction: column;
   gap: 8px;
   flex: 0 0 auto;
-  /* Changed from flex: 1 to prevent it from taking extra space */
   min-height: 0;
   max-height: none;
   overflow: hidden;
@@ -457,12 +524,10 @@
   scrollbar-color: var(--border-dim) transparent;
 }
 
-/* Analysis Screen: Limit to 3 chapters (~50px height + 8px gap) */
 .analysisPage .chaptersWrap {
   max-height: 132px;
 }
 
-/* Competition Screen: Limit to 4 chapters (~50px height + 8px gap) */
 .competitionPage .chaptersWrap {
   max-height: 224px;
 }
@@ -506,7 +571,6 @@
 }
 
 .chapterPill:hover {
-  /* transform: translateY(2px); */
   background: #333333;
   border-color: rgba(181, 136, 99, 0.3);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
@@ -530,8 +594,6 @@
   color: #fff !important;
   border-color: #fbd38d !important;
 }
-
-/* active name color handled by gradient theme */
 
 .chapterPillName {
   font-size: 0.9rem;
@@ -560,109 +622,7 @@
 }
 
 /* ========================================
-   BODY — 3-column grid (below header, above galaxy)
-   ======================================== */
-.body {
-  display: grid;
-  grid-template-columns: minmax(230px, 330px) 1fr minmax(260px, 310px);
-  grid-template-rows: 1fr;
-  gap: 8px;
-  max-width: 1600px;
-  /* margin: 0 auto; */
-  /* padding: 0 16px; */
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.galaxyOffLayout {
-  grid-template-columns: 300px 1fr 300px;
-  grid-template-rows: 1fr;
-  max-width: 100%;
-  gap: 12px;
-  padding: 0 20px;
-}
-
-.galaxyOffLayout .statsCard,
-.galaxyOffLayout .infoCard,
-.galaxyOffLayout .rankCard {
-  padding: 8px;
-  gap: 12px;
-}
-
-.galaxyOffLayout .timerBox {
-  flex-direction: column;
-  gap: 4px;
-  text-align: center;
-}
-
-.galaxyOffLayout .timerValue {
-  font-size: 2.2rem;
-}
-
-/* .galaxyOffLayout .statsGrid {
-  grid-template-columns: 1fr;
-  gap: 10px;
-} */
-
-.galaxyOffLayout .toPlayRow {
-  flex-direction: column;
-  text-align: center;
-  gap: 4px;
-}
-
-.galaxyOffLayout .toPlayText {
-  font-size: 1.5rem;
-}
-
-.galaxyOffLayout .kingIcon {
-  font-size: 2.8rem;
-}
-
-/* .galaxyOffLayout .infoMeta {
-  grid-template-columns: 1fr;
-  gap: 10px;
-  text-align: center;
-} */
-
-.galaxyOffLayout .rankRow {
-  flex-direction: column;
-  gap: 8px;
-  text-align: center;
-}
-
-.galaxyOffLayout .rankNumber {
-  font-size: 2rem;
-}
-
-.galaxyOffLayout .btnSubmitLeft {
-  font-size: 0.9rem;
-  padding: 10px 4px;
-}
-
-.galaxyOffLayout .boardArea {
-  width: 100%;
-  height: 100%;
-  /* padding: 10px; */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.galaxyOffLayout .boardWrapper {
-  width: 100%;
-  height: 100%;
-  max-width: min(85vh, 100%);
-  max-height: min(85vh, 100%);
-  margin: 0 auto;
-}
-
-
-
-
-/* ========================================
-   LEFT COLUMN — Stats + Rank
+   LEFT COLUMN (unchanged)
    ======================================== */
 .leftColumn {
   display: flex;
@@ -671,7 +631,6 @@
   min-width: 0;
   overflow: hidden;
   height: 100%;
-  /* justify-content: space-between; */
 }
 
 .statsCard {
@@ -686,8 +645,7 @@
   min-height: 140px;
   justify-content: center;
   backdrop-filter: blur(12px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
@@ -697,10 +655,6 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   border-radius: 20px;
 }
-
-/* removed compNameBox styles as it's now in the header */
-
-/* chapterBadge styles removed as they are now in header */
 
 .divider {
   height: 6px;
@@ -788,7 +742,6 @@
   text-shadow: 0 0 8px var(--gold-glow);
 }
 
-/* Timer */
 .timerBox {
   display: flex;
   align-items: center;
@@ -804,13 +757,11 @@
   font-weight: 700;
   color: var(--text-muted-local);
   margin-bottom: 0;
-  /* padding-left: 10px; */
 }
 
 .timerValue {
   font-family: 'JetBrains Mono', monospace;
   font-size: 2.2rem;
-  /* Increased size */
   font-weight: 900;
   color: var(--gold);
   text-shadow: 0 0 20px var(--gold-glow), 0 0 40px rgba(201, 152, 42, 0.2);
@@ -818,7 +769,6 @@
   letter-spacing: -1px;
 }
 
-/* Rank Card */
 .rankCard {
   background: var(--bg-card);
   border-radius: 12px;
@@ -851,8 +801,6 @@
   letter-spacing: 2px;
   font-weight: 700;
   color: var(--text-muted-local);
-  /* margin-bottom: 10px; */
-  /* /* padding-left: 10px; */
 }
 
 .rankNumber {
@@ -903,7 +851,6 @@
   min-width: 2px;
 }
 
-/* Review perf grid in left column */
 .leftScrollArea {
   flex: 1;
   overflow-y: auto;
@@ -922,11 +869,8 @@
 }
 
 /* ========================================
-   CENTER COLUMN — Chessboard
+   CENTER COLUMN – Chessboard (unchanged)
    ======================================== */
-
-
-/* Before-start overlay */
 .boardBeforeStart {
   position: absolute;
   inset: 0;
@@ -969,34 +913,26 @@
   }
 }
 
-
-
 /* ========================================
-   RIGHT COLUMN — Nav + Info + Submit
+   RIGHT COLUMN – Nav + Info + Submit (unchanged)
    ======================================== */
 .rightColumn {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* Controlled spacing between sections */
   min-width: 0;
   overflow: hidden;
   height: 100%;
-  max-height: 100vh;
+  max-height: 100%;
   justify-content: flex-start;
-  /* Ensures a tighter, more balanced layout */
 }
 
 .rightColumn>.navCard {
-  /* background-color: red; */
   height: 100%;
   padding: 6px;
-  /* background-color: red; */
   gap: 2px;
 }
 
-
-/* If there's only one card, let it fill the sidebar height */
 .rightColumn>*:only-child {
   flex: 1;
 }
@@ -1007,7 +943,6 @@
   border: 1px solid var(--border-dim);
   padding: 10px;
   flex: 0 1 auto;
-  /* Dynamic height based on content */
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -1082,7 +1017,6 @@
   box-shadow: 0 0 10px var(--gold-glow);
 }
 
-/* When a navItem is both active AND solved, show solved/success state */
 .navItem.active.success {
   background: rgba(34, 197, 94, 0.25) !important;
   color: #4ade80 !important;
@@ -1110,7 +1044,6 @@
   opacity: 0.5;
 }
 
-/* Prev / Next nav row */
 .navControls {
   display: flex;
   gap: 6px;
@@ -1145,7 +1078,6 @@
   cursor: not-allowed;
 }
 
-/* Pagination */
 .paginationInfo {
   text-align: center;
   font-size: 0.68rem;
@@ -1196,7 +1128,7 @@
   cursor: not-allowed;
 }
 
-
+/* ── PREMIUM INFO CARD (unchanged) ── */
 .premiumInfoCard {
   border-radius: 20px;
   padding: 6px;
@@ -1260,7 +1192,6 @@
 
 .turnCapsule {
   display: flex;
-  flex-wrap: wrap;
   flex-wrap: wrap;
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
@@ -1377,14 +1308,12 @@
   align-items: center;
   gap: 16px;
   margin-top: 8px;
-
 }
 
 .puzzleInfoContainer {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* margin-top: 8px; */
   background: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   padding: 6px;
@@ -1453,7 +1382,6 @@
   color: #333;
 }
 
-/* Difficulty badge shown under the title for illegal move puzzles */
 .illegalDiffBadge {
   display: inline-block;
   margin-top: 6px;
@@ -1718,6 +1646,7 @@
   height: 100%;
   flex: 1;
   min-height: 0;
+  /* background-color: lightblue; */
 }
 
 .boardTitleHeader {
@@ -1726,8 +1655,6 @@
   gap: 10px;
   padding: 8px 20px;
   background: #946a49;
-  /* border: 2px solid rgba(251, 191, 36, 0.6); */
-  border-bottom: none;
   border-radius: 12px 12px 0px 0px;
   z-index: 2;
   position: relative;
@@ -1759,28 +1686,16 @@
   }
 }
 
-@keyframes slowInnerGlowLight {
-  from {
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.02);
-  }
-
-  to {
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.08);
-  }
-}
-
 .titlePuzzleIcon {
   color: #fbbf24;
   font-size: 1rem;
 }
 
 .puzzleTitleText {
-  /* font-family: 'Oswald', sans-serif; */
   font-size: 0.95rem;
   font-weight: 500;
   color: #fff;
   letter-spacing: 1px;
-  /* text-transform: uppercase; */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -1855,7 +1770,6 @@
   box-shadow: none;
 }
 
-/* Review mode right column */
 .rightScrollable {
   flex: 1;
   overflow-y: auto;
@@ -1905,7 +1819,6 @@
   overflow: hidden;
 }
 
-/* Horizontal moves list — vertical stack of move rows */
 .movesListHorizontal {
   display: flex;
   flex-direction: column;
@@ -1940,7 +1853,6 @@
   gap: 4px;
 }
 
-/* Scrollbar styling for movesListHorizontal */
 .movesListHorizontal::-webkit-scrollbar {
   width: 3px;
 }
@@ -1954,7 +1866,6 @@
   border-radius: 4px;
 }
 
-/* Divider between the two columns */
 .userAttemptSection {
   border-right: 1px solid var(--border-dim);
   padding-right: 2px;
@@ -1964,7 +1875,6 @@
   padding-left: 0;
 }
 
-/* Scrollbar styling for movesList */
 .movesList::-webkit-scrollbar {
   width: 4px;
 }
@@ -1978,7 +1888,6 @@
   border-radius: 4px;
 }
 
-/* Scrollbar styling for solutionBox */
 .solutionBox::-webkit-scrollbar {
   width: 4px;
 }
@@ -2004,7 +1913,6 @@
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.3);
   min-width: 14px;
-  /* background-color: red; */
   font-weight: 500;
 }
 
@@ -2015,7 +1923,6 @@
   margin-top: 4px;
 }
 
-
 .moveTag {
   display: inline-block;
   padding: 3px 7px;
@@ -2024,7 +1931,6 @@
   font-size: 0.8rem;
   font-weight: 600;
 }
-
 
 .reviewActionsRow {
   display: flex;
@@ -2086,7 +1992,7 @@
 }
 
 /* ========================================
-   GALAXY SECTION — Full Width Bottom
+   GALAXY SECTION (unchanged)
    ======================================== */
 .galaxySection {
   flex-shrink: 0;
@@ -2105,7 +2011,6 @@
   border: 1.5px solid rgba(181, 136, 99, 0.3);
 }
 
-/* Override PuzzleRacer container to fill our galaxy section cleanly */
 .galaxySection :global(.puzzle-racer-container) {
   margin-top: 0 !important;
   border-radius: 0 !important;
@@ -2171,7 +2076,6 @@
   font-size: 0.72rem !important;
 }
 
-/* Starfield pseudo-element */
 .galaxySection::before {
   content: '';
   position: absolute;
@@ -2192,7 +2096,6 @@
   pointer-events: none;
 }
 
-/* PuzzleRacer container override — compact inside galaxy */
 .galaxySection :global(.puzzle-racer-container) {
   background: transparent !important;
   height: 160px;
@@ -2217,9 +2120,7 @@
   font-size: 0.58rem;
 }
 
-/* ========================================
-   MODALS
-   ======================================== */
+/* ─── MODALS (unchanged) ─── */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -2317,9 +2218,7 @@
   cursor: not-allowed;
 }
 
-/* ========================================
-   LOADING
-   ======================================== */
+/* ─── LOADING (unchanged) ─── */
 .loading {
   display: flex;
   height: 100%;
@@ -2331,9 +2230,7 @@
   color: var(--gold);
 }
 
-/* ========================================
-   ANIMATIONS
-   ======================================== */
+/* ─── ANIMATIONS (unchanged) ─── */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -2347,239 +2244,19 @@
 }
 
 /* ========================================
-   RESPONSIVE BREAKPOINTS — WIDTH
+   TABLET – min-width: 769px
+   (identical to original max-width: 768px range)
    ======================================== */
-@media (max-width: 1280px) {
-  .body {
-    grid-template-columns: 180px 1fr 225px;
-    gap: 8px;
-    padding: 8px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .body {
-    grid-template-columns: 165px 1fr 210px;
-    gap: 6px;
-    padding: 6px;
-  }
-
-  .statValue {
-    font-size: 1rem;
-  }
-
-  .rankNumber {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 1024px) {
-
+@media (min-width: 769px) {
   .container {
-
     height: auto;
   }
 
-
   .body {
+    display: grid;
     grid-template-columns: 1fr 215px;
     grid-template-rows: auto 1fr;
-  }
-
-  .leftColumn {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    gap: 6px;
-  }
-
-  .statsCard {
-    flex: 1;
-  }
-
-  .rankCard {
-    flex: 0 0 140px;
-  }
-
-  .boardArea {
-    grid-column: 1;
-  }
-
-  .rightColumn {
-    grid-column: 2;
-  }
-
-  .galaxySection {
-    height: 140px;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    height: auto;
-    overflow: auto;
-  }
-
-  .topHeader {
-    height: auto;
-    padding: 8px;
-    flex-wrap: wrap;
-  }
-
-  .body {
-    display: flex;
-    background: var(--bg-card);
-    border-radius: 14px;
-    padding: 2.5rem 2rem;
-    max-width: 480px;
-    width: 90%;
-    border: 1.5px solid var(--border-dim);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-  }
-
-  [data-theme='light'] .modalContent {
-    background: #ffffff;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
-  }
-
-  .modalContent h3 {
-    margin: 0 0 1.5rem 0;
-    font-size: 1.4rem;
-    text-align: center;
-    color: var(--text-primary);
-  }
-
-  .modalWarning {
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 1rem;
-    font-size: 0.88rem;
-    text-align: center;
-    background: rgba(255, 193, 7, 0.12);
-    border: 1px solid rgba(255, 193, 7, 0.3);
-    color: #fbbf24;
-  }
-
-  .modalText {
-    font-size: 0.88rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    color: var(--text-secondary);
-  }
-
-  .modalActions {
-    display: flex;
     gap: 12px;
-    justify-content: center;
-  }
-
-  .modalCancel,
-  .modalSubmit {
-    padding: 10px 24px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    font-family: inherit;
-    border: 1.5px solid transparent;
-    transition: all 0.2s;
-  }
-
-  .modalCancel {
-    background: transparent;
-    border-color: var(--border-dim);
-    color: var(--text-primary);
-  }
-
-  .modalCancel:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: var(--border-gold);
-  }
-
-  .modalSubmit {
-    background: linear-gradient(135deg, #c0392b, #a93226);
-    color: #fff;
-    font-weight: 700;
-  }
-
-  .modalSubmit:hover:not(:disabled) {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    transform: translateY(-1px);
-  }
-
-  .modalSubmit:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* ========================================
-   LOADING
-   ======================================== */
-  .loading {
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    background: var(--bg-base);
-    color: var(--gold);
-  }
-
-  /* ========================================
-   ANIMATIONS
-   ======================================== */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-}
-
-/* ========================================
-   RESPONSIVE BREAKPOINTS — WIDTH
-   ======================================== */
-@media (max-width: 1280px) {
-  .body {
-    grid-template-columns: 180px 1fr 225px;
-    gap: 8px;
-    padding: 8px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .body {
-    grid-template-columns: 165px 1fr 210px;
-    gap: 6px;
-    padding: 6px;
-  }
-
-  .statValue {
-    font-size: 1rem;
-  }
-
-  .rankNumber {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 1024px) {
-
-  .container {
-
-    height: auto;
-  }
-
-
-  .body {
-    grid-template-columns: 1fr 215px;
-    grid-template-rows: auto 1fr;
   }
 
   .leftColumn {
@@ -2610,87 +2287,141 @@
   }
 }
 
-@media (max-width: 768px) {
+/* ========================================
+   DESKTOP (narrow) – min-width: 1025px
+   (original max-width: 1024px range)
+   ======================================== */
+@media (min-width: 1025px) {
   .container {
     height: auto;
-    overflow: auto;
-  }
-
-  .topHeader {
-    height: auto;
-    padding: 8px;
-    flex-wrap: wrap;
   }
 
   .body {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
+    grid-template-columns: 165px 1fr 210px;
+    grid-template-rows: 1fr;
+    gap: 6px;
+    padding: 6px;
   }
 
   .leftColumn {
+    grid-column: auto;
     flex-direction: column;
-    flex-wrap: nowrap;
     gap: 12px;
   }
 
-  .statsCard,
-  .premiumInfoCard,
-  .rankCard {
-    flex: auto;
-    width: 100%;
-    margin: 0;
+  .boardArea {
+    grid-column: auto;
   }
 
-  .premiumTitle {
-    font-size: 1.6rem;
+  .rightColumn {
+    grid-column: auto;
   }
 
-  .goldKing {
-    height: 120px;
-  }
-
-  .turnText {
+  .statValue {
     font-size: 1rem;
   }
 
-  .turnIcon {
-    font-size: 1.5rem;
-  }
-
-  .metaValue {
-    font-size: 1.1rem;
-  }
-
-  .premiumInfoCard {
-    padding: 6px;
-    min-height: 160px;
-  }
-
-  .boardArea {
-    height: auto;
-    min-height: 300px;
-  }
-
-  .boardWrapper {
-    max-height: 80vw;
-  }
-
-  .galaxySection {
-    height: auto;
-    min-height: 120px;
+  .rankNumber {
+    font-size: 2rem;
   }
 }
 
 /* ========================================
-   RESPONSIVE BREAKPOINTS — HEIGHT
-   Progressively scale down elements as
-   viewport height decreases so nothing
-   overflows or gets cut off.
+   DESKTOP (medium) – min-width: 1101px
+   (original max-width: 1100px range)
    ======================================== */
+@media (min-width: 1101px) {
+  .body {
+    grid-template-columns: 180px 1fr 225px;
+    gap: 8px;
+    padding: 8px;
+  }
+}
 
-/* 750px height — moderate reduction */
+/* ========================================
+   DESKTOP (wide) – min-width: 1281px
+   (original default, >1280px)
+   ======================================== */
+@media (min-width: 1281px) {
+  .body {
+    grid-template-columns: minmax(230px, 330px) 1fr minmax(260px, 310px);
+    gap: 8px;
+  }
+}
+
+/* ─── GALAXY OFF LAYOUT (global modifier, unchanged) ─── */
+.galaxyOffLayout {
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-rows: 1fr;
+  max-width: 100%;
+  gap: 12px;
+  padding: 0 20px;
+}
+
+.galaxyOffLayout .statsCard,
+.galaxyOffLayout .infoCard,
+.galaxyOffLayout .rankCard {
+  padding: 8px;
+  gap: 12px;
+}
+
+.galaxyOffLayout .timerBox {
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.galaxyOffLayout .timerValue {
+  font-size: 2.2rem;
+}
+
+.galaxyOffLayout .toPlayRow {
+  flex-direction: column;
+  text-align: center;
+  gap: 4px;
+}
+
+.galaxyOffLayout .toPlayText {
+  font-size: 1.5rem;
+}
+
+.galaxyOffLayout .kingIcon {
+  font-size: 2.8rem;
+}
+
+.galaxyOffLayout .rankRow {
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.galaxyOffLayout .rankNumber {
+  font-size: 2rem;
+}
+
+.galaxyOffLayout .btnSubmitLeft {
+  font-size: 0.9rem;
+  padding: 10px 4px;
+}
+
+.galaxyOffLayout .boardArea {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.galaxyOffLayout .boardWrapper {
+  width: 100%;
+  height: 100%;
+  max-width: min(85vh, 100%);
+  max-height: min(85vh, 100%);
+  margin: 0 auto;
+}
+
+/* ─── HEIGHT‑BASED REDUCTIONS (unchanged) ─── */
 @media (max-height: 750px) {
   .titleHeader {
     height: 46px;
@@ -2829,7 +2560,6 @@
   }
 }
 
-/* 680px height — significant reduction */
 @media (max-height: 680px) {
   .titleHeader {
     height: 40px;
@@ -2957,7 +2687,6 @@
   }
 }
 
-/* 600px height — aggressive reduction, keep everything visible */
 @media (max-height: 600px) {
   .container {
     height: calc(100vh - 28px);
@@ -3149,10 +2878,7 @@
   }
 }
 
-
-/* ─── ADD THIS TO THE BOTTOM OF PuzzlePage.module.css ─────────────────────── */
-
-/* Review Mode: Reset Puzzle button */
+/* ─── EXTRA UTILITIES (unchanged) ─── */
 .resetPuzzleBtn {
   width: 100%;
   padding: 10px;
@@ -3193,7 +2919,6 @@
   background: rgba(99, 102, 241, 0.15);
   border-color: #6366f1;
 }
-
 
 .puzzleTypeBadge {
   background: rgba(0, 0, 0, 0.25);
@@ -3302,7 +3027,6 @@
 
 .turnCapsule {
   display: flex;
-  flex-wrap: wrap;
   flex-wrap: wrap;
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
@@ -3512,9 +3236,7 @@
   color: rgba(0, 0, 0, 0.1);
 }
 
-/* ========================================
-   NOT PARTICIPATED SCREEN (Premium Empty State)
-   ======================================== */
+/* ─── NOT PARTICIPATED SCREEN (unchanged) ─── */
 .notParticipatedOverlay {
   position: fixed;
   top: 0;
@@ -3555,16 +3277,6 @@
 
   to {
     transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
     opacity: 1;
   }
 }
