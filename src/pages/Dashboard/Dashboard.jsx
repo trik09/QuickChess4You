@@ -46,36 +46,142 @@ function Dashboard({ isEvent = false }) {
   const [totalRecords, setTotalRecords] = useState(0);
   const itemsPerPage = 10;
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "TBA";
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", { month: "short", day: "numeric" });
+  };
+
+  const formatTime = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+  };
+
+  // Helper: format a raw competition object into the display shape
+  const formatComp = useCallback((comp) => {
+    const startDate = new Date(comp.startTime);
+    const endDate = new Date(comp.endTime);
+    const now = new Date();
+    const backendStatus = (comp.status || "").toLowerCase();
+
+    let status;
+    if (now < startDate) {
+      status = "Upcoming";
+    } else if (now >= startDate && now <= endDate) {
+      status = backendStatus === "ended" ? "Ended" : "Live";
+    } else {
+      status = "Ended";
+    }
+
+    const durationMs = endDate - startDate;
+    const durationMins = Math.floor(durationMs / 60000);
+    const durationText =
+      durationMins > 60
+        ? `${Math.floor(durationMins / 60)}h ${durationMins % 60}m`
+        : `${durationMins}m`;
+
+    return {
+      id: comp._id,
+      _id: comp._id,
+      title: comp.name || comp.title || "Untitled Competition",
+      dateDisplay: `${formatDate(comp.startTime)} ${formatTime(comp.startTime)}`,
+      startDate: comp.startTime,
+      endDate: comp.endTime,
+      participants: comp.participantCount ?? comp.participants?.length ?? 0,
+      maxPlayers: comp.maxPlayers || 100,
+      status,
+      puzzlesCount: comp.puzzles?.length || 0,
+      durationText,
+      startTimeText: formatTime(comp.startTime),
+      startDateText: formatDate(comp.startTime),
+    };
+  }, []);
+
+  // Helper: sort by Live → Upcoming (soonest first) → Ended (most recent first)
+  const sortCompetitions = (list) =>
+    [...list].sort((a, b) => {
+      const statusOrder = { Live: 1, Upcoming: 2, Ended: 3 };
+      if (statusOrder[a.status] !== statusOrder[b.status]) {
+        return statusOrder[a.status] - statusOrder[b.status];
+      }
+      if (a.status === "Ended") {
+        return new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate);
+      }
+      return new Date(a.startDate) - new Date(b.startDate);
+    });
+
   // Fetch Competitions/Events with backend pagination
   const fetchCompetitions = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      // Build query params for backend pagination and filtering
+      const searchParam = searchQuery.trim() ? { search: searchQuery.trim() } : {};
+
+      if (activeTab === "All") {
+        // ── "All" tab: same data as Live + Upcoming + Ended tabs combined.
+        // Fire three parallel requests using the exact same params each tab uses.
+        const now = new Date();
+        const oneWeekFromNow = new Date(now);
+        oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
+        const callAPI = (params) =>
+          isEvent ? eventAPI.getAll(params) : competitionAPI.getAll(params);
+
+        const [liveRes, upcomingRes, endedRes] = await Promise.allSettled([
+          callAPI({ status: "live", limit: 100, ...searchParam }),
+          callAPI({ status: "upcoming", limit: 100, startBefore: oneWeekFromNow.toISOString(), ...searchParam }),
+          callAPI({ status: "ended", limit: 100, ...searchParam }),
+        ]);
+
+        const extract = (res) =>
+          res.status === "fulfilled" && res.value?.success && Array.isArray(res.value.data)
+            ? res.value.data
+            : [];
+
+        const rawAll = [...extract(liveRes), ...extract(upcomingRes), ...extract(endedRes)];
+
+        // De-duplicate by _id
+        const seen = new Set();
+        const unique = rawAll.filter((c) => {
+          if (seen.has(c._id)) return false;
+          seen.add(c._id);
+          return true;
+        });
+
+        // Sort: Live first → Upcoming soonest first → Ended most recent first
+        const sorted = sortCompetitions(unique.map(formatComp));
+
+        // Client-side pagination
+        const total = sorted.length;
+        const pages = Math.max(1, Math.ceil(total / itemsPerPage));
+        const safePage = Math.min(currentPage, pages);
+        const sliced = sorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
+
+        setCompetitions(sorted);
+        setFilteredCompetitions(sliced);
+        setTotalPages(pages);
+        setTotalRecords(total);
+        return; // ← done for "All" tab
+      }
+
+      // ── Single-status tabs (Live / Upcoming / Ended) ──────────────────────
       const params = {
         page: currentPage,
         limit: itemsPerPage,
+        ...searchParam,
       };
 
-      // Send status filter to backend for all tabs except "All"
       if (activeTab === "Live") {
         params.status = "live";
       } else if (activeTab === "Upcoming") {
         params.status = "upcoming";
-        // Limit upcoming to the next 7 days for regular users to avoid
-        // paginating through months of scheduled competitions.
         const oneWeekFromNow = new Date();
         oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
         params.startBefore = oneWeekFromNow.toISOString();
       } else if (activeTab === "Ended") {
         params.status = "ended";
-      }
-      // "All" tab: no status filter — fetch everything
-
-      // Add search query if present
-      if (searchQuery.trim()) {
-        params.search = searchQuery.trim();
       }
 
       const response = isEvent
@@ -83,97 +189,22 @@ function Dashboard({ isEvent = false }) {
         : await competitionAPI.getAll(params);
 
       if (response.success && Array.isArray(response.data)) {
-        const formattedCompetitions = response.data.map((comp) => {
-          const startDate = new Date(comp.startTime);
-          const endDate = new Date(comp.endTime);
-          const now = new Date();
+        const formatted = response.data.map(formatComp);
 
-          // ─── FIX: Trust the backend status first ─────────────────────────────
-          // The backend sets comp.status = "ended" / "live" / "upcoming" when
-          // all players submit early (before the clock runs out), or when the
-          // admin ends the competition manually. Recalculating only from the
-          // clock ignores that signal entirely.
-          //
-          // Priority:
-          //  1. If backend explicitly says "ended" / "ENDED"  → Ended
-          //  2. If backend explicitly says "live"   / "LIVE"   → Live
-          //  3. Fall back to time-based calculation for "upcoming" / unknown
-          // ────────────────────────────────────────────────────────────────────
-          let status;
-          const backendStatus = (comp.status || "").toLowerCase();
+        // Client-side status guard (clock may reclassify edge cases)
+        let filtered = formatted;
+        if (activeTab === "Live") filtered = formatted.filter((c) => c.status === "Live");
+        else if (activeTab === "Upcoming") filtered = formatted.filter((c) => c.status === "Upcoming");
+        else if (activeTab === "Ended") filtered = formatted.filter((c) => c.status === "Ended");
 
-          // Always derive status from the clock first — the backend can have
-          // stale "LIVE" entries whose end time has already passed.
-          if (now < startDate) {
-            status = "Upcoming";
-          } else if (now >= startDate && now <= endDate) {
-            // Within the time window — but if backend explicitly says ended, trust it
-            status = backendStatus === "ended" ? "Ended" : "Live";
-          } else {
-            // End time has passed — always Ended regardless of backend status
-            status = "Ended";
-          }
-
-          const durationMs = endDate - startDate;
-          const durationMins = Math.floor(durationMs / 60000);
-          const durationText =
-            durationMins > 60
-              ? `${Math.floor(durationMins / 60)}h ${durationMins % 60}m`
-              : `${durationMins}m`;
-
-          return {
-            id: comp._id,
-            _id: comp._id,
-            title: comp.name || comp.title || "Untitled Competition",
-            dateDisplay: `${formatDate(comp.startTime)} ${formatTime(comp.startTime)}`,
-            startDate: comp.startTime,
-            endDate: comp.endTime,
-            participants: comp.participantCount ?? comp.participants?.length ?? 0,
-            maxPlayers: comp.maxPlayers || 100,
-            status,
-            puzzlesCount: comp.puzzles?.length || 0,
-            durationText,
-            startTimeText: formatTime(comp.startTime),
-            startDateText: formatDate(comp.startTime),
-          };
-        });
-
-        // Client-side filter as a safety net (backend already filters by status,
-        // but the clock-based re-evaluation above may reclassify edge cases).
-        let filtered = formattedCompetitions;
-
-        if (activeTab === "Live") {
-          filtered = formattedCompetitions.filter((c) => c.status === "Live");
-        } else if (activeTab === "Upcoming") {
-          filtered = formattedCompetitions.filter((c) => c.status === "Upcoming");
-        } else if (activeTab === "Ended") {
-          filtered = formattedCompetitions.filter((c) => c.status === "Ended");
-        }
-        // "All" tab: show everything
-
-        const sorted = filtered.sort((a, b) => {
-          const statusOrder = { Live: 1, Upcoming: 2, Ended: 3 };
-          if (statusOrder[a.status] !== statusOrder[b.status]) {
-            return statusOrder[a.status] - statusOrder[b.status];
-          }
-
-          if (a.status === "Ended") {
-            // Latest ended competitions first (descending)
-            return new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate);
-          }
-          // Live and Upcoming: soonest start time first (ascending)
-          return new Date(a.startDate) - new Date(b.startDate);
-        });
-
+        const sorted = sortCompetitions(filtered);
         setCompetitions(sorted);
         setFilteredCompetitions(sorted);
 
-        // Update pagination metadata from backend response
         if (response.pagination) {
           setTotalPages(response.pagination.total || 1);
           setTotalRecords(response.pagination.totalRecords || sorted.length);
         } else {
-          // Fallback if backend doesn't return pagination metadata
           setTotalPages(1);
           setTotalRecords(sorted.length);
         }
@@ -193,7 +224,7 @@ function Dashboard({ isEvent = false }) {
     } finally {
       setLoading(false);
     }
-  }, [isEvent, currentPage, activeTab, searchQuery]);
+  }, [isEvent, currentPage, activeTab, searchQuery, formatComp]);
 
   useEffect(() => {
     fetchCompetitions();
@@ -208,25 +239,6 @@ function Dashboard({ isEvent = false }) {
 
   // Backend handles pagination, so we use the full filtered list
   const currentCompetitions = filteredCompetitions;
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "TBA";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   const getArenaIcon = (title, index) => {
     const icons = [
@@ -536,7 +548,7 @@ function Dashboard({ isEvent = false }) {
         )}
 
         {/* Pagination Controls */}
-        {!loading && !error && totalRecords > itemsPerPage && (
+        {!loading && !error && totalPages > 1 && (
           <div className={styles.pagination}>
             <button
               className={styles.pageBtn}
