@@ -532,6 +532,11 @@ function PuzzlePage({ isEvent = false }) {
               });
 
               console.log("Setting puzzle statuses from server:", statuses);
+              // Server is always the source of truth for statuses.
+              // We set server statuses first, then only pull board positions
+              // (not statuses) from localStorage — this prevents stale
+              // localStorage entries from making the submit button think
+              // a puzzle was attempted when the backend has no record of it.
               setPuzzleStatuses(statuses);
 
               // Restore board states from localStorage and merge with server data
@@ -542,19 +547,18 @@ function PuzzlePage({ isEvent = false }) {
                 if (savedState) {
                   try {
                     const parsed = JSON.parse(savedState);
-                    // Merge server statuses with localStorage statuses
-                    const mergedStatuses = {
-                      ...parsed.puzzleStatuses,
-                      ...statuses,
-                    };
-                    setPuzzleStatuses(mergedStatuses);
+                    // FIX: Server statuses always win — only restore board positions
+                    // from localStorage, never statuses. This prevents the case where
+                    // a background API call failed silently but localStorage still
+                    // shows the puzzle as done, unlocking the submit button incorrectly.
+                    setPuzzleStatuses(statuses); // server wins — do NOT spread parsed.puzzleStatuses
                     setPuzzleBoardStates(parsed.puzzleBoardStates || {});
                     console.log(
-                      "Merged puzzle statuses (server + localStorage):",
-                      mergedStatuses,
+                      "Puzzle statuses from server (localStorage statuses ignored):",
+                      statuses,
                     );
                     console.log(
-                      "Restored board states from localStorage:",
+                      "Restored board positions from localStorage:",
                       parsed.puzzleBoardStates,
                     );
                   } catch (e) {
@@ -976,62 +980,87 @@ function PuzzlePage({ isEvent = false }) {
 
     // --- BACKGROUND SUBMISSION ---
     if (competitionData) {
-      // Fire-and-forget promise
+      // Fire-and-forget promise with retry + revert on failure
       (async () => {
-        try {
-          // Always use live API for competitions to ensure immediate calculation in the race
-          if (isLiveRef.current || paramCompetitionId) {
-            const movesPlayed =
-              boardMoveHistory ||
-              puzzleBoardStates[currentPuzzle.id]?.moveHistory ||
-              [];
-            const res = isEvent
-              ? await liveEventAPI.submitSolution(
+        const MAX_RETRIES = 2;
+        let attempt = 0;
+        let res = null;
+
+        while (attempt <= MAX_RETRIES) {
+          try {
+            if (isLiveRef.current || paramCompetitionId) {
+              const movesPlayed =
+                boardMoveHistory ||
+                puzzleBoardStates[currentPuzzle.id]?.moveHistory ||
+                [];
+              res = isEvent
+                ? await liveEventAPI.submitSolution(
+                  competitionData._id,
+                  currentPuzzle.id,
+                  solutionToSend,
+                  timeTaken,
+                  null,
+                  movesPlayed,
+                )
+                : await liveCompetitionAPI.submitSolution(
+                  competitionData._id,
+                  currentPuzzle.id,
+                  solutionToSend,
+                  timeTaken,
+                  null,
+                  movesPlayed,
+                );
+            } else {
+              // Regular competition
+              res = await competitionAPI.submitSolution(
                 competitionData._id,
                 currentPuzzle.id,
                 solutionToSend,
                 timeTaken,
-                null,
-                movesPlayed,
-              )
-              : await liveCompetitionAPI.submitSolution(
-                competitionData._id,
-                currentPuzzle.id,
-                solutionToSend,
-                timeTaken,
-                null,
-                movesPlayed,
               );
-
-            if (res && res.success && res.scoreEarned) {
-              setScore((prev) => {
-                const newScore = prev + res.scoreEarned;
-                // Instantly sync to LiveCompetitionContext so PuzzleRacer updates
-                updateParticipant({
-                  puzzlesSolved: solvedCount + 1,
-                  score: newScore,
-                });
-                return newScore;
+            }
+            break; // success — exit retry loop
+          } catch (error) {
+            attempt++;
+            if (attempt > MAX_RETRIES) {
+              console.error(`[PuzzlePage] Solve submission failed after ${MAX_RETRIES + 1} attempts, reverting optimistic update for puzzle ${currentPuzzle.id}:`, error);
+              // FIX: Revert the optimistic UI update so the puzzle is not
+              // counted as done and the submit button stays locked.
+              setPuzzleStatuses((prev) => {
+                const next = { ...prev };
+                delete next[currentPuzzle.id];
+                return next;
               });
-            } else if (res && res.success === false) {
-              console.warn("Backend rejected correct solution:", res.message);
-              // Revert optimistic update could be placed here if strictly needed
+              setSolvedCount((prev) => Math.max(0, prev - 1));
+              toast.error("Connection issue — puzzle not saved. Please try again.", { duration: 4000 });
+              return;
             }
-          } else {
-            // Regular competition
-            const res = await competitionAPI.submitSolution(
-              competitionData._id,
-              currentPuzzle.id,
-              solutionToSend,
-              timeTaken,
-            );
-
-            if (res.points) {
-              setScore((prev) => prev + res.points);
-            }
+            // Wait before retrying (exponential backoff: 1s, 2s)
+            await new Promise((r) => setTimeout(r, 1000 * attempt));
           }
-        } catch (error) {
-          console.error("Background submission failed:", error);
+        }
+
+        if (res && res.success && res.scoreEarned) {
+          setScore((prev) => {
+            const newScore = prev + res.scoreEarned;
+            // Instantly sync to LiveCompetitionContext so PuzzleRacer updates
+            updateParticipant({
+              puzzlesSolved: solvedCount + 1,
+              score: newScore,
+            });
+            return newScore;
+          });
+        } else if (res && res.success === false) {
+          console.warn("[PuzzlePage] Backend rejected correct solution:", res.message);
+          // Backend rejected (e.g. already solved, competition ended) — revert optimistic update
+          setPuzzleStatuses((prev) => {
+            const next = { ...prev };
+            delete next[currentPuzzle.id];
+            return next;
+          });
+          setSolvedCount((prev) => Math.max(0, prev - 1));
+        } else if (res && res.points) {
+          setScore((prev) => prev + res.points);
         }
       })();
     } else {
@@ -1108,32 +1137,52 @@ function PuzzlePage({ isEvent = false }) {
     // Submit failed attempt to backend if it's a live competition
     if (competitionData && isLiveCompetition) {
       (async () => {
-        try {
-          // For illegal puzzles, send 'failed' string; for normal/kids send wrong move array
-          const isIllegalPuzzle = currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal';
-          const movesPlayed =
-            boardMoveHistory || puzzleBoardStates[puzzleId]?.moveHistory || [];
-          if (isEvent) {
-            await liveEventAPI.submitSolution(
-              competitionData._id,
-              currentPuzzle.id,
-              isIllegalPuzzle ? 'failed' : ["wrong", "move"],
-              timeTaken,
-              null,
-              movesPlayed,
-            );
-          } else {
-            await liveCompetitionAPI.submitSolution(
-              competitionData._id,
-              currentPuzzle.id,
-              isIllegalPuzzle ? 'failed' : ["wrong", "move"],
-              timeTaken,
-              null,
-              movesPlayed,
-            );
+        const MAX_RETRIES = 2;
+        let attempt = 0;
+
+        while (attempt <= MAX_RETRIES) {
+          try {
+            // For illegal puzzles, send 'failed' string; for normal/kids send wrong move array
+            const isIllegalPuzzle = currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal';
+            const movesPlayed =
+              boardMoveHistory || puzzleBoardStates[puzzleId]?.moveHistory || [];
+            if (isEvent) {
+              await liveEventAPI.submitSolution(
+                competitionData._id,
+                currentPuzzle.id,
+                isIllegalPuzzle ? 'failed' : ["wrong", "move"],
+                timeTaken,
+                null,
+                movesPlayed,
+              );
+            } else {
+              await liveCompetitionAPI.submitSolution(
+                competitionData._id,
+                currentPuzzle.id,
+                isIllegalPuzzle ? 'failed' : ["wrong", "move"],
+                timeTaken,
+                null,
+                movesPlayed,
+              );
+            }
+            break; // success — exit retry loop
+          } catch (error) {
+            attempt++;
+            if (attempt > MAX_RETRIES) {
+              console.error(`[PuzzlePage] Wrong-move submission failed after ${MAX_RETRIES + 1} attempts, reverting optimistic update for puzzle ${puzzleId}:`, error);
+              // FIX: Revert the optimistic "failed" status so the puzzle is
+              // not counted as attempted and the submit button stays locked.
+              setPuzzleStatuses((prev) => {
+                const next = { ...prev };
+                delete next[puzzleId];
+                return next;
+              });
+              toast.error("Connection issue — puzzle not saved. Please try again.", { duration: 4000 });
+              return;
+            }
+            // Wait before retrying (exponential backoff: 1s, 2s)
+            await new Promise((r) => setTimeout(r, 1000 * attempt));
           }
-        } catch (error) {
-          console.error("Failed to submit wrong move in background:", error);
         }
       })();
     }

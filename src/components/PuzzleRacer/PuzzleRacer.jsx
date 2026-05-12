@@ -88,8 +88,10 @@ const PuzzleRacer = ({
         if (isCurrentUser(p)) {
           return {
             ...p,
-            score: Math.max(p.score || 0, participant?.score || 0),
-            // Use local puzzle count as ground truth — avoids stale server value
+            // FIX: Use participant.score (confirmed by backend via updateParticipant)
+            // directly instead of Math.max which could pick a stale inflated value
+            // from a previous optimistic update that was never confirmed by the server.
+            score: participant?.score ?? p.score ?? 0,
             puzzlesSolved: Math.max(p.puzzlesSolved || 0, localSolvedCount),
           };
         }
