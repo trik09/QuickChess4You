@@ -80,6 +80,13 @@
   }
 }
 
+@media (min-width: 1600px) {
+  .analysisPage .body {
+    height: 100vh;
+    max-height: 92vh;
+  }
+}
+
 .leftColumn {
   flex-direction: column;
   flex-wrap: nowrap;
