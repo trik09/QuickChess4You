@@ -951,15 +951,16 @@
 /* MACBOOK VIEW  */
 @media (min-width: 1490px) and (max-width: 1700px) and (min-height: 900px) {
   .rightColumn {
-    max-height: 85%;
+    max-height: 72%;
   }
 
   .leftColumn {
-    max-height: 70%;
+    max-height: 72%;
   }
 
-
-
+  .competitionPage .rightColumn {
+    max-height: 85%;
+  }
 }
 
 .rightColumn>.navCard {
