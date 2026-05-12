@@ -1436,6 +1436,7 @@ function PuzzlePage({ isEvent = false }) {
                     </div>
                   </div>
 
+
                   {/* Puzzle Info Container (Unified Layout) */}
                   <div className={styles.puzzleInfoContainer}>
                     {/* Top Row: Title/Description (Full Width) */}
