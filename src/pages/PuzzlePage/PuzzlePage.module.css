@@ -72,7 +72,7 @@
   .body {
     /* background-color: palegoldenrod; */
     height: 100vh;
-    max-height: 86vh;
+    max-height: 82vh;
   }
 }
 
@@ -951,6 +951,7 @@
 
 .rightColumn>.navCard {
   height: 100%;
+  max-height: fit-content;
   padding: 6px;
   gap: 2px;
 }
