@@ -1293,6 +1293,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  width: fit-content;
 }
 
 .turnIcon {
@@ -1355,13 +1356,21 @@
   border-color: rgba(0, 0, 0, 0.08);
 }
 
+.capsuleWrapper {
+  display: flex;
+  /* background-color: red; */
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .puzzleMetaBottomRow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 5px;
   justify-content: center;
   height: fit-content;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .puzzleMetaBottomRow .metaIconWrapper {
@@ -1413,9 +1422,9 @@
 
 .illegalDiffBadge {
   display: inline-block;
-  margin-top: 6px;
+  /* margin-top: 6px; */
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -3068,12 +3077,14 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 30px;
-  padding: 8px 16px;
+  border-radius: 100px;
+  padding: 4px 14px;
+  height: fit-content;
   margin: 0px 0;
-  gap: 12px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: fit-content;
   width: fit-content;
 }
 
@@ -3085,7 +3096,8 @@
 .turnCapsuleInner {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
+  width: fit-content;
 }
 
 .turnIcon {
@@ -3101,7 +3113,7 @@
 }
 
 .turnText {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.5px;

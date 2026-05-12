@@ -1427,14 +1427,54 @@ function PuzzlePage({ isEvent = false }) {
               <div className={`${styles.premiumInfoCard} ${uColor === "w" ? styles.turnWhiteCard : styles.turnBlackCard}`}>
                 <div className={styles.premiumContent}>
                   {/* Turn Capsule (Top Row) */}
-                  <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
-                    <div className={styles.turnCapsuleInner}>
-                      <span className={styles.turnIcon}>
-                        <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
-                      </span>
-                      <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
+                  <div className={styles.capsuleWrapper}>
+                    <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
+                      <div className={styles.turnCapsuleInner}>
+                        <span className={styles.turnIcon}>
+                          <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
+                        </span>
+                        <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
+                      </div>
+                    </div>
+
+                    {/* -------------------- */}
+
+                    <div className={styles.puzzleMetaBottomRow}>
+                      {(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal') ? (
+                        <>
+                          {/* <div className={styles.metaIconWrapper}>
+                            <FaPuzzlePiece />
+                          </div> */}
+                          {currentPuzzle.difficulty && (
+                            <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty}`]}`}>
+                              {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className={styles.metaIconWrapper}>
+                            <FaChartBar />
+                          </div>
+                          <div className={styles.metaTextRow}>
+                            <div className={styles.metaText}>
+                              <span className={styles.metaLabel}>LEVEL</span>
+                              <span className={styles.metaValue}>{(currentPuzzle.level || 1)}/7</span>
+                            </div>
+                            <div className={styles.starsWrapper}>
+                              {[...Array(7)].map((_, i) => (
+                                <FaStar
+                                  key={i}
+                                  className={i < (currentPuzzle.level || 1) ? styles.starActive : styles.starInactive}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
+                  {/* ------------------------- */}
 
 
                   {/* Puzzle Info Container (Unified Layout) */}
@@ -1445,7 +1485,7 @@ function PuzzlePage({ isEvent = false }) {
                     </div>
 
                     {/* Bottom Row: Icon + Difficulty/Stats (Side-by-side) */}
-                    <div className={styles.puzzleMetaBottomRow}>
+                    {/* <div className={styles.puzzleMetaBottomRow}>
                       {(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal') ? (
                         <>
                           <div className={styles.metaIconWrapper}>
@@ -1478,7 +1518,7 @@ function PuzzlePage({ isEvent = false }) {
                           </div>
                         </>
                       )}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
