@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import LoginModal from '../../components/LoginModal/LoginModal';
 import styles from './LandingLayout.module.css';
@@ -9,14 +9,23 @@ const LandingLayout = () => {
     const [modalMode, setModalMode] = useState('login');
     const location = useLocation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
-        if (location.state?.openLogin) {
+        // Check if session expired
+        const sessionExpired = searchParams.get("reason") === "session_expired";
+        
+        if (sessionExpired) {
+            setModalMode('login');
+            setIsLoginModalOpen(true);
+            // Clear the query parameter
+            navigate(location.pathname, { replace: true });
+        } else if (location.state?.openLogin) {
             setIsLoginModalOpen(true);
             // Clear state to prevent reopening on reload
             navigate(location.pathname, { replace: true, state: {} });
         }
-    }, [location, navigate]);
+    }, [location, navigate, searchParams]);
 
     const handleLoginClick = () => {
         setModalMode('login');

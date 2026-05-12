@@ -28,7 +28,6 @@ function PuzzleList() {
   const [showPreview, setShowPreview] = useState(false);
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [deleteSelectedConfirm, setDeleteSelectedConfirm] = useState(false);
   const [selectedPuzzles, setSelectedPuzzles] = useState([]);
   const [validationResult, setValidationResult] = useState(null);
@@ -178,20 +177,25 @@ function PuzzleList() {
     reader.readAsText(file);
   };
 
-  const handleExport = async () => {
+  const handleExportSelected = async () => {
+    if (selectedPuzzles.length === 0) {
+      alert("Please select at least one puzzle to export.");
+      return;
+    }
+    
     try {
       setIsExporting(true);
-      const data = await adminAPI.exportPuzzles();
+      const data = await adminAPI.exportPuzzles(selectedPuzzles); // Export selected puzzles
       if (!data || data.length === 0) { alert("No puzzles to export."); return; }
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `puzzles_export_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `puzzles_export_selected_${selectedPuzzles.length}_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      alert("Failed to export puzzles: " + (error.message || 'Unknown error'));
+      alert("Failed to export selected puzzles: " + (error.message || 'Unknown error'));
     } finally {
       setIsExporting(false);
     }
@@ -207,21 +211,6 @@ function PuzzleList() {
       alert(err.message || 'Failed to delete puzzle');
     } finally {
       setDeleteConfirm(null);
-    }
-  };
-
-  const confirmDeleteAll = async () => {
-    try {
-      setIsLoading(true);
-      const result = await adminAPI.deleteAllPuzzles();
-      alert(result.message || 'All puzzles deleted successfully!');
-      setCurrentPage(1);
-      fetchPuzzles(1, searchTerm, filterCategory, filterDifficulty, filterLevel);
-    } catch (err) {
-      alert(err.message || 'Failed to delete all puzzles');
-    } finally {
-      setDeleteAllConfirm(false);
-      setIsLoading(false);
     }
   };
 
@@ -367,15 +356,16 @@ function PuzzleList() {
           <div className={styles.headerButtonGroup}>
             <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
             <IconButton icon={FaDownload} onClick={() => fileInputRef.current.click()} title={isImporting ? "Importing..." : "Import JSON"} variant="secondary" disabled={isImporting} />
-            <IconButton icon={FaUpload} onClick={handleExport} title={isExporting ? "Exporting..." : "Export JSON"} variant="secondary" disabled={isExporting} />
+            
+              <IconButton icon={FaUpload} onClick={handleExportSelected} title={`Export Selected (${selectedPuzzles.length})`} variant="secondary" disabled={isExporting} />
+            
             <Button size="small" variant="secondary" onClick={handleValidatePuzzles} disabled={isValidating}>
               {isValidating ? 'Validating...' : 'Validate'}
             </Button>
             <Button size="small" to="/admin/puzzles/create" icon={FaChess}>Create</Button>
-            {selectedPuzzles.length > 0 && (
+             
               <IconButton variant="danger" icon={FaTrash} onClick={() => setDeleteSelectedConfirm(true)} title={`Delete Selected (${selectedPuzzles.length})`} />
-            )}
-            <IconButton variant="danger" icon={FaTrash} onClick={() => setDeleteAllConfirm(true)} disabled={totalRecords === 0} title="Delete All" />
+            
           </div>
         </div>
       </div>
@@ -529,23 +519,6 @@ function PuzzleList() {
             <div className={styles.confirmActions}>
               <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
               <Button variant="danger" icon={FaTrash} onClick={confirmDelete}>Delete Puzzle</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete All */}
-      {deleteAllConfirm && (
-        <div className={styles.modal} onClick={() => setDeleteAllConfirm(false)}>
-          <div className={styles.confirmModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.confirmHeader}><FaTrash className={styles.dangerIcon} /><h3>Delete All Puzzles</h3></div>
-            <div className={styles.confirmBody}>
-              <p>Are you sure you want to delete <strong>ALL {totalRecords} puzzles</strong>?</p>
-              <p className={styles.warningText}>This action cannot be undone.</p>
-            </div>
-            <div className={styles.confirmActions}>
-              <Button variant="secondary" onClick={() => setDeleteAllConfirm(false)}>Cancel</Button>
-              <Button variant="danger" icon={FaTrash} onClick={confirmDeleteAll}>Delete All Puzzles</Button>
             </div>
           </div>
         </div>

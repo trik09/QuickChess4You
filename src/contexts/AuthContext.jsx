@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setToken(null);
       clearUserAuth();
-      navigate("/login?reason=session_expired");
+      navigate("/?reason=session_expired");
     };
 
     window.addEventListener("auth:expired", handleAuthExpired);

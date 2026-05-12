@@ -207,11 +207,12 @@ export const adminAPI = {
     }, adminToken);
   },
 
-  // Export puzzles
-  exportPuzzles: async () => {
+  // Export puzzles (all or selected)
+  exportPuzzles: async (puzzleIds = null) => {
     const adminToken = localStorage.getItem("atoken");
     return apiRequest("/puzzle/export-puzzles", {
-      method: "GET",
+      method: "POST",
+      body: JSON.stringify({ puzzleIds }),
     }, adminToken);
   },
 
