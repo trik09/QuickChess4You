@@ -71,7 +71,7 @@
 @media (min-width: 1200px) {
   .analysisPage .body {
     height: 100vh;
-    max-height: 82vh;
+    max-height: 85vh;
   }
 
   .competitionPage .body {
@@ -100,6 +100,9 @@
   width: 100%;
   /* height: fit-content; */
   margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .premiumTitle {
@@ -687,6 +690,7 @@
 }
 
 .statsGrid {
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
@@ -946,6 +950,12 @@
   height: 100%;
   max-height: 680px;
   justify-content: flex-start;
+}
+
+@media (min-width: 1300px) {
+  .rightColumn {
+    max-height: 700px;
+  }
 }
 
 /* MACBOOK VIEW  */
@@ -1213,7 +1223,7 @@
   width: 100%;
   /* background-color: #065f46; */
   height: 100%;
-  max-height: fit-content;
+  max-height: auto;
 }
 
 .typeWrapper {
@@ -1354,11 +1364,11 @@
 .puzzleInfoContainer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 10px;
+  /* background: rgba(0, 0, 0, 0.3); */
+  /* border-radius: 12px; */
+  padding: 10px;
+  /* border: 1px solid rgba(255, 255, 255, 0.05); */
   flex: 1;
   width: 100%;
   height: 100%;
@@ -1380,7 +1390,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 12px;
+  height: 100%;
+  gap: 8px;
 }
 
 .puzzleMetaBottomRow {
@@ -1389,7 +1400,7 @@
   gap: 5px;
   justify-content: center;
   height: fit-content;
-  /* width: 100%; */
+  width: 100%;
 }
 
 .puzzleMetaBottomRow .metaIconWrapper {
@@ -1404,7 +1415,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  width: 100%;
+  width: fit-content;
 }
 
 .puzzleTitleContainer {
@@ -1426,7 +1437,7 @@
 .puzzleTitleValue {
   font-size: 13px;
   font-weight: 500;
-  color: #fff;
+  color: #BABABA;
   line-height: 1.4;
   text-transform: none;
   letter-spacing: 0.5px;
@@ -3033,7 +3044,7 @@
   display: flex;
   position: relative;
   overflow: hidden;
-  min-height: 120px;
+  min-height: 130px;
   max-height: fit-content;
   transition: transform 0.3s ease;
   z-index: 1;
@@ -3075,7 +3086,7 @@
   gap: 10px;
   width: 100%;
   align-items: center;
-  height: 100%;
+  height: auto;
 }
 
 .typeWrapper {
@@ -3497,5 +3508,17 @@
   .userAttemptSection,
   .correctSolutionSection {
     max-height: 180px !important;
+  }
+}
+
+/* MacBook Spacing Fix */
+@media (min-width: 1200px) and (max-width: 1600px) {
+  .premiumInfoCard {
+    max-height: auto;
+  }
+
+  .solutionBox {
+    height: 100%;
+    min-height: 124px;
   }
 }
