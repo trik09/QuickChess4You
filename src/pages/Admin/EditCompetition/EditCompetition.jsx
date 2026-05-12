@@ -77,6 +77,15 @@ function EditCompetition() {
   // View State
   const [viewMode, setViewMode] = useState("library"); // 'library' or 'selected'
 
+  // Multi-select state for Assigned view bulk delete
+  // Must be declared AFTER viewMode so the useEffect dependency is valid
+  const [assignedSelected, setAssignedSelected] = useState(new Set()); // Set of puzzleIds
+
+  // Clear selection when chapter or view changes
+  useEffect(() => {
+    setAssignedSelected(new Set());
+  }, [activeChapterId, viewMode]);
+
   const [filters, setFilters] = useState({
     search: "",
     category: "all",
@@ -397,6 +406,37 @@ function EditCompetition() {
         return { ...ch, puzzleIds: [...ch.puzzleIds, ...toAdd] };
       }
     }));
+  };
+
+  // --- Assigned view: toggle a single puzzle in the multi-select set ---
+  const handleAssignedCheckbox = (puzzleId, e) => {
+    e.stopPropagation();
+    setAssignedSelected(prev => {
+      const next = new Set(prev);
+      next.has(puzzleId) ? next.delete(puzzleId) : next.add(puzzleId);
+      return next;
+    });
+  };
+
+  // --- Assigned view: select / deselect all visible puzzles ---
+  const handleAssignedSelectAll = () => {
+    if (assignedSelected.size === selectedPuzzles.length && selectedPuzzles.length > 0) {
+      setAssignedSelected(new Set());
+    } else {
+      setAssignedSelected(new Set(selectedPuzzles.map(p => p._id)));
+    }
+  };
+
+  // --- Assigned view: remove all checked puzzles from the active chapter ---
+  const handleBulkDeleteAssigned = () => {
+    if (assignedSelected.size === 0) return;
+    const count = assignedSelected.size;
+    setChapters(prev => prev.map(ch => {
+      if (ch.id !== activeChapterId) return ch;
+      return { ...ch, puzzleIds: ch.puzzleIds.filter(id => !assignedSelected.has(id)) };
+    }));
+    setAssignedSelected(new Set());
+    toast.success(`Removed ${count} puzzle${count !== 1 ? 's' : ''} from chapter`);
   };
 
   const handleSubmit = async (e) => {
@@ -736,6 +776,29 @@ function EditCompetition() {
               );
             })()}
 
+            {/* Bulk-delete action bar — only visible in Assigned view when rows are checked */}
+            {viewMode === 'selected' && assignedSelected.size > 0 && (
+              <div className={styles.bulkActionBar}>
+                <span className={styles.bulkActionCount}>
+                  {assignedSelected.size} puzzle{assignedSelected.size !== 1 ? 's' : ''} selected
+                </span>
+                <button
+                  type="button"
+                  className={styles.bulkDeleteBtn}
+                  onClick={handleBulkDeleteAssigned}
+                >
+                  <FaTrash /> Remove Selected
+                </button>
+                <button
+                  type="button"
+                  className={styles.bulkClearBtn}
+                  onClick={() => setAssignedSelected(new Set())}
+                >
+                  Clear Selection
+                </button>
+              </div>
+            )}
+
             {/* Data Table */}
             <div className={styles.tableWrapper}>
               <table className={styles.table}>
@@ -751,6 +814,18 @@ function EditCompetition() {
                           disabled={!activeChapterId}
                         >
                           {getSelectAllState() ? <FaCheckCircle /> : <div className={styles.emptyCheckbox} />}
+                        </button>
+                      )}
+                      {viewMode === 'selected' && selectedPuzzles.length > 0 && (
+                        <button
+                          type="button"
+                          className={styles.selectAllBtn}
+                          onClick={handleAssignedSelectAll}
+                          title={assignedSelected.size === selectedPuzzles.length ? "Deselect all" : "Select all"}
+                        >
+                          {assignedSelected.size === selectedPuzzles.length && selectedPuzzles.length > 0
+                            ? <FaCheckCircle />
+                            : <div className={styles.emptyCheckbox} />}
                         </button>
                       )}
                     </th>
@@ -791,8 +866,20 @@ function EditCompetition() {
                           className={`
                             ${isInActiveChapter ? styles.selectedRow : ''}
                             ${isInOtherChapter ? styles.disabledRow : ''}
+                            ${viewMode === 'selected' && assignedSelected.has(puzzle._id) ? styles.assignedCheckedRow : ''}
                           `}
-                          onClick={() => !isInOtherChapter && handlePuzzleToggle(puzzle)}
+                          onClick={() => {
+                            if (viewMode === 'selected') {
+                              // In assigned view, clicking the row toggles the checkbox
+                              setAssignedSelected(prev => {
+                                const next = new Set(prev);
+                                next.has(puzzle._id) ? next.delete(puzzle._id) : next.add(puzzle._id);
+                                return next;
+                              });
+                            } else if (!isInOtherChapter) {
+                              handlePuzzleToggle(puzzle);
+                            }
+                          }}
                           style={{ cursor: isInOtherChapter ? 'not-allowed' : 'pointer' }}
                         >
                           <td className={styles.checkCell}>
@@ -800,6 +887,14 @@ function EditCompetition() {
                               <div className={`${styles.checkbox} ${isInActiveChapter ? styles.checked : ''}`}
                                 style={isInActiveChapter ? { borderColor: chapterColor, color: chapterColor } : {}}>
                                 {isInActiveChapter && <FaCheckCircle />}
+                              </div>
+                            )}
+                            {viewMode === 'selected' && (
+                              <div
+                                className={`${styles.checkbox} ${assignedSelected.has(puzzle._id) ? styles.assignedChecked : ''}`}
+                                onClick={(e) => handleAssignedCheckbox(puzzle._id, e)}
+                              >
+                                {assignedSelected.has(puzzle._id) && <FaCheckCircle />}
                               </div>
                             )}
                           </td>
