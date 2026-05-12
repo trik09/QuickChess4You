@@ -1159,8 +1159,6 @@
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
   z-index: 1;
-  /* max-height: fit-content; */
-  max-height: 120px
 }
 
 [data-theme='light'] .premiumInfoCard {
@@ -1198,6 +1196,7 @@
   width: 100%;
   /* background-color: #065f46; */
   height: 100%;
+  max-height: fit-content;
 }
 
 .typeWrapper {
@@ -1348,7 +1347,7 @@
   /* background-color: pink; */
   justify-content: center;
   align-items: flex-start;
-  /* min-height: 150px; */
+  max-height: fit-content;
 }
 
 [data-theme='light'] .puzzleInfoContainer {
@@ -3012,6 +3011,7 @@
 
 @media (min-width: 1490px) {
   .premiumInfoCard {
+    min-height: fit-content;
     max-height: 150px;
   }
 }
