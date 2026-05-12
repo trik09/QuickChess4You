@@ -87,6 +87,7 @@
 .rankCard {
   flex: auto;
   width: 100%;
+  /* height: fit-content; */
   margin: 0;
 }
 
@@ -113,6 +114,7 @@
 .premiumInfoCard {
   padding: 6px;
   min-height: 160px;
+  max-height: fit-content;
 }
 
 .boardArea {
@@ -649,7 +651,7 @@
   flex-direction: column;
   gap: 10px;
   height: auto;
-  min-height: 140px;
+  min-height: fit-content;
   justify-content: center;
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
@@ -1359,9 +1361,11 @@
 .capsuleWrapper {
   display: flex;
   /* background-color: red; */
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  gap: 12px;
 }
 
 .puzzleMetaBottomRow {
@@ -3013,7 +3017,8 @@
   display: flex;
   position: relative;
   overflow: hidden;
-  min-height: 215px;
+  min-height: 120px;
+  max-height: fit-content;
   transition: transform 0.3s ease;
   z-index: 1;
 }
