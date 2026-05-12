@@ -1,4 +1,4 @@
-﻿/* ========================================
+/* ========================================
    ROOT PALETTE (Linked to Global Theme)
    ======================================== */
 :root {
@@ -69,10 +69,14 @@
 }
 
 @media (min-width: 1200px) {
-  .body {
-    /* background-color: palegoldenrod; */
+  .analysisPage .body {
     height: 100vh;
     max-height: 82vh;
+  }
+
+  .competitionPage .body {
+    height: 100vh;
+    max-height: 72vh;
   }
 }
 
