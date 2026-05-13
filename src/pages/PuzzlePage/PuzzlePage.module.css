@@ -1,4 +1,4 @@
-﻿/* ========================================
+/* ========================================
    ROOT PALETTE (Linked to Global Theme)
    ======================================== */
 :root {
@@ -68,6 +68,25 @@
   gap: 12px;
 }
 
+@media (min-width: 1200px) {
+  .analysisPage .body {
+    height: 100vh;
+    max-height: 85vh;
+  }
+
+  .competitionPage .body {
+    height: 100vh;
+    max-height: 72vh;
+  }
+}
+
+@media (min-width: 1600px) {
+  .analysisPage .body {
+    height: 100vh;
+    max-height: 92vh;
+  }
+}
+
 .leftColumn {
   flex-direction: column;
   flex-wrap: nowrap;
@@ -75,11 +94,22 @@
 }
 
 .statsCard,
-.premiumInfoCard,
 .rankCard {
   flex: auto;
   width: 100%;
   margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.premiumInfoCard {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .premiumTitle {
@@ -103,14 +133,15 @@
 }
 
 .premiumInfoCard {
-  padding: 6px;
-  min-height: 160px;
+  padding: 12px 6px;
+  min-height: 140px;
+  height: auto;
+  max-height: none;
 }
 
 .boardArea {
   height: auto;
   min-height: 300px;
-  /* background-color: red; */
 }
 
 .boardWrapper {
@@ -529,7 +560,7 @@
 }
 
 .competitionPage .chaptersWrap {
-  max-height: 224px;
+  max-height: 200px;
 }
 
 .chaptersWrap::-webkit-scrollbar {
@@ -642,11 +673,12 @@
   flex-direction: column;
   gap: 10px;
   height: auto;
-  min-height: 140px;
+  min-height: fit-content;
   justify-content: center;
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  max-height: fit-content;
 }
 
 [data-theme='light'] .statsCard {
@@ -666,6 +698,7 @@
 }
 
 .statsGrid {
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
@@ -748,6 +781,7 @@
   justify-content: space-between;
   padding: 6px 0;
   border-bottom: 1px solid var(--border-dim);
+  width: 100%;
 }
 
 .timerLabel {
@@ -923,12 +957,34 @@
   min-width: 0;
   overflow: hidden;
   height: 100%;
-  max-height: 100%;
+  max-height: 680px;
   justify-content: flex-start;
+}
+
+@media (min-width: 1300px) {
+  .rightColumn {
+    max-height: 700px;
+  }
+}
+
+/* MACBOOK VIEW  */
+@media (min-width: 1490px) and (max-width: 1700px) and (min-height: 900px) {
+  .rightColumn {
+    max-height: 72%;
+  }
+
+  .leftColumn {
+    max-height: 72%;
+  }
+
+  .competitionPage .rightColumn {
+    max-height: 85%;
+  }
 }
 
 .rightColumn>.navCard {
   height: 100%;
+  max-height: fit-content;
   padding: 6px;
   gap: 2px;
 }
@@ -1131,11 +1187,13 @@
 /* ── PREMIUM INFO CARD (unchanged) ── */
 .premiumInfoCard {
   border-radius: 20px;
-  padding: 6px;
+  padding: 12px 8px;
   display: flex;
   position: relative;
   overflow: hidden;
   min-height: 140px;
+  height: auto;
+  max-height: none;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
   z-index: 1;
@@ -1168,12 +1226,15 @@
 }
 
 .premiumContent {
-  flex: 1.2;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   z-index: 2;
   width: 100%;
+  height: auto;
+  min-height: 100%;
+  gap: 12px;
 }
 
 .typeWrapper {
@@ -1270,6 +1331,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  width: fit-content;
 }
 
 .turnIcon {
@@ -1313,14 +1375,12 @@
 .puzzleInfoContainer {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  flex: 1;
+  gap: 8px;
+  padding: 4px 10px;
   width: 100%;
-  height: 100%;
+  height: auto;
+  justify-content: center;
+  align-items: center;
 }
 
 [data-theme='light'] .puzzleInfoContainer {
@@ -1328,12 +1388,24 @@
   border-color: rgba(0, 0, 0, 0.08);
 }
 
+.capsuleWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  gap: 12px;
+}
+
 .puzzleMetaBottomRow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 5px;
   justify-content: center;
   height: fit-content;
+  width: 100%;
 }
 
 .puzzleMetaBottomRow .metaIconWrapper {
@@ -1348,7 +1420,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  width: 100%;
+  width: fit-content;
 }
 
 .puzzleTitleContainer {
@@ -1368,14 +1440,15 @@
 }
 
 .puzzleTitleValue {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #fff;
-  line-height: 1.4;
+  color: #BABABA;
+  line-height: 1.5;
   text-transform: none;
   letter-spacing: 0.5px;
   width: 100%;
   display: block;
+  text-align: center;
 }
 
 [data-theme='light'] .puzzleTitleValue {
@@ -1384,9 +1457,9 @@
 
 .illegalDiffBadge {
   display: inline-block;
-  margin-top: 6px;
+  /* margin-top: 6px; */
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1638,7 +1711,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   overflow: hidden;
   position: relative;
   gap: 0;
@@ -2001,7 +2074,7 @@
   background: radial-gradient(ellipse at 85% 50%, #111d33 0%, #0a1220 40%, #050a12 70%, #020408 100%);
   border: 1.5px solid rgba(201, 152, 42, 0.25);
   height: 150px;
-  margin-top: 4px;
+  margin-top: 0px;
   border-radius: 12px;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
@@ -2022,7 +2095,7 @@
 }
 
 .galaxySection :global(.solar-system-scene) {
-  min-height: 100px !important;
+  min-height: 120px !important;
   padding: 4px 0 !important;
 }
 
@@ -2060,6 +2133,7 @@
 
 .galaxySection :global(.sun-region) {
   width: 100px !important;
+  padding-bottom: 35px;
 }
 
 .galaxySection :global(.sun-body) {
@@ -2410,7 +2484,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
 }
 
 .galaxyOffLayout .boardWrapper {
@@ -2542,8 +2616,8 @@
     font-size: 0.95rem;
   }
 
-  .chaptersWrap {
-    max-height: 216px;
+  .competitionPage .chaptersWrap {
+    max-height: 165px;
     flex: 1;
   }
 
@@ -2638,8 +2712,8 @@
     gap: 4px;
   }
 
-  .chaptersWrap {
-    max-height: 192px;
+  .competitionPage .chaptersWrap {
+    max-height: 135px;
     flex: 1;
     gap: 5px;
   }
@@ -2786,8 +2860,8 @@
     font-size: 0.68rem;
   }
 
-  .chaptersWrap {
-    max-height: 188px;
+  .competitionPage .chaptersWrap {
+    max-height: 110px;
     flex: 1;
     gap: 4px;
   }
@@ -2858,7 +2932,7 @@
 
   .galaxySection {
     height: 120px;
-    margin-top: 4px;
+    margin-top: 0px;
   }
 
   .galaxySection :global(.puzzle-racer-container) {
@@ -2971,13 +3045,23 @@
 
 .premiumInfoCard {
   border-radius: 20px;
-  padding: 6px;
+  padding: 12px 8px;
   display: flex;
   position: relative;
   overflow: hidden;
   min-height: 140px;
+  height: auto;
+  max-height: none;
   transition: transform 0.3s ease;
   z-index: 1;
+}
+
+@media (min-width: 1490px) {
+  .premiumInfoCard {
+    min-height: 140px;
+    height: auto;
+    max-height: none;
+  }
 }
 
 .turnWhiteCard {
@@ -3001,14 +3085,15 @@
 }
 
 .premiumContent {
-  flex: 1.2;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   z-index: 2;
-  gap: 15px;
+  gap: 12px;
   width: 100%;
   align-items: center;
+  height: auto;
 }
 
 .typeWrapper {
@@ -3031,12 +3116,14 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 30px;
-  padding: 8px 16px;
+  border-radius: 100px;
+  padding: 4px 14px;
+  height: fit-content;
   margin: 0px 0;
-  gap: 12px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: fit-content;
   width: fit-content;
 }
 
@@ -3048,7 +3135,8 @@
 .turnCapsuleInner {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
+  width: fit-content;
 }
 
 .turnIcon {
@@ -3064,7 +3152,7 @@
 }
 
 .turnText {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.5px;
@@ -3427,5 +3515,17 @@
   .userAttemptSection,
   .correctSolutionSection {
     max-height: 180px !important;
+  }
+}
+
+/* MacBook Spacing Fix */
+@media (min-width: 1200px) and (max-width: 1600px) {
+  .premiumInfoCard {
+    max-height: auto;
+  }
+
+  .solutionBox {
+    height: 100%;
+    min-height: 124px;
   }
 }

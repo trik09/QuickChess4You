@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
     FaUser,
     FaChevronLeft,
@@ -26,6 +26,18 @@ const StudentLayout = () => {
     const { user, logout } = useAuth();
     const { darkMode, toggleTheme } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Auto-collapse sidebar on Live Competition or Analysis Screen entry for large screens (>= 1350px)
+    useEffect(() => {
+        const isTargetPage = location.pathname.includes('/competition/') || 
+                            location.pathname.includes('/tournament/') || 
+                            location.pathname.includes('/live-event/');
+        
+        if (isTargetPage && window.innerWidth >= 1350) {
+            setIsSidebarCollapsed(true);
+        }
+    }, [location.pathname, location.state]);
 
     const openSettings = () => setIsThemeModalOpen(true);
 

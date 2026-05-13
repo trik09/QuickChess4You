@@ -122,6 +122,7 @@ function PuzzlePage({ isEvent = false }) {
         title: p.title || `Puzzle ${index + 1}`,
         type: p.type === "kids" || p.type === "capture" ? "Capture" : p.title || "Puzzle",
         difficulty: p.difficulty || "medium",
+        category: p.category || "",
         puzzleType: p.type === "kids" ? "capture" : (p.type || "normal"),
         captureConfig: p.captureConfig || p.kidsConfig || null,
         illegalConfig: p.illegalConfig || null,
@@ -507,6 +508,7 @@ function PuzzlePage({ isEvent = false }) {
                 title: p.title || `Puzzle ${index + 1}`,
                 type: p.type === "kids" || p.type === "capture" ? "Capture" : (p.type || "Puzzle"),
                 difficulty: p.difficulty || "medium",
+                category: p.category || "",
                 description: p.description || "",
                 captureConfig: p.captureConfig || p.kidsConfig || null,
                 illegalConfig: p.illegalConfig || null,
@@ -710,6 +712,7 @@ function PuzzlePage({ isEvent = false }) {
             title: p.title || `Puzzle ${i + 1}`,
             type: p.type === 'kids' || p.type === 'capture' ? 'Capture' : (p.type || 'Puzzle'),
             description: p.description,
+            category: p.category || "",
             captureConfig: p.captureConfig || p.kidsConfig || null,
             illegalConfig: p.illegalConfig || null,
             puzzleType: p.type === 'kids' ? 'capture' : (p.type || 'normal'),
@@ -1517,31 +1520,34 @@ function PuzzlePage({ isEvent = false }) {
               <div className={`${styles.premiumInfoCard} ${uColor === "w" ? styles.turnWhiteCard : styles.turnBlackCard}`}>
                 <div className={styles.premiumContent}>
                   {/* Turn Capsule (Top Row) */}
-                  <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
-                    <div className={styles.turnCapsuleInner}>
-                      <span className={styles.turnIcon}>
-                        <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
-                      </span>
-                      <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
-                    </div>
-                  </div>
-
-                  {/* Puzzle Info Container (Unified Layout) */}
-                  <div className={styles.puzzleInfoContainer}>
-                    {/* Top Row: Title/Description (Full Width) */}
-                    <div className={styles.puzzleTitleValue}>
-                      {toSentenceCase(currentPuzzle.title) || (currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' ? `Challenge #${currentPuzzleIndex + 1}` : `Puzzle #${currentPuzzleIndex + 1}`)}
+                  <div className={styles.capsuleWrapper}>
+                    <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
+                      <div className={styles.turnCapsuleInner}>
+                        <span className={styles.turnIcon}>
+                          <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
+                        </span>
+                        <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
+                      </div>
                     </div>
 
-                    {/* Bottom Row: Icon + Difficulty/Stats (Side-by-side) */}
+                    {/* Conditional Title Section — Only for 'avoid illegal move' */}
+                    {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' && (
+                      <div className={styles.puzzleInfoContainer}>
+                        <div className={styles.puzzleTitleValue}>
+                          {toSentenceCase(currentPuzzle.title) || (currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' ? `Challenge #${currentPuzzleIndex + 1}` : `Puzzle #${currentPuzzleIndex + 1}`)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Metadata Row (Icon + Difficulty OR Level + Stars) */}
                     <div className={styles.puzzleMetaBottomRow}>
-                      {(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal') ? (
+                      {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' ? (
                         <>
                           <div className={styles.metaIconWrapper}>
                             <FaPuzzlePiece />
                           </div>
                           {currentPuzzle.difficulty && (
-                            <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty}`]}`}>
+                            <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty.toLowerCase()}`]}`}>
                               {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
                             </span>
                           )}
@@ -1569,6 +1575,11 @@ function PuzzlePage({ isEvent = false }) {
                       )}
                     </div>
                   </div>
+                  {/* ------------------------- */}
+
+
+                  {/* Puzzle Info Container (Unified Layout) - Only show if category is 'avoid illegal move' */}
+
                 </div>
 
                 {/* <div className={styles.premiumIllustration}>
