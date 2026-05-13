@@ -1440,60 +1440,24 @@ function PuzzlePage({ isEvent = false }) {
                       </div>
                     </div>
 
-                    {/* -------------------- */}
+                    {/* Conditional Title Section — Only for 'avoid illegal move' */}
                     {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' && (
                       <div className={styles.puzzleInfoContainer}>
-                        {/* Top Row: Title/Description (Full Width) */}
                         <div className={styles.puzzleTitleValue}>
                           {toSentenceCase(currentPuzzle.title) || (currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' ? `Challenge #${currentPuzzleIndex + 1}` : `Puzzle #${currentPuzzleIndex + 1}`)}
                         </div>
-
-                        {/* Bottom Row: Icon + Difficulty/Stats (Side-by-side) */}
-                        {/* <div className={styles.puzzleMetaBottomRow}>
-                        {(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal') ? (
-                          <>
-                            <div className={styles.metaIconWrapper}>
-                              <FaPuzzlePiece />
-                            </div>
-                            {currentPuzzle.difficulty && (
-                              <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty}`]}`}>
-                                {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <div className={styles.metaIconWrapper}>
-                              <FaChartBar />
-                            </div>
-                            <div className={styles.metaTextRow}>
-                              <div className={styles.metaText}>
-                                <span className={styles.metaLabel}>LEVEL</span>
-                                <span className={styles.metaValue}>{(currentPuzzle.level || 1)}/7</span>
-                              </div>
-                              <div className={styles.starsWrapper}>
-                                {[...Array(7)].map((_, i) => (
-                                  <FaStar
-                                    key={i}
-                                    className={i < (currentPuzzle.level || 1) ? styles.starActive : styles.starInactive}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div> */}
                       </div>
                     )}
 
+                    {/* Metadata Row (Icon + Difficulty OR Level + Stars) */}
                     <div className={styles.puzzleMetaBottomRow}>
-                      {(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal') ? (
+                      {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' ? (
                         <>
                           <div className={styles.metaIconWrapper}>
                             <FaPuzzlePiece />
                           </div>
                           {currentPuzzle.difficulty && (
-                            <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty}`]}`}>
+                            <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty.toLowerCase()}`]}`}>
                               {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
                             </span>
                           )}
