@@ -1132,6 +1132,7 @@
 .navArrow:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  /* cursor: not-allowed; */
 }
 
 .paginationInfo {
