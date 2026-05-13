@@ -1135,7 +1135,7 @@
 }
 
 .paginationInfo {
-  text-align: center;
+  text-align: left;
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -1867,6 +1867,7 @@
   font-weight: 700;
   color: var(--text-muted);
   margin-bottom: 8px;
+  display: none;
 }
 
 /* Solution / Review */
