@@ -70,24 +70,27 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // On app load: attempt a silent refresh so the user is never logged out
-  // as long as their refresh token cookie is still valid.
-  // Only runs if there's existing user data — avoids unnecessary calls on the login page.
+  // On app load: DON'T attempt refresh automatically
+  // With 7-day access tokens, the token in localStorage is likely still valid
+  // Only refresh when the token actually expires (handled by http.js interceptor)
+  // This prevents logout issues on hard refresh when refresh token cookies don't work
   useEffect(() => {
-    if (getUser()) {
-      refreshSession();
+    // Just verify we have user data, don't call refresh
+    // The token will be validated on the first API call
+    if (getUser() && getUserToken()) {
+      // User data exists, assume logged in
+      // Token will be validated by first API call
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Proactive refresh: re-run every 13 minutes so the 15-min access token
-  // never actually expires while the user is actively using the app.
-  // This is the "Flipkart-style never logout" — as long as the tab is open,
-  // the token stays fresh silently.
+  // Proactive refresh: refresh token periodically to keep it fresh
+  // With 7-day access tokens, we refresh every 6 days to ensure continuous sessions
+  // This only runs if the tab stays open
   useEffect(() => {
     if (!getUser()) return;
 
-    const REFRESH_INTERVAL_MS = 28 * 60 * 1000; // TEST: 1min (change back to 13 * 60 * 1000)
+    const REFRESH_INTERVAL_MS = 6 * 24 * 60 * 60 * 1000; // 6 days
     const interval = setInterval(() => {
       if (getUser()) {
         refreshSession();
