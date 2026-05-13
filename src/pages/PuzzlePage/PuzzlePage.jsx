@@ -1192,6 +1192,14 @@ function PuzzlePage({ isEvent = false }) {
   const handleSubmitCompetition = async () => {
     if (!competitionData || !isLiveCompetition) return;
 
+    // Extra validation: Check if all puzzles are attempted
+    const unattempted = getUnattemptedCount();
+    if (unattempted > 0) {
+      toast.error(`Please attempt all puzzles before submitting.`);
+      setShowSubmitModal(false);
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -1223,8 +1231,12 @@ function PuzzlePage({ isEvent = false }) {
   // Check if there are unsolved puzzles
   const getUnattemptedCount = () => {
     let count = 0;
+    const seenPuzzles = new Set(); // Prevent duplicate counting
     puzzles.forEach((p) => {
-      const pid = p.id || p._id;
+      const pid = (p.id || p._id).toString(); // Normalize to string
+      if (seenPuzzles.has(pid)) return; // Skip duplicates
+      seenPuzzles.add(pid);
+      
       if (
         puzzleStatuses[pid] !== "success" &&
         puzzleStatuses[pid] !== "failed"
@@ -1233,6 +1245,35 @@ function PuzzlePage({ isEvent = false }) {
       }
     });
     return count;
+  };
+
+  // Get attempted count (solved + failed)
+  const getAttemptedCount = () => {
+    const seenPuzzles = new Set();
+    let count = 0;
+    puzzles.forEach((p) => {
+      const pid = (p.id || p._id).toString();
+      if (seenPuzzles.has(pid)) return; // Skip duplicates
+      seenPuzzles.add(pid);
+      
+      if (
+        puzzleStatuses[pid] === "success" ||
+        puzzleStatuses[pid] === "failed"
+      ) {
+        count++;
+      }
+    });
+    return count;
+  };
+
+  // Get unique puzzle count
+  const getUniquePuzzleCount = () => {
+    const seenPuzzles = new Set();
+    puzzles.forEach((p) => {
+      const pid = (p.id || p._id).toString();
+      seenPuzzles.add(pid);
+    });
+    return seenPuzzles.size;
   };
 
   const currentPuzzle = puzzles[currentPuzzleIndex];
@@ -1439,7 +1480,7 @@ function PuzzlePage({ isEvent = false }) {
               <div className={styles.statsGrid}>
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Total</span>
-                  <span className={`${styles.statValue} ${styles.gold}`}>{puzzles.length - getUnattemptedCount() + getUnattemptedCount()} </span>
+                  <span className={`${styles.statValue} ${styles.gold}`}>{getUniquePuzzleCount()}</span>
                 </div>
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Solved</span>
@@ -1447,7 +1488,7 @@ function PuzzlePage({ isEvent = false }) {
                 </div>
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Attempted</span>
-                  <span className={styles.statValue}>{puzzles.length - getUnattemptedCount()}</span>
+                  <span className={styles.statValue}>{getAttemptedCount()}</span>
                 </div>
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Remaining</span>
