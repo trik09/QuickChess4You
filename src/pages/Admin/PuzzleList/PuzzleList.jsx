@@ -123,7 +123,17 @@ function PuzzleList() {
   const handleDelete = (puzzle) => setDeleteConfirm(puzzle);
 
   const handleSelectAll = (e) => {
-    setSelectedPuzzles(e.target.checked ? puzzles.map(p => p._id) : []);
+    const currentPageIds = puzzles.map(p => p._id);
+    if (e.target.checked) {
+      // Add all current page puzzles to selection (preserve selections from other pages)
+      setSelectedPuzzles(prev => {
+        const newIds = currentPageIds.filter(id => !prev.includes(id));
+        return [...prev, ...newIds];
+      });
+    } else {
+      // Remove all current page puzzles from selection (preserve selections from other pages)
+      setSelectedPuzzles(prev => prev.filter(id => !currentPageIds.includes(id)));
+    }
   };
   const handleSelectPuzzle = (id) => {
     setSelectedPuzzles(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -286,7 +296,7 @@ function PuzzleList() {
       key: 'select',
       label: (
         <input type="checkbox"
-          checked={puzzles.length > 0 && selectedPuzzles.length === puzzles.length}
+          checked={puzzles.length > 0 && puzzles.every(p => selectedPuzzles.includes(p._id))}
           onChange={handleSelectAll}
           title="Select all on this page"
         />
