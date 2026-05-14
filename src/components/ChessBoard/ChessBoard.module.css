@@ -103,6 +103,31 @@
   }
 }
 
+@media (min-width: 1450px) {
+  .board {
+    max-width: 600px;
+    max-height: 600px;
+  }
+
+  .boardWrapper {
+    max-width: 600px;
+    max-height: 600px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .board {
+    max-width: 740px;
+    max-height: 740px;
+  }
+
+  .boardWrapper {
+    max-width: 740px;
+    max-height: 740px;
+  }
+}
+
+
 /* .row {
   display: flex;
 } */

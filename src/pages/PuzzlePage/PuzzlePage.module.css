@@ -1990,7 +1990,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 6px;
   height: 38px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
@@ -2002,6 +2002,8 @@
   font-family: inherit;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .resetPuzzleBtn:hover {
@@ -2015,7 +2017,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 6px;
   height: 38px;
   border-radius: 8px;
   background: rgba(16, 185, 129, 0.12);
@@ -2028,6 +2030,8 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.5px;
   white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .viewSolBtn:hover {
@@ -3470,6 +3474,10 @@
   .correctSolutionSection {
     max-height: 180px !important;
   }
+
+  .leftColumn {
+    width: 100%;
+  }
 }
 
 /* MacBook Spacing Fix */
@@ -3505,6 +3513,10 @@
   .analysisPage .body {
     height: 100vh;
     max-height: 85vh;
+    /* background-color: lightblue; */
+    display: grid;
+    grid-template-columns: 24% 1fr 24%;
+    padding: 10px 0px;
   }
 
   .competitionPage .body {
@@ -3519,20 +3531,36 @@
     grid-template-columns: minmax(230px, 330px) 1fr minmax(260px, 310px);
     gap: 8px;
   }
+
+  .analysisPage .rightColumn {
+    /* background-color: lightblue; */
+    max-height: 550px;
+  }
 }
 
 /* MacBook View */
 @media (min-width: 1350px) {
   .rightColumn {
     max-height: 700px;
+    /* background-color: lightcoral; */
   }
 }
 
 @media (min-width: 1450px) {
 
   .competitionPage .body {
-    max-height: 70vh;
+    max-height: 75vh;
     /* background-color: lightcoral; */
+  }
+
+  .analysisPage .rightColumn {
+    /* background-color: lightcyan; */
+    max-height: 600px;
+  }
+
+  .analysisPage .rightColumn .navCard {
+    /* background-color: rgb(43, 134, 164); */
+    max-height: 100%;
   }
 }
 
@@ -3541,6 +3569,7 @@
 @media (min-width: 1500px) {
   .rightColumn {
     max-height: 100%;
+    /* background-color: #065f46; */
   }
 
   .leftColumn {
@@ -3562,6 +3591,11 @@
     max-height: 74vh;
     /* background-color: lightblue; */
   }
+
+  .analysisPage .rightColumn {
+    /* background-color: #111d33; */
+    max-height: 600px;
+  }
 }
 
 @media (min-width: 1650px) {
@@ -3574,7 +3608,7 @@
 @media (min-width: 1700px) {
   .competitionPage .body {
     height: 100vh;
-    max-height: 60vh;
+    max-height: 72vh;
     /* background-color: red; */
   }
 
@@ -3590,5 +3624,14 @@
     position: absolute;
     width: calc(100% - 24px);
     bottom: 12px;
+  }
+
+  .analysisPage .rightColumn {
+    /* background-color: #111d33; */
+    max-height: 740px;
+  }
+
+  .analysisPage .leftColumn {
+    max-height: 700px;
   }
 }
