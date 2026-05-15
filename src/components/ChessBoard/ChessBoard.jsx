@@ -492,11 +492,13 @@ function ChessBoard({
     feedback,
   ]);
 
-  // Cleanup effect for mouse event listeners
+  // Cleanup effect for mouse/touch event listeners
   useEffect(() => {
     return () => {
       document.removeEventListener("mousemove", mouseHandlersRef.current.move);
       document.removeEventListener("mouseup", mouseHandlersRef.current.up);
+      document.removeEventListener("touchmove", mouseHandlersRef.current.handleTouchMove);
+      document.removeEventListener("touchend", mouseHandlersRef.current.handleTouchEnd);
       if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
     };
   }, []);
@@ -1588,12 +1590,25 @@ function ChessBoard({
       }
     };
 
-    mouseHandlersRef.current.handleMouseMove = (e) => {
-      if (!boardRef.current || !wrapperRef.current) return;
+    // Helper: extract clientX/clientY from either a mouse or touch event
+    const getClientXY = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+      }
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+      }
+      return { clientX: e.clientX, clientY: e.clientY };
+    };
 
+    const handleDragMove = (e) => {
+      if (!boardRef.current || !wrapperRef.current) return;
+      if (e.cancelable) e.preventDefault(); // prevent scroll during drag
+
+      const { clientX, clientY } = getClientXY(e);
       const wrapperRect = wrapperRef.current.getBoundingClientRect();
-      const currentLogicalX = (e.clientX - wrapperRect.left) / scale;
-      const currentLogicalY = (e.clientY - wrapperRect.top) / scale;
+      const currentLogicalX = (clientX - wrapperRect.left) / scale;
+      const currentLogicalY = (clientY - wrapperRect.top) / scale;
 
       setDragPosition({
         x: currentLogicalX,
@@ -1603,8 +1618,8 @@ function ChessBoard({
       const rect = boardRef.current.getBoundingClientRect();
       const squareSize = rect.width / 8;
 
-      const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
-      const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+      const fileIndex = Math.floor((clientX - rect.left) / squareSize);
+      const rankIndex = Math.floor((clientY - rect.top) / squareSize);
 
       if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
         const currentFiles = userColor === "w" ? files : [...files].reverse();
@@ -1625,27 +1640,25 @@ function ChessBoard({
       }
     };
 
-    mouseHandlersRef.current.handleMouseUp = (e) => {
+    const handleDragEnd = (e) => {
       isMouseDownRef.current = false;
 
-      document.removeEventListener(
-        "mousemove",
-        mouseHandlersRef.current.handleMouseMove,
-      );
-      document.removeEventListener(
-        "mouseup",
-        mouseHandlersRef.current.handleMouseUp,
-      );
+      document.removeEventListener("mousemove", mouseHandlersRef.current.handleMouseMove);
+      document.removeEventListener("mouseup", mouseHandlersRef.current.handleMouseUp);
+      document.removeEventListener("touchmove", mouseHandlersRef.current.handleTouchMove);
+      document.removeEventListener("touchend", mouseHandlersRef.current.handleTouchEnd);
 
       const currentDraggedPiece = dragStateRef.current.draggedPiece;
       const currentPossibleMoves = dragStateRef.current.possibleMoves;
+
+      const { clientX, clientY } = getClientXY(e);
 
       let targetSquare = null;
       if (boardRef.current) {
         const rect = boardRef.current.getBoundingClientRect();
         const squareSize = rect.width / 8;
-        const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
-        const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+        const fileIndex = Math.floor((clientX - rect.left) / squareSize);
+        const rankIndex = Math.floor((clientY - rect.top) / squareSize);
 
         if (
           fileIndex >= 0 &&
@@ -1683,6 +1696,11 @@ function ChessBoard({
         setPossibleMoves([]);
       }
     };
+
+    mouseHandlersRef.current.handleMouseMove = handleDragMove;
+    mouseHandlersRef.current.handleMouseUp = handleDragEnd;
+    mouseHandlersRef.current.handleTouchMove = handleDragMove;
+    mouseHandlersRef.current.handleTouchEnd = handleDragEnd;
   }, [userColor, scale]);
 
   const startArrowDrag = (square, e) => {
@@ -1735,9 +1753,13 @@ function ChessBoard({
     );
     setPossibleMoves(movesToSquares);
 
+    // Support both mouse and touch events
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
-    const logicalX = (e.clientX - wrapperRect.left) / scale;
-    const logicalY = (e.clientY - wrapperRect.top) / scale;
+    const logicalX = (clientX - wrapperRect.left) / scale;
+    const logicalY = (clientY - wrapperRect.top) / scale;
     setDragPosition({
       x: logicalX,
       y: logicalY,
@@ -1753,6 +1775,7 @@ function ChessBoard({
     const offsetValue = (size / 2) / scale;
     setDragOffset({ x: offsetValue, y: offsetValue });
 
+    // Register mouse listeners
     document.addEventListener(
       "mousemove",
       mouseHandlersRef.current.handleMouseMove,
@@ -1761,6 +1784,18 @@ function ChessBoard({
     document.addEventListener(
       "mouseup",
       mouseHandlersRef.current.handleMouseUp,
+      { passive: false },
+    );
+
+    // Register touch listeners for mobile/tablet support
+    document.addEventListener(
+      "touchmove",
+      mouseHandlersRef.current.handleTouchMove,
+      { passive: false },
+    );
+    document.addEventListener(
+      "touchend",
+      mouseHandlersRef.current.handleTouchEnd,
       { passive: false },
     );
   };
@@ -2138,6 +2173,17 @@ function ChessBoard({
                         className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
                         draggable={false}
                         onMouseDown={(e) => handleMouseDown(e, square)}
+                        onTouchStart={(e) => {
+                          if (!interactiveRef.current) return;
+                          if (feedback === 'solved') return;
+                          const piece = getPiece(square);
+                          const activeColor = puzzleType === 'illegal' ? getIllegalActiveColor() : game.turn();
+                          if (!piece || piece.color !== activeColor) return;
+                          e.preventDefault(); // prevent scroll/zoom
+                          clearAnnotations();
+                          isMouseDownRef.current = true;
+                          startDrag(square, e);
+                        }}
                         style={{
                           cursor: interactiveRef.current && game.turn() === piece.color && feedback !== 'solved'
                             ? 'grab'
