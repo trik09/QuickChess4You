@@ -238,6 +238,7 @@ function ChessBoard({
   const [arrows, setArrows] = useState([]);
   const [circles, setCircles] = useState([]);
   const arrowDragStateRef = useRef({ isDrawing: false, startSquare: null, startX: 0, startY: 0, rafId: null });
+  const arrowColorRef = useRef("#43732F");
 
   // ─── Keep a ref to the latest `interactive` prop ─────────────────────────────
   // This ensures drag/click handlers always read the current value even if they
@@ -490,6 +491,36 @@ function ChessBoard({
     puzzleType,
     feedback,
   ]);
+
+  // Keyboard listener for arrow colors
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!arrowDragStateRef.current.isDrawing) return;
+
+      const key = e.key.toLowerCase();
+      let newColor = null;
+      let markerId = "arrowhead";
+
+      if (e.shiftKey) {
+        if (key === 'g') { newColor = "#43732F"; markerId = "arrowhead"; }
+        else if (key === 'r') { newColor = "#F44336"; markerId = "arrowhead-red"; }
+        else if (key === 'y') { newColor = "#FFEB3B"; markerId = "arrowhead-yellow"; }
+        else if (key === 'b') { newColor = "#2196F3"; markerId = "arrowhead-blue"; }
+      }
+
+      if (newColor) {
+        arrowColorRef.current = newColor;
+        const lineNode = document.getElementById("current-arrow-line");
+        if (lineNode) {
+          lineNode.setAttribute("stroke", newColor);
+          lineNode.setAttribute("marker-end", `url(#${markerId})`);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Cleanup effect for mouse event listeners
   useEffect(() => {
@@ -1441,6 +1472,7 @@ function ChessBoard({
 
   const [floatingSize, setFloatingSize] = useState(60);
 
+
   // Custom Mouse Drag Handlers
   useEffect(() => {
     mouseHandlersRef.current.arrowMove = (e) => {
@@ -1462,14 +1494,32 @@ function ChessBoard({
         const dy = rawY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
 
-        const lineNode = document.getElementById("current-arrow-line");
-        if (lineNode && length > 0) {
-          const ratio = Math.max(0, (length - 4.5)) / length;
-          const endX = startX + dx * ratio;
-          const endY = startY + dy * ratio;
+        // Determine current hover square to decide if we show the arrow
+        const squareSize = rect.width / 8;
+        const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
+        const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+        let hoverSquare = null;
+        if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
+          const currentFiles = userColor === "w" ? files : [...files].reverse();
+          const currentRanks = userColor === "w" ? ranks : [...ranks].reverse();
+          hoverSquare = getSquare(currentFiles[fileIndex], currentRanks[rankIndex]);
+        }
 
-          lineNode.setAttribute("x2", endX);
-          lineNode.setAttribute("y2", endY);
+        const isSameSquare = hoverSquare === arrowDragStateRef.current.startSquare;
+        const lineNode = document.getElementById("current-arrow-line");
+
+        if (lineNode) {
+          if (isSameSquare || length === 0) {
+            lineNode.setAttribute("opacity", "0");
+          } else {
+            const ratio = Math.max(0, (length - 4.5)) / length;
+            const endX = startX + dx * ratio;
+            const endY = startY + dy * ratio;
+
+            lineNode.setAttribute("x2", endX);
+            lineNode.setAttribute("y2", endY);
+            lineNode.setAttribute("opacity", "0.7");
+          }
         }
       });
     };
@@ -1508,7 +1558,11 @@ function ChessBoard({
           if (exists) {
             return prev.filter(a => !(a.from === arrowDragStateRef.current.startSquare && a.to === targetSquare));
           }
-          return [...prev, { from: arrowDragStateRef.current.startSquare, to: targetSquare }];
+          return [...prev, { 
+            from: arrowDragStateRef.current.startSquare, 
+            to: targetSquare, 
+            color: arrowColorRef.current 
+          }];
         });
       } else if (targetSquare === arrowDragStateRef.current.startSquare) {
         // Single right click on a square, toggle circle
@@ -1631,13 +1685,18 @@ function ChessBoard({
       rafId: null
     };
 
+    // Reset to default green for new drag
+    arrowColorRef.current = "#43732F";
+
     const lineNode = document.getElementById("current-arrow-line");
     if (lineNode) {
       lineNode.setAttribute("x1", center.x);
       lineNode.setAttribute("y1", center.y);
       lineNode.setAttribute("x2", center.x);
       lineNode.setAttribute("y2", center.y);
-      lineNode.setAttribute("opacity", "0.7");
+      lineNode.setAttribute("stroke", "#43732F");
+      lineNode.setAttribute("marker-end", "url(#arrowhead)");
+      lineNode.setAttribute("opacity", "0"); // Hide initially until we move to another square
     }
 
     document.addEventListener("mousemove", mouseHandlersRef.current.arrowMove, { passive: false });
@@ -1753,15 +1812,17 @@ function ChessBoard({
         }}
       >
         <defs>
-          <marker
-            id="arrowhead"
-            markerWidth="4"
-            markerHeight="4"
-            refX="2.5"
-            refY="2"
-            orient="auto"
-          >
+          <marker id="arrowhead" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
             <path d="M0,0 L4,2 L0,4 z" fill="#43732F" />
+          </marker>
+          <marker id="arrowhead-red" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
+            <path d="M0,0 L4,2 L0,4 z" fill="#F44336" />
+          </marker>
+          <marker id="arrowhead-yellow" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
+            <path d="M0,0 L4,2 L0,4 z" fill="#FFEB3B" />
+          </marker>
+          <marker id="arrowhead-blue" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
+            <path d="M0,0 L4,2 L0,4 z" fill="#2196F3" />
           </marker>
         </defs>
 
@@ -1806,10 +1867,15 @@ function ChessBoard({
 
           if (length === 0) return null;
 
-          // Shortening ratio adjusted for seamless marker connection
           const ratio = Math.max(0, (length - 3.5)) / length;
           const endX = start.x + dx * ratio;
           const endY = start.y + dy * ratio;
+
+          const color = arrow.color || "#43732F";
+          let markerId = "arrowhead";
+          if (color === "#F44336") markerId = "arrowhead-red";
+          else if (color === "#FFEB3B") markerId = "arrowhead-yellow";
+          else if (color === "#2196F3") markerId = "arrowhead-blue";
 
           return (
             <line
@@ -1818,11 +1884,11 @@ function ChessBoard({
               y1={start.y}
               x2={endX}
               y2={endY}
-              stroke="#43732F"
+              stroke={color}
               strokeWidth="1.8"
               strokeLinecap="round"
               opacity="0.7"
-              markerEnd="url(#arrowhead)"
+              markerEnd={`url(#${markerId})`}
             />
           );
         })}
