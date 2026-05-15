@@ -15,6 +15,7 @@ import whiteBishop from '../../../assets/pieces/whitebishop.svg';
 import whiteRook from '../../../assets/pieces/whiterook.svg';
 import whiteQueen from '../../../assets/pieces/whitequeen.svg';
 import whiteKing from '../../../assets/pieces/whiteking.svg';
+import updatedStar from "../../../assets/updated-star.svg";
 import blackPawn from '../../../assets/pieces/blackpawn.svg';
 import blackKnight from '../../../assets/pieces/blackknight.svg';
 import blackBishop from '../../../assets/pieces/blackbishop.svg';
@@ -127,15 +128,15 @@ function EditPuzzle() {
       setCaptureState({
         pieceType: config.piece || 'n',
         pieceColor: config.playerSide || puzzle.fen.split(' ')[1] || 'w',
-        playerPieces: config.playerPieces && config.playerPieces.length > 0 
-          ? config.playerPieces 
+        playerPieces: config.playerPieces && config.playerPieces.length > 0
+          ? config.playerPieces
           : (config.startSquare ? [{ square: config.startSquare, type: config.piece || 'n', color: config.playerSide || 'w' }] : []),
         targets: allTargets,
         targetType: 'pizza',
         maximumNoOfMoves: config.maximumNoOfMoves || 5
       });
     }
-    
+
     if (puzzle.type === 'illegal') {
       const conf = puzzle.illegalConfig || {};
       const side = conf.playerSide || puzzle.firstMoveBy || (puzzle.fen.split(' ')[1]) || 'w';
@@ -260,14 +261,14 @@ function EditPuzzle() {
     let blackKingExists = false;
 
     Object.entries(state).forEach(([sq, piece]) => {
-      try { 
-        chess.put({ type: piece.type, color: piece.color }, sq); 
-        usedSquares.push(sq); 
+      try {
+        chess.put({ type: piece.type, color: piece.color }, sq);
+        usedSquares.push(sq);
         if (piece.type === 'k') {
           if (piece.color === 'w') whiteKingExists = true;
           else blackKingExists = true;
         }
-      } catch (e) {}
+      } catch (e) { }
     });
 
     const corners = ['a1', 'h1', 'a8', 'h8'];
@@ -275,9 +276,9 @@ function EditPuzzle() {
       if (whiteKingExists && blackKingExists) break;
       if (!usedSquares.includes(corner)) {
         if (!whiteKingExists) {
-          try { chess.put({ type: 'k', color: 'w' }, corner); usedSquares.push(corner); whiteKingExists = true; } catch(e){}
+          try { chess.put({ type: 'k', color: 'w' }, corner); usedSquares.push(corner); whiteKingExists = true; } catch (e) { }
         } else if (!blackKingExists) {
-          try { chess.put({ type: 'k', color: 'b' }, corner); usedSquares.push(corner); blackKingExists = true; } catch(e){}
+          try { chess.put({ type: 'k', color: 'b' }, corner); usedSquares.push(corner); blackKingExists = true; } catch (e) { }
         }
       }
     }
@@ -408,7 +409,7 @@ function EditPuzzle() {
         }));
       }
     }
- else if (setupMode === 'manual') {
+    else if (setupMode === 'manual') {
       // Normal Mode Manual Setup
       if (type === 'piece') {
         const newEditorState = { ...editorState };
@@ -455,7 +456,7 @@ function EditPuzzle() {
         playerPieces: [...prev.playerPieces, { square, type: prev.pieceType, color: prev.pieceColor }]
       }));
     }
- else if (setupMode === 'manual') {
+    else if (setupMode === 'manual') {
       // Click to remove or select? For now simple click removal if piece exists?
       // Or specific behavior. Lichess allows click to select/place.
       // Let's implement click-to-delete for now if something is there, or handled by trash.
@@ -495,12 +496,12 @@ function EditPuzzle() {
     if (puzzleType === 'capture') {
       const chess = new Chess();
       chess.clear();
-      
+
       // Put player pieces
       captureState.playerPieces.forEach(p => {
         try {
           chess.put({ type: p.type, color: p.color }, p.square);
-        } catch (e) {}
+        } catch (e) { }
       });
 
       const targetColor = captureState.pieceColor === 'w' ? 'b' : 'w';
@@ -512,20 +513,20 @@ function EditPuzzle() {
       // Add phantom kings to valid FEN
       const boardSquares = [];
       for (let r = 1; r <= 8; r++) for (let f = 0; f < 8; f++) boardSquares.push(String.fromCharCode(97 + f) + r);
-      
+
       const occupied = [
         ...captureState.playerPieces.map(p => p.square),
         ...captureState.targets.map(t => t.square)
       ].filter(Boolean);
-      
+
       const corners = ['h8', 'a1', 'h1', 'a8', 'e1', 'e8'];
-      
+
       let whiteKingPos = corners.find(c => !occupied.includes(c));
       if (whiteKingPos) {
         chess.put({ type: 'k', color: 'w' }, whiteKingPos);
         occupied.push(whiteKingPos);
       }
-      
+
       let blackKingPos = corners.find(c => !occupied.includes(c));
       if (blackKingPos) chess.put({ type: 'k', color: 'b' }, blackKingPos);
 
@@ -668,11 +669,11 @@ function EditPuzzle() {
         parts[1] = firstMoveBy;
         chess.load(parts.join(' '));
       }
-      
+
       const moves = chess.moves({ verbose: true });
       const solutions = moves.map(m => m.san);
       setPossibleSolutions(solutions);
-      
+
       if (solutions.length === 0) {
         toast.error("No legal moves found! Is the king in checkmate or stalemate?");
       }
@@ -746,25 +747,34 @@ function EditPuzzle() {
               const sq = board[r] ? board[r][c] : null;
               const isLight = (r + c) % 2 === 0;
               let content = null;
-                if (puzzleType === 'capture') {
-                  const playerPiece = captureState.playerPieces.find(p => p.square === squareName);
-                  if (playerPiece) {
-                    content = <img src={getPieceImage(playerPiece.type, playerPiece.color)} className={styles.piece} alt="piece" draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', playerPiece.type, playerPiece.color, squareName)} style={{ cursor: 'grab' }} />;
-                  } else {
-                    const target = captureState.targets.find(t => t.square === squareName);
-                    if (target) {
-                      const icons = { pizza: '🍕', chocolate: '🍫', star: '⭐', burger: '🍔' };
-                      const icon = icons[target.item];
-                      if (icon) {
-                        content = <span style={{ fontSize: '32px', cursor: 'grab' }} draggable onDragStart={(e) => handlePaletteDragStart(e, 'target', target.item, null, squareName)}>{icon}</span>;
-                      } else {
-                        // Piece target
-                        const enemyColor = captureState.pieceColor === 'w' ? 'b' : 'w';
-                        content = <img src={getPieceImage(target.item, enemyColor)} className={styles.piece} alt="target" draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', target.item, enemyColor, squareName)} style={{ cursor: 'grab' }} />;
-                      }
+              if (puzzleType === 'capture') {
+                const playerPiece = captureState.playerPieces.find(p => p.square === squareName);
+                if (playerPiece) {
+                  content = <img src={getPieceImage(playerPiece.type, playerPiece.color)} className={styles.piece} alt="piece" draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', playerPiece.type, playerPiece.color, squareName)} style={{ cursor: 'grab' }} />;
+                } else {
+                  const target = captureState.targets.find(t => t.square === squareName);
+                  if (target) {
+                    const starIcon = <img src={updatedStar} alt="star" style={{ width: '32px', height: '32px' }} />;
+                    const icons = { pizza: '🍕', chocolate: '🍫', star: starIcon, '⭐': starIcon, burger: '🍔' };
+                    const icon = icons[target.item];
+                    if (icon) {
+                      content = (
+                        <div 
+                          style={{ cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                          draggable 
+                          onDragStart={(e) => handlePaletteDragStart(e, 'target', target.item, null, squareName)}
+                        >
+                          {icon}
+                        </div>
+                      );
+                    } else {
+                      // Piece target
+                      const enemyColor = captureState.pieceColor === 'w' ? 'b' : 'w';
+                      content = <img src={getPieceImage(target.item, enemyColor)} className={styles.piece} alt="target" draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', target.item, enemyColor, squareName)} style={{ cursor: 'grab' }} />;
                     }
                   }
-                } else if (setupMode === 'manual') {
+                }
+              } else if (setupMode === 'manual') {
                 const piece = editorState[squareName];
                 if (piece) content = <img src={getPieceImage(piece.type, piece.color)} className={styles.piece} alt={`${piece.color}${piece.type}`} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', piece.type, piece.color, squareName)} style={{ cursor: 'grab' }} />;
                 else if (sq) content = <img src={getPieceImage(sq.type, sq.color)} className={styles.piece} alt={`${sq.color}${sq.type}`} draggable onDragStart={(e) => handlePaletteDragStart(e, 'piece', sq.type, sq.color, squareName)} style={{ cursor: 'grab' }} />; // Fallback if switching modes
@@ -828,13 +838,13 @@ function EditPuzzle() {
                   {/* STEP 1: PLAYER PIECE */}
                   <div className={styles.selectionStep}>
                     <h4 className={styles.stepTitle}><span>1</span> Select Player Piece</h4>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                       <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '500' }}>Choose Color:</span>
                       <div className={styles.colorToggle}>
-                        <div className={`${styles.colorBtn} ${styles.white} ${captureState.pieceColor === 'w' ? styles.selected : ''}`} 
+                        <div className={`${styles.colorBtn} ${styles.white} ${captureState.pieceColor === 'w' ? styles.selected : ''}`}
                           onClick={() => setCaptureState({ ...captureState, pieceColor: 'w' })} title="White Piece" />
-                        <div className={`${styles.colorBtn} ${styles.black} ${captureState.pieceColor === 'b' ? styles.selected : ''}`} 
+                        <div className={`${styles.colorBtn} ${styles.black} ${captureState.pieceColor === 'b' ? styles.selected : ''}`}
                           onClick={() => setCaptureState({ ...captureState, pieceColor: 'b' })} title="Black Piece" />
                       </div>
                     </div>
@@ -853,12 +863,12 @@ function EditPuzzle() {
                   {/* STEP 2: TARGETS */}
                   <div className={styles.selectionStep}>
                     <h4 className={styles.stepTitle}><span>2</span> Select Targets (Objects or Pieces)</h4>
-                    
+
                     <div className={styles.targetGrid}>
                       {[
                         { id: 'pizza', icon: '🍕' },
                         { id: 'chocolate', icon: '🍫' },
-                        { id: 'star', icon: '⭐' },
+                        { id: 'star', icon: <img src={updatedStar} alt="star" style={{ width: '32px', height: '32px' }} /> },
                         { id: 'burger', icon: '🍔' }
                       ].map(item => (
                         <div key={item.id} draggable onDragStart={(e) => handlePaletteDragStart(e, 'target', item.id)}
@@ -871,7 +881,7 @@ function EditPuzzle() {
                       {['p', 'n', 'b', 'r', 'q'].map(p => {
                         const enemyColor = captureState.pieceColor === 'w' ? 'b' : 'w';
                         return (
-                          <div key={`enemy${p}`} className={styles.pieceOption} draggable 
+                          <div key={`enemy${p}`} className={styles.pieceOption} draggable
                             onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, enemyColor)}>
                             <img src={getPieceImage(p, enemyColor)} alt="" />
                           </div>
@@ -1006,23 +1016,23 @@ function EditPuzzle() {
                     <textarea rows="2" value={formData.fen} onChange={(e) => handleFENChange(e.target.value)} required={setupMode === 'fen'} />
                   </div>
                 )}
-                  {/* Palette moved to right preview section */}
+                {/* Palette moved to right preview section */}
 
                 {/* Illegal Move Controls */}
                 {puzzleType === 'illegal' && (
                   <div className={`${styles.formGroup} ${styles.fullWidth}`} style={{ marginTop: '20px' }}>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={calculatePossibleSolutions}
                       className={styles.viewSolutionsBtn}
                       disabled={isCalculatingSolutions}
-                      style={{ 
-                        width: '100%', 
-                        padding: '12px', 
-                        background: '#4a5568', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '10px', 
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#4a5568',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -1035,25 +1045,25 @@ function EditPuzzle() {
                     >
                       <FaLightbulb /> {isCalculatingSolutions ? 'Calculating...' : 'View Possible Solutions (Legal Moves)'}
                     </button>
-                    
+
                     {possibleSolutions.length > 0 && (
-                      <div className={styles.solutionsList} style={{ 
-                        marginTop: '15px', 
-                        padding: '16px', 
-                        background: '#f8f9fa', 
-                        borderRadius: '10px', 
-                        border: '1px solid #eaeaea' 
+                      <div className={styles.solutionsList} style={{
+                        marginTop: '15px',
+                        padding: '16px',
+                        background: '#f8f9fa',
+                        borderRadius: '10px',
+                        border: '1px solid #eaeaea'
                       }}>
                         <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#4a5568', display: 'block', marginBottom: '10px' }}>
                           Legal Moves ({possibleSolutions.length}):
                         </span>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                           {possibleSolutions.map((sol, idx) => (
-                            <span key={idx} style={{ 
-                              padding: '4px 10px', 
-                              background: '#f0f4f8', 
-                              color: '#2b6cb0', 
-                              borderRadius: '6px', 
+                            <span key={idx} style={{
+                              padding: '4px 10px',
+                              background: '#f0f4f8',
+                              color: '#2b6cb0',
+                              borderRadius: '6px',
                               fontSize: '0.9rem',
                               border: '1px solid #bee3f8'
                             }}>{sol}</span>
@@ -1193,23 +1203,23 @@ function EditPuzzle() {
           {!isTestMode && setupMode === 'manual' && (
             <div className={`${styles.editorPalette} ${styles.fullWidth}`} style={{ marginBottom: '15px' }}>
               <p className={styles.instruction} style={{ marginBottom: '10px' }}>
-                <strong>Click</strong> a piece below to select it, then <strong>click</strong> squares on the board to place it. <br/>
+                <strong>Click</strong> a piece below to select it, then <strong>click</strong> squares on the board to place it. <br />
                 Or freely drag and drop items.
               </p>
               <div className={styles.paletteRow} style={{ justifyContent: 'center' }}>
                 {['k', 'q', 'r', 'b', 'n', 'p'].map(p => {
                   const isActive = activePaletteItem?.pieceType === p && activePaletteItem?.pieceColor === 'w';
                   return (
-                    <div 
-                      key={`w${p}`} 
-                      className={styles.pieceOption} 
-                      style={{ 
-                        border: isActive ? '2px solid #3182ce' : '2px solid transparent', 
+                    <div
+                      key={`w${p}`}
+                      className={styles.pieceOption}
+                      style={{
+                        border: isActive ? '2px solid #3182ce' : '2px solid transparent',
                         background: isActive ? '#ebf8ff' : 'transparent',
                         borderRadius: '6px',
                         cursor: 'pointer'
                       }}
-                      draggable 
+                      draggable
                       onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, 'w')}
                       onClick={() => setActivePaletteItem({ type: 'piece', pieceType: p, pieceColor: 'w' })}
                     >
@@ -1222,16 +1232,16 @@ function EditPuzzle() {
                 {['k', 'q', 'r', 'b', 'n', 'p'].map(p => {
                   const isActive = activePaletteItem?.pieceType === p && activePaletteItem?.pieceColor === 'b';
                   return (
-                    <div 
-                      key={`b${p}`} 
-                      className={styles.pieceOption} 
-                      style={{ 
-                        border: isActive ? '2px solid #3182ce' : '2px solid transparent', 
+                    <div
+                      key={`b${p}`}
+                      className={styles.pieceOption}
+                      style={{
+                        border: isActive ? '2px solid #3182ce' : '2px solid transparent',
                         background: isActive ? '#ebf8ff' : 'transparent',
                         borderRadius: '6px',
                         cursor: 'pointer'
                       }}
-                      draggable 
+                      draggable
                       onDragStart={(e) => handlePaletteDragStart(e, 'piece', p, 'b')}
                       onClick={() => setActivePaletteItem({ type: 'piece', pieceType: p, pieceColor: 'b' })}
                     >
@@ -1239,14 +1249,14 @@ function EditPuzzle() {
                     </div>
                   )
                 })}
-                <div 
-                  className={styles.trashOption} 
+                <div
+                  className={styles.trashOption}
                   style={{
                     border: activePaletteItem?.type === 'trash' ? '2px solid #e53e3e' : '2px solid transparent',
                     background: activePaletteItem?.type === 'trash' ? '#fff5f5' : 'transparent',
                     cursor: 'pointer'
                   }}
-                  draggable 
+                  draggable
                   onDragStart={(e) => handlePaletteDragStart(e, 'trash', 'trash', null)}
                   onClick={() => setActivePaletteItem({ type: 'trash' })}
                 >
@@ -1273,7 +1283,7 @@ function EditPuzzle() {
                 isFailed={testStatus === 'failed'}
                 onPuzzleSolved={() => setTestStatus('solved')}
                 onWrongMove={() => setTestStatus('failed')}
-                onMoveMade={() => {}}
+                onMoveMade={() => { }}
                 type={puzzleType}
                 puzzleType={puzzleType}
                 captureConfig={puzzleType === 'capture' ? {
@@ -1307,8 +1317,8 @@ function EditPuzzle() {
                 {testStatus === 'failed' && '❌ Illegal Move!'}
               </div>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                <button type="button" title="Reset Test" onClick={() => { setTestBoardKey(k => k + 1); setTestStatus('playing'); }} style={{ padding: '6px 12px', background: '#fff', color: '#4a5568', border: '1px solid #cbd5e0', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', display: 'flex', alignItems: 'center' }}><FaUndo style={{ marginRight: '6px', fontSize: '0.85em' }}/> Reset Test</button>
-                <button type="button" title="Exit Test" onClick={() => { setIsTestMode(false); setTestStatus('playing'); }} style={{ padding: '6px 12px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', display: 'flex', alignItems: 'center' }}><FaTimes style={{ marginRight: '6px', fontSize: '0.85em' }}/> Exit Test</button>
+                <button type="button" title="Reset Test" onClick={() => { setTestBoardKey(k => k + 1); setTestStatus('playing'); }} style={{ padding: '6px 12px', background: '#fff', color: '#4a5568', border: '1px solid #cbd5e0', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', display: 'flex', alignItems: 'center' }}><FaUndo style={{ marginRight: '6px', fontSize: '0.85em' }} /> Reset Test</button>
+                <button type="button" title="Exit Test" onClick={() => { setIsTestMode(false); setTestStatus('playing'); }} style={{ padding: '6px 12px', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', display: 'flex', alignItems: 'center' }}><FaTimes style={{ marginRight: '6px', fontSize: '0.85em' }} /> Exit Test</button>
               </div>
             </div>
           )}
