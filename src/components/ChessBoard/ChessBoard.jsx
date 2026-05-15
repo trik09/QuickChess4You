@@ -1509,16 +1509,30 @@ function ChessBoard({
         const lineNode = document.getElementById("current-arrow-line");
 
         if (lineNode) {
-          if (isSameSquare || length === 0) {
+          if (isSameSquare || !hoverSquare) {
             lineNode.setAttribute("opacity", "0");
           } else {
-            const ratio = Math.max(0, (length - 4.5)) / length;
-            const endX = startX + dx * ratio;
-            const endY = startY + dy * ratio;
+            // SNAP TO CENTER: Instead of raw mouse coords, use target square center
+            const targetCenter = getSquareCenter(hoverSquare);
+            const startX = arrowDragStateRef.current.startX;
+            const startY = arrowDragStateRef.current.startY;
 
-            lineNode.setAttribute("x2", endX);
-            lineNode.setAttribute("y2", endY);
-            lineNode.setAttribute("opacity", "0.7");
+            const snapDx = targetCenter.x - startX;
+            const snapDy = targetCenter.y - startY;
+            const snapLength = Math.sqrt(snapDx * snapDx + snapDy * snapDy);
+
+            if (snapLength === 0) {
+              lineNode.setAttribute("opacity", "0");
+            } else {
+              // Shortening ratio adjusted for seamless marker connection at center
+              const ratio = Math.max(0, (snapLength - 3.5)) / snapLength;
+              const endX = startX + snapDx * ratio;
+              const endY = startY + snapDy * ratio;
+
+              lineNode.setAttribute("x2", endX);
+              lineNode.setAttribute("y2", endY);
+              lineNode.setAttribute("opacity", "0.7");
+            }
           }
         }
       });
