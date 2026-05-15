@@ -1,4 +1,4 @@
-﻿/* ========================================
+/* ========================================
    ROOT PALETTE (Linked to Global Theme)
    ======================================== */
 :root {
@@ -68,24 +68,6 @@
   gap: 12px;
 }
 
-@media (min-width: 1200px) {
-  .analysisPage .body {
-    height: 100vh;
-    max-height: 85vh;
-  }
-
-  .competitionPage .body {
-    height: 100vh;
-    max-height: 72vh;
-  }
-}
-
-@media (min-width: 1600px) {
-  .analysisPage .body {
-    height: 100vh;
-    max-height: 92vh;
-  }
-}
 
 .leftColumn {
   flex-direction: column;
@@ -966,26 +948,7 @@
   justify-content: flex-start;
 }
 
-@media (min-width: 1300px) {
-  .rightColumn {
-    max-height: 700px;
-  }
-}
 
-/* MACBOOK VIEW  */
-@media (min-width: 1490px) and (max-width: 1700px) and (min-height: 900px) {
-  .rightColumn {
-    max-height: 72%;
-  }
-
-  .leftColumn {
-    max-height: 72%;
-  }
-
-  .competitionPage .rightColumn {
-    max-height: 85%;
-  }
-}
 
 .rightColumn>.navCard {
   height: 100%;
@@ -2027,7 +1990,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 6px;
   height: 38px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
@@ -2039,6 +2002,8 @@
   font-family: inherit;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .resetPuzzleBtn:hover {
@@ -2052,7 +2017,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 6px;
   height: 38px;
   border-radius: 8px;
   background: rgba(16, 185, 129, 0.12);
@@ -2065,6 +2030,8 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: 0.5px;
   white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .viewSolBtn:hover {
@@ -2419,16 +2386,6 @@
   }
 }
 
-/* ========================================
-   DESKTOP (wide) – min-width: 1281px
-   (original default, >1280px)
-   ======================================== */
-@media (min-width: 1281px) {
-  .body {
-    grid-template-columns: minmax(230px, 330px) 1fr minmax(260px, 310px);
-    gap: 8px;
-  }
-}
 
 /* ─── GALAXY OFF LAYOUT (global modifier, unchanged) ─── */
 .galaxyOffLayout {
@@ -3063,13 +3020,7 @@
   z-index: 1;
 }
 
-@media (min-width: 1490px) {
-  .premiumInfoCard {
-    min-height: auto;
-    height: auto;
-    max-height: none;
-  }
-}
+
 
 .turnWhiteCard {
   background: #5e412b;
@@ -3523,6 +3474,10 @@
   .correctSolutionSection {
     max-height: 180px !important;
   }
+
+  .leftColumn {
+    width: 100%;
+  }
 }
 
 /* MacBook Spacing Fix */
@@ -3534,5 +3489,281 @@
   .solutionBox {
     height: 100%;
     min-height: 124px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Most Windows Laptops Fix */
+@media (min-width: 1200px) {
+  .analysisPage .body {
+    height: 100vh;
+    max-height: 85vh;
+    /* background-color: lightblue; */
+    display: grid;
+    grid-template-columns: 24% 1fr 24%;
+    padding: 10px 0px;
+  }
+
+  .competitionPage .body {
+    height: 100vh;
+    max-height: 72vh;
+    /* background-color: lightblue; */
+    display: grid;
+    grid-template-columns: 25% 1fr 25%;
+  }
+
+  .body {
+    grid-template-columns: minmax(230px, 330px) 1fr minmax(260px, 310px);
+    gap: 8px;
+  }
+
+  .analysisPage .rightColumn {
+    /* background-color: lightblue; */
+    max-height: 550px;
+  }
+
+  .competitionPage .rightColumn {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .navCard {
+    flex: 0 0 auto;
+    height: fit-content;
+  }
+
+  .competitionPage .rightColumn .chaptersBox {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .chaptersWrap {
+    height: 100%;
+    max-height: none;
+  }
+
+  .rightColumn {
+    gap: 12px;
+  }
+}
+
+/* MacBook View */
+@media (min-width: 1350px) {
+
+  .competitionPage .rightColumn {
+    display: flex;
+    flex-direction: column;
+    max-height: 550px;
+  }
+
+  .competitionPage .rightColumn .navCard {
+    flex: 0 0 auto;
+    height: fit-content;
+  }
+
+  .competitionPage .rightColumn .chaptersBox {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .chaptersWrap {
+    height: 100%;
+    max-height: none;
+  }
+}
+
+@media (min-width: 1450px) {
+
+  .competitionPage .body {
+    max-height: 75vh;
+    /* background-color: lightcoral; */
+  }
+
+  .analysisPage .rightColumn {
+    /* background-color: lightcyan; */
+    max-height: 600px;
+  }
+
+  .analysisPage .rightColumn .navCard {
+    /* background-color: rgb(43, 134, 164); */
+    max-height: 100%;
+  }
+
+  .competitionPage .rightColumn {
+    display: flex;
+    flex-direction: column;
+    max-height: 596px;
+  }
+
+  .competitionPage .rightColumn .navCard {
+    flex: 0 0 auto;
+    height: fit-content;
+  }
+
+  .competitionPage .rightColumn .chaptersBox {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .chaptersWrap {
+    height: 100%;
+    max-height: none;
+  }
+}
+
+
+/* MacBook Pro Series  */
+@media (min-width: 1500px) {
+  .rightColumn {
+    max-height: 100%;
+    /* background-color: #065f46; */
+  }
+
+  .leftColumn {
+    max-height: 100%;
+    /* background-color: lightblue; */
+  }
+
+  .competitionPage .rightColumn {
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .navCard {
+    flex: 0 0 auto;
+    height: fit-content;
+  }
+
+  .competitionPage .rightColumn .chaptersBox {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .chaptersWrap {
+    height: 100%;
+    max-height: none;
+  }
+
+  .premiumInfoCard {
+    min-height: auto;
+    height: auto;
+    max-height: none;
+  }
+
+  .competitionPage .body {
+    max-height: 74vh;
+    /* background-color: lightblue; */
+  }
+
+  .analysisPage .rightColumn {
+    /* background-color: #111d33; */
+    max-height: 600px;
+  }
+}
+
+@media (min-width: 1650px) {
+  .analysisPage .body {
+    height: 100vh;
+    max-height: 92vh;
+  }
+
+  .competitionPage .rightColumn {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .navCard {
+    flex: 0 0 auto;
+    height: fit-content;
+  }
+
+  .competitionPage .rightColumn .chaptersBox {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .chaptersWrap {
+    height: 100%;
+    max-height: none;
+  }
+}
+
+@media (min-width: 1700px) {
+  .competitionPage .body {
+    height: 100vh;
+    max-height: 72vh;
+    /* background-color: red; */
+  }
+
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+  }
+
+  .galaxySection {
+    position: absolute;
+    width: calc(100% - 24px);
+    bottom: 12px;
+  }
+
+  .analysisPage .rightColumn {
+    /* background-color: #111d33; */
+    max-height: 740px;
+  }
+
+  .analysisPage .leftColumn {
+    max-height: 700px;
+  }
+
+  .competitionPage .rightColumn {
+    display: flex;
+    flex-direction: column;
+    max-height: 645px;
+  }
+
+  .competitionPage .rightColumn .navCard {
+    flex: 0 0 auto;
+    height: fit-content;
+  }
+
+  .competitionPage .rightColumn .chaptersBox {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .competitionPage .rightColumn .chaptersWrap {
+    height: 100%;
+    max-height: none;
   }
 }

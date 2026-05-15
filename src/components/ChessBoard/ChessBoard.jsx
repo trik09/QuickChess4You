@@ -1920,6 +1920,7 @@ function ChessBoard({
           overflow: 'hidden',
           position: 'relative'
         }}
+        className={styles.boardWrapper}
       >
         {feedback && (
           <div className={`${styles.feedback} ${styles[feedback]}`}>
