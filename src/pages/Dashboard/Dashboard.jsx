@@ -257,7 +257,13 @@ function Dashboard({ isEvent = false }) {
     return icons[iconIndex];
   };
 
-  const handleParticipate = (competition) => {
+  const handleParticipate = (competition, e) => {
+    // Prevent navigation if text is being selected
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+
     if (!isUserAuthenticated) {
       navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/event/${competition._id}/lobby` : `/competition/${competition._id}/lobby`)}`);
       return;
@@ -383,7 +389,7 @@ function Dashboard({ isEvent = false }) {
                   {currentCompetitions.map((comp, idx) => {
                     const arenaStyle = getArenaIcon(comp.title, idx);
                     return (
-                      <tr key={comp.id} onClick={() => handleParticipate(comp)} className={styles.tableRow}>
+                      <tr key={comp.id} onClick={(e) => handleParticipate(comp, e)} className={styles.tableRow}>
                         <td>
                           <div className={styles.arenaNameCell}>
                             <div className={styles.arenaIcon} style={{ backgroundColor: arenaStyle.bg, color: arenaStyle.color }}>
@@ -453,14 +459,14 @@ function Dashboard({ isEvent = false }) {
                             ) : comp.status === "Live" ? (
                               <button
                                 className={styles.modernJoinBtn}
-                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp); }}
+                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp, e); }}
                               >
                                 Join Now <FaChevronRight />
                               </button>
                             ) : (
                               <button
                                 className={styles.modernLobbyBtn}
-                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp); }}
+                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp, e); }}
                               >
                                 Enter Lobby <FaChevronRight />
                               </button>
@@ -479,7 +485,7 @@ function Dashboard({ isEvent = false }) {
                 <div
                   key={comp.id}
                   className={`${styles.card} ${styles[comp.status.toLowerCase()]}`}
-                  onClick={() => handleParticipate(comp)}
+                  onClick={(e) => handleParticipate(comp, e)}
                   onMouseEnter={() => comp.status !== 'Ended' && handlePrefetch(comp._id)}
                 >
                   <div className={styles.cardMain}>
