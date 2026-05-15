@@ -65,7 +65,8 @@ function CreatePuzzle() {
     pieceColor: 'w',
     playerPieces: [], // [{ square: 'e4', type: 'n', color: 'w' }]
     targets: [], // { square: 'e5', item: 'pizza' or 'p' }
-    targetType: 'pizza' // Current target type to place
+    targetType: 'pizza', // Current target type to place
+    maximumNoOfMoves: 5 // Default maximum moves allowed
   });
 
   const [setupMode, setSetupMode] = useState('fen'); // 'fen' | 'manual'
@@ -338,6 +339,9 @@ function CreatePuzzle() {
       if (captureState.playerPieces.length === 0 || captureState.targets.length === 0) {
         setApiError('Please configure the board properly.'); return;
       }
+      if (!captureState.maximumNoOfMoves || captureState.maximumNoOfMoves < 1) {
+        setApiError('Please specify the maximum number of moves (must be at least 1).'); return;
+      }
       const payload = {
         title: formData.title.trim(),
         fen: formData.fen.trim(),
@@ -352,7 +356,8 @@ function CreatePuzzle() {
           startSquare: captureState.playerPieces[0]?.square || '', // Maintain for compatibility
           playerPieces: captureState.playerPieces,
           targets: captureState.targets,
-          enemyPieces: []
+          enemyPieces: [],
+          maximumNoOfMoves: Number(captureState.maximumNoOfMoves)
         },
         level: Number(formData.level),
         rating: Number(formData.rating)
@@ -878,6 +883,86 @@ function CreatePuzzle() {
                     </div>
                     <p className={styles.instruction} style={{ marginTop: '12px' }}><small>Drag objects or enemy pieces to board.</small></p>
                   </div>
+                </div>
+
+                {/* STEP 3: MAXIMUM MOVES */}
+                <div className={styles.formGroup} style={{ 
+                  marginTop: '20px',
+                  backgroundColor: '#fff3cd', 
+                  padding: '20px', 
+                  borderRadius: '12px',
+                  border: '2px solid #ffc107'
+                }}>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontWeight: 'bold', 
+                    fontSize: '16px',
+                    color: '#333'
+                  }}>
+                    Maximum Number of Moves * 🎯
+                  </label>
+                  
+                  <p style={{ 
+                    margin: '0 0 15px', 
+                    fontSize: '14px', 
+                    color: '#666',
+                    lineHeight: '1.5'
+                  }}>
+                    Specify how many moves the player has to reach the destination and capture all targets.
+                    This creates a move constraint challenge for the puzzle.
+                  </p>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <input
+                      type="text"
+                      
+                      value={captureState.maximumNoOfMoves}
+                      onChange={(e) => setCaptureState(prev => ({ 
+                        ...prev, 
+                        maximumNoOfMoves: e.target.value
+                      }))}
+                      placeholder="Enter number of moves"
+                      style={{ 
+                        width: '150px', 
+                        padding: '12px', 
+                        borderRadius: '8px', 
+                        border: '2px solid #ffc107',
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                      }}
+                      required
+                    />
+                    <span style={{ fontSize: '14px', color: '#666', fontWeight: '500' }}>
+                      moves
+                    </span>
+                    
+                    {/* Visual indicator */}
+                    <div style={{ 
+                      marginLeft: 'auto',
+                      padding: '10px 16px',
+                      backgroundColor: captureState.maximumNoOfMoves ? '#4CAF50' : '#ccc',
+                      color: 'white',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      transition: 'background-color 0.3s'
+                    }}>
+                      {captureState.maximumNoOfMoves ? `${captureState.maximumNoOfMoves} Move${captureState.maximumNoOfMoves !== 1 ? 's' : ''}` : 'Not Set'}
+                    </div>
+                  </div>
+                  
+                  {/* Helper text */}
+                 { /*<div style={{ 
+                    marginTop: '12px', 
+                    padding: '10px', 
+                    backgroundColor: '#e3f2fd', 
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    color: '#1976d2'
+                  }}>
+                    💡 <strong>Tip:</strong> Lower values create harder puzzles. Consider the distance and obstacles when setting this value.
+                  </div> */ }
                 </div>
               </div>
             ) : puzzleType === 'illegal' ? (

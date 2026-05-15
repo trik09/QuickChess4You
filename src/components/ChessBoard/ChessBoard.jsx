@@ -215,6 +215,7 @@ function ChessBoard({
   const [promotionPending, setPromotionPending] = useState(null); // { from, to, color }
   const [capturedTargets, setCapturedTargets] = useState([]); // Array of captured squares
   const [captureTargets, setCaptureTargets] = useState([]);
+  const [captureMovesCount, setCaptureMovesCount] = useState(0); // Tracks moves used in capture puzzles
 
   // Tracked piece square for Source-Destination puzzles
   const [trackedSquare, setTrackedSquare] = useState(null); // Initial targets/pieces from config
@@ -289,6 +290,7 @@ function ChessBoard({
 
     // Initialize Capture Mode stuff
     setCapturedTargets([]);
+    setCaptureMovesCount(0);
     if (puzzleType === "capture" && captureConfig) {
       if (captureConfig.mode === 'objects') {
         setCaptureTargets(captureConfig.targets || []);
@@ -605,6 +607,7 @@ function ChessBoard({
       setPossibleMoves([]);
       setFeedback(null);
       setCapturedTargets([]);
+      setCaptureMovesCount(0);
     }, delay);
   };
 
@@ -1044,6 +1047,7 @@ function ChessBoard({
   const handleCaptureMove = (from, to) => {
     const playerColor = captureConfig?.playerSide || userColor;
     const mode = captureConfig?.mode || 'objects';
+    const maxMoves = captureConfig?.maximumNoOfMoves || null;
 
     // For Pieces mode, we use the "illegal" logic where moves into attacked squares are rejected
     if (mode === 'pieces') {
@@ -1103,8 +1107,10 @@ function ChessBoard({
       const nextGame = safeNewChess(nextFen);
       setGame(nextGame);
 
-      // Check win condition using the NEW Pieces logic
-      // No opponent pieces remaining
+      const newMovesCount = captureMovesCount + 1;
+      setCaptureMovesCount(newMovesCount);
+
+      // Check win condition using the NEW Pieces logic — no opponent pieces remaining
       const opponentPiecesRemain = Object.values(newPieces).some(p => p.color === opponentColor);
       if (!opponentPiecesRemain) {
         setTimeout(() => {
@@ -1112,6 +1118,31 @@ function ChessBoard({
           playSound('solved');
           if (onPuzzleSolved) onPuzzleSolved(undefined, newHistory);
         }, 300);
+        if (onBoardStateChangeRef.current) onBoardStateChangeRef.current(nextFen, newHistory);
+        return;
+      }
+
+      // Check if move limit exceeded without solving
+      if (maxMoves && newMovesCount >= maxMoves && opponentPiecesRemain) {
+        setTimeout(() => {
+          playSound('wrong');
+          setFeedback('wrong');
+          if (onWrongMove) onWrongMove(newHistory);
+          // Reset after showing feedback
+          setTimeout(() => {
+            const resetGame = safeNewChess(initialFen);
+            setGame(resetGame);
+            setMoveHistory([]);
+            setLastMove(null);
+            setSelectedSquare(null);
+            setPossibleMoves([]);
+            setFeedback(null);
+            setCapturedTargets([]);
+            setCaptureMovesCount(0);
+          }, 1200);
+        }, 300);
+        if (onBoardStateChangeRef.current) onBoardStateChangeRef.current(nextFen, newHistory);
+        return;
       }
 
       if (onBoardStateChangeRef.current) onBoardStateChangeRef.current(nextFen, newHistory);
@@ -1154,12 +1185,46 @@ function ChessBoard({
     setGame(new Chess(newFen));
     setFeedback(null);
 
+    const newMovesCount = captureMovesCount + 1;
+    setCaptureMovesCount(newMovesCount);
+
+    // Check win condition first
     if (checkCaptureWinCondition(newCaptured)) {
       setTimeout(() => {
         setFeedback("solved");
         playSound("solved");
         if (onPuzzleSolved) onPuzzleSolved(undefined, newHistory);
       }, 300);
+      if (onBoardStateChange) onBoardStateChange(newFen, newHistory);
+      return;
+    }
+
+    // Check if move limit exceeded without capturing all targets
+    if (maxMoves && newMovesCount >= maxMoves && !checkCaptureWinCondition(newCaptured)) {
+      setTimeout(() => {
+        playSound('wrong');
+        setFeedback('wrong');
+        if (onWrongMove) onWrongMove(newHistory);
+        // Reset after showing feedback
+        setTimeout(() => {
+          const resetGame = safeNewChess(initialFen);
+          setGame(resetGame);
+          setMoveHistory([]);
+          setLastMove(null);
+          setSelectedSquare(null);
+          setPossibleMoves([]);
+          setFeedback(null);
+          setCapturedTargets([]);
+          setCaptureMovesCount(0);
+          if (captureConfig?.mode === 'objects') {
+            setCaptureTargets(captureConfig.targets || []);
+          } else {
+            setCaptureTargets(captureConfig?.enemyPieces || []);
+          }
+        }, 1200);
+      }, 300);
+      if (onBoardStateChange) onBoardStateChange(newFen, newHistory);
+      return;
     }
 
     if (onBoardStateChange) {
@@ -1860,8 +1925,67 @@ function ChessBoard({
           <div className={`${styles.feedback} ${styles[feedback]}`}>
             {feedback === "correct" &&
               (puzzleType === "kids" ? "Great job!" : "✓ Correct!")}
-            {feedback === "wrong" && "✗ Wrong Move!"}
+            {feedback === "wrong" && (
+              puzzleType === "capture" && captureConfig?.maximumNoOfMoves && captureMovesCount >= captureConfig.maximumNoOfMoves
+                ? `✗ Out of moves! (${captureConfig.maximumNoOfMoves} max)`
+                : "✗ Wrong Move!"
+            )}
             {feedback === "solved" && "Puzzle Solved!"}
+          </div>
+        )}
+
+        {/* Move Counter for Capture Puzzles */}
+        {puzzleType === "capture" && captureConfig?.maximumNoOfMoves && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            backgroundColor: (() => {
+              const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+              if (remaining <= 0) return '#fee2e2';
+              if (remaining <= 2) return '#fef3c7';
+              return '#f0fdf4';
+            })(),
+            borderBottom: '2px solid',
+            borderColor: (() => {
+              const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+              if (remaining <= 0) return '#fca5a5';
+              if (remaining <= 2) return '#fcd34d';
+              return '#86efac';
+            })(),
+            fontSize: '14px',
+            fontWeight: '700',
+            transition: 'background-color 0.3s, border-color 0.3s',
+          }}>
+            <span style={{ fontSize: '16px' }}>🎯</span>
+            <span style={{
+              color: (() => {
+                const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+                if (remaining <= 0) return '#dc2626';
+                if (remaining <= 2) return '#d97706';
+                return '#16a34a';
+              })()
+            }}>
+              Moves: {captureMovesCount} / {captureConfig.maximumNoOfMoves}
+            </span>
+            <span style={{
+              marginLeft: '4px',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '800',
+              backgroundColor: (() => {
+                const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+                if (remaining <= 0) return '#dc2626';
+                if (remaining <= 2) return '#d97706';
+                return '#16a34a';
+              })(),
+              color: 'white',
+            }}>
+              {Math.max(0, captureConfig.maximumNoOfMoves - captureMovesCount)} left
+            </span>
           </div>
         )}
 
