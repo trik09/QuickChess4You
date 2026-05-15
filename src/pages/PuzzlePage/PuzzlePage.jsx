@@ -1239,7 +1239,7 @@ function PuzzlePage({ isEvent = false }) {
       const pid = (p.id || p._id).toString(); // Normalize to string
       if (seenPuzzles.has(pid)) return; // Skip duplicates
       seenPuzzles.add(pid);
-      
+
       if (
         puzzleStatuses[pid] !== "success" &&
         puzzleStatuses[pid] !== "failed"
@@ -1258,7 +1258,7 @@ function PuzzlePage({ isEvent = false }) {
       const pid = (p.id || p._id).toString();
       if (seenPuzzles.has(pid)) return; // Skip duplicates
       seenPuzzles.add(pid);
-      
+
       if (
         puzzleStatuses[pid] === "success" ||
         puzzleStatuses[pid] === "failed"

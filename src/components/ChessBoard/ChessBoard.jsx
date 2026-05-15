@@ -42,6 +42,7 @@ import blackBishop3 from "../../assets/pieces3/blackbishop.svg";
 import blackRook3 from "../../assets/pieces3/blackrook.svg";
 import blackQueen3 from "../../assets/pieces3/blackqueen.svg";
 import blackKing3 from "../../assets/pieces3/blackking.svg";
+import updatedStar from "../../assets/updated-star.svg";
 
 const pieceImageSets = {
   set1: {
@@ -1914,13 +1915,15 @@ function ChessBoard({
               if (puzzleType === 'capture' && (captureConfig?.mode === 'objects' || captureConfig?.targets?.length > 0)) {
                 const target = captureTargets.find(t => t.square === square);
                 if (target && !capturedTargets.includes(square)) {
-                  const isEmoji = ['pizza', 'chocolate', 'star', 'burger'].includes(target.item);
+                  const isEmoji = ['pizza', 'chocolate', 'star', '⭐', 'burger'].includes(target.item);
                   if (isEmoji) {
                     captureContent = (
                       <div className={styles.piece} style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                        {target.item === 'pizza' ? '🍕' :
-                          target.item === 'chocolate' ? '🍫' :
-                            target.item === 'star' ? '⭐' : '🍔'}
+                        {(() => {
+                          const starIcon = <img src={updatedStar} alt="star" style={{ width: '40px', height: '40px' }} />;
+                          const icons = { pizza: '🍕', chocolate: '🍫', star: starIcon, '⭐': starIcon, burger: '🍔' };
+                          return icons[target.item] || '🍔';
+                        })()}
                       </div>
                     );
                   } else {
