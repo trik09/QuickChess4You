@@ -139,6 +139,7 @@ function PuzzlePage({ isEvent = false }) {
   const ITEMS_PER_PAGE = 10;
 
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+  const [chapterLastActiveIndex, setChapterLastActiveIndex] = useState({}); // { [chapterIndex]: puzzleGlobalIndex }
   const [showGalaxy, setShowGalaxy] = useState(true);
   const headerScrollRef = useRef(null);
 
@@ -392,6 +393,7 @@ function PuzzlePage({ isEvent = false }) {
         solvedCount,
         puzzleStatuses,
         puzzleBoardStates,
+        chapterLastActiveIndex,
       };
       localStorage.setItem(stateKey, JSON.stringify(stateToSave));
     }
@@ -407,6 +409,16 @@ function PuzzlePage({ isEvent = false }) {
     puzzles,
     isReviewMode,
   ]);
+
+  // Update chapter-wise progress whenever currentPuzzleIndex changes
+  useEffect(() => {
+    if (activeChapterIndex !== undefined && currentPuzzleIndex !== undefined && puzzles[currentPuzzleIndex]) {
+      setChapterLastActiveIndex(prev => ({
+        ...prev,
+        [activeChapterIndex]: currentPuzzleIndex
+      }));
+    }
+  }, [currentPuzzleIndex, activeChapterIndex, puzzles]);
 
   const loadPuzzleContext = async () => {
     try {
@@ -555,6 +567,7 @@ function PuzzlePage({ isEvent = false }) {
                     // shows the puzzle as done, unlocking the submit button incorrectly.
                     setPuzzleStatuses(statuses); // server wins — do NOT spread parsed.puzzleStatuses
                     setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+                    setChapterLastActiveIndex(parsed.chapterLastActiveIndex || {});
                     console.log(
                       "Puzzle statuses from server (localStorage statuses ignored):",
                       statuses,
@@ -639,6 +652,7 @@ function PuzzlePage({ isEvent = false }) {
                   const parsed = JSON.parse(savedState);
                   setPuzzleStatuses(parsed.puzzleStatuses || {});
                   setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+                  setChapterLastActiveIndex(parsed.chapterLastActiveIndex || {});
                   setScore(parsed.score || 0);
                   setSolvedCount(parsed.solvedCount || 0);
                   if (parsed.currentPuzzleIndex !== undefined) {
@@ -731,6 +745,7 @@ function PuzzlePage({ isEvent = false }) {
           setSolvedCount(parsed.solvedCount);
           setPuzzleStatuses(parsed.puzzleStatuses || {});
           setPuzzleBoardStates(parsed.puzzleBoardStates || {});
+          setChapterLastActiveIndex(parsed.chapterLastActiveIndex || {});
           setCurrentPuzzleIndex(parsed.currentPuzzleIndex || 0);
         } else {
           const defaultSeconds = 300; // Default 5 mins for casual
@@ -1422,10 +1437,41 @@ function PuzzlePage({ isEvent = false }) {
                         if (isBeforeStartTime && !isReviewMode) return;
                         setActiveChapterIndex(idx);
                         setCurrentFrame(0);
+
                         const gPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
                         if (gPs.length > 0) {
-                          const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString());
-                          if (gi !== -1) setCurrentPuzzleIndex(gi);
+                          let targetIndex = -1;
+                          const lastIdx = chapterLastActiveIndex[idx];
+
+                          // 1. Try restoring the last active puzzle in this chapter if it's still unsolved
+                          if (lastIdx !== undefined && puzzles[lastIdx]) {
+                            const p = puzzles[lastIdx];
+                            const isIdInChapter = ids.includes((p._id || p.id).toString());
+                            const status = puzzleStatuses[p._id || p.id];
+                            if (isIdInChapter && status !== 'success' && status !== 'failed') {
+                              targetIndex = lastIdx;
+                            }
+                          }
+
+                          // 2. Fallback: Find the first unsolved/incomplete puzzle in this chapter
+                          if (targetIndex === -1) {
+                            const firstUnsolved = gPs.find(p => {
+                              const status = puzzleStatuses[p._id || p.id];
+                              return status !== 'success' && status !== 'failed';
+                            });
+                            if (firstUnsolved) {
+                              targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (firstUnsolved._id || firstUnsolved.id).toString());
+                            }
+                          }
+
+                          // 3. Final Fallback: Start from the first puzzle of the chapter
+                          if (targetIndex === -1) {
+                            targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString());
+                          }
+
+                          if (targetIndex !== -1) {
+                            setCurrentPuzzleIndex(targetIndex);
+                          }
                         }
                       }}
                       style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
@@ -1719,9 +1765,44 @@ function PuzzlePage({ isEvent = false }) {
                         className={`${styles.chapterPill} ${activeChapterIndex === idx ? styles.chapterPillActive : ""}`}
                         onClick={() => {
                           if (isBeforeStartTime && !isReviewMode) return;
-                          setActiveChapterIndex(idx); setCurrentFrame(0);
+                          setActiveChapterIndex(idx);
+                          setCurrentFrame(0);
+
                           const gPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
-                          if (gPs.length > 0) { const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString()); if (gi !== -1) setCurrentPuzzleIndex(gi); }
+                          if (gPs.length > 0) {
+                            let targetIndex = -1;
+                            const lastIdx = chapterLastActiveIndex[idx];
+
+                            // 1. Try restoring the last active puzzle in this chapter if it's still unsolved
+                            if (lastIdx !== undefined && puzzles[lastIdx]) {
+                              const p = puzzles[lastIdx];
+                              const isIdInChapter = ids.includes((p._id || p.id).toString());
+                              const status = puzzleStatuses[p._id || p.id];
+                              if (isIdInChapter && status !== 'success' && status !== 'failed') {
+                                targetIndex = lastIdx;
+                              }
+                            }
+
+                            // 2. Fallback: Find the first unsolved/incomplete puzzle in this chapter
+                            if (targetIndex === -1) {
+                              const firstUnsolved = gPs.find(p => {
+                                const status = puzzleStatuses[p._id || p.id];
+                                return status !== 'success' && status !== 'failed';
+                              });
+                              if (firstUnsolved) {
+                                targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (firstUnsolved._id || firstUnsolved.id).toString());
+                              }
+                            }
+
+                            // 3. Final Fallback: Start from the first puzzle of the chapter
+                            if (targetIndex === -1) {
+                              targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString());
+                            }
+
+                            if (targetIndex !== -1) {
+                              setCurrentPuzzleIndex(targetIndex);
+                            }
+                          }
                         }}
                         style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
                       >
