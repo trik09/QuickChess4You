@@ -1612,7 +1612,9 @@ function PuzzlePage({ isEvent = false }) {
           {/* Competition Results — left column, review mode only */}
           {isReviewMode && competitionData && (
             <div className={styles.navCard}>
-              <div className={styles.navCardTitle}>COMPETITION RESULTS</div>
+              <div className={styles.navCardHeader}>
+                <div className={styles.navCardTitle}>COMPETITION RESULTS</div>
+              </div>
               <div className={styles.navGrid}>
                 {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
                   const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
@@ -1745,8 +1747,10 @@ function PuzzlePage({ isEvent = false }) {
             )}
 
             <div className={styles.navCard}>
-              <div className={styles.navCardTitle}>Puzzles</div>
-              {totalPages > 1 && <div className={styles.paginationInfo}>Page {currentFrame + 1} of {totalPages}</div>}
+              <div className={styles.navCardHeader}>
+                <div className={styles.navCardTitle}>PUZZLES</div>
+                {totalPages > 1 && <div className={styles.paginationInfo}>(Page {currentFrame + 1} of {totalPages})</div>}
+              </div>
 
               {!isReviewMode && (
                 <div className={styles.navGrid}>
@@ -1866,9 +1870,13 @@ function PuzzlePage({ isEvent = false }) {
                       <FaSyncAlt /> Reset Puzzle
                     </button>
 
-                    <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
-                      {showInlineSolution ? "Hide Solution" : "View Solution"}
-                    </button>
+                    {/* Hide "View Solution" for Avoid Illegal Move (illegal) puzzles */}
+                    {/* Ensure currentPuzzle exists before checking its type/category */}
+                    {currentPuzzle && !(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' || (currentPuzzle.category?.toLowerCase() === 'avoid illegal move')) && (
+                      <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
+                        {showInlineSolution ? "Hide Solution" : "View Solution"}
+                      </button>
+                    )}
                   </div>
 
                   <div className={styles.solutionBox}>
