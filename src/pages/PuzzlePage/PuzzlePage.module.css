@@ -3555,7 +3555,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 496px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3578,6 +3578,15 @@
   .rightColumn {
     gap: 12px;
   }
+
+  .container {
+    /* background-color: rgb(173, 230, 210); */
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+  }
 }
 
 /* MacBook View */
@@ -3586,7 +3595,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 550px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3604,6 +3613,14 @@
   .competitionPage .rightColumn .chaptersWrap {
     height: 100%;
     max-height: none;
+  }
+
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
   }
 }
 
@@ -3627,7 +3644,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 596px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3646,15 +3663,19 @@
     height: 100%;
     max-height: none;
   }
+
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+  }
 }
 
 
 /* MacBook Pro Series  */
 @media (min-width: 1500px) {
-  .rightColumn {
-    max-height: 100%;
-    /* background-color: #065f46; */
-  }
 
   .leftColumn {
     max-height: 100%;
@@ -3662,7 +3683,7 @@
   }
 
   .competitionPage .rightColumn {
-    max-height: 504px;
+    max-height: 500px;
     display: flex;
     flex-direction: column;
   }
@@ -3699,6 +3720,14 @@
     /* background-color: #111d33; */
     max-height: 600px;
   }
+
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+  }
 }
 
 @media (min-width: 1650px) {
@@ -3710,6 +3739,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3733,14 +3763,6 @@
     max-height: fit-content;
     /* background-color: lightblue; */
   }
-}
-
-@media (min-width: 1700px) {
-  .competitionPage .body {
-    height: 100vh;
-    max-height: 72vh;
-    /* background-color: red; */
-  }
 
   .container {
     /* background-color: lightblue; */
@@ -3749,11 +3771,13 @@
     flex-direction: column;
     justify-content: start;
   }
+}
 
-  .galaxySection {
-    position: absolute;
-    width: calc(100% - 24px);
-    bottom: 12px;
+@media (min-width: 1700px) {
+  .competitionPage .body {
+    height: 100vh;
+    /* max-height: 72vh; */
+    /* background-color: red; */
   }
 
   .analysisPage .rightColumn {
@@ -3768,7 +3792,8 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 645px;
+    max-height: 500px;
+    /* background-color: red; */
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3791,5 +3816,13 @@
   .competitionPage .body {
     max-height: fit-content;
     /* background-color: lightblue; */
+  }
+
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
   }
 }
