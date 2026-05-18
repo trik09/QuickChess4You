@@ -3536,7 +3536,7 @@
 
   .competitionPage .body {
     height: 100vh;
-    max-height: 72vh;
+    max-height: fit-content;
     /* background-color: lightblue; */
     display: grid;
     grid-template-columns: 25% 1fr 25%;
@@ -3555,6 +3555,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
+    max-height: 496px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3609,7 +3610,7 @@
 @media (min-width: 1450px) {
 
   .competitionPage .body {
-    max-height: 75vh;
+    max-height: fit-content;
     /* background-color: lightcoral; */
   }
 
@@ -3661,7 +3662,7 @@
   }
 
   .competitionPage .rightColumn {
-    max-height: 600px;
+    max-height: 504px;
     display: flex;
     flex-direction: column;
   }
@@ -3690,7 +3691,7 @@
   }
 
   .competitionPage .body {
-    max-height: 74vh;
+    max-height: fit-content;
     /* background-color: lightblue; */
   }
 
@@ -3726,6 +3727,11 @@
   .competitionPage .rightColumn .chaptersWrap {
     height: 100%;
     max-height: none;
+  }
+
+  .competitionPage .body {
+    max-height: fit-content;
+    /* background-color: lightblue; */
   }
 }
 
@@ -3780,5 +3786,10 @@
   .competitionPage .rightColumn .chaptersWrap {
     height: 100%;
     max-height: none;
+  }
+
+  .competitionPage .body {
+    max-height: fit-content;
+    /* background-color: lightblue; */
   }
 }
