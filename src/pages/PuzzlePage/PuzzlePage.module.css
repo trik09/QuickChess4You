@@ -3852,3 +3852,21 @@
     justify-content: space-between;
   }
 }
+
+@media (min-height: 630px) {
+  .container {
+    /* background-color: lightblue; */
+    height: 110vh;
+  }
+}
+
+@media (min-height: 760px) {
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh;
+  }
+
+  .competitionPage .rightColumn {
+    max-height: 500px !important;
+  }
+}
