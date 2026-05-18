@@ -3573,7 +3573,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 430px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3599,7 +3599,7 @@
 
   .container {
     /* background-color: rgb(173, 230, 210); */
-    height: 108vh;
+    height: 110vh;
     /* max-height: 100vh; */
     display: flex;
     flex-direction: column;
@@ -3613,7 +3613,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 430px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3635,7 +3635,7 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 108vh;
+    height: 110vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3666,7 +3666,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 430px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3688,7 +3688,7 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 108vh;
+    height: 110vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3705,7 +3705,7 @@
   }
 
   .competitionPage .rightColumn {
-    max-height: 430px;
+    max-height: 500px;
     display: flex;
     flex-direction: column;
   }
@@ -3745,7 +3745,7 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 108vh;
+    height: 110vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3761,7 +3761,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 430px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3788,7 +3788,7 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 108vh;
+    height: 110vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3818,7 +3818,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 430px;
+    max-height: 500px;
     /* background-color: red; */
   }
 
@@ -3846,7 +3846,7 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 108vh;
+    height: 110vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
