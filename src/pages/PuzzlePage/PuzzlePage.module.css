@@ -3818,7 +3818,7 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 430 px;
+    max-height: 430px;
     /* background-color: red; */
   }
 
