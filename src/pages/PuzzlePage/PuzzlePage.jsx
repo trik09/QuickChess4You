@@ -1406,9 +1406,10 @@ function PuzzlePage({ isEvent = false }) {
   return (
     <div className={`${styles.container} ${isReviewMode ? styles.analysisPage : styles.competitionPage}`}>
       <Toaster position="top-right" />
-      {/* THIN TITLE HEADERBAR */}
-      {competitionData && (
-        <div className={styles.titleHeader}>
+      <div className={styles.mainLayoutWrapper}>
+        {/* THIN TITLE HEADERBAR */}
+        {competitionData && (
+          <div className={styles.titleHeader}>
           <div className={styles.titleHeaderLeft}>
             <button className={styles.backBtnHeader} onClick={() => paramCompetitionId ? navigate(isEvent ? `/event/${paramCompetitionId}/lobby` : `/competition/${paramCompetitionId}/lobby`) : navigate("/dashboard")} title="Go back">
               <FaArrowLeft />
@@ -2079,6 +2080,7 @@ function PuzzlePage({ isEvent = false }) {
 
       </div>
       {/* END BODY */}
+      </div>
 
       {/* GALAXY — Full Width */}
       {isLiveCompetition && !isReviewMode && showGalaxy && (

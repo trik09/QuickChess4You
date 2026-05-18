@@ -47,6 +47,15 @@
   position: relative;
 }
 
+.mainLayoutWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
 .titleHeader {
   flex-shrink: 0;
   display: flex;
@@ -3590,11 +3599,11 @@
 
   .container {
     /* background-color: rgb(173, 230, 210); */
-    height: 100vh;
-    max-height: 100vh;
+    height: 105vh;
+    /* max-height: 100vh; */
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
   }
 }
 
@@ -3626,10 +3635,10 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 100vh;
+    height: 105vh;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
   }
 }
 
@@ -3679,10 +3688,10 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 100vh;
+    height: 105vh;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
   }
 }
 
@@ -3736,10 +3745,10 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 100vh;
+    height: 105vh;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
   }
 }
 
@@ -3779,10 +3788,10 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 100vh;
+    height: 105vh;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
   }
 
   .analysisPage .rightColumn {
@@ -3837,9 +3846,9 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 100vh;
+    height: 105vh;
     display: flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
   }
 }
