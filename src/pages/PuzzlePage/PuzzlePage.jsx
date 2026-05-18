@@ -1695,7 +1695,7 @@ function PuzzlePage({ isEvent = false }) {
         <div className={styles.boardArea}>
           <div className={styles.boardWrapper}>
             {puzzles.length > 0 && currentPuzzle ? (
-              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "start", justifyContent: "center" }}>
+              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: isReviewMode ? "start" : "start", justifyContent: "center" }}>
                 <ChessBoard
                   key={
                     // In review mode, reviewResetKey forces a full board remount on manual reset.
@@ -1731,6 +1731,7 @@ function PuzzlePage({ isEvent = false }) {
                   }
                   interactive={isBoardInteractive}
                   showSolution={showSolution}
+                  isAnalysis={isReviewMode}
                 />
                 {isBeforeStartTime && !isReviewMode && (
                   <div className={styles.boardBeforeStart}>

@@ -357,3 +357,35 @@
     opacity: 1;
   }
 }
+
+/* ========================================
+   ANALYSIS PAGE CHESSBOARD OVERRIDES
+   ======================================== */
+@media (min-width: 1200px) {
+
+  .analysisBoard,
+  .analysisBoardWrapper {
+    max-width: 560px !important;
+    max-height: 560px !important;
+  }
+
+
+}
+
+@media (min-width: 1450px) {
+
+  .analysisBoard,
+  .analysisBoardWrapper {
+    max-width: 640px !important;
+    max-height: 640px !important;
+  }
+}
+
+@media (min-width: 1650px) {
+
+  .analysisBoard,
+  .analysisBoardWrapper {
+    max-width: 720px !important;
+    max-height: 720px !important;
+  }
+}

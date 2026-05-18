@@ -185,6 +185,7 @@ function ChessBoard({
   showSolution = false,
   firstMoveBy = "w", // Default to white
   testSolveMode = false, // Added for Test Solve popup validation
+  isAnalysis = false, // Configured for larger board specifically on AnalyzePage
 }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(safeNewChess(fen));
@@ -1936,7 +1937,7 @@ function ChessBoard({
           overflow: 'hidden',
           position: 'relative'
         }}
-        className={styles.boardWrapper}
+        className={`${styles.boardWrapper} ${isAnalysis ? styles.analysisBoardWrapper : ""}`}
       >
         {feedback && (
           <div className={`${styles.feedback} ${styles[feedback]}`}>
@@ -1980,7 +1981,7 @@ function ChessBoard({
           </div>
         )}
 
-        <div className={styles.board} ref={boardRef} style={{ position: 'relative' }}>
+        <div className={`${styles.board} ${isAnalysis ? styles.analysisBoard : ""}`} ref={boardRef} style={{ position: 'relative' }}>
           {renderAnnotations()}
           {(userColor === 'w' ? ranks : [...ranks].reverse()).flatMap((rank, rankIndex) =>
             (userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
