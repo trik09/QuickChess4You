@@ -45,6 +45,27 @@
   color: var(--text-primary-local);
   padding: 10px;
   position: relative;
+  isolation: isolate;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.247), rgba(8, 8, 8, 0.219)), url('../../assets/blur-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+  pointer-events: none;
+  transition: background-image 0.3s ease;
+}
+
+[data-theme='light'] .container::before {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.171), rgba(0, 0, 0, 0.096)), url('../../assets/blur-bg.jpg');
 }
 
 .mainLayoutWrapper {
@@ -516,9 +537,9 @@
    RIGHT COLUMN CHAPTERS BOX (unchanged)
    ======================================== */
 .chaptersBox {
-  background: transparent;
+  background: rgba(18, 18, 18, 0.3);
   border-radius: 12px;
-  border: 1px solid var(--border-dim);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -527,12 +548,16 @@
   min-height: 0;
   max-height: none;
   overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 [data-theme='light'] .chaptersBox {
-  background: #ffffff;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
 }
 
 .chaptersBoxTitle {
@@ -669,9 +694,9 @@
 }
 
 .statsCard {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  background: rgba(18, 18, 18, 0.6);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -680,15 +705,18 @@
   min-height: auto;
   justify-content: flex-start;
   backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(12px);
+  /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05); */
   max-height: none;
 }
 
 [data-theme='light'] .statsCard {
-  background: #ffffff;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
   border-radius: 20px;
 }
 
@@ -808,9 +836,9 @@
 }
 
 .rankCard {
-  background: var(--bg-card);
+  background: rgba(18, 18, 18, 0.6);
   border-radius: 12px;
-  border: 1px solid var(--border-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -819,13 +847,16 @@
   min-height: auto;
   max-height: fit-content;
   justify-content: flex-start;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 [data-theme='light'] .rankCard {
-  background: #ffffff;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
   border-radius: 20px;
 }
 
@@ -981,9 +1012,9 @@
 }
 
 .navCard {
-  background: var(--bg-card);
+  background: rgba(18, 18, 18, 0.6);
   border-radius: 12px;
-  border: 1px solid var(--border-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 10px;
   flex: 0 1 auto;
   min-height: 0;
@@ -991,7 +1022,9 @@
   flex-direction: column;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-dim) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .navCard::-webkit-scrollbar {
@@ -999,14 +1032,16 @@
 }
 
 .navCard::-webkit-scrollbar-thumb {
-  background: var(--border-dim);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 
 [data-theme='light'] .navCard {
-  background: #ffffff;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
   border-radius: 20px;
 }
 
@@ -1189,7 +1224,7 @@
   min-height: auto;
   height: auto;
   max-height: none;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  /* box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); */
   transition: all 0.3s ease;
   z-index: 1;
 }
@@ -3052,27 +3087,29 @@
   max-height: none;
   transition: transform 0.3s ease;
   z-index: 1;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 
 
 .turnWhiteCard {
-  background: #5e412b;
+  background: rgba(94, 65, 43, 0.7);
   border: 1px solid rgba(212, 163, 115, 0.3);
 }
 
 [data-theme='light'] .turnWhiteCard {
-  background: #fdf6ee;
+  background: rgba(253, 246, 238, 0.85);
   border: 1px solid rgba(181, 136, 99, 0.2);
 }
 
 .turnBlackCard {
-  background: #121212;
+  background: rgba(18, 18, 18, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme='light'] .turnBlackCard {
-  background: #efefef;
+  background: rgba(239, 239, 239, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
