@@ -1643,15 +1643,19 @@ function PuzzlePage({ isEvent = false }) {
           })()}
           {competitionData && isLiveCompetition && !isReviewMode && (
             <div className={styles.rankCard}>
-              <div className={styles.rankRow}>
+              {/* Left: rank label + number */}
+              <div className={styles.rankLeft}>
                 <div className={styles.rankLabel}><span>🏆</span> Your Rank</div>
                 <div className={styles.rankNumber}>#{stableRank || "–"}</div>
               </div>
-              <div className={styles.rankProgressBar}>
-                <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
-              </div>
-              <div className={styles.rankParticipants}>
-                {participantCount > 0 ? participantCount : "–"} participant{participantCount !== 1 ? "s" : ""}
+              {/* Right: progress bar + participant count */}
+              <div className={styles.rankRight}>
+                <div className={styles.rankProgressBar}>
+                  <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
+                </div>
+                <div className={styles.rankParticipants}>
+                  {participantCount > 0 ? participantCount : "–"} participant{participantCount !== 1 ? "s" : ""}
+                </div>
               </div>
             </div>
           )}
