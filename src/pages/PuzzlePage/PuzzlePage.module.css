@@ -537,10 +537,10 @@
    RIGHT COLUMN CHAPTERS BOX (unchanged)
    ======================================== */
 .chaptersBox {
-  background: rgba(18, 18, 18, 0.3);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 8px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 8px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -548,16 +548,15 @@
   min-height: 0;
   max-height: none;
   overflow: hidden;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 [data-theme='light'] .chaptersBox {
-  background: rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .chaptersBoxTitle {
@@ -686,38 +685,50 @@
 .leftColumn {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0px !important;
   min-width: 0;
   overflow: hidden;
   height: fit-content;
   align-self: start;
+  background: rgba(18, 18, 18, 0.500);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='light'] .leftColumn {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
 }
 
 .statsCard {
-  background: rgba(18, 18, 18, 0.6);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 8px 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
   height: auto;
   min-height: auto;
   justify-content: flex-start;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05); */
+  box-shadow: none;
   max-height: none;
 }
 
 [data-theme='light'] .statsCard {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .divider {
@@ -732,7 +743,7 @@
 .statsGrid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
 }
 
@@ -836,10 +847,10 @@
 }
 
 .rankCard {
-  background: rgba(18, 18, 18, 0.6);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 16px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -847,17 +858,15 @@
   min-height: auto;
   max-height: fit-content;
   justify-content: flex-start;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 [data-theme='light'] .rankCard {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .rankRow {
@@ -990,32 +999,34 @@
 .rightColumn {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0px !important;
   min-width: 0;
   overflow: hidden;
   height: 100%;
   max-height: 680px;
   justify-content: flex-start;
+  background: rgba(18, 18, 18, 0.500);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-
-
-.rightColumn>.navCard {
-  height: 100%;
-  max-height: fit-content;
-  padding: 6px;
-  gap: 2px;
-}
-
-.rightColumn>*:only-child {
-  flex: 1;
+[data-theme='light'] .rightColumn {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
 }
 
 .navCard {
-  background: rgba(18, 18, 18, 0.6);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 10px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 10px 0;
   flex: 0 1 auto;
   min-height: 0;
   display: flex;
@@ -1023,8 +1034,6 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .navCard::-webkit-scrollbar {
@@ -1037,12 +1046,12 @@
 }
 
 [data-theme='light'] .navCard {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 20px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .navCardHeader {
@@ -1674,16 +1683,16 @@
 }
 
 .fenCard {
-  background: var(--bg-card);
-  border-radius: 12px;
-  border: 1px solid var(--border-dim);
-  padding: 10px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 10px 0;
   flex-shrink: 0;
 }
 
 [data-theme='light'] .fenCard {
-  background: #ffffff;
-  border-color: #e0e0e0;
+  background: transparent !important;
+  border: none !important;
 }
 
 .fenCardTitle {
@@ -3087,8 +3096,7 @@
   max-height: none;
   transition: transform 0.3s ease;
   z-index: 1;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: transparent;
 }
 
 
@@ -3653,19 +3661,28 @@
     min-height: 449px !important;
     max-height: 450px !important;
   }
+
+  .competitionPage .body {
+    grid-template-columns: 28% 1fr 28%;
+  }
 }
 
 /* MacBook View */
 @media (min-width: 1350px) and (min-height: 650px) {
 
   .competitionPage .body {
-    grid-template-columns: 30% 1fr 30%;
+    grid-template-columns: 29% 1fr 29%;
   }
 
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
     max-height: 450px;
+  }
+
+  .competitionPage .leftColumn {
+    min-height: 450px !important;
+    max-height: 450px !important;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3687,7 +3704,7 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 109vh;
+    height: 106vh !important;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3702,6 +3719,16 @@
 
   .competitionPage .rightColumn {
     max-height: 500px;
+  }
+
+  .competitionPage .leftColumn {
+    min-height: 500px !important;
+    max-height: 500px !important;
+  }
+
+  .container {
+    /* background-color: lightblue; */
+    height: 100vh !important;
   }
 }
 
@@ -3827,6 +3854,16 @@
     max-height: 580px !important;
     /* background-color: pink; */
   }
+
+  .competitionPage .leftColumn {
+    min-height: 579px !important;
+    max-height: 580px !important;
+    /* background-color: pink; */
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 1600px) and (min-height: 760px) {
@@ -3838,8 +3875,13 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    min-height: 400px;
-    max-height: 500px;
+    min-height: 500px !important;
+    max-height: 500px !important;
+  }
+
+  .competitionPage .leftColumn {
+    min-height: 500px !important;
+    max-height: 500px !important;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3882,6 +3924,11 @@
     min-height: 600px !important;
     max-height: 600px !important;
   }
+
+  .competitionPage .leftColumn {
+    min-height: 600px !important;
+    max-height: 600px !important;
+  }
 }
 
 @media (min-width: 1920px) and (min-height: 880px) {
@@ -3891,6 +3938,23 @@
   }
 
   .competitionPage .rightColumn {
+    min-height: 600px !important;
+    max-height: 600px !important;
+  }
+}
+
+@media (min-width: 1920px) and (min-height: 880px) {
+  .body {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .competitionPage .rightColumn {
+    min-height: 600px !important;
+    max-height: 600px !important;
+  }
+
+  .competitionPage .leftColumn {
     min-height: 600px !important;
     max-height: 600px !important;
   }
@@ -3906,6 +3970,16 @@
     min-height: 750px !important;
     max-height: 750px !important;
   }
+
+  .competitionPage .leftColumn {
+    min-height: 750px !important;
+    max-height: 750px !important;
+  }
+
+  .container {
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
 }
 
 @media (min-width: 2560px) and (min-height: 1300px) {
@@ -3915,6 +3989,11 @@
   }
 
   .competitionPage .rightColumn {
+    min-height: 900px !important;
+    max-height: 900px !important;
+  }
+
+  .competitionPage .leftColumn {
     min-height: 900px !important;
     max-height: 900px !important;
   }
