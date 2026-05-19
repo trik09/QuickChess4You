@@ -54,6 +54,7 @@
   width: 100%;
   flex: 1;
   min-height: 0;
+  max-height: fit-content;
 }
 
 .titleHeader {
@@ -1771,8 +1772,8 @@
   margin-top: -1px;
   width: 100%;
   height: 100%;
-  max-width: min(70vh, 100%);
-  max-height: min(70vh, 100%);
+  max-width: min(78vh, 100%);
+  max-height: min(78vh, 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2479,8 +2480,8 @@
 .galaxyOffLayout .boardWrapper {
   width: 100%;
   height: 100%;
-  max-width: min(85vh, 100%);
-  max-height: min(85vh, 100%);
+  max-width: min(86vh, 100%);
+  max-height: min(86vh, 100%);
   margin: 0 auto;
 }
 
@@ -3548,7 +3549,7 @@
     max-height: 85vh;
     /* background-color: lightblue; */
     display: grid;
-    grid-template-columns: 24% 1fr 24%;
+    grid-template-columns: min(24%, 310px) 1fr min(24%, 310px);
     padding: 10px 0px;
   }
 
@@ -3557,12 +3558,15 @@
     max-height: fit-content;
     /* background-color: lightblue; */
     display: grid;
-    grid-template-columns: 25% 1fr 25%;
+    grid-template-columns: min(25%, 320px) 1fr min(25%, 320px);
   }
 
   .body {
     grid-template-columns: minmax(230px, 330px) 1fr minmax(260px, 310px);
     gap: 8px;
+    max-width: 1550px;
+    margin: 0 auto;
+    width: 100%;
   }
 
   .analysisPage .rightColumn {
@@ -3607,8 +3611,19 @@
   }
 }
 
+@media (min-width: 1280px) and (min-height: 650px) {
+  .competitionPage .rightColumn {
+    min-height: 449px !important;
+    max-height: 450px !important;
+  }
+}
+
 /* MacBook View */
-@media (min-width: 1350px) {
+@media (min-width: 1350px) and (min-height: 650px) {
+
+  .competitionPage .body {
+    grid-template-columns: 30% 1fr 30%;
+  }
 
   .competitionPage .rightColumn {
     display: flex;
@@ -3639,6 +3654,17 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+  }
+
+}
+
+@media (min-width: 1350px) and (min-height: 768px) {
+  .competitionPage .body {
+    grid-template-columns: 27% 1fr 27%;
+  }
+
+  .competitionPage .rightColumn {
+    max-height: 500px;
   }
 }
 
@@ -3697,7 +3723,7 @@
 
 
 /* MacBook Pro Series  */
-@media (min-width: 1500px) {
+@media (min-width: 1536px) and (min-height: 720px) {
 
   .leftColumn {
     max-height: 100%;
@@ -3745,14 +3771,28 @@
 
   .container {
     /* background-color: lightblue; */
-    height: 109vh;
+    height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
+
+
+  /* .competitionPage .body {
+    grid-template-columns: 28% 1fr 28%;
+  } */
 }
 
-@media (min-width: 1650px) {
+@media (min-width: 1536px) and (min-height: 864px) {
+  .competitionPage .rightColumn {
+    min-height: 579px !important;
+    max-height: 580px !important;
+    /* background-color: pink; */
+  }
+}
+
+@media (min-width: 1600px) and (min-height: 760px) {
   .analysisPage .body {
     height: 100vh;
     max-height: 92vh;
@@ -3761,7 +3801,8 @@
   .competitionPage .rightColumn {
     display: flex;
     flex-direction: column;
-    max-height: 450px;
+    min-height: 400px;
+    max-height: 500px;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -3796,6 +3837,49 @@
 
   .analysisPage .rightColumn {
     max-height: 720px;
+  }
+}
+
+@media (min-width: 1600px) and (min-height: 900px) {
+  .competitionPage .rightColumn {
+    min-height: 600px !important;
+    max-height: 600px !important;
+  }
+}
+
+@media (min-width: 1920px) and (min-height: 880px) {
+  .body {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .competitionPage .rightColumn {
+    min-height: 600px !important;
+    max-height: 600px !important;
+  }
+}
+
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .body {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .competitionPage .rightColumn {
+    min-height: 750px !important;
+    max-height: 750px !important;
+  }
+}
+
+@media (min-width: 2560px) and (min-height: 1300px) {
+  .body {
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .competitionPage .rightColumn {
+    min-height: 900px !important;
+    max-height: 900px !important;
   }
 }
 
