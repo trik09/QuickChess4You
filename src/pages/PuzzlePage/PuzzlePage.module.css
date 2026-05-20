@@ -46,7 +46,7 @@
   padding: 10px;
   position: relative;
   isolation: isolate;
-  background-color: rgb(37, 37, 37);
+  background-color: rgb(31, 31, 31);
 }
 
 /* .container::before {
@@ -63,11 +63,11 @@
   z-index: -1;
   pointer-events: none;
   transition: background-image 0.3s ease;
-}
+}*/
 
-[data-theme='light'] .container::before {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.171), rgba(0, 0, 0, 0.096)), url('../../assets/blur-bg.jpg');
-} */
+[data-theme='light'] .container {
+  background-color: rgb(242, 243, 243);
+}
 
 .mainLayoutWrapper {
   display: flex;
@@ -97,7 +97,7 @@
   flex-direction: column;
   height: auto;
   overflow: visible;
-  gap: 12px;
+  gap: 0px !important;
 }
 
 
@@ -733,7 +733,7 @@
 }
 
 [data-theme='light'] .leftColumn {
-  background: rgba(255, 255, 255, 0.479) !important;
+  background: rgb(255, 255, 255) !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
   backdrop-filter: blur(16px) !important;
@@ -819,13 +819,17 @@
 }
 
 .statLabel {
-  font-size: 0.82rem;
+  font-size: 1.1rem !important;
   text-transform: none;
   letter-spacing: 0;
   font-weight: 400;
-  color: var(--text-secondary);
-  opacity: 0.75;
+  color: rgb(255, 255, 255) !important;
+  /* opacity: 0.75; */
   line-height: 1.2;
+}
+
+[data-theme='light'] .statLabel {
+  color: rgb(61, 61, 61) !important;
 }
 
 .statValue {
@@ -886,13 +890,17 @@
 }
 
 .timerLabel {
-  font-size: 0.72rem;
+  font-size: 0.72rem !important;
   text-transform: uppercase;
   letter-spacing: 2px;
   font-weight: 700;
-  color: var(--text-muted-local);
+  color: white;
   margin-bottom: 0;
-  opacity: 0.65;
+  /* opacity: 0.65; */
+}
+
+[data-theme='light'] .timerLabel {
+  color: rgb(0, 0, 0);
 }
 
 .timerValue {
@@ -933,8 +941,8 @@
 }
 
 [data-theme='light'] .rankCard {
-  background: rgba(181, 136, 99, 0.05) !important;
-  border: 1px solid rgba(181, 136, 99, 0.15) !important;
+  /* background: rgba(181, 136, 99, 0.05) !important; */
+  /* border: 1px solid rgba(181, 136, 99, 0.15) !important; */
   box-shadow: none !important;
   border-radius: 10px !important;
   backdrop-filter: none !important;
@@ -945,7 +953,7 @@
 .rankLeft {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 1px;
   flex-shrink: 0;
   min-width: 70px;
@@ -980,12 +988,12 @@
 }
 
 .rankLabel {
-  font-size: 0.68rem;
+  font-size: 13px !important;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
   color: var(--text-muted-local);
-  opacity: 0.7;
+  /* opacity: 0.7; */
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1025,9 +1033,9 @@
 
 .rankParticipants {
   font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted-local);
-  opacity: 0.8;
+  font-weight: 400;
+  color: rgb(213, 213, 213);
+  /* opacity: 0.8; */
   white-space: nowrap;
 }
 
@@ -1150,7 +1158,7 @@
 }
 
 [data-theme='light'] .rightColumn {
-  background: rgba(255, 255, 255, 0.377) !important;
+  background: rgb(255, 255, 255) !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04) !important;
   backdrop-filter: blur(16px) !important;
@@ -1542,7 +1550,7 @@
 }
 
 [data-theme='light'] .puzzleInfoContainer {
-  border-top-color: rgba(0, 0, 0, 0.07);
+  border-top-color: rgba(223, 14, 14, 0.07);
 }
 
 /* capsuleWrapper — horizontal row layout for compact display */
@@ -2683,7 +2691,7 @@
   }
 
   .statLabel {
-    font-size: 0.9rem;
+    font-size: 1.1rem !important;
   }
 
   .rankCard {
@@ -2696,7 +2704,7 @@
   }
 
   .rankLabel {
-    font-size: 0.85rem;
+    font-size: 12px !important;
   }
 
   .rankParticipants {
@@ -2980,7 +2988,7 @@
   }
 
   .rankLabel {
-    font-size: 0.72rem;
+    font-size: 13px !important;
   }
 
   .rankParticipants {
