@@ -751,7 +751,7 @@ function ChessBoard({
     }
 
     // 1. Check if source piece is under attack (Resolve attacker first)
-    const isSourceAttacked = isSquareAttackedBy(from, opponentColor, piecesMap);
+   // const isSourceAttacked = isSquareAttackedBy(from, opponentColor, piecesMap);
 
     // 2. Check if destination is unsafe after move (Do NOT allow capture on unsafe destination)
     const nextPiecesMap = { ...piecesMap };
@@ -760,7 +760,7 @@ function ChessBoard({
     nextPiecesMap[to] = movingPiece;
     const isDestAttacked = isSquareAttackedBy(to, opponentColor, nextPiecesMap);
 
-    if (isSourceAttacked || isDestAttacked) {
+    if ( isDestAttacked) {
       playSound('wrong');
       setFeedback('wrong');
       if (onWrongMove) onWrongMove([...moveHistory, from + to]);
