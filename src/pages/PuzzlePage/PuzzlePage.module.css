@@ -2159,6 +2159,14 @@
   font-weight: 500;
 }
 
+[data-theme='light'] .moveNumber {
+  color: rgb(0, 0, 0);
+}
+
+[data-theme='light'] .moveEllipsis {
+  color: rgb(99, 99, 99);
+}
+
 .noMoves {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.25);
