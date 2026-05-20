@@ -1737,6 +1737,8 @@ function PuzzlePage({ isEvent = false }) {
                   interactive={isBoardInteractive}
                   showSolution={showSolution}
                   isAnalysis={isReviewMode}
+                  boardWrapperClass={styles.boardWrapper}
+                  boardClass={styles.board}
                 />
                 {isBeforeStartTime && !isReviewMode && (
                   <div className={styles.boardBeforeStart}>

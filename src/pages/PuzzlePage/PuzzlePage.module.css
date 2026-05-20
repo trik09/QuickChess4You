@@ -2644,11 +2644,18 @@
 }
 
 .galaxyOffLayout .boardWrapper {
-  width: 100%;
-  height: 100%;
-  max-width: min(86vh, 100%);
-  max-height: min(86vh, 100%);
-  margin: 0 auto;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: min(86vh, 100%) !important;
+  max-height: min(86vh, 100%) !important;
+  margin: 0 auto !important;
+}
+
+.galaxyOffLayout .board {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: min(86vh, 100%) !important;
+  max-height: min(86vh, 100%) !important;
 }
 
 /* ─── HEIGHT‑BASED REDUCTIONS (unchanged) ─── */
@@ -3832,6 +3839,21 @@
     justify-content: space-between;
   }
 
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
 }
 
 @media (min-width: 1350px) and (min-height: 768px) {
@@ -3851,6 +3873,22 @@
   .container {
     /* background-color: lightblue; */
     height: 100vh !important;
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 20% 1fr 20% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
@@ -3904,6 +3942,22 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
@@ -3964,6 +4018,22 @@
     justify-content: space-between;
   }
 
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
 
   /* .competitionPage .body {
     grid-template-columns: 28% 1fr 28%;
@@ -3985,6 +4055,22 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 20% 1fr 20% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
@@ -4039,6 +4125,22 @@
   .analysisPage .rightColumn {
     max-height: 720px;
   }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
 }
 
 @media (min-width: 1600px) and (min-height: 900px) {
@@ -4051,6 +4153,22 @@
     min-height: 600px !important;
     max-height: 600px !important;
   }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 20% 1fr 20% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
 }
 
 @media (min-width: 1920px) and (min-height: 880px) {
@@ -4062,6 +4180,22 @@
   .competitionPage .rightColumn {
     min-height: 600px !important;
     max-height: 600px !important;
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
@@ -4079,6 +4213,22 @@
   .competitionPage .leftColumn {
     min-height: 600px !important;
     max-height: 600px !important;
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
@@ -4102,6 +4252,22 @@
     height: 100vh !important;
     max-height: 100vh !important;
   }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
 }
 
 @media (min-width: 2560px) and (min-height: 1300px) {
@@ -4118,6 +4284,22 @@
   .competitionPage .leftColumn {
     min-height: 900px !important;
     max-height: 900px !important;
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
@@ -4172,6 +4354,22 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+  }
+
+  .galaxyOffLayout {
+    max-height: 90vh !important;
+    /* background-color: rebeccapurple; */
+    grid-template-columns: 22% 1fr 22% !important;
+  }
+
+  .galaxyOffLayout .leftColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .galaxyOffLayout .rightColumn {
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
 }
 
