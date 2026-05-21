@@ -1034,7 +1034,6 @@
     transition: width 0.4s ease;
     background: rgba(255, 255, 255, 0.2);
 }
-} /* Added missing closing brace */
 
 /* ---- "You" score highlight ---- */
 .planet-slot-score.score-you {

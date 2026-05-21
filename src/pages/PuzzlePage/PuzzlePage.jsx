@@ -1409,19 +1409,20 @@ function PuzzlePage({ isEvent = false }) {
   return (
     <div className={`${styles.container} ${isReviewMode ? styles.analysisPage : styles.competitionPage}`}>
       <Toaster position="top-right" />
-      {/* THIN TITLE HEADERBAR */}
-      {competitionData && (
-        <div className={styles.titleHeader}>
-          <div className={styles.titleHeaderLeft}>
-            <button className={styles.backBtnHeader} onClick={() => paramCompetitionId ? navigate(isEvent ? `/event/${paramCompetitionId}/lobby` : `/competition/${paramCompetitionId}/lobby`) : navigate("/dashboard")} title="Go back">
-              <FaArrowLeft />
-            </button>
-            <h2 className={styles.mainTitle}>{competitionData.name}</h2>
-            {isReviewMode && <span className={styles.liveBadge} style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", borderColor: "rgba(165,180,252,0.3)" }}>Review</span>}
-          </div>
+      <div className={styles.mainLayoutWrapper}>
+        {/* THIN TITLE HEADERBAR */}
+        {competitionData && (
+          <div className={styles.titleHeader}>
+            <div className={styles.titleHeaderLeft}>
+              <button className={styles.backBtnHeader} onClick={() => paramCompetitionId ? navigate(isEvent ? `/event/${paramCompetitionId}/lobby` : `/competition/${paramCompetitionId}/lobby`) : navigate("/dashboard")} title="Go back">
+                <FaArrowLeft />
+              </button>
+              <h2 className={styles.mainTitle}>{competitionData.name}</h2>
+              {isReviewMode && <span className={styles.liveBadge} style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", borderColor: "rgba(165,180,252,0.3)" }}>Review</span>}
+            </div>
 
-          {/* MID HEADER: HORIZONTAL CHAPTERS */}
-          {/* {competitionData.chapters?.length > 0 && (
+            {/* MID HEADER: HORIZONTAL CHAPTERS */}
+            {/* {competitionData.chapters?.length > 0 && (
             <div className={styles.titleHeaderMid}>
               <button className={styles.headerNavArrow} onClick={() => scrollHeader('left')} title="Scroll left">
                 <FaCaretLeft />
@@ -1491,147 +1492,149 @@ function PuzzlePage({ isEvent = false }) {
             </div>
           )} */}
 
-          {!isReviewMode && (
-            <div className={styles.titleHeaderRight}>
-              <button
-                className={`${styles.galaxyToggle} ${!showGalaxy ? styles.galaxyToggleOff : ""}`}
-                onClick={() => setShowGalaxy(!showGalaxy)}
-                title={showGalaxy ? "Hide Galaxy" : "Show Galaxy"}
-              >
-                <span className={styles.toggleIcon}>🪐</span>
-                <span className={styles.toggleText}>{showGalaxy ? "Galaxy On" : "Galaxy Off"}</span>
-                <div className={styles.toggleSwitch}>
-                  <div className={styles.toggleKnob} />
-                </div>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* BODY — 3 Columns */}
-      <div className={`${styles.body} ${(!showGalaxy || isReviewMode) ? styles.galaxyOffLayout : ""}`}>
-        {/* LEFT COLUMN */}
-        <div className={styles.leftColumn}>
-          {competitionData && (
-            <div className={styles.statsCard}>
-
-              {!isReviewMode && (
-                <div className={styles.timerBox}>
-                  <div className={styles.timerLabel}>{isBeforeStartTime ? "Starts In" : "Time Left"}</div>
-                  <div className={styles.timerValue}>
-                    {(() => {
-                      const t = isBeforeStartTime && targetStartTimeRef.current
-                        ? Math.max(0, Math.floor((targetStartTimeRef.current - Date.now()) / 1000))
-                        : timeLeft;
-                      return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-                    })()}
+            {!isReviewMode && (
+              <div className={styles.titleHeaderRight}>
+                <button
+                  className={`${styles.galaxyToggle} ${!showGalaxy ? styles.galaxyToggleOff : ""}`}
+                  onClick={() => setShowGalaxy(!showGalaxy)}
+                  title={showGalaxy ? "Hide Galaxy" : "Show Galaxy"}
+                >
+                  <span className={styles.toggleIcon}>🪐</span>
+                  <span className={styles.toggleText}>{showGalaxy ? "Galaxy On" : "Galaxy Off"}</span>
+                  <div className={styles.toggleSwitch}>
+                    <div className={styles.toggleKnob} />
                   </div>
-                </div>
-              )}
-              <div className={styles.statsGrid}>
-                <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Total</span>
-                  <span className={`${styles.statValue} ${styles.gold}`}>{getUniquePuzzleCount()}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Solved</span>
-                  <span className={styles.statValue}>{solvedCount}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Attempted</span>
-                  <span className={styles.statValue}>{getAttemptedCount()}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Remaining</span>
-                  <span className={styles.statValue}>{getUnattemptedCount()}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BODY — 3 Columns */}
+        <div className={`${styles.body} ${(!showGalaxy || isReviewMode) ? styles.galaxyOffLayout : ""}`}>
+          {/* LEFT COLUMN */}
+          <div className={styles.leftColumn}>
+
+
+            {competitionData && (
+              <div className={styles.statsCard}>
+
+                {!isReviewMode && (
+                  <div className={styles.timerBox}>
+                    <div className={styles.timerLabel}>{isBeforeStartTime ? "Starts In" : "Time Left"}</div>
+                    <div className={styles.timerValue}>
+                      {(() => {
+                        const t = isBeforeStartTime && targetStartTimeRef.current
+                          ? Math.max(0, Math.floor((targetStartTimeRef.current - Date.now()) / 1000))
+                          : timeLeft;
+                        return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+                      })()}
+                    </div>
+                  </div>
+                )}
+                <div className={styles.statsGrid}>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Total</span>
+                    <span className={`${styles.statValue} ${styles.gold}`}>{getUniquePuzzleCount()}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Solved</span>
+                    <span className={styles.statValue}>{solvedCount}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Attempted</span>
+                    <span className={styles.statValue}>{getAttemptedCount()}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Remaining</span>
+                    <span className={styles.statValue}>{getUnattemptedCount()}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {currentPuzzle && (() => {
-            let uColor = "w";
-            const fenTurn = currentPuzzle.fen?.split(" ")[1] || "w";
+            {currentPuzzle && (() => {
+              let uColor = "w";
+              const fenTurn = currentPuzzle.fen?.split(" ")[1] || "w";
 
-            if (currentPuzzle.type === 'illegal' || currentPuzzle.puzzleType === 'illegal') {
-              uColor = currentPuzzle.illegalConfig?.playerSide || (['w', 'b'].includes(currentPuzzle.firstMoveBy) ? currentPuzzle.firstMoveBy : fenTurn);
-            } else if (currentPuzzle.type === 'capture' || currentPuzzle.puzzleType === 'capture') {
-              uColor = currentPuzzle.captureConfig?.playerSide || (['w', 'b'].includes(currentPuzzle.firstMoveBy) ? currentPuzzle.firstMoveBy : fenTurn);
-            } else {
-              // Normal puzzles: user plays the opposite of the current FEN turn (computer moves first)
-              uColor = (currentPuzzle.firstMoveBy && ['w', 'b'].includes(currentPuzzle.firstMoveBy))
-                ? currentPuzzle.firstMoveBy
-                : (fenTurn === "w" ? "b" : "w");
-            }
+              if (currentPuzzle.type === 'illegal' || currentPuzzle.puzzleType === 'illegal') {
+                uColor = currentPuzzle.illegalConfig?.playerSide || (['w', 'b'].includes(currentPuzzle.firstMoveBy) ? currentPuzzle.firstMoveBy : fenTurn);
+              } else if (currentPuzzle.type === 'capture' || currentPuzzle.puzzleType === 'capture') {
+                uColor = currentPuzzle.captureConfig?.playerSide || (['w', 'b'].includes(currentPuzzle.firstMoveBy) ? currentPuzzle.firstMoveBy : fenTurn);
+              } else {
+                // Normal puzzles: user plays the opposite of the current FEN turn (computer moves first)
+                uColor = (currentPuzzle.firstMoveBy && ['w', 'b'].includes(currentPuzzle.firstMoveBy))
+                  ? currentPuzzle.firstMoveBy
+                  : (fenTurn === "w" ? "b" : "w");
+              }
 
-            return (
-              <div className={`${styles.premiumInfoCard} ${uColor === "w" ? styles.turnWhiteCard : styles.turnBlackCard}`}>
-                <div className={styles.premiumContent}>
-                  {/* Turn Capsule (Top Row) */}
-                  <div className={styles.capsuleWrapper}>
-                    <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
-                      <div className={styles.turnCapsuleInner}>
-                        <span className={styles.turnIcon}>
-                          <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
-                        </span>
-                        <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
-                      </div>
-                    </div>
-
-                    {/* Conditional Title Section — Only for 'avoid illegal move' */}
-                    {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' && (
-                      <div className={styles.puzzleInfoContainer}>
-                        <div className={styles.puzzleTitleValue}>
-                          {toSentenceCase(currentPuzzle.title) || (currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' ? `Challenge #${currentPuzzleIndex + 1}` : `Puzzle #${currentPuzzleIndex + 1}`)}
+              return (
+                <div className={`${styles.premiumInfoCard} ${uColor === "w" ? styles.turnWhiteCard : styles.turnBlackCard}`}>
+                  <div className={styles.premiumContent}>
+                    {/* Turn Capsule (Top Row) */}
+                    <div className={styles.capsuleWrapper}>
+                      <div className={`${styles.turnCapsule} ${uColor === "w" ? styles.whiteTurn : styles.blackTurn}`}>
+                        <div className={styles.turnCapsuleInner}>
+                          <span className={styles.turnIcon}>
+                            <img src={uColor === "w" ? whiteKingSvg : blackKingSvg} alt="" className={styles.capsuleKingIcon} />
+                          </span>
+                          <span className={styles.turnText}>{uColor === "w" ? "White to play" : "Black to play"}</span>
                         </div>
                       </div>
-                    )}
 
-                    {/* Metadata Row (Icon + Difficulty OR Level + Stars) */}
-                    <div className={styles.puzzleMetaBottomRow}>
-                      {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' ? (
-                        <>
-                          <div className={styles.metaIconWrapper}>
-                            <FaPuzzlePiece />
+                      {/* Conditional Title Section — Only for 'avoid illegal move' */}
+                      {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' && (
+                        <div className={styles.puzzleInfoContainer}>
+                          <div className={styles.puzzleTitleValue}>
+                            {toSentenceCase(currentPuzzle.title) || (currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' ? `Challenge #${currentPuzzleIndex + 1}` : `Puzzle #${currentPuzzleIndex + 1}`)}
                           </div>
-                          {currentPuzzle.difficulty && (
-                            <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty.toLowerCase()}`]}`}>
-                              {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <div className={styles.metaIconWrapper}>
-                            <FaChartBar />
-                          </div>
-                          <div className={styles.metaTextRow}>
-                            <div className={styles.metaText}>
-                              <span className={styles.metaLabel}>LEVEL</span>
-                              <span className={styles.metaValue}>{(currentPuzzle.level || 1)}/7</span>
-                            </div>
-                            <div className={styles.starsWrapper}>
-                              {[...Array(7)].map((_, i) => (
-                                <FaStar
-                                  key={i}
-                                  className={i < (currentPuzzle.level || 1) ? styles.starActive : styles.starInactive}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        </>
+                        </div>
                       )}
+
+                      {/* Metadata Row (Icon + Difficulty OR Level + Stars) */}
+                      <div className={styles.puzzleMetaBottomRow}>
+                        {currentPuzzle.category?.toLowerCase() === 'avoid illegal move' ? (
+                          <>
+                            <div className={styles.metaIconWrapper}>
+                              <FaPuzzlePiece />
+                            </div>
+                            {currentPuzzle.difficulty && (
+                              <span className={`${styles.illegalDiffBadge} ${styles[`illegalDiff_${currentPuzzle.difficulty.toLowerCase()}`]}`}>
+                                {currentPuzzle.difficulty.charAt(0).toUpperCase() + currentPuzzle.difficulty.slice(1)}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className={styles.metaIconWrapper}>
+                              <FaChartBar />
+                            </div>
+                            <div className={styles.metaTextRow}>
+                              <div className={styles.metaText}>
+                                <span className={styles.metaLabel}>LEVEL</span>
+                                <span className={styles.metaValue}>{(currentPuzzle.level || 1)}/7</span>
+                              </div>
+                              <div className={styles.starsWrapper}>
+                                {[...Array(7)].map((_, i) => (
+                                  <FaStar
+                                    key={i}
+                                    className={i < (currentPuzzle.level || 1) ? styles.starActive : styles.starInactive}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
+                    {/* ------------------------- */}
+
+
+                    {/* Puzzle Info Container (Unified Layout) - Only show if category is 'avoid illegal move' */}
+
                   </div>
-                  {/* ------------------------- */}
 
-
-                  {/* Puzzle Info Container (Unified Layout) - Only show if category is 'avoid illegal move' */}
-
-                </div>
-
-                {/* <div className={styles.premiumIllustration}>
+                  {/* <div className={styles.premiumIllustration}>
                   <div className={styles.checkerOverlay}></div>
                   <div className={styles.kingGlow}></div>
                   <img
@@ -1640,203 +1643,36 @@ function PuzzlePage({ isEvent = false }) {
                     className={styles.goldKing}
                   />
                 </div> */}
-              </div>
-            );
-          })()}
-          {competitionData && isLiveCompetition && !isReviewMode && (
-            <div className={styles.rankCard}>
-              <div className={styles.rankRow}>
-                <div className={styles.rankLabel}><span>🏆</span> Your Rank</div>
-                <div className={styles.rankNumber}>#{stableRank || "–"}</div>
-              </div>
-              <div className={styles.rankProgressBar}>
-                <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
-              </div>
-              <div className={styles.rankParticipants}>
-                {participantCount > 0 ? participantCount : "–"} participant{participantCount !== 1 ? "s" : ""}
-              </div>
-            </div>
-          )}
-
-          {/* Competition Results — left column, review mode only */}
-          {isReviewMode && competitionData && (
-            <div className={styles.navCard}>
-              <div className={styles.navCardHeader}>
-                <div className={styles.navCardTitle}>COMPETITION RESULTS</div>
-              </div>
-              <div className={styles.navGrid}>
-                {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
-                  const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
-                  const ci = currentFrame * ITEMS_PER_PAGE + li;
-                  const pid = puzzle.id || puzzle._id;
-                  const status = puzzleStatuses[pid];
-                  return (
-                    <div key={`res-left-${pid}`}
-                      className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${status === "success" ? styles.success : ""} ${status === "failed" ? styles.danger : ""}`}
-                      onClick={() => { if (!solving) setCurrentPuzzleIndex(gi); }}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {status === "success" ? <FaCheckCircle /> : gi + 1}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {isReviewMode && currentPuzzle && currentPuzzle.fen && (
-            <div className={styles.fenCard}>
-              <div className={styles.fenCardTitle}>FEN STRING</div>
-              <div className={styles.fenBox}>
-                <span className={styles.fenValueFull}>{currentPuzzle.fen}</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* CENTER: Chessboard */}
-        <div className={styles.boardArea}>
-          <div className={styles.boardWrapper}>
-            {puzzles.length > 0 && currentPuzzle ? (
-              <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: "start", justifyContent: "center" }}>
-                <ChessBoard
-                  key={
-                    // In review mode, reviewResetKey forces a full board remount on manual reset.
-                    // In competition mode, including the puzzle status in the key ensures that
-                    // navigating back to a solved/failed puzzle always remounts to a clean locked state.
-                    isReviewMode
-                      ? `${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-review-${reviewResetKey}`
-                      : `${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-${currentPuzzleStatus ?? "unsolved"}`
-                  }
-                  fen={currentPuzzle.fen}
-                  solution={currentPuzzle.solution}
-                  alternativeSolutions={currentPuzzle.alternativeSolutions}
-                  puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
-                  captureConfig={currentPuzzle.captureConfig}
-                  illegalConfig={currentPuzzle.illegalConfig}
-                  firstMoveBy={currentPuzzle.firstMoveBy}
-                  onPuzzleSolved={handlePuzzleSolved}
-                  onWrongMove={handleWrongMove}
-                  onBoardStateChange={(fen, moveHistory, trackedSquare) => {
-                    if (isBeforeStartTime && !isReviewMode) return;
-                    const puzzleId = currentPuzzle.id || currentPuzzle._id;
-                    setPuzzleBoardStates(prev => ({ ...prev, [puzzleId]: { fen, moveHistory, trackedSquare } }));
-                  }}
-                  savedBoardState={
-                    isReviewMode
-                      ? null
-                      : puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]
-                  }
-                  isSolved={
-                    isReviewMode
-                      ? practiceStatuses[currentPuzzle.id || currentPuzzle._id] === "success"
-                      : (currentPuzzleStatus === "success" || currentPuzzleStatus === "failed")
-                  }
-                  interactive={isBoardInteractive}
-                  showSolution={showSolution}
-                />
-                {isBeforeStartTime && !isReviewMode && (
-                  <div className={styles.boardBeforeStart}>
-                    <div className={styles.boardStartLabel}>Competition starts in</div>
-                    <div className={styles.boardStartCountdown}>
-                      {Math.max(0, Math.floor((new Date(competitionData.startTime).getTime() - Date.now()) / 1000))}s
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className={styles.loading}>No Puzzles Available</div>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        {competitionData && (
-          <div className={styles.rightColumn}>
-
-            {/* CHAPTERS BOX — all visible, wrapping */}
-            {competitionData.chapters?.length > 0 && (
-              <div className={styles.chaptersBox}>
-                <div className={styles.chaptersBoxTitle}>Chapters</div>
-                <div className={styles.chaptersWrap} ref={chapterScrollRef}>
-                  {competitionData.chapters.map((chapter, idx) => {
-                    const ids = (chapter.puzzleIds || []).map(id => id.toString());
-                    const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
-                    const solved = chPs.filter(p => puzzleStatuses[(p.id || p._id).toString()] === "success").length;
-                    return (
-                      <button key={idx} type="button"
-                        className={`${styles.chapterPill} ${activeChapterIndex === idx ? styles.chapterPillActive : ""}`}
-                        onClick={() => {
-                          if (isBeforeStartTime && !isReviewMode) return;
-                          setActiveChapterIndex(idx);
-                          setCurrentFrame(0);
-
-                          const gPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
-                          if (gPs.length > 0) {
-                            let targetIndex = -1;
-                            const lastIdx = chapterLastActiveIndex[idx];
-
-                            // 1. Try restoring the last active puzzle in this chapter if it's still unsolved
-                            if (lastIdx !== undefined && puzzles[lastIdx]) {
-                              const p = puzzles[lastIdx];
-                              const isIdInChapter = ids.includes((p._id || p.id).toString());
-                              const status = puzzleStatuses[p._id || p.id];
-                              if (isIdInChapter && status !== 'success' && status !== 'failed') {
-                                targetIndex = lastIdx;
-                              }
-                            }
-
-                            // 2. Fallback: Find the first unsolved/incomplete puzzle in this chapter
-                            if (targetIndex === -1) {
-                              const firstUnsolved = gPs.find(p => {
-                                const status = puzzleStatuses[p._id || p.id];
-                                return status !== 'success' && status !== 'failed';
-                              });
-                              if (firstUnsolved) {
-                                targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (firstUnsolved._id || firstUnsolved.id).toString());
-                              }
-                            }
-
-                            // 3. Final Fallback: Start from the first puzzle of the chapter
-                            if (targetIndex === -1) {
-                              targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString());
-                            }
-
-                            if (targetIndex !== -1) {
-                              setCurrentPuzzleIndex(targetIndex);
-                            }
-                          }
-                        }}
-                        style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
-                      >
-                        <div className={styles.chapterPillContent}>
-                          <span className={styles.chapterPillName}>{chapter.name}</span>
-                          <span className={styles.chapterPillBadge}>{solved}/{chPs.length}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
                 </div>
-                {/* Submit button relocated inside chaptersBox */}
-                {isLiveCompetition && !isReviewMode && (
-                  <button className={styles.btnSubmitInside}
-                    onClick={() => setShowSubmitModal(true)}
-                    disabled={submitting || getUnattemptedCount() > 0}
-                    title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
-                  >
-                    Submit Competition
-                  </button>
-                )}
+              );
+            })()}
+
+
+            {competitionData && isLiveCompetition && !isReviewMode && (
+              <div className={styles.rankCard}>
+                {/* Left: rank label + number */}
+                <div className={styles.rankLeft}>
+                  <div className={styles.rankLabel}><span>🏆</span> Your Rank</div>
+                  <div className={styles.rankNumber}>#{stableRank || "–"}</div>
+                </div>
+                {/* Right: progress bar + participant count */}
+                <div className={styles.rankRight}>
+                  <div className={styles.rankProgressBar}>
+                    <div className={styles.rankProgressFill} style={{ width: `${puzzles.length > 0 ? (solvedCount / puzzles.length) * 100 : 0}%` }} />
+                  </div>
+                  <div className={styles.rankParticipants}>
+                    {participantCount > 0 ? participantCount : "–"} participant{participantCount !== 1 ? "s" : ""}
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className={styles.navCard}>
-              <div className={styles.navCardHeader}>
-                <div className={styles.navCardTitle}>PUZZLES</div>
-                {totalPages > 1 && <div className={styles.paginationInfo}>(Page {currentFrame + 1} of {totalPages})</div>}
-              </div>
-
-              {!isReviewMode && (
+            {/* Competition Results — left column, review mode only */}
+            {isReviewMode && competitionData && (
+              <div className={styles.navCard}>
+                <div className={styles.navCardHeader}>
+                  <div className={styles.navCardTitle}>COMPETITION RESULTS</div>
+                </div>
                 <div className={styles.navGrid}>
                   {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
                     const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
@@ -1844,243 +1680,420 @@ function PuzzlePage({ isEvent = false }) {
                     const pid = puzzle.id || puzzle._id;
                     const status = puzzleStatuses[pid];
                     return (
-                      <div key={`nav-${pid}`}
+                      <div key={`res-left-${pid}`}
                         className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${status === "success" ? styles.success : ""} ${status === "failed" ? styles.danger : ""}`}
-                        onClick={() => {
-                          if (isBeforeStartTime && !isReviewMode) return;
-                          if (!solving) {
-                            setCurrentPuzzleIndex(gi);
-                            if (status === "success") toast.info("Puzzle already solved!");
-                            else if (status === "failed") toast.info("Puzzle failed — view only");
-                          }
-                        }}
-                        style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
+                        onClick={() => { if (!solving) setCurrentPuzzleIndex(gi); }}
+                        style={{ cursor: "pointer" }}
                       >
                         {status === "success" ? <FaCheckCircle /> : gi + 1}
                       </div>
                     );
                   })}
                 </div>
+              </div>
+            )}
+
+            {isReviewMode && currentPuzzle && currentPuzzle.fen && (
+              <div className={styles.fenCard}>
+                <div className={styles.fenCardTitle}>FEN STRING</div>
+                <div className={styles.fenBox}>
+                  <span className={styles.fenValueFull}>{currentPuzzle.fen}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* CENTER: Chessboard */}
+          <div className={styles.boardArea}>
+            <div className={styles.boardWrapper}>
+              {puzzles.length > 0 && currentPuzzle ? (
+                <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", alignItems: isReviewMode ? "start" : "start", justifyContent: "center" }}>
+                  <ChessBoard
+                    key={
+                      // In review mode, reviewResetKey forces a full board remount on manual reset.
+                      // In competition mode, including the puzzle status in the key ensures that
+                      // navigating back to a solved/failed puzzle always remounts to a clean locked state.
+                      isReviewMode
+                        ? `${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-review-${reviewResetKey}`
+                        : `${currentPuzzle.id || currentPuzzle._id}-${currentPuzzleIndex}-${currentPuzzleStatus ?? "unsolved"}`
+                    }
+                    fen={currentPuzzle.fen}
+                    solution={currentPuzzle.solution}
+                    alternativeSolutions={currentPuzzle.alternativeSolutions}
+                    puzzleType={currentPuzzle.puzzleType || currentPuzzle.type}
+                    captureConfig={currentPuzzle.captureConfig}
+                    illegalConfig={currentPuzzle.illegalConfig}
+                    firstMoveBy={currentPuzzle.firstMoveBy}
+                    onPuzzleSolved={handlePuzzleSolved}
+                    onWrongMove={handleWrongMove}
+                    onBoardStateChange={(fen, moveHistory, trackedSquare) => {
+                      if (isBeforeStartTime && !isReviewMode) return;
+                      const puzzleId = currentPuzzle.id || currentPuzzle._id;
+                      setPuzzleBoardStates(prev => ({ ...prev, [puzzleId]: { fen, moveHistory, trackedSquare } }));
+                    }}
+                    savedBoardState={
+                      isReviewMode
+                        ? null
+                        : puzzleBoardStates[currentPuzzle.id || currentPuzzle._id]
+                    }
+                    isSolved={
+                      isReviewMode
+                        ? practiceStatuses[currentPuzzle.id || currentPuzzle._id] === "success"
+                        : (currentPuzzleStatus === "success" || currentPuzzleStatus === "failed")
+                    }
+                    interactive={isBoardInteractive}
+                    showSolution={showSolution}
+                    isAnalysis={isReviewMode}
+                    boardWrapperClass={styles.boardWrapper}
+                    boardClass={styles.board}
+                  />
+                  {isBeforeStartTime && !isReviewMode && (
+                    <div className={styles.boardBeforeStart}>
+                      <div className={styles.boardStartLabel}>Competition starts in</div>
+                      <div className={styles.boardStartCountdown}>
+                        {Math.max(0, Math.floor((new Date(competitionData.startTime).getTime() - Date.now()) / 1000))}s
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.loading}>No Puzzles Available</div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          {competitionData && (
+            <div className={styles.rightColumn}>
+
+              {/* CHAPTERS BOX — all visible, wrapping */}
+              {competitionData.chapters?.length > 0 && (
+                <div className={styles.chaptersBox}>
+                  <div className={styles.chaptersBoxTitle}>Chapters</div>
+                  <div className={styles.chaptersWrap} ref={chapterScrollRef}>
+                    {competitionData.chapters.map((chapter, idx) => {
+                      const ids = (chapter.puzzleIds || []).map(id => id.toString());
+                      const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
+                      const solved = chPs.filter(p => puzzleStatuses[(p.id || p._id).toString()] === "success").length;
+                      return (
+                        <button key={idx} type="button"
+                          className={`${styles.chapterPill} ${activeChapterIndex === idx ? styles.chapterPillActive : ""}`}
+                          onClick={() => {
+                            if (isBeforeStartTime && !isReviewMode) return;
+                            setActiveChapterIndex(idx);
+                            setCurrentFrame(0);
+
+                            const gPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
+                            if (gPs.length > 0) {
+                              let targetIndex = -1;
+                              const lastIdx = chapterLastActiveIndex[idx];
+
+                              // 1. Try restoring the last active puzzle in this chapter if it's still unsolved
+                              if (lastIdx !== undefined && puzzles[lastIdx]) {
+                                const p = puzzles[lastIdx];
+                                const isIdInChapter = ids.includes((p._id || p.id).toString());
+                                const status = puzzleStatuses[p._id || p.id];
+                                if (isIdInChapter && status !== 'success' && status !== 'failed') {
+                                  targetIndex = lastIdx;
+                                }
+                              }
+
+                              // 2. Fallback: Find the first unsolved/incomplete puzzle in this chapter
+                              if (targetIndex === -1) {
+                                const firstUnsolved = gPs.find(p => {
+                                  const status = puzzleStatuses[p._id || p.id];
+                                  return status !== 'success' && status !== 'failed';
+                                });
+                                if (firstUnsolved) {
+                                  targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (firstUnsolved._id || firstUnsolved.id).toString());
+                                }
+                              }
+
+                              // 3. Final Fallback: Start from the first puzzle of the chapter
+                              if (targetIndex === -1) {
+                                targetIndex = puzzles.findIndex(p => (p._id || p.id).toString() === (gPs[0]._id || gPs[0].id).toString());
+                              }
+
+                              if (targetIndex !== -1) {
+                                setCurrentPuzzleIndex(targetIndex);
+                              }
+                            }
+                          }}
+                          style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
+                        >
+                          <div className={styles.chapterPillContent}>
+                            <span className={styles.chapterPillName}>{chapter.name}</span>
+                            <span className={styles.chapterPillBadge}>{solved}/{chPs.length}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Submit button relocated inside chaptersBox */}
+                  {isLiveCompetition && !isReviewMode && (
+                    <button className={styles.btnSubmitInside}
+                      onClick={() => setShowSubmitModal(true)}
+                      disabled={submitting || getUnattemptedCount() > 0}
+                      title={getUnattemptedCount() > 0 ? `Attempt ${getUnattemptedCount()} more puzzle(s) first` : ""}
+                    >
+                      Submit Competition
+                    </button>
+                  )}
+                </div>
               )}
 
-              {isReviewMode && (
-                <>
-                  {/* Practice Attempts — tracks what user does in review mode */}
-                  <div className={styles.sectionTitle}>Practice Attempts</div>
+              <div className={styles.navCard}>
+                <div className={styles.navCardHeader}>
+                  <div className={styles.navCardTitle}>PUZZLES</div>
+                  {totalPages > 1 && <div className={styles.paginationInfo}>(Page {currentFrame + 1} of {totalPages})</div>}
+                </div>
+
+                {!isReviewMode && (
                   <div className={styles.navGrid}>
                     {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
                       const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
                       const ci = currentFrame * ITEMS_PER_PAGE + li;
                       const pid = puzzle.id || puzzle._id;
-                      const pStatus = practiceStatuses[pid];
+                      const status = puzzleStatuses[pid];
                       return (
-                        <div key={`prac-${pid}`}
-                          className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${pStatus === "success" ? styles.success : ""} ${pStatus === "failed" ? styles.danger : ""}`}
-                          onClick={() => { if (!solving) setCurrentPuzzleIndex(gi); }} style={{ cursor: "pointer" }}>
-                          {pStatus === "success" ? <FaCheckCircle /> : gi + 1}
+                        <div key={`nav-${pid}`}
+                          className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${status === "success" ? styles.success : ""} ${status === "failed" ? styles.danger : ""}`}
+                          onClick={() => {
+                            if (isBeforeStartTime && !isReviewMode) return;
+                            if (!solving) {
+                              setCurrentPuzzleIndex(gi);
+                              if (status === "success") toast.info("Puzzle already solved!");
+                              else if (status === "failed") toast.info("Puzzle failed — view only");
+                            }
+                          }}
+                          style={{ cursor: isBeforeStartTime && !isReviewMode ? "not-allowed" : "pointer" }}
+                        >
+                          {status === "success" ? <FaCheckCircle /> : gi + 1}
                         </div>
                       );
                     })}
                   </div>
-                </>
-              )}
+                )}
 
-              <div className={styles.navControls}>
-                <button className={styles.navArrow}
-                  onClick={() => {
-                    if (chapterCurrentIndex <= 0) {
-                      if (activeChapterIndex > 0) {
-                        const pi = activeChapterIndex - 1;
-                        const ids = (competitionData.chapters[pi].puzzleIds || []).map(id => id.toString());
-                        const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
-                        if (chPs.length > 0) { const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (chPs[chPs.length - 1]._id || chPs[chPs.length - 1].id).toString()); if (gi !== -1) setCurrentPuzzleIndex(gi); }
-                      }
-                    } else {
-                      const nci = chapterCurrentIndex - 1;
-                      const gi = puzzles.findIndex(p => (p._id || p.id) === (navPuzzles[nci]?._id || navPuzzles[nci]?.id));
-                      if (gi !== -1) setCurrentPuzzleIndex(gi);
-                    }
-                  }}
-                  disabled={(chapterCurrentIndex <= 0 && activeChapterIndex <= 0) || (isBeforeStartTime && !isReviewMode)}
-                ><FaChevronLeft /></button>
-                <button className={styles.navArrow}
-                  onClick={() => {
-                    if (chapterCurrentIndex >= navPuzzles.length - 1) {
-                      if (competitionData.chapters && activeChapterIndex < competitionData.chapters.length - 1) {
-                        const ni = activeChapterIndex + 1;
-                        const ids = (competitionData.chapters[ni].puzzleIds || []).map(id => id.toString());
-                        const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
-                        if (chPs.length > 0) { const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (chPs[0]._id || chPs[0].id).toString()); if (gi !== -1) setCurrentPuzzleIndex(gi); }
-                      }
-                    } else {
-                      const nci = chapterCurrentIndex + 1;
-                      const gi = puzzles.findIndex(p => (p._id || p.id) === (navPuzzles[nci]?._id || navPuzzles[nci]?.id));
-                      if (gi !== -1) setCurrentPuzzleIndex(gi);
-                    }
-                  }}
-                  disabled={(chapterCurrentIndex >= navPuzzles.length - 1 && activeChapterIndex >= (competitionData.chapters?.length || 1) - 1) || (isBeforeStartTime && !isReviewMode)}
-                ><FaChevronRight /></button>
-              </div>
-
-              {totalPages > 1 && (
-                <div className={styles.paginationContainer}>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(0)} disabled={currentFrame === 0}><FaAngleDoubleLeft /></button>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))} disabled={currentFrame === 0}><FaChevronLeft /></button>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.min(totalPages - 1, currentFrame + 1))} disabled={currentFrame >= totalPages - 1}><FaChevronRight /></button>
-                  <button className={styles.pageBtn} onClick={() => setCurrentFrame(totalPages - 1)} disabled={currentFrame >= totalPages - 1}><FaAngleDoubleRight /></button>
-                </div>
-              )}
-
-              {/* ─── FIX 2: Review Mode — Reset + Solution ─────────────────────────── */}
-              {isReviewMode && (
-                <>
-                  <div className={styles.reviewActionsRow}>
-                    <button
-                      className={styles.resetPuzzleBtn}
-                      onClick={() => {
-                        const pid = currentPuzzle?.id || currentPuzzle?._id;
-                        if (pid) {
-                          setPracticeStatuses(prev => {
-                            const next = { ...prev };
-                            delete next[pid];
-                            return next;
-                          });
-                        }
-                        setReviewResetKey(k => k + 1);
-                        setShowInlineSolution(false);
-                        toast("Puzzle reset!", { icon: "🔄", duration: 1200 });
-                      }}
-                    >
-                      <FaSyncAlt /> Reset Puzzle
-                    </button>
-
-                    {/* Hide "View Solution" for Avoid Illegal Move (illegal) puzzles */}
-                    {/* Ensure currentPuzzle exists before checking its type/category */}
-                    {currentPuzzle && !(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' || (currentPuzzle.category?.toLowerCase() === 'avoid illegal move')) && (
-                      <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
-                        {showInlineSolution ? "Hide Solution" : "View Solution"}
-                      </button>
-                    )}
-                  </div>
-
-                  <div className={styles.solutionBox}>
-                    {currentPuzzle && (() => {
-                      const pid = currentPuzzle.id || currentPuzzle._id;
-                      const wasSolved = puzzleStatuses[pid] === "success";
-                      const accent = wasSolved ? "#4ade80" : "#f87171";
-                      const userMoves = currentPuzzle.moveHistory || [];
-
-                      // Determine if white or black moves first from FEN
-                      // FEN second field: 'w' = white to move, 'b' = black to move
-                      const fenTurn = (() => {
-                        try {
-                          const parts = (currentPuzzle.fen || '').split(' ');
-                          return parts[1] === 'b' ? 'b' : 'w';
-                        } catch { return 'w'; }
-                      })();
-                      const blackFirst = fenTurn === 'b';
-
-                      // Build horizontal move pairs: [{num, white, black}]
-                      const buildMovePairs = (moves) => {
-                        const pairs = [];
-                        let moveNum = 1;
-                        let i = 0;
-                        if (blackFirst) {
-                          // First move is black's — white slot shows "..."
-                          pairs.push({ num: moveNum, white: null, black: moves[0] || null });
-                          moveNum++;
-                          i = 1;
-                        }
-                        while (i < moves.length) {
-                          pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
-                          moveNum++;
-                          i += 2;
-                        }
-                        return pairs;
-                      };
-
-                      const userPairs = buildMovePairs(userMoves);
-
-                      return (
-                        <div className={styles.userAttemptSection}>
-                          <div className={styles.sectionTitle} style={{ color: accent }}>Your Moves</div>
-                          <div className={styles.movesListHorizontal}>
-                            {userPairs.length > 0 ? userPairs.map((pair, idx) => (
-                              <span key={`am${idx}`} className={styles.movePair}>
-                                <span className={styles.moveNumber}>{pair.num}.</span>
-                                {pair.white
-                                  ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.white}</span>
-                                  : <span className={styles.moveEllipsis}>...</span>
-                                }
-                                {pair.black
-                                  ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.black}</span>
-                                  : null
-                                }
-                              </span>
-                            )) : <span className={styles.noMoves}>No moves yet.</span>}
+                {isReviewMode && (
+                  <>
+                    {/* Practice Attempts — tracks what user does in review mode */}
+                    <div className={styles.sectionTitle}>Practice Attempts</div>
+                    <div className={styles.navGrid}>
+                      {navPuzzles.slice(currentFrame * ITEMS_PER_PAGE, (currentFrame + 1) * ITEMS_PER_PAGE).map((puzzle, li) => {
+                        const gi = puzzles.findIndex(p => (p._id || p.id) === (puzzle._id || puzzle.id));
+                        const ci = currentFrame * ITEMS_PER_PAGE + li;
+                        const pid = puzzle.id || puzzle._id;
+                        const pStatus = practiceStatuses[pid];
+                        return (
+                          <div key={`prac-${pid}`}
+                            className={`${styles.navItem} ${chapterCurrentIndex === ci ? styles.active : ""} ${pStatus === "success" ? styles.success : ""} ${pStatus === "failed" ? styles.danger : ""}`}
+                            onClick={() => { if (!solving) setCurrentPuzzleIndex(gi); }} style={{ cursor: "pointer" }}>
+                            {pStatus === "success" ? <FaCheckCircle /> : gi + 1}
                           </div>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-                    <div className={styles.correctSolutionSection}>
-                      <div className={styles.sectionTitle} style={{ color: "#4ade80" }}> Solution</div>
-                      <div className={styles.movesListHorizontal}>
-                        {showInlineSolution ? (
-                          currentPuzzle?.solution?.length > 0 ? (() => {
-                            const sanMoves = uciMovesToSan(currentPuzzle.fen, currentPuzzle.solution);
-                            const fenTurn = (() => {
-                              try {
-                                const parts = (currentPuzzle.fen || '').split(' ');
-                                return parts[1] === 'b' ? 'b' : 'w';
-                              } catch { return 'w'; }
-                            })();
-                            const blackFirst = fenTurn === 'b';
-                            const buildMovePairs = (moves) => {
-                              const pairs = [];
-                              let moveNum = 1;
-                              let i = 0;
-                              if (blackFirst) {
-                                pairs.push({ num: moveNum, white: null, black: moves[0] || null });
-                                moveNum++;
-                                i = 1;
-                              }
-                              while (i < moves.length) {
-                                pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
-                                moveNum++;
-                                i += 2;
-                              }
-                              return pairs;
-                            };
-                            const solPairs = buildMovePairs(sanMoves);
-                            return solPairs.map((pair, idx) => (
-                              <span key={`sol${idx}`} className={styles.movePair}>
-                                <span className={styles.moveNumber}>{pair.num}.</span>
-                                {pair.white
-                                  ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.white}</span>
-                                  : <span className={styles.moveEllipsis}>...</span>
+                <div className={styles.navControls}>
+                  <button className={styles.navArrow}
+                    onClick={() => {
+                      if (chapterCurrentIndex <= 0) {
+                        if (activeChapterIndex > 0) {
+                          const pi = activeChapterIndex - 1;
+                          const ids = (competitionData.chapters[pi].puzzleIds || []).map(id => id.toString());
+                          const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
+                          if (chPs.length > 0) { const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (chPs[chPs.length - 1]._id || chPs[chPs.length - 1].id).toString()); if (gi !== -1) setCurrentPuzzleIndex(gi); }
+                        }
+                      } else {
+                        const nci = chapterCurrentIndex - 1;
+                        const gi = puzzles.findIndex(p => (p._id || p.id) === (navPuzzles[nci]?._id || navPuzzles[nci]?.id));
+                        if (gi !== -1) setCurrentPuzzleIndex(gi);
+                      }
+                    }}
+                    disabled={(chapterCurrentIndex <= 0 && activeChapterIndex <= 0) || (isBeforeStartTime && !isReviewMode)}
+                  ><FaChevronLeft /></button>
+                  <button className={styles.navArrow}
+                    onClick={() => {
+                      if (chapterCurrentIndex >= navPuzzles.length - 1) {
+                        if (competitionData.chapters && activeChapterIndex < competitionData.chapters.length - 1) {
+                          const ni = activeChapterIndex + 1;
+                          const ids = (competitionData.chapters[ni].puzzleIds || []).map(id => id.toString());
+                          const chPs = puzzles.filter(p => ids.includes((p._id || p.id).toString()));
+                          if (chPs.length > 0) { const gi = puzzles.findIndex(p => (p._id || p.id).toString() === (chPs[0]._id || chPs[0].id).toString()); if (gi !== -1) setCurrentPuzzleIndex(gi); }
+                        }
+                      } else {
+                        const nci = chapterCurrentIndex + 1;
+                        const gi = puzzles.findIndex(p => (p._id || p.id) === (navPuzzles[nci]?._id || navPuzzles[nci]?.id));
+                        if (gi !== -1) setCurrentPuzzleIndex(gi);
+                      }
+                    }}
+                    disabled={(chapterCurrentIndex >= navPuzzles.length - 1 && activeChapterIndex >= (competitionData.chapters?.length || 1) - 1) || (isBeforeStartTime && !isReviewMode)}
+                  ><FaChevronRight /></button>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className={styles.paginationContainer}>
+                    <button className={styles.pageBtn} onClick={() => setCurrentFrame(0)} disabled={currentFrame === 0}><FaAngleDoubleLeft /></button>
+                    <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.max(0, currentFrame - 1))} disabled={currentFrame === 0}><FaChevronLeft /></button>
+                    <button className={styles.pageBtn} onClick={() => setCurrentFrame(Math.min(totalPages - 1, currentFrame + 1))} disabled={currentFrame >= totalPages - 1}><FaChevronRight /></button>
+                    <button className={styles.pageBtn} onClick={() => setCurrentFrame(totalPages - 1)} disabled={currentFrame >= totalPages - 1}><FaAngleDoubleRight /></button>
+                  </div>
+                )}
+
+                {/* ─── FIX 2: Review Mode — Reset + Solution ─────────────────────────── */}
+                {isReviewMode && (
+                  <>
+                    <div className={styles.reviewActionsRow}>
+                      <button
+                        className={styles.resetPuzzleBtn}
+                        onClick={() => {
+                          const pid = currentPuzzle?.id || currentPuzzle?._id;
+                          if (pid) {
+                            setPracticeStatuses(prev => {
+                              const next = { ...prev };
+                              delete next[pid];
+                              return next;
+                            });
+                          }
+                          setReviewResetKey(k => k + 1);
+                          setShowInlineSolution(false);
+                          toast("Puzzle reset!", { icon: "🔄", duration: 1200 });
+                        }}
+                      >
+                        <FaSyncAlt /> Reset Puzzle
+                      </button>
+
+                      {/* Hide "View Solution" for Avoid Illegal Move (illegal) puzzles */}
+                      {/* Ensure currentPuzzle exists before checking its type/category */}
+                      {currentPuzzle && !(currentPuzzle.puzzleType === 'illegal' || currentPuzzle.type === 'illegal' || (currentPuzzle.category?.toLowerCase() === 'avoid illegal move')) && (
+                        <button className={styles.viewSolBtn} onClick={() => setShowInlineSolution(!showInlineSolution)}>
+                          {showInlineSolution ? "Hide Solution" : "View Solution"}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className={styles.solutionBox}>
+                      {currentPuzzle && (() => {
+                        const pid = currentPuzzle.id || currentPuzzle._id;
+                        const wasSolved = puzzleStatuses[pid] === "success";
+                        const accent = wasSolved ? "#4ade80" : "#f87171";
+                        const userMoves = currentPuzzle.moveHistory || [];
+
+                        // Determine if white or black moves first from FEN
+                        // FEN second field: 'w' = white to move, 'b' = black to move
+                        const fenTurn = (() => {
+                          try {
+                            const parts = (currentPuzzle.fen || '').split(' ');
+                            return parts[1] === 'b' ? 'b' : 'w';
+                          } catch { return 'w'; }
+                        })();
+                        const blackFirst = fenTurn === 'b';
+
+                        // Build horizontal move pairs: [{num, white, black}]
+                        const buildMovePairs = (moves) => {
+                          const pairs = [];
+                          let moveNum = 1;
+                          let i = 0;
+                          if (blackFirst) {
+                            // First move is black's — white slot shows "..."
+                            pairs.push({ num: moveNum, white: null, black: moves[0] || null });
+                            moveNum++;
+                            i = 1;
+                          }
+                          while (i < moves.length) {
+                            pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
+                            moveNum++;
+                            i += 2;
+                          }
+                          return pairs;
+                        };
+
+                        const userPairs = buildMovePairs(userMoves);
+
+                        return (
+                          <div className={styles.userAttemptSection}>
+                            <div className={styles.sectionTitle} style={{ color: accent }}>Your Moves</div>
+                            <div className={styles.movesListHorizontal}>
+                              {userPairs.length > 0 ? userPairs.map((pair, idx) => (
+                                <span key={`am${idx}`} className={styles.movePair}>
+                                  <span className={styles.moveNumber}>{pair.num}.</span>
+                                  {pair.white
+                                    ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.white}</span>
+                                    : <span className={styles.moveEllipsis}>...</span>
+                                  }
+                                  {pair.black
+                                    ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.black}</span>
+                                    : null
+                                  }
+                                </span>
+                              )) : <span className={styles.noMoves}>No moves yet.</span>}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      <div className={styles.correctSolutionSection}>
+                        <div className={styles.sectionTitle} style={{ color: "#4ade80" }}> Solution</div>
+                        <div className={styles.movesListHorizontal}>
+                          {showInlineSolution ? (
+                            currentPuzzle?.solution?.length > 0 ? (() => {
+                              const sanMoves = uciMovesToSan(currentPuzzle.fen, currentPuzzle.solution);
+                              const fenTurn = (() => {
+                                try {
+                                  const parts = (currentPuzzle.fen || '').split(' ');
+                                  return parts[1] === 'b' ? 'b' : 'w';
+                                } catch { return 'w'; }
+                              })();
+                              const blackFirst = fenTurn === 'b';
+                              const buildMovePairs = (moves) => {
+                                const pairs = [];
+                                let moveNum = 1;
+                                let i = 0;
+                                if (blackFirst) {
+                                  pairs.push({ num: moveNum, white: null, black: moves[0] || null });
+                                  moveNum++;
+                                  i = 1;
                                 }
-                                {pair.black
-                                  ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.black}</span>
-                                  : null
+                                while (i < moves.length) {
+                                  pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
+                                  moveNum++;
+                                  i += 2;
                                 }
-                              </span>
-                            ));
-                          })()
-                            : <span className={styles.noMoves}>No solution available.</span>
-                        ) : <span className={styles.noMoves}>Hidden</span>}
+                                return pairs;
+                              };
+                              const solPairs = buildMovePairs(sanMoves);
+                              return solPairs.map((pair, idx) => (
+                                <span key={`sol${idx}`} className={styles.movePair}>
+                                  <span className={styles.moveNumber}>{pair.num}.</span>
+                                  {pair.white
+                                    ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.white}</span>
+                                    : <span className={styles.moveEllipsis}>...</span>
+                                  }
+                                  {pair.black
+                                    ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.black}</span>
+                                    : null
+                                  }
+                                </span>
+                              ));
+                            })()
+                              : <span className={styles.noMoves}>No solution available.</span>
+                          ) : <span className={styles.noMoves}>Hidden</span>}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
 
+        </div>
+        {/* END BODY */}
       </div>
-      {/* END BODY */}
 
       {/* GALAXY — Full Width */}
       {isLiveCompetition && !isReviewMode && showGalaxy && (
