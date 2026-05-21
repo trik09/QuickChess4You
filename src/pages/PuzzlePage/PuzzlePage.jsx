@@ -451,7 +451,10 @@ function PuzzlePage({ isEvent = false }) {
         const start = new Date(comp.startTime).getTime();
         const end = new Date(comp.endTime).getTime();
 
-        const isLive = comp.status === "live" || comp.status === "LIVE";
+        const isLive = comp.status === "live" || comp.status === "LIVE" ||
+          // Time-based fallback: treat as live if within the competition window
+          // even if the DB status is stale (e.g. still "UPCOMING")
+          (now >= start && now <= end);
         // CRITICAL: Ensure isLiveCompetition is true if it's a competition from lobby,
         // so that rank, submit, and turn indicators are rendered immediately.
         setIsLiveCompetition(true);
