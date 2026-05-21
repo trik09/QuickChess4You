@@ -799,6 +799,52 @@
   border-color: #b58863;
 }
 
+.eventEndInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+  padding-left: 1rem;
+}
+
+.eventDateLabel {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.eventDateTime {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+[data-theme="light"] .eventDateTime {
+  color: #1a202c;
+}
+
+[data-theme="light"] .eventDateLabel {
+  color: #b58863;
+}
+
+/* Responsive adjustment for eventEndInfo */
+@media (max-width: 768px) {
+  .eventEndInfo {
+    align-items: flex-start;
+    padding-left: 0;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .eventDateTime {
+    font-size: 0.85rem;
+  }
+}
+
 [data-theme="light"] .headerDivider {
   background: linear-gradient(to right, rgba(181, 136, 99, 0.2), rgba(181, 136, 99, 0.05) 80%);
 }

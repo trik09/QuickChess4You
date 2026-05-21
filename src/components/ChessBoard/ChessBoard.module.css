@@ -10,6 +10,7 @@
   border: none;
   position: relative;
   /* background-color: #0400ff; */
+  touch-action: none; /* prevent browser scroll/zoom interfering with piece drag */
 }
 
 .feedback {
@@ -77,6 +78,7 @@
   }
 }
 
+
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -86,7 +88,47 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   border-radius: px;
   overflow: hidden;
+  touch-action: none; /* prevent scroll/zoom during piece drag on touch devices */
 }
+
+/* BOARD MEDIA QUERIES  */
+
+@media (min-width: 1350px) {
+  .board {
+    max-width: 545px;
+    max-height: 545px;
+  }
+
+  .boardWrapper {
+    max-width: 545px;
+    max-height: 545px;
+  }
+}
+
+@media (min-width: 1450px) {
+  .board {
+    max-width: 600px;
+    max-height: 600px;
+  }
+
+  .boardWrapper {
+    max-width: 600px;
+    max-height: 600px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .board {
+    max-width: 740px;
+    max-height: 740px;
+  }
+
+  .boardWrapper {
+    max-width: 740px;
+    max-height: 740px;
+  }
+}
+
 
 /* .row {
   display: flex;
@@ -100,6 +142,7 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
+  touch-action: none; /* prevent scroll during drag on touch devices */
 }
 
 /* Square colors are now applied via inline styles from theme context */

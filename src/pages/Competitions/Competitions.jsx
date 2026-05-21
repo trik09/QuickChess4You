@@ -104,7 +104,12 @@ function Competitions() {
         }
     };
 
-    const handlePlay = (competitionId) => {
+    const handlePlay = (competitionId, e) => {
+        // Prevent navigation if text is being selected
+        const selection = window.getSelection();
+        if (selection && selection.toString().length > 0) {
+            return;
+        }
         navigate(`/live-competition/${competitionId}`);
     };
 
@@ -181,7 +186,7 @@ function Competitions() {
                         status === 'live' ? (
                             <button
                                 className={styles.playBtn}
-                                onClick={() => handlePlay(competition._id)}
+                                onClick={(e) => handlePlay(competition._id, e)}
                             >
                                 <FaGamepad /> Join Live Competition
                             </button>
@@ -238,7 +243,7 @@ function Competitions() {
                             }
 
                             return (
-                                <tr key={comp._id} onClick={() => status === 'live' && joined ? handlePlay(comp._id) : null} style={{ cursor: status === 'live' && joined ? 'pointer' : 'default' }}>
+                                <tr key={comp._id} onClick={(e) => status === 'live' && joined ? handlePlay(comp._id, e) : null} style={{ cursor: status === 'live' && joined ? 'pointer' : 'default' }}>
                                     <td>{statusBadge}</td>
                                     <td>
                                         <div className={styles.tableNameCell}>
@@ -277,7 +282,7 @@ function Competitions() {
                                             status === 'live' ? (
                                                 <button
                                                     className={styles.playBtnSmall}
-                                                    onClick={(e) => { e.stopPropagation(); handlePlay(comp._id); }}
+                                                    onClick={(e) => { e.stopPropagation(); handlePlay(comp._id, e); }}
                                                 >
                                                     Play
                                                 </button>
