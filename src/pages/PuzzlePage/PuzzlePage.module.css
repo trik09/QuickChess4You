@@ -3878,16 +3878,17 @@
 
 @media (min-width: 1350px) and (min-height: 768px) {
   .competitionPage .body {
-    grid-template-columns: 27% 1fr 27%;
+    grid-template-columns: 26% 1fr 26%;
   }
 
   .competitionPage .rightColumn {
-    max-height: 500px;
+    min-height: 520px !important;
+    max-height: 520px;
   }
 
   .competitionPage .leftColumn {
-    min-height: 500px !important;
-    max-height: 500px !important;
+    min-height: 520px !important;
+    max-height: 520px !important;
   }
 
   .container {
@@ -4069,18 +4070,18 @@
 
 @media (min-width: 1536px) and (min-height: 864px) {
   .competitionPage .body {
-    grid-template-columns: 26% 1fr 26%;
+    grid-template-columns: 25.5% 1fr 25.5%;
   }
 
   .competitionPage .rightColumn {
-    min-height: 579px !important;
-    max-height: 580px !important;
+    min-height: 610px !important;
+    max-height: 610px !important;
     /* background-color: pink; */
   }
 
   .competitionPage .leftColumn {
-    min-height: 579px !important;
-    max-height: 580px !important;
+    min-height: 610px !important;
+    max-height: 610px !important;
     /* background-color: pink; */
   }
 

@@ -134,13 +134,13 @@
 
 @media (min-width: 1350px) and (min-height: 768px) {
   .board {
-    max-width: 500px !important;
-    max-height: 500px !important;
+    max-width: 520px !important;
+    max-height: 520px !important;
   }
 
   .boardWrapper {
-    max-width: 500px !important;
-    max-height: 500px !important;
+    max-width: 520px !important;
+    max-height: 520px !important;
   }
 }
 
@@ -158,13 +158,13 @@
 
 @media (min-width: 1536px) and (min-height: 864px) {
   .board {
-    max-width: 580px !important;
-    max-height: 580px !important;
+    max-width: 610px !important;
+    max-height: 610px !important;
   }
 
   .boardWrapper {
-    max-width: 580px !important;
-    max-height: 580px !important;
+    max-width: 610px !important;
+    max-height: 610px !important;
   }
 }
 
