@@ -46,7 +46,8 @@
   padding: 10px;
   position: relative;
   isolation: isolate;
-  background-color: rgb(31, 31, 31);
+  /* background-color: rgb(31, 31, 31); */
+  background-color: #171613;
 }
 
 /* .container::before {
