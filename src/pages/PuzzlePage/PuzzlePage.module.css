@@ -719,6 +719,7 @@
 .leftColumn {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 0px !important;
   min-width: 0;
   overflow: hidden;
@@ -754,7 +755,7 @@
   min-height: auto;
   justify-content: flex-start;
   box-shadow: none;
-  max-height: none;
+  max-height: fit-content;
 }
 
 [data-theme='light'] .statsCard {
