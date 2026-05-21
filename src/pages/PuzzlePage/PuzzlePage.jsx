@@ -1511,6 +1511,45 @@ function PuzzlePage({ isEvent = false }) {
         <div className={`${styles.body} ${(!showGalaxy || isReviewMode) ? styles.galaxyOffLayout : ""}`}>
           {/* LEFT COLUMN */}
           <div className={styles.leftColumn}>
+
+
+            {competitionData && (
+              <div className={styles.statsCard}>
+
+                {!isReviewMode && (
+                  <div className={styles.timerBox}>
+                    <div className={styles.timerLabel}>{isBeforeStartTime ? "Starts In" : "Time Left"}</div>
+                    <div className={styles.timerValue}>
+                      {(() => {
+                        const t = isBeforeStartTime && targetStartTimeRef.current
+                          ? Math.max(0, Math.floor((targetStartTimeRef.current - Date.now()) / 1000))
+                          : timeLeft;
+                        return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+                      })()}
+                    </div>
+                  </div>
+                )}
+                <div className={styles.statsGrid}>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Total</span>
+                    <span className={`${styles.statValue} ${styles.gold}`}>{getUniquePuzzleCount()}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Solved</span>
+                    <span className={styles.statValue}>{solvedCount}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Attempted</span>
+                    <span className={styles.statValue}>{getAttemptedCount()}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    <span className={styles.statLabel}>Remaining</span>
+                    <span className={styles.statValue}>{getUnattemptedCount()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {currentPuzzle && (() => {
               let uColor = "w";
               const fenTurn = currentPuzzle.fen?.split(" ")[1] || "w";
@@ -1604,43 +1643,6 @@ function PuzzlePage({ isEvent = false }) {
                 </div>
               );
             })()}
-
-            {competitionData && (
-              <div className={styles.statsCard}>
-
-                {!isReviewMode && (
-                  <div className={styles.timerBox}>
-                    <div className={styles.timerLabel}>{isBeforeStartTime ? "Starts In" : "Time Left"}</div>
-                    <div className={styles.timerValue}>
-                      {(() => {
-                        const t = isBeforeStartTime && targetStartTimeRef.current
-                          ? Math.max(0, Math.floor((targetStartTimeRef.current - Date.now()) / 1000))
-                          : timeLeft;
-                        return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-                      })()}
-                    </div>
-                  </div>
-                )}
-                <div className={styles.statsGrid}>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Total</span>
-                    <span className={`${styles.statValue} ${styles.gold}`}>{getUniquePuzzleCount()}</span>
-                  </div>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Solved</span>
-                    <span className={styles.statValue}>{solvedCount}</span>
-                  </div>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Attempted</span>
-                    <span className={styles.statValue}>{getAttemptedCount()}</span>
-                  </div>
-                  <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Remaining</span>
-                    <span className={styles.statValue}>{getUnattemptedCount()}</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
 
             {competitionData && isLiveCompetition && !isReviewMode && (

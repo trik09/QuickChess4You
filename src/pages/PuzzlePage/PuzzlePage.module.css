@@ -47,7 +47,7 @@
   position: relative;
   isolation: isolate;
   /* background-color: rgb(31, 31, 31); */
-  background-color: #171613;
+  background-color: #0f0f0f;
 }
 
 /* .container::before {
@@ -726,6 +726,7 @@
   align-self: start;
   /* background: rgba(18, 18, 18, 0.301); */
   border: 1px solid rgba(255, 255, 255, 0.05);
+  /* background-color: #262421; */
   border-radius: 16px;
   /* backdrop-filter: blur(12px); */
   /* -webkit-backdrop-filter: blur(12px); */
@@ -1152,6 +1153,7 @@
   /* background: rgba(18, 18, 18, 0.300); */
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 16px;
+  /* background-color: #262421; */
   /* backdrop-filter: blur(12px); */
   /* -webkit-backdrop-filter: blur(12px); */
   padding: 12px;
