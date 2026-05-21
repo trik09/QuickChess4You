@@ -3862,7 +3862,7 @@
   .galaxyOffLayout {
     max-height: 90vh !important;
     /* background-color: rebeccapurple; */
-    grid-template-columns: 22% 1fr 22% !important;
+    grid-template-columns: 24% 1fr 24% !important;
   }
 
   .galaxyOffLayout .leftColumn {
@@ -3985,15 +3985,22 @@
 /* MacBook Pro Series  */
 @media (min-width: 1536px) and (min-height: 720px) {
 
+  .competitionPage .body {
+    grid-template-columns: 30% 1fr 30%;
+  }
+
   .leftColumn {
     max-height: 100%;
     /* background-color: lightblue; */
   }
 
   .competitionPage .rightColumn {
-    max-height: 450px;
-    display: flex;
-    flex-direction: column;
+    max-height: 480px !important;
+  }
+
+  .competitionPage .leftColumn {
+    min-height: 480px !important;
+    max-height: 480px !important;
   }
 
   .competitionPage .rightColumn .navCard {
@@ -4041,7 +4048,7 @@
   .galaxyOffLayout {
     max-height: 90vh !important;
     /* background-color: rebeccapurple; */
-    grid-template-columns: 22% 1fr 22% !important;
+    grid-template-columns: 24% 1fr 24% !important;
   }
 
   .galaxyOffLayout .leftColumn {
@@ -4061,6 +4068,10 @@
 }
 
 @media (min-width: 1536px) and (min-height: 864px) {
+  .competitionPage .body {
+    grid-template-columns: 26% 1fr 26%;
+  }
+
   .competitionPage .rightColumn {
     min-height: 579px !important;
     max-height: 580px !important;
@@ -4149,7 +4160,7 @@
   .galaxyOffLayout {
     max-height: 90vh !important;
     /* background-color: rebeccapurple; */
-    grid-template-columns: 22% 1fr 22% !important;
+    grid-template-columns: 24% 1fr 24% !important;
   }
 
   .galaxyOffLayout .leftColumn {
@@ -4165,13 +4176,13 @@
 
 @media (min-width: 1600px) and (min-height: 900px) {
   .competitionPage .rightColumn {
-    min-height: 600px !important;
-    max-height: 600px !important;
+    min-height: 650px !important;
+    max-height: 650px !important;
   }
 
   .competitionPage .leftColumn {
-    min-height: 600px !important;
-    max-height: 600px !important;
+    min-height: 650px !important;
+    max-height: 650px !important;
   }
 
   .galaxyOffLayout {
@@ -4189,12 +4200,20 @@
     min-height: 100% !important;
     max-height: 100% !important;
   }
+
+  .competitionPage .body {
+    grid-template-columns: 25% 1fr 25%;
+  }
 }
 
 @media (min-width: 1920px) and (min-height: 880px) {
   .body {
     margin: 0;
     max-width: 100%;
+  }
+
+  .competitionPage .body {
+    grid-template-columns: 30% 1fr 30%;
   }
 
   .competitionPage .rightColumn {
@@ -4205,7 +4224,7 @@
   .galaxyOffLayout {
     max-height: 90vh !important;
     /* background-color: rebeccapurple; */
-    grid-template-columns: 22% 1fr 22% !important;
+    grid-template-columns: 25% 1fr 25% !important;
   }
 
   .galaxyOffLayout .leftColumn {
@@ -4258,14 +4277,18 @@
     max-width: 100%;
   }
 
+  .competitionPage .body {
+    grid-template-columns: 24% 1fr 24%;
+  }
+
   .competitionPage .rightColumn {
-    min-height: 750px !important;
-    max-height: 750px !important;
+    min-height: 820px !important;
+    max-height: 820px !important;
   }
 
   .competitionPage .leftColumn {
-    min-height: 750px !important;
-    max-height: 750px !important;
+    min-height: 820px !important;
+    max-height: 820px !important;
   }
 
   .container {
@@ -4296,14 +4319,18 @@
     max-width: 100%;
   }
 
+  .competitionPage .body {
+    grid-template-columns: 26% 1fr 26%;
+  }
+
   .competitionPage .rightColumn {
-    min-height: 900px !important;
-    max-height: 900px !important;
+    min-height: 1020px !important;
+    max-height: 1020px !important;
   }
 
   .competitionPage .leftColumn {
-    min-height: 900px !important;
-    max-height: 900px !important;
+    min-height: 1020px !important;
+    max-height: 1020px !important;
   }
 
   .galaxyOffLayout {
@@ -4379,7 +4406,7 @@
   .galaxyOffLayout {
     max-height: 90vh !important;
     /* background-color: rebeccapurple; */
-    grid-template-columns: 22% 1fr 22% !important;
+    grid-template-columns: 21% 1fr 21% !important;
   }
 
   .galaxyOffLayout .leftColumn {

@@ -146,13 +146,13 @@
 
 @media (min-width: 1536px) and (min-height: 720px) {
   .board {
-    max-width: 450px !important;
-    max-height: 450px !important;
+    max-width: 480px !important;
+    max-height: 480px !important;
   }
 
   .boardWrapper {
-    max-width: 450px !important;
-    max-height: 450px !important;
+    max-width: 480px !important;
+    max-height: 480px !important;
   }
 }
 
@@ -182,13 +182,13 @@
 
 @media (min-width: 1600px) and (min-height: 900px) {
   .board {
-    max-width: 600px !important;
-    max-height: 600px !important;
+    max-width: 650px !important;
+    max-height: 650px !important;
   }
 
   .boardWrapper {
-    max-width: 600px !important;
-    max-height: 600px !important;
+    max-width: 650px !important;
+    max-height: 650px !important;
   }
 }
 
@@ -206,25 +206,25 @@
 
 @media (min-width: 1920px) and (min-height: 1080px) {
   .board {
-    max-width: 750px !important;
-    max-height: 750px !important;
+    max-width: 820px !important;
+    max-height: 820px !important;
   }
 
   .boardWrapper {
-    max-width: 750px !important;
-    max-height: 750px !important;
+    max-width: 820px !important;
+    max-height: 820px !important;
   }
 }
 
 @media (min-width: 2560px) and (min-height: 1300px) {
   .board {
-    max-width: 900px !important;
-    max-height: 900px !important;
+    max-width: 1020px !important;
+    max-height: 1020px !important;
   }
 
   .boardWrapper {
-    max-width: 900px !important;
-    max-height: 900px !important;
+    max-width: 1020px !important;
+    max-height: 1020px !important;
   }
 }
 
