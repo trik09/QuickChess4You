@@ -732,7 +732,12 @@
   /* backdrop-filter: blur(12px); */
   /* -webkit-backdrop-filter: blur(12px); */
   padding: 12px;
+  /* padding-bottom: 80px; */
   /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); */
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-items: center;
+  justify-content: center;
 }
 
 [data-theme='light'] .leftColumn {
@@ -1001,6 +1006,23 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+}
+
+.rankTrophy {
+  width: 45px;
+  height: 45px;
+  background-color: #b58864;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 1000px;
+  color: #0f0f0f;
+  font-size: 20px;
+}
+
+[data-theme='light'] .rankTrophy {
+  background-color: #b58864;
+  color: #ffffff;
 }
 
 [data-theme='light'] .rankLabel {
