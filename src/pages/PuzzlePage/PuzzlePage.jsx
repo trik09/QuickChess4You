@@ -1651,8 +1651,12 @@ function PuzzlePage({ isEvent = false }) {
             {competitionData && isLiveCompetition && !isReviewMode && (
               <div className={styles.rankCard}>
                 {/* Left: rank label + number */}
+
+                <div className={styles.rankTrophy}>
+                  <FaTrophy />
+                </div>
                 <div className={styles.rankLeft}>
-                  <div className={styles.rankLabel}><span>🏆</span> Your Rank</div>
+                  <div className={styles.rankLabel}>Your Rank</div>
                   <div className={styles.rankNumber}>#{stableRank || "–"}</div>
                 </div>
                 {/* Right: progress bar + participant count */}

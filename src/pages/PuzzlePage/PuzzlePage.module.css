@@ -719,8 +719,8 @@
 .leftColumn {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 0px !important;
+  justify-content: start;
+  gap: 12px !important;
   min-width: 0;
   overflow: hidden;
   height: fit-content;
@@ -732,7 +732,12 @@
   /* backdrop-filter: blur(12px); */
   /* -webkit-backdrop-filter: blur(12px); */
   padding: 12px;
+  /* padding-bottom: 80px; */
   /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); */
+  /* display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-items: center;
+  justify-content: center; */
 }
 
 [data-theme='light'] .leftColumn {
@@ -929,10 +934,10 @@
 
 /* Rank card — horizontal two-column layout */
 .rankCard {
-  /* background: rgba(181, 136, 99, 0.05); */
-  /* border: 1px solid rgba(181, 136, 99, 0.12); */
+  background: #121212;
+  border: 1px solid #292929;
   border-radius: 10px;
-  padding: 8px 10px;
+  padding: 10px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -944,8 +949,8 @@
 }
 
 [data-theme='light'] .rankCard {
-  /* background: rgba(181, 136, 99, 0.05) !important; */
-  /* border: 1px solid rgba(181, 136, 99, 0.15) !important; */
+  background: rgba(181, 136, 99, 0.05) !important;
+  border: 1px solid rgba(181, 136, 99, 0.15) !important;
   box-shadow: none !important;
   border-radius: 10px !important;
   backdrop-filter: none !important;
@@ -1001,6 +1006,23 @@
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+}
+
+.rankTrophy {
+  width: 45px;
+  height: 45px;
+  background-color: #b58864;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 1000px;
+  color: #0f0f0f;
+  font-size: 20px;
+}
+
+[data-theme='light'] .rankTrophy {
+  background-color: #b58864;
+  color: #ffffff;
 }
 
 [data-theme='light'] .rankLabel {
@@ -1587,6 +1609,7 @@
   justify-content: center;
   align-items: center;
   opacity: 0.5;
+  margin-right: 5px;
 }
 
 .metaTextRow {
@@ -3874,6 +3897,11 @@
     min-height: 100% !important;
     max-height: 100% !important;
   }
+
+  .leftColumn {
+    gap: 2px !important;
+    overflow-y: scroll;
+  }
 }
 
 @media (min-width: 1350px) and (min-height: 768px) {
@@ -3910,6 +3938,15 @@
   .galaxyOffLayout .rightColumn {
     min-height: 100% !important;
     max-height: 100% !important;
+  }
+
+  .leftColumn {
+    gap: 5px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 15px;
   }
 }
 
@@ -4062,6 +4099,15 @@
     max-height: 100% !important;
   }
 
+  .leftColumn {
+    gap: 5px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 15px;
+  }
+
 
   /* .competitionPage .body {
     grid-template-columns: 28% 1fr 28%;
@@ -4103,6 +4149,15 @@
   .galaxyOffLayout .rightColumn {
     min-height: 100% !important;
     max-height: 100% !important;
+  }
+
+  .leftColumn {
+    gap: 20px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 18px;
   }
 }
 
@@ -4173,6 +4228,15 @@
     min-height: 100% !important;
     max-height: 100% !important;
   }
+
+  .leftColumn {
+    gap: 22px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 17px;
+  }
 }
 
 @media (min-width: 1600px) and (min-height: 900px) {
@@ -4205,6 +4269,15 @@
   .competitionPage .body {
     grid-template-columns: 25% 1fr 25%;
   }
+
+  .leftColumn {
+    gap: 25px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 15px;
+  }
 }
 
 @media (min-width: 1920px) and (min-height: 880px) {
@@ -4236,6 +4309,15 @@
   .galaxyOffLayout .rightColumn {
     min-height: 100% !important;
     max-height: 100% !important;
+  }
+
+  .leftColumn {
+    gap: 30px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 18px;
   }
 }
 
@@ -4311,6 +4393,15 @@
   .galaxyOffLayout .rightColumn {
     min-height: 100% !important;
     max-height: 100% !important;
+  }
+
+  .leftColumn {
+    gap: 34px !important;
+    overflow-y: hidden;
+  }
+
+  .puzzleTitleValue {
+    font-size: 20px;
   }
 }
 
