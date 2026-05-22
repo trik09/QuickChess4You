@@ -7,7 +7,7 @@ import styles from './LoginModal.module.css';
 import { FaFacebookF, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { FaInstagram } from 'react-icons/fa';
 
-function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
+function LoginModal({ isOpen, onClose, initialMode = 'login', returnTo = '' }) {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
@@ -150,7 +150,7 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/');
+        navigate(returnTo || '/');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Invalid OTP. Please try again.');
@@ -180,7 +180,7 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/');
+        navigate(returnTo || '/');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -266,7 +266,7 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/');
+        navigate(returnTo || '/');
       }, 1000);
     } catch (err) {
       setError(err.message || 'Google login failed. Please try again.');

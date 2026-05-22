@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader, Button, DataTable, IconButton } from '../../../components/Admin';
 import { categoryAPI } from '../../../services/api';
-import { FaFolder, FaPlus, FaEdit, FaTrash, FaTimes, FaSave, FaSearch, FaChess, FaEye } from 'react-icons/fa';
+import { FaFolder, FaPlus, FaEdit, FaTrash, FaTimes, FaSave, FaSearch, FaChess, FaEye, FaExclamationTriangle } from 'react-icons/fa';
 import * as FaIcons from 'react-icons/fa';
 import toast, { Toaster } from 'react-hot-toast';
 import styles from './CategoryList.module.css';
@@ -22,6 +22,9 @@ function CategoryList() {
     description: '',
     icon: 'FaChess'
   });
+
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, name: '', puzzleCount: 0, loading: false });
 
   useEffect(() => {
     fetchCategories();
@@ -112,20 +115,34 @@ function CategoryList() {
     }
   };
 
-  const handleDelete = async (id, name, e) => {
+  // Opens the delete confirmation modal immediately — no API call yet
+  const handleDelete = (id, name, puzzleCount, e) => {
     if (e) e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-      return;
-    }
+    setDeleteModal({ open: true, id, name, puzzleCount: puzzleCount ?? 0, loading: false });
+  };
 
+  const handleConfirmDelete = async () => {
+    setDeleteModal(prev => ({ ...prev, loading: true }));
     try {
-      await categoryAPI.deleteCategory(id);
-      toast.success('Category deleted successfully!');
+      if (deleteModal.puzzleCount > 0) {
+        await categoryAPI.deleteCategoryWithPuzzles(deleteModal.id);
+        toast.success(
+          `"${deleteModal.name}" and ${deleteModal.puzzleCount} puzzle${deleteModal.puzzleCount !== 1 ? 's' : ''} deleted successfully!`
+        );
+      } else {
+        await categoryAPI.deleteCategory(deleteModal.id);
+        toast.success(`"${deleteModal.name}" deleted successfully!`);
+      }
+      setDeleteModal({ open: false, id: null, name: '', puzzleCount: 0, loading: false });
       fetchCategories();
     } catch (error) {
-      console.error('Error deleting category:', error);
       toast.error(error.message || 'Failed to delete category');
+      setDeleteModal(prev => ({ ...prev, loading: false }));
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ open: false, id: null, name: '', puzzleCount: 0, loading: false });
   };
 
   const handleCardClick = (categoryName) => {
@@ -230,7 +247,7 @@ function CategoryList() {
                 />
                 <IconButton
                   icon={FaTrash}
-                  onClick={(e) => handleDelete(category._id, category.name, e)}
+                  onClick={(e) => handleDelete(category._id, category.name, category.totalPuzzles, e)}
                   title="Delete"
                   variant="danger"
                 />
@@ -295,6 +312,64 @@ function CategoryList() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteModal.open && (
+        <div className={styles.modalOverlay}>
+          <div className={`${styles.modal} ${styles.deleteModal}`}>
+            <div className={styles.modalHeader}>
+              <h2>
+                <FaExclamationTriangle className={styles.warnIcon} />
+                Delete Category
+              </h2>
+              <button className={styles.closeBtn} onClick={handleCancelDelete} disabled={deleteModal.loading}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className={styles.deleteModalBody}>
+              <p>
+                You are about to delete the category <strong>"{deleteModal.name}"</strong>.
+              </p>
+              {deleteModal.puzzleCount > 0 ? (
+                <div className={styles.puzzleWarning}>
+                  <FaChess className={styles.puzzleWarnIcon} />
+                  <span>
+                    This will also permanently delete{' '}
+                    <strong>{deleteModal.puzzleCount} puzzle{deleteModal.puzzleCount !== 1 ? 's' : ''}</strong>{' '}
+                    belonging to this category.
+                  </span>
+                </div>
+              ) : (
+                <p className={styles.noPuzzleNote}>This category has no puzzles.</p>
+              )}
+              <p className={styles.irreversibleNote}>This action <strong>cannot be undone</strong>.</p>
+            </div>
+
+            <div className={styles.modalActions}>
+              <Button
+                type="button"
+                variant="secondary"
+                icon={FaTimes}
+                onClick={handleCancelDelete}
+                disabled={deleteModal.loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                icon={FaTrash}
+                onClick={handleConfirmDelete}
+                disabled={deleteModal.loading}
+              >
+                {deleteModal.loading
+                  ? 'Deleting…'
+                  : `Delete`}
+              </Button>
+            </div>
           </div>
         </div>
       )}
