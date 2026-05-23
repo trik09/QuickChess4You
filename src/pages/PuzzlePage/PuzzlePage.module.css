@@ -4529,3 +4529,140 @@
     max-height: 500px !important;
   }
 }
+
+/* ========================================
+   MOBILE & TABLET RESPONSIVE FIX (isolated below 1000px)
+   ======================================== */
+@media (max-width: 1024px) {
+  .container {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 10px !important;
+  }
+
+  .mainLayoutWrapper {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: none !important;
+  }
+
+  .body {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    gap: 16px !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .galaxyOffLayout {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    max-width: 100% !important;
+    gap: 16px !important;
+    padding: 0 !important;
+  }
+
+  .leftColumn,
+  .rightColumn {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+    flex-direction: column;
+  }
+
+  .boardArea {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex: none !important;
+  }
+
+  .boardWrapper {
+    width: 100% !important;
+    max-width: min(540px, 92vw) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    flex: none !important;
+  }
+
+  .galaxySection {
+    flex-shrink: 0 !important;
+    position: relative !important;
+    margin-top: 16px !important;
+    height: 150px !important;
+    width: 100% !important;
+  }
+
+  .navItem {
+    padding: 10px !important;
+    width: 80px;
+    height: 80px;
+  }
+
+  .navGrid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+}
+
+/* Specific small mobile adjustments */
+@media (max-width: 480px) {
+  .titleHeader {
+    height: auto !important;
+    min-height: 44px !important;
+    padding: 6px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    border-radius: 16px !important;
+  }
+
+  .mainTitle {
+    font-size: 0.85rem !important;
+    max-width: 150px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .galaxyToggle {
+    padding: 4px 8px !important;
+    border-radius: 12px !important;
+    gap: 6px !important;
+  }
+
+  .toggleText {
+    font-size: 0.65rem !important;
+  }
+
+  .navItem {
+    width: 40px;
+    height: 40px;
+  }
+
+  .navGrid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    row-gap: 5px !important;
+    column-gap: 5px !important;
+  }
+}
