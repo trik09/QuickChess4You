@@ -2001,15 +2001,21 @@ function PuzzlePage({ isEvent = false }) {
                           const pairs = [];
                           let moveNum = 1;
                           let i = 0;
-                          if (blackFirst) {
+                          const isIllegal = currentPuzzle?.puzzleType === 'illegal' || currentPuzzle?.type === 'illegal' || (currentPuzzle?.category?.toLowerCase() === 'avoid illegal move');
+                          if (blackFirst && !isIllegal) {
                             // First move is black's — white slot shows "..."
                             pairs.push({ num: moveNum, white: null, black: moves[0] || null });
                             moveNum++;
                             i = 1;
                           }
                           while (i < moves.length) {
-                            pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
-                            moveNum++;
+                            if (isIllegal) {
+                              pairs.push({ isIllegal, num1: moveNum, white: moves[i] || null, num2: moveNum + 1, black: moves[i + 1] || null });
+                              moveNum += 2;
+                            } else {
+                              pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
+                              moveNum++;
+                            }
                             i += 2;
                           }
                           return pairs;
@@ -2023,13 +2029,18 @@ function PuzzlePage({ isEvent = false }) {
                             <div className={styles.movesListHorizontal}>
                               {userPairs.length > 0 ? userPairs.map((pair, idx) => (
                                 <span key={`am${idx}`} className={styles.movePair}>
-                                  <span className={styles.moveNumber}>{pair.num}.</span>
+                                  <span className={styles.moveNumber}>{pair.isIllegal ? pair.num1 : pair.num}.</span>
                                   {pair.white
                                     ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.white}</span>
                                     : <span className={styles.moveEllipsis}>...</span>
                                   }
                                   {pair.black
-                                    ? <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.black}</span>
+                                    ? (
+                                      <>
+                                        {pair.isIllegal && <span className={styles.moveNumber} style={{ marginLeft: '8px' }}>{pair.num2}.</span>}
+                                        <span className={styles.moveTag} style={{ background: wasSolved ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.15)", color: accent }}>{pair.black}</span>
+                                      </>
+                                    )
                                     : null
                                   }
                                 </span>
@@ -2056,14 +2067,20 @@ function PuzzlePage({ isEvent = false }) {
                                 const pairs = [];
                                 let moveNum = 1;
                                 let i = 0;
-                                if (blackFirst) {
+                                const isIllegal = currentPuzzle?.puzzleType === 'illegal' || currentPuzzle?.type === 'illegal' || (currentPuzzle?.category?.toLowerCase() === 'avoid illegal move');
+                                if (blackFirst && !isIllegal) {
                                   pairs.push({ num: moveNum, white: null, black: moves[0] || null });
                                   moveNum++;
                                   i = 1;
                                 }
                                 while (i < moves.length) {
-                                  pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
-                                  moveNum++;
+                                  if (isIllegal) {
+                                    pairs.push({ isIllegal, num1: moveNum, white: moves[i] || null, num2: moveNum + 1, black: moves[i + 1] || null });
+                                    moveNum += 2;
+                                  } else {
+                                    pairs.push({ num: moveNum, white: moves[i] || null, black: moves[i + 1] || null });
+                                    moveNum++;
+                                  }
                                   i += 2;
                                 }
                                 return pairs;
@@ -2071,13 +2088,18 @@ function PuzzlePage({ isEvent = false }) {
                               const solPairs = buildMovePairs(sanMoves);
                               return solPairs.map((pair, idx) => (
                                 <span key={`sol${idx}`} className={styles.movePair}>
-                                  <span className={styles.moveNumber}>{pair.num}.</span>
+                                  <span className={styles.moveNumber}>{pair.isIllegal ? pair.num1 : pair.num}.</span>
                                   {pair.white
                                     ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.white}</span>
                                     : <span className={styles.moveEllipsis}>...</span>
                                   }
                                   {pair.black
-                                    ? <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.black}</span>
+                                    ? (
+                                      <>
+                                        {pair.isIllegal && <span className={styles.moveNumber} style={{ marginLeft: '8px' }}>{pair.num2}.</span>}
+                                        <span className={styles.moveTag} style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80" }}>{pair.black}</span>
+                                      </>
+                                    )
                                     : null
                                   }
                                 </span>
