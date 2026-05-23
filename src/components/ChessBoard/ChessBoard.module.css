@@ -511,3 +511,22 @@
     max-height: 720px !important;
   }
 }
+
+/* ========================================
+   MOBILE & TABLET RESPONSIVE FIX (isolated below 1000px)
+   ======================================== */
+@media (max-width: 999px) {
+  .boardContainer {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .board {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+}
