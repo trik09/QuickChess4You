@@ -259,7 +259,7 @@ function Dashboard({ isEvent = false }) {
 
   const handleParticipate = (competition) => {
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/event/${competition._id}/lobby` : `/competition/${competition._id}/lobby`)}`);
+      navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(isEvent ? `/event/${competition._id}/lobby` : `/competition/${competition._id}/lobby`)}`);
       return;
     }
     if (competition.status === "Ended") {
@@ -282,7 +282,7 @@ function Dashboard({ isEvent = false }) {
   const handleViewPuzzles = (e, competition) => {
     e.stopPropagation();
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/live-event/${competition._id}` : `/competition/${competition._id}/puzzle`)}`);
+      navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(isEvent ? `/live-event/${competition._id}` : `/competition/${competition._id}/puzzle`)}`);
       return;
     }
     navigate(isEvent ? `/live-event/${competition._id}` : `/competition/${competition._id}/puzzle`, { state: { reviewMode: true } });

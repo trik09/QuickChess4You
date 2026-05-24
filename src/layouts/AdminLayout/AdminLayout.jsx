@@ -10,16 +10,13 @@ import {
   Trophy,
   Calendar,
   FileText,
-  Car,
   Users,
   ArrowLeft,
   LogOut,
   Menu,
   X
 } from "lucide-react";
-import {
-  FaBars, FaTimes
-} from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
 import logo from '../../assets/QuickChessForYou-Logo.svg';
 import styles from './AdminLayout.module.css';
 
@@ -28,56 +25,94 @@ function AdminLayout() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { admin, adminLogout } = useAuth();
 
   const handleLogout = () => {
-    // Remove admin-specific items
-    localStorage.removeItem('admin');
-    //localStorage.removeItem('adminUser');
-    // Remove token if it's an admin token (you might want to check this more carefully)
-    // For now, we'll remove it to ensure clean logout
-    const adminToken = localStorage.getItem('atoken');
-    if (adminToken) {
-      localStorage.removeItem('atoken');
-    }
+    adminLogout();
     navigate('/admin/login');
   };
 
+  const hasPermission = (perm) => {
+    if (!admin) return false;
+    if (admin.role === 'super' || admin.email === 'admin@admin.com') return true;
+    if (!admin.permissions) return false;
+    return admin.permissions[perm] === true;
+  };
+
+  const hasAnyPuzzlePermission = hasPermission('create_puzzle') || hasPermission('edit_puzzle') || hasPermission('delete_puzzle');
+  const hasAnyCategoryPermission = hasPermission('create_category') || hasPermission('edit_category') || hasPermission('delete_category');
+  const hasAnyCompetitionPermission = hasPermission('create_competition') || hasPermission('edit_competition') || hasPermission('delete_competition');
+  const hasAnyEventPermission = hasPermission('create_event') || hasPermission('edit_event') || hasPermission('delete_event');
+  const hasAnyExamPermission = hasPermission('create_exam') || hasPermission('edit_exam') || hasPermission('delete_exam');
+
   const menuItems = [
     { path: '/admin/', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-    {
+  ];
+
+  // 1. Puzzle Group
+  const puzzleSubmenu = [];
+  if (hasAnyCategoryPermission) {
+    puzzleSubmenu.push({ path: '/admin/categories', icon: Layers, label: 'Puzzle Categories' });
+  }
+  if (hasAnyPuzzlePermission) {
+    puzzleSubmenu.push({ path: '/admin/puzzles', icon: Puzzle, label: 'Puzzles' });
+    puzzleSubmenu.push({ path: '/admin/daily-training', icon: CalendarDays, label: 'Daily Training' });
+  }
+  if (puzzleSubmenu.length > 0) {
+    menuItems.push({
       label: 'Puzzle Management',
       icon: Puzzle,
-      submenu: [
-        { path: '/admin/categories', icon: Layers, label: 'Puzzle Categories' },
-        { path: '/admin/puzzles', icon: Puzzle, label: 'Puzzles' },
-        { path: '/admin/daily-training', icon: CalendarDays, label: 'Daily Training' },
-      ]
-    },
-    {
+      submenu: puzzleSubmenu
+    });
+  }
+
+  // 2. Quiz Group
+  const quizSubmenu = [];
+  if (hasAnyCategoryPermission) {
+    quizSubmenu.push({ path: '/admin/quiz-categories', icon: List, label: 'Quiz Categories' });
+  }
+  if (hasAnyExamPermission) {
+    quizSubmenu.push({ path: '/admin/quiz/list', icon: ListCheck, label: 'Quiz List' });
+  }
+  if (quizSubmenu.length > 0) {
+    menuItems.push({
       label: 'Quiz',
       icon: List,
-      submenu: [
-        { path: '/admin/quiz-categories', icon: List, label: 'Quiz Categories' },
-        { path: '/admin/quiz/list', icon: ListCheck, label: 'Quiz List' },
-      ]
-    },
-    {
+      submenu: quizSubmenu
+    });
+  }
+
+  // 3. Competitions Group
+  const compSubmenu = [];
+  if (hasAnyCompetitionPermission) {
+    compSubmenu.push({ path: '/admin/competitions', icon: Trophy, label: 'Manage Arena' });
+  }
+  if (hasAnyEventPermission) {
+    compSubmenu.push({ path: '/admin/events', icon: Calendar, label: 'Manage Events' });
+  }
+  if (hasAnyExamPermission) {
+    compSubmenu.push({ path: '/admin/exams', icon: FileText, label: 'Manage Exams' });
+  }
+  if (compSubmenu.length > 0) {
+    menuItems.push({
       label: 'Competitions',
       icon: Trophy,
-      submenu: [
-        { path: '/admin/competitions', icon: Trophy, label: 'Manage Arena ' },
-        { path: '/admin/events', icon: Calendar, label: 'Manage Events' },
-        { path: '/admin/exams', icon: FileText, label: 'Manage Exams' },
-      ]
-    },
-    {
-      label: 'User Management',
-      icon: Users,
-      submenu: [
-        { path: '/admin/students', icon: Users, label: 'Students' },
-      ]
-    },
+      submenu: compSubmenu
+    });
+  }
+
+  // 4. User/Admin Group
+  const userSubmenu = [
+    { path: '/admin/students', icon: Users, label: 'Students' }
   ];
+  if (admin?.role === 'super' || admin?.email === 'admin@admin.com') {
+    userSubmenu.push({ path: '/admin/admins', icon: Users, label: 'Sub-Admins' });
+  }
+  menuItems.push({
+    label: 'User Management',
+    icon: Users,
+    submenu: userSubmenu
+  });
 
   const isActive = (path, exact = false) => {
     if (exact) return location.pathname === path;
@@ -90,7 +125,6 @@ function AdminLayout() {
         <div className={styles.sidebarHeader}>
           {!sidebarCollapsed && (
             <div className={styles.brandLogo}>
-              {/* <img src={logo} alt="QuickChess4You" /> */}
               <span>Admin Panel</span>
             </div>
           )}
@@ -155,9 +189,6 @@ function AdminLayout() {
       </aside>
 
       <div className={styles.mainContent}>
-        {/* Header removed as per new design */}
-
-
         <main className={styles.content}>
           <Outlet />
         </main>

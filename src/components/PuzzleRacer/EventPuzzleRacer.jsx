@@ -183,7 +183,7 @@ const EventPuzzleRacer = () => {
                         {isCurrent ? <><FaStar /> You</> : racer.username}
                       </span>
                       <span className={`planet-slot-score ${isCurrent ? "score-you" : ""}`}>
-                        {solved * 10} pts
+                        {racer.score ?? 0} pts
                       </span>
                     </>
                   ) : (
@@ -208,7 +208,7 @@ const EventPuzzleRacer = () => {
                   {isCurrentUser(sunRacer) ? <><FaStar /> You</> : sunRacer.username}
                 </span>
                 <span className="sun-player-score">
-                  {(isCurrentUser(sunRacer) ? localSolvedCount : (sunRacer.puzzlesSolved || 0)) * 10} pts
+                  {sunRacer.score ?? 0} pts
                 </span>
               </>
             ) : (
@@ -223,7 +223,7 @@ const EventPuzzleRacer = () => {
           <div className="star-glow-3d" />
           <div className="star-info-3d">
             <span className="star-username-3d"><FaStar /> You</span>
-            <span className="star-rank-3d">Rank #{currentUserRacer.rank} · {localSolvedCount * 10} pts</span>
+            <span className="star-rank-3d">Rank #{currentUserRacer.rank} · {currentUserRacer.score ?? 0} pts</span>
           </div>
         </div>
       )}

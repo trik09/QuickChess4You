@@ -145,6 +145,12 @@ class SocketService {
       this.emit("eventStarted", data);
     });
 
+    // Chat messages
+    this.socket.on("newChatMessage", (data) => {
+      console.log("New chat message received:", data);
+      this.emit("newChatMessage", data);
+    });
+
     // Error handling
     this.socket.on("error", (error) => {
       console.error("Socket error:", error);
@@ -181,6 +187,15 @@ class SocketService {
           console.error("Error in event listener:", error);
         }
       });
+    }
+  }
+
+  // Send chat message
+  sendMessage(messageData) {
+    if (this.socket && this.isConnected) {
+      this.socket.emit("sendMessage", messageData);
+    } else {
+      console.error("Socket not connected, cannot send message");
     }
   }
 

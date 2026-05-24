@@ -1,0 +1,420 @@
+.container {
+    --brown-primary: #b58863;
+    --brown-dark: #8b6242;
+    --brown-glow: rgba(181, 136, 99, 0.15);
+    --blue-deep: #121212;
+    --blue-card: #181818;
+    --blue-sidebar: #121212;
+
+    min-height: 100vh;
+    padding: 2rem;
+    color: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    background: #121212;
+}
+
+/* Galaxy Background Effect */
+.galaxyBg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+        radial-gradient(1px 1px at 160px 120px, #ddd, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4rem;
+    padding: 4rem;
+    background: rgba(181, 136, 99, 0.03);
+    backdrop-filter: blur(15px);
+    border-radius: 40px;
+    border: 1px solid rgba(181, 136, 99, 0.1);
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.heroContent {
+    flex: 1;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.6rem 1.4rem;
+    background: linear-gradient(90deg, var(--brown-primary), var(--brown-dark));
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 20px var(--brown-glow);
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.glowText {
+    background: linear-gradient(90deg, var(--brown-primary) 0%, #d4a373 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px var(--brown-glow);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.progressContainer {
+    max-width: 400px;
+}
+
+.progressHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.progressBar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brown-primary), #d4a373);
+    box-shadow: 0 0 15px var(--brown-glow);
+}
+
+.heroIllustration {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.glowCircle {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--brown-glow) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(40px);
+}
+
+.kingIcon {
+    font-size: 10rem;
+    color: #fff;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.3));
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 1;
+}
+
+.statCard {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.statIcon {
+    width: 55px;
+    height: 55px;
+    background: rgba(181, 136, 99, 0.1);
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.6rem;
+    color: var(--brown-primary);
+    border: 1px solid rgba(181, 136, 99, 0.1);
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.statLabel {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.learningPath {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 4rem;
+}
+
+.sectionHeader {
+    margin-bottom: 2.5rem;
+}
+
+.sectionHeader h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.sectionHeader p {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.chaptersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+.chapterCard {
+    background: rgba(181, 136, 99, 0.02);
+    backdrop-filter: blur(15px);
+    border-radius: 28px;
+    padding: 2.5rem;
+    border: 1px solid rgba(181, 136, 99, 0.08);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cardGlow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    filter: blur(80px);
+    opacity: 0.15;
+    z-index: 0;
+}
+
+.chapterHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chapterNumber {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+}
+
+.miniProgress {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.miniProgress svg {
+    width: 30px;
+    height: 30px;
+    transform: rotate(-90deg);
+}
+
+.chapterTitle {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.chapterDesc {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.chapterMeta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.cardActions {
+    position: relative;
+    z-index: 1;
+}
+
+.startBtn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 14px;
+    border: none;
+    background: var(--btn-color);
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -10px var(--btn-color);
+}
+
+.startBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px -10px var(--btn-color);
+    filter: brightness(1.1);
+}
+
+.locked {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+    cursor: not-allowed;
+}
+
+.lockedBadge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+}
+
+.resumeCard {
+    background: linear-gradient(90deg, var(--blue-card), #151525);
+    border: 1px solid rgba(181, 136, 99, 0.15);
+    border-radius: 28px;
+    padding: 2.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+}
+
+.resumeContent h4 {
+    color: var(--brown-primary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.resumeContent h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.resumeContent p {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.resumeBtn {
+    padding: 1.2rem 3rem;
+    border-radius: 16px;
+    border: none;
+    background: var(--brown-primary);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px var(--brown-glow);
+}
+
+.resumeBtn:hover {
+    background: var(--brown-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px var(--brown-glow);
+}
+
+@media (max-width: 1024px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .title {
+        font-size: 2.5rem;
+    }
+    
+    .heroIllustration {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .kingIcon {
+        font-size: 7rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .resumeCard {
+        flex-direction: column;
+        gap: 2rem;
+        text-align: center;
+        padding: 2rem;
+    }
+}

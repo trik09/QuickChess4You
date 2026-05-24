@@ -12,8 +12,9 @@ const LandingLayout = () => {
     const [searchParams] = useSearchParams();
 
     useEffect(() => {
-        // Check if session expired
-        const sessionExpired = searchParams.get("reason") === "session_expired";
+        // Check if session expired or auth is required
+        const reason = searchParams.get("reason");
+        const sessionExpired = reason === "session_expired" || reason === "auth_required";
         
         if (sessionExpired) {
             setModalMode('login');

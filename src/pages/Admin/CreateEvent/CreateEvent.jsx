@@ -14,7 +14,9 @@ import {
   FaBookOpen,
   FaTrash,
   FaSearch,
-  FaPencilAlt
+  FaPencilAlt,
+  FaListUl,
+  FaInfoCircle
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import styles from "../CreateCompetition/CreateCompetition.module.css";
@@ -46,6 +48,8 @@ function CreateEvent() {
     duration: "15",
     maxParticipants: "",
     description: "",
+    entryFee: "0",
+    details: "",
   });
 
   // Puzzle State
@@ -60,6 +64,13 @@ function CreateEvent() {
   const [showChapterModal, setShowChapterModal] = useState(false);
   const [newChapterName, setNewChapterName] = useState("");
   const chapterInputRef = useRef(null);
+
+  // Rounds State
+  const [rounds, setRounds] = useState([
+    { id: 'initial-round', title: "Round 1", type: "PUZZLE", examId: null }
+  ]);
+  const [availableExams, setAvailableExams] = useState([]);
+  const [loadingExams, setLoadingExams] = useState(false);
 
   // Chapter rename state
   const [editingChapter, setEditingChapter] = useState(null); // { id, name }
@@ -96,6 +107,24 @@ function CreateEvent() {
     levels: [],
     ratings: [],
   });
+
+  useEffect(() => {
+    fetchExams();
+  }, []);
+
+  const fetchExams = async () => {
+    setLoadingExams(true);
+    try {
+      const res = await examAPI.getAdminExams();
+      if (res.success) {
+        setAvailableExams(res.data || res.exams || []);
+      }
+    } catch (error) {
+      console.error("Failed to load exams:", error);
+    } finally {
+      setLoadingExams(false);
+    }
+  };
 
   useEffect(() => {
     if (viewMode === 'library') {
@@ -305,6 +334,16 @@ function CreateEvent() {
         startTime: new Date(formData.startTime).toISOString(),
         duration: parseInt(formData.duration),
         maxParticipants: parseInt(formData.maxParticipants) || 0,
+        entryFee: parseFloat(formData.entryFee) || 0,
+        rounds: rounds.map(r => ({
+          title: r.title,
+          type: r.type,
+          examId: r.type === 'EXAM' ? r.examId : null,
+          // For PUZZLE type, we use the top-level puzzles/chapters for now (legacy/simple)
+          // or we can structure it per round later.
+          puzzles: r.type === 'PUZZLE' ? totalPuzzles : [],
+          chapters: r.type === 'PUZZLE' ? chapters.map(ch => ({ name: ch.name, puzzleIds: ch.puzzleIds })) : []
+        })),
         puzzles: totalPuzzles, 
         chapters: chapters.map(ch => ({ name: ch.name, puzzleIds: ch.puzzleIds })),
       };
@@ -404,14 +443,125 @@ function CreateEvent() {
             </div>
 
             <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-              <label>Description</label>
+              <label>Extra Details / Instructions</label>
               <textarea
                 rows="2"
                 placeholder="Rules and details..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={formData.details}
+                onChange={(e) => setFormData({ ...formData, details: e.target.value })}
               />
             </div>
+
+            <div className={styles.inputGroup}>
+              <label>Entry Fee (₹)</label>
+              <div className={styles.inputIconWrapper}>
+                <span className={styles.inputIcon} style={{ fontSize: '1rem', fontWeight: 'bold' }}>₹</span>
+                <input
+                  type="number"
+                  placeholder="0 for free"
+                  value={formData.entryFee}
+                  onChange={(e) => setFormData({ ...formData, entryFee: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label>Payment QR Code (Space)</label>
+              <div className={styles.inputIconWrapper} style={{ background: '#1e293b', border: '1px dashed #475569', borderRadius: '8px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '0.8rem' }}>
+                QR Code Space (Later we will add upload)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Rounds Management */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader} style={{ justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FaListUl className={styles.iconGold} />
+              <h3>Event Rounds</h3>
+            </div>
+            <button 
+              type="button" 
+              className={styles.addChapterBtn}
+              onClick={() => setRounds([...rounds, { id: genId(), title: `Round ${rounds.length + 1}`, type: "PUZZLE", examId: null }])}
+            >
+              <FaPlus /> Add Round
+            </button>
+          </div>
+          
+          <div className={styles.roundsList} style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '10px' }}>
+            {rounds.map((round, index) => (
+              <div key={round.id} className={styles.roundItem} style={{ background: '#1e293b', padding: '15px', borderRadius: '12px', border: '1px solid #334155' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <span style={{ background: '#f59e0b', color: '#000', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>{index + 1}</span>
+                    <input 
+                      type="text" 
+                      value={round.title} 
+                      onChange={(e) => {
+                        const newRounds = [...rounds];
+                        newRounds[index].title = e.target.value;
+                        setRounds(newRounds);
+                      }}
+                      style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1rem', fontWeight: 'bold', width: '200px' }}
+                    />
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => setRounds(rounds.filter((_, i) => i !== index))}
+                    style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+
+                <div className={styles.formGrid}>
+                  <div className={styles.inputGroup}>
+                    <label>Round Type</label>
+                    <select 
+                      value={round.type} 
+                      onChange={(e) => {
+                        const newRounds = [...rounds];
+                        newRounds[index].type = e.target.value;
+                        setRounds(newRounds);
+                      }}
+                      style={{ background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: '8px', padding: '8px' }}
+                    >
+                      <option value="PUZZLE">Puzzle Competition</option>
+                      <option value="EXAM">Exam (MCQ/Quiz)</option>
+                    </select>
+                  </div>
+
+                  {round.type === 'EXAM' && (
+                    <div className={styles.inputGroup}>
+                      <label>Select Exam</label>
+                      <select 
+                        value={round.examId || ""} 
+                        onChange={(e) => {
+                          const newRounds = [...rounds];
+                          newRounds[index].examId = e.target.value;
+                          setRounds(newRounds);
+                        }}
+                        style={{ background: '#0f172a', color: '#fff', border: '1px solid #334155', borderRadius: '8px', padding: '8px' }}
+                      >
+                        <option value="">-- Choose an Exam --</option>
+                        {availableExams.map(exam => (
+                          <option key={exam._id} value={exam._id}>{exam.name || exam.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {round.type === 'PUZZLE' && index === 0 && (
+                  <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '10px' }}>
+                    <FaInfoCircle style={{ marginRight: '5px' }} /> 
+                    Configure puzzles and chapters in the section below for this round.
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 

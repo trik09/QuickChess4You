@@ -76,6 +76,11 @@ const CreateQuiz = React.lazy(() => import("./pages/Admin/Quiz/CreateQuiz"));
 const ExamList = React.lazy(() => import("./pages/Admin/Exam/ExamList"));
 const CreateExam = React.lazy(() => import("./pages/Admin/Exam/CreateExam"));
 
+// Academy pages
+const AcademyDashboard = React.lazy(() => import("./pages/Academy/AcademyDashboard/AcademyDashboard"));
+const LessonView = React.lazy(() => import("./pages/Academy/LessonView/LessonView"));
+
+
 function App() {
   return (
     <ThemeProvider>
@@ -142,6 +147,10 @@ function ThemeAppWrapper() {
                     <Route path="/event/:id/lobby" element={<CompetitionLobby isEvent={true} />} />
                     <Route path="/live-event/:id" element={<PuzzlePage isEvent={true} />} />
                     <Route path="/event-leaderboard/:competitionId" element={<CompetitionLeaderboard isEvent={true} />} />
+                    
+                    {/* Academy / Become a Pro Routes */}
+                    <Route path="/academy" element={<AcademyDashboard />} />
+                    <Route path="/academy/lesson/:id" element={<LessonView />} />
                   </Route>
 
                   {/* ADMIN LAYOUT */}

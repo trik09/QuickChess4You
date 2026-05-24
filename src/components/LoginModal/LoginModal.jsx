@@ -150,7 +150,9 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       setSuccess('Registration successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/');
+        const searchParams = new URLSearchParams(window.location.search);
+        const returnTo = searchParams.get('returnTo');
+        navigate(returnTo || '/');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Invalid OTP. Please try again.');
@@ -180,7 +182,9 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/');
+        const searchParams = new URLSearchParams(window.location.search);
+        const returnTo = searchParams.get('returnTo');
+        navigate(returnTo || '/');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -266,7 +270,9 @@ function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         onClose();
-        navigate('/');
+        const searchParams = new URLSearchParams(window.location.search);
+        const returnTo = searchParams.get('returnTo');
+        navigate(returnTo || '/');
       }, 1000);
     } catch (err) {
       setError(err.message || 'Google login failed. Please try again.');

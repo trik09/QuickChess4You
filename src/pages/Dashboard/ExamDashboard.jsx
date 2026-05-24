@@ -116,7 +116,7 @@ function ExamDashboard() {
 
   const handleParticipate = (exam) => {
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/exam/${exam._id}/lobby`)}`);
+      navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(`/exam/${exam._id}/lobby`)}`);
       return;
     }
     if (exam.status === "Ended") {

@@ -1,0 +1,719 @@
+.container {
+    --blue-deep: #121212;
+    --blue-sidebar: #181818;
+    --blue-card: #252525;
+    --blue-light: #333333;
+    --brown-primary: #b58863;
+    --brown-dark: #8b6242;
+    --brown-glow: rgba(181, 136, 99, 0.15);
+
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: var(--blue-deep);
+    color: #e2e8f0;
+    overflow: hidden;
+}
+
+/* --- LEFT SIDEBAR --- */
+/* --- LEFT SIDEBAR --- */
+.leftSidebar {
+    width: 350px;
+    background: var(--blue-sidebar);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.leftSidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.sidebarHeader {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.backBtn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+}
+
+.backBtn:hover {
+    color: #fff;
+}
+
+.sidebarHeader h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.topicList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.topicItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 1rem;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0.8rem;
+    border: 1px solid transparent;
+}
+
+.topicItem:hover {
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateX(4px);
+}
+
+.activeTopic {
+    background: linear-gradient(90deg, rgba(181, 136, 99, 0.15), rgba(181, 136, 99, 0.02)) !important;
+    border: 1px solid rgba(181, 136, 99, 0.3) !important;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.completed {
+    opacity: 0.9;
+}
+
+.topicIcon {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.activeTopic .topicIcon {
+    background: var(--brown-primary);
+    color: #fff;
+    box-shadow: 0 0 15px var(--brown-glow);
+}
+
+.completed .topicIcon {
+    background: #22c55e;
+    color: #fff;
+}
+
+.topicInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.topicLabel {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+}
+
+.topicTitle {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.sidebarFooter {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.progressText {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+.progressBar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: #00f2fe;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+}
+
+/* --- MAIN CONTENT --- */
+.mainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #121212;
+    position: relative;
+}
+
+.contentHeader {
+    padding: 1.5rem 3.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(18, 18, 18, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.breadcrumbs {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.activeBreadcrumb {
+    color: #f8fafc;
+    font-weight: 500;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.progressToggleBtn {
+    background: var(--brown-primary);
+    border: none;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px var(--brown-glow);
+}
+
+.progressToggleBtn:hover {
+    background: var(--brown-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--brown-glow);
+}
+
+.progressToggleBtn.active {
+    background: #fff;
+    color: var(--brown-primary);
+}
+
+.lessonTimer {
+    font-size: 0.85rem;
+    color: var(--brown-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spinning {
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.interactiveSection {
+    padding: 3rem;
+    display: flex;
+    gap: 3rem;
+    flex: 1;
+}
+
+.boardWrapper {
+    width: 500px;
+    flex-shrink: 0;
+}
+
+.premiumBoard {
+    border: 12px solid #252525;
+    border-radius: 20px;
+    box-shadow: 
+        0 40px 100px -20px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    position: relative;
+}
+
+.boardControls {
+    margin-top: 2rem;
+    background: #181818;
+    padding: 1rem;
+    border-radius: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.boardControls button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.boardControls button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.playBtn {
+    background: var(--brown-primary) !important;
+    color: #fff !important;
+}
+
+.annotationTools {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.tool {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.tool:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.explanationArea {
+    flex: 1;
+    max-width: 600px;
+}
+
+.lessonContent h2 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.richText p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #94a3b8;
+    margin-bottom: 2.5rem;
+}
+
+.tipBox {
+    background: linear-gradient(135deg, rgba(181, 136, 99, 0.08) 0%, transparent 100%);
+    border-left: 4px solid var(--brown-primary);
+    padding: 2rem;
+    border-radius: 0 20px 20px 0;
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.tipIcon {
+    font-size: 1.5rem;
+    color: var(--brown-primary);
+    flex-shrink: 0;
+}
+
+.highlight {
+    color: var(--brown-primary);
+    font-weight: 600;
+}
+
+.keyPoints {
+    list-style: none;
+    padding: 0;
+}
+
+.keyPoints li {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+}
+
+.keyPoints li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--brown-primary);
+    font-weight: bold;
+}
+
+/* --- EXERCISE STYLES --- */
+.exerciseContent {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 2.5rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.exerciseBadge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: #f59e0b;
+    color: #000;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border-radius: 50px;
+    margin-bottom: 1.5rem;
+}
+
+.exerciseContent h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.quizOptions {
+    display: grid;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.quizOption {
+    padding: 1.2rem;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quizOption:hover {
+    background: #334155;
+    border-color: #00f2fe;
+    transform: translateX(5px);
+}
+
+.exerciseFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.xpReward {
+    color: #22c55e;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.hintBtn {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* --- RIGHT SIDEBAR (Drawer Mode) --- */
+.sidebarOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 99;
+}
+
+.rightSidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background: var(--blue-sidebar);
+    border-left: 2px solid var(--brown-dark);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.sidebarCloseBtn {
+    position: absolute;
+    top: 20px;
+    left: -20px;
+    width: 40px;
+    height: 40px;
+    background: var(--brown-primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 101;
+}
+
+.sidebarScrollContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebarScrollContent::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebarScrollContent::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebarScrollContent::-webkit-scrollbar-thumb {
+    background: var(--brown-dark);
+    border-radius: 10px;
+}
+
+.progressCircleWrapper {
+    text-align: center;
+}
+
+.progressCircle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem;
+    position: relative;
+}
+
+.progressCircle svg {
+    transform: rotate(-90deg);
+}
+
+.progressValue {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--brown-primary);
+}
+
+.sidebarSection h4 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: var(--brown-primary);
+    margin-bottom: 1.2rem;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+}
+
+.goalCard {
+    background: var(--blue-card);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(181, 136, 99, 0.1);
+}
+
+.goalInfo {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.goalBar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.goalFill {
+    height: 100%;
+    background: var(--brown-primary);
+    box-shadow: 0 0 10px var(--brown-glow);
+}
+
+.conceptTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.tag {
+    padding: 0.5rem 1rem;
+    background: var(--blue-card);
+    border: 1px solid rgba(181, 136, 99, 0.1);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+
+.notesArea {
+    width: 100%;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(181, 136, 99, 0.1);
+    border-radius: 16px;
+    padding: 1.2rem;
+    color: #fff;
+    resize: none;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.sidebarActions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.bookmarkBtn {
+    background: none;
+    border: 1px solid var(--brown-dark);
+    color: var(--brown-primary);
+    padding: 1rem;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.bookmarkBtn:hover {
+    background: rgba(181, 136, 99, 0.05);
+    border-color: var(--brown-primary);
+}
+
+.nextBtn {
+    background: var(--brown-primary);
+    color: #fff;
+    padding: 1.2rem;
+    border-radius: 14px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    transition: all 0.4s;
+    box-shadow: 0 10px 25px var(--brown-glow);
+    font-size: 1rem;
+}
+
+.nextBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px var(--brown-glow);
+    background: var(--brown-dark);
+}
+
+.achievementCard {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    background: linear-gradient(135deg, rgba(181, 136, 99, 0.1), transparent);
+    border: 1px solid rgba(181, 136, 99, 0.2);
+    padding: 1.5rem;
+    border-radius: 20px;
+}
+
+.trophyIcon {
+    font-size: 2rem;
+    color: var(--brown-primary);
+    filter: drop-shadow(0 0 10px var(--brown-glow));
+}
+
+.achievementInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.achievementInfo span {
+    font-size: 0.7rem;
+    color: #f59e0b;
+}
+
+.achievementInfo strong {
+    font-size: 0.85rem;
+}
+
+@media (max-width: 1400px) {
+    .interactiveSection {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .boardWrapper {
+        width: 100%;
+        max-width: 500px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .rightSidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .leftSidebar {
+        display: none;
+    }
+}

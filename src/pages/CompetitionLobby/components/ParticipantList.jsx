@@ -108,7 +108,7 @@ const ParticipantList = ({
                                         <td className={styles.tdPuzzles}>
                                             <div className={styles.scoreContainer}>
                                                 <span className={styles.scoreHighlight}>
-                                                    {(p.puzzlesSolved || 0) * 10}
+                                                    {p.score || 0}
                                                 </span>
                                             </div>
                                         </td>

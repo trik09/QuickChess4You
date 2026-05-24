@@ -40,11 +40,11 @@
     box-shadow: 4px 0 16px rgba(181, 136, 99, 0.08);
 }
 
-/* Dark Mode Sidebar - Deep Black with Chess Gold Accents */
+/* Dark Mode Sidebar - Professional Dark Charcoal */
 [data-theme="dark"] .sidebar {
-    background: #0f0f0f;
-    border-right: 2px solid #3a3028;
-    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.5);
+    background: #121212;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar.collapsed {
@@ -67,7 +67,8 @@
 }
 
 [data-theme="dark"] .logoSection {
-    background: linear-gradient(180deg, #0f0f0f 0%, #151515 100%);
+    background: #121212;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .logoImg {
@@ -217,20 +218,20 @@
 
 /* Dark Mode Nav Item */
 [data-theme="dark"] .navItem {
-    color: #d4a373;
+    color: #a0a0a0;
 }
 
 [data-theme="dark"] .navItem:hover {
-    background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-    color: #f5f0eb;
-    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
 }
 
 [data-theme="dark"] .navItem.active {
-    background: linear-gradient(135deg, #b58863 0%, #8b6242 100%);
+    background: rgba(255, 255, 255, 0.05);
     color: #ffffff;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(181, 136, 99, 0.5);
+    box-shadow: none;
+    border-left: 3px solid #ffffff;
 }
 
 [data-theme="dark"] .navItem.active::before {
@@ -245,16 +246,72 @@
     border-radius: 0 4px 4px 0;
 }
 
+/* Highlighted Item - "Become a Pro" */
+.navItem.highlighted {
+    background: rgba(168, 85, 247, 0.08);
+    border-left: 3px solid #a855f7;
+    color: #a855f7 !important;
+}
+
+.navItem.highlighted:hover {
+    background: rgba(168, 85, 247, 0.12);
+}
+
+.navItem.highlighted .navIcon {
+    color: #a855f7;
+    filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
+}
+
 .navIcon {
     font-size: 1.2rem;
     min-width: 24px;
     display: flex;
     justify-content: center;
     transition: transform 0.2s ease;
+    opacity: 0.8;
 }
+
+/* Unique Icon Colors for Professional Look */
+.navItem:nth-child(1) .navIcon { color: #a855f7; } /* Become a Pro - Purple */
+.navItem:nth-child(2) .navIcon { color: #fbbf24; } /* Arena - Yellow */
+.navItem:nth-child(3) .navIcon { color: #4ade80; } /* Play - Green */
+.navItem:nth-child(4) .navIcon { color: #f472b6; } /* Events - Pink */
+.navItem:nth-child(5) .navIcon { color: #60a5fa; } /* Learn - Blue */
+.navItem:nth-child(6) .navIcon { color: #f87171; } /* Exams - Red */
+.navItem:nth-child(7) .navIcon { color: #2dd4bf; } /* Profile - Teal */
+.navItem:nth-child(8) .navIcon { color: #94a3b8; } /* Settings - Grey */
 
 .navItem:hover .navIcon {
     transform: scale(1.1);
+    opacity: 1;
+}
+
+/* Membership Tag */
+.membershipTag {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(217, 119, 6, 0.05));
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fbbf24;
+    cursor: default;
+    transition: all 0.3s ease;
+}
+
+.crownIcon {
+    font-size: 1.1rem;
+    color: #fbbf24;
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.4));
+}
+
+.collapsed .membershipTag {
+    justify-content: center;
+    padding: 0.6rem 0;
 }
 
 .navItem.active .navIcon {
@@ -283,6 +340,9 @@
 /* --- SIDEBAR FOOTER --- */
 .sidebarFooter {
     padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     transition: border-color 0.3s ease;
 }
 

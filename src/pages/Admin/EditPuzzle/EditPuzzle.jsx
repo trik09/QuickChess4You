@@ -89,6 +89,7 @@ function EditPuzzle() {
   const [illegalSubType, setIllegalSubType] = useState('normal'); // 'normal' | 'source_destination'
   const [sourceSquare, setSourceSquare] = useState('');
   const [destinationSquare, setDestinationSquare] = useState('');
+  const [minSteps, setMinSteps] = useState(8);
 
   // Convert description/hints from backend into our form shape
   const hydrateFormFromPuzzle = (puzzle) => {
@@ -141,6 +142,7 @@ function EditPuzzle() {
       setIllegalSubType(conf.subType || 'normal');
       setSourceSquare(conf.sourceSquare || '');
       setDestinationSquare(conf.destinationSquare || '');
+      setMinSteps(conf.minSteps || 8);
     }
 
     setFormData({
@@ -604,7 +606,8 @@ function EditPuzzle() {
           subType: illegalSubType,
           sourceSquare: illegalSubType === 'source_destination' ? sourceSquare : undefined,
           destinationSquare: illegalSubType === 'source_destination' ? destinationSquare : undefined,
-          playerSide: firstMoveBy
+          playerSide: firstMoveBy,
+          minSteps: illegalSubType === 'source_destination' ? minSteps : undefined
         }
       };
       submitPayload(payload);
@@ -897,6 +900,10 @@ function EditPuzzle() {
                         <div className={styles.formGroup}>
                           <label>Destination Square *</label>
                           <input type="text" value={destinationSquare} onChange={e => setDestinationSquare(e.target.value)} placeholder="e.g. e6" required={illegalSubType === 'source_destination'} />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label>Minimum Steps *</label>
+                          <input type="number" min="1" value={minSteps} onChange={e => setMinSteps(Number(e.target.value))} placeholder="e.g. 8" required={illegalSubType === 'source_destination'} />
                         </div>
                       </div>
                     )}

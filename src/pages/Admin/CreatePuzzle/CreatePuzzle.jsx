@@ -86,6 +86,7 @@ function CreatePuzzle() {
   const [illegalSubType, setIllegalSubType] = useState('normal'); // 'normal' | 'source_destination'
   const [sourceSquare, setSourceSquare] = useState('');
   const [destinationSquare, setDestinationSquare] = useState('');
+  const [minSteps, setMinSteps] = useState(8);
 
   // Active Palette Item for Click-To-Place Editor
   const [activePaletteItem, setActivePaletteItem] = useState(null); // e.g. { type: 'piece', pieceType: 'r', pieceColor: 'w' } | { type: 'trash' }
@@ -393,7 +394,8 @@ function CreatePuzzle() {
           subType: illegalSubType,
           sourceSquare: illegalSubType === 'source_destination' ? sourceSquare : undefined,
           destinationSquare: illegalSubType === 'source_destination' ? destinationSquare : undefined,
-          playerSide: formData.firstMoveBy
+          playerSide: formData.firstMoveBy,
+          minSteps: illegalSubType === 'source_destination' ? minSteps : undefined
         }
       };
       submitPayload(payload);
@@ -899,6 +901,10 @@ function CreatePuzzle() {
                     <div className={styles.formGroup}>
                       <label>Destination Square *</label>
                       <input type="text" value={destinationSquare} onChange={e => setDestinationSquare(e.target.value)} placeholder="e.g. e6" required={illegalSubType === 'source_destination'} />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label>Minimum Steps *</label>
+                      <input type="number" min="1" value={minSteps} onChange={e => setMinSteps(Number(e.target.value))} placeholder="e.g. 8" required={illegalSubType === 'source_destination'} />
                     </div>
                   </div>
                 )}

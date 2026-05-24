@@ -37,7 +37,8 @@ function Events() {
         whatsappNumber: "",
         age: "",
         gender: "Male",
-        fideRating: ""
+        fideRating: "",
+        utrNumber: ""
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -93,7 +94,8 @@ function Events() {
             whatsappNumber: "",
             age: "",
             gender: "Male",
-            fideRating: ""
+            fideRating: "",
+            utrNumber: ""
         });
         setShowRegModal(true);
     };
@@ -226,10 +228,26 @@ function Events() {
                                 <FaTimes />
                             </button>
                         </div>
-                        <p style={{ color: '#a0a0a0', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                        <p style={{ color: '#a0a0a0', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
                             Event: <strong>{selectedEvent.name}</strong><br/>
                             Username: <strong>{user?.username}</strong>
                         </p>
+
+                        {selectedEvent.entryFee > 0 && (
+                            <div className={styles.paymentInfo} style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
+                                <p style={{ color: '#f59e0b', fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <FaSignInAlt /> Entry Fee: ₹{selectedEvent.entryFee}
+                                </p>
+                                <div className={styles.qrCodeContainer} style={{ textAlign: 'center', background: '#fff', padding: '10px', borderRadius: '8px', width: 'fit-content', margin: '0 auto 10px' }}>
+                                    {/* Placeholder for QR Code */}
+                                    <div style={{ width: '150px', height: '150px', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontSize: '0.8rem' }}>
+                                        QR Code Space
+                                    </div>
+                                </div>
+                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>Scan to pay and enter UTR number below</p>
+                            </div>
+                        )}
+
                         <form onSubmit={handleRegSubmit}>
                             <div className={styles.formGroup}>
                                 <label>Full Name *</label>
@@ -282,6 +300,20 @@ function Events() {
                                     placeholder="Enter FIDE rating if any"
                                 />
                             </div>
+                            
+                            {selectedEvent.entryFee > 0 && (
+                                <div className={styles.formGroup}>
+                                    <label>UTR Number / Transaction ID *</label>
+                                    <input 
+                                        type="text" 
+                                        name="utrNumber" 
+                                        value={formData.utrNumber} 
+                                        onChange={handleInputChange}
+                                        placeholder="Enter 12-digit UTR number"
+                                        required
+                                    />
+                                </div>
+                            )}
                             <button type="submit" className={styles.submitBtn} disabled={submitting}>
                                 {submitting ? "Submitting..." : "Submit Registration"}
                             </button>

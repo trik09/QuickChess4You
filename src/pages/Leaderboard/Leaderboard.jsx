@@ -30,6 +30,7 @@ import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import styles from "./Leaderboard.module.css";
+import FloatingChatWidget from "../../components/FloatingChatWidget/FloatingChatWidget";
 
 import silver from "../../assets/Trophy/silver-trophy.svg"
 import gold from "../../assets/Trophy/gold-trophy.svg"
@@ -41,7 +42,7 @@ import bar3Svg from "../../assets/Trophy/3rd bar.svg"
 function Leaderboard({ isEvent }) {
   const { competitionId } = useParams();
   const navigate = useNavigate();
-  const { isUserAuthenticated } = useAuth();
+  const { isUserAuthenticated, user } = useAuth();
 
   const [leaderboard, setLeaderboard] = useState([]);
   const [competition, setCompetition] = useState(null);
@@ -100,11 +101,12 @@ function Leaderboard({ isEvent }) {
         : await competitionAPI.getById(competitionId);
       if (response.success) {
         setCompetition(response.data);
-        const competitionIsLive = response.data.status === 'live' || response.data.status === 'LIVE';
+        const status = response.data.status?.toUpperCase();
+        const competitionIsLive = status === 'LIVE' || status === 'PLAYING';
         setIsLive(competitionIsLive);
-        if (competitionIsLive) {
-          setupLiveUpdates();
-        }
+        
+        // Always setup updates (for chat support even after completion)
+        setupLiveUpdates();
       }
     } catch (error) {
       console.error('Failed to load competition:', error);
@@ -114,39 +116,37 @@ function Leaderboard({ isEvent }) {
   const loadLeaderboard = async (showLoader = true) => {
     try {
       if (showLoader) setLoading(true);
-      const response = isEvent
+      const res = isEvent
         ? await liveEventAPI.getLeaderboard(competitionId)
         : await liveCompetitionAPI.getLeaderboard(competitionId);
-      if (response.success && response.leaderboard) {
-        const dedupedList = deduplicateLeaderboard(response.leaderboard);
-        setLeaderboard(dedupedList);
 
-        // Auto-paginate to the user's page on initial load
+      if (res?.success && res?.leaderboard) {
+        const list = deduplicateLeaderboard(res.leaderboard);
+        setLeaderboard(list);
+
         if (!hasAutoPaginatedRef.current) {
-          const currentId = getCurrentUser();
-          if (currentId) {
-            const userIndex = dedupedList.findIndex(u => {
-              const targetId = typeof u.userId === 'object' ? (u.userId?._id || u.userId?.id) : u.userId;
-              return String(targetId) === String(currentId);
+          const uid = getCurrentUser();
+          if (uid) {
+            const idx = list.findIndex(u => {
+              const tid = typeof u.userId === 'object' ? (u.userId?._id || u.userId?.id) : u.userId;
+              return String(tid) === String(uid);
             });
-            if (userIndex !== -1) {
-              const expectedPage = Math.floor(userIndex / itemsPerPage) + 1;
-              setCurrentPage(expectedPage);
+            if (idx !== -1) {
+              setCurrentPage(Math.floor(idx / itemsPerPage) + 1);
               hasAutoPaginatedRef.current = true;
             }
           }
         }
+
+        if (!hasFiredConfettiRef.current && list.length > 0) {
+          triggerCelebration();
+          hasFiredConfettiRef.current = true;
+        }
       }
-    } catch (error) {
-      console.error('Failed to load leaderboard:', error);
+    } catch (e) {
+      console.error('Leaderboard load error:', e);
     } finally {
       if (showLoader) setLoading(false);
-      
-      // Trigger refined celebration once data is loaded
-      if (response?.success && response?.leaderboard?.length > 0 && !hasFiredConfettiRef.current) {
-        triggerCelebration();
-        hasFiredConfettiRef.current = true;
-      }
     }
   };
 
@@ -219,7 +219,7 @@ function Leaderboard({ isEvent }) {
 
   const handleReview = () => {
     if (!isUserAuthenticated) {
-      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/live-event/${competitionId}` : `/competition/${competitionId}/puzzle`)}`);
+      navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(isEvent ? `/live-event/${competitionId}` : `/competition/${competitionId}/puzzle`)}`);
       return;
     }
     navigate(isEvent ? `/live-event/${competitionId}` : `/competition/${competitionId}/puzzle`, { state: { reviewMode: true } });
@@ -694,6 +694,7 @@ function Leaderboard({ isEvent }) {
             </div>
         </div>
       </div>
+      <FloatingChatWidget competitionId={competitionId} user={user} />
     </div>
   );
 }

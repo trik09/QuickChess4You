@@ -6,8 +6,8 @@ export default function UserProtectedRoute({ children }) {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Preserve the full path the user was trying to reach
-    return <Navigate to={`/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+    // Redirect to home page instead of login page
+    return <Navigate to={`/?reason=auth_required&returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
   return children;

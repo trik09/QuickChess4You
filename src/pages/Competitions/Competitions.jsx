@@ -86,7 +86,7 @@ function Competitions() {
 
     const handleJoin = async (competition) => {
         if (!isAuthenticated) {
-            navigate(`/login?returnTo=/competitions`);
+            navigate(`/?reason=auth_required&returnTo=/competitions`);
             return;
         }
 

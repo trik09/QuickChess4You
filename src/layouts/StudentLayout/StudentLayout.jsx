@@ -11,7 +11,9 @@ import {
     FaSun,
     FaTrophy,
     FaMoon,
-    FaClipboardList
+    FaClipboardList,
+    FaRocket,
+    FaCrown
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -42,6 +44,7 @@ const StudentLayout = () => {
     const openSettings = () => setIsThemeModalOpen(true);
 
     const sidebarNavItems = [
+        { path: '/academy', label: 'Become a Pro', icon: <FaRocket />, isHighlighted: true },
         { path: '/Dashboard', label: 'Arena', icon: <FaThLarge /> },
         { path: '/play', label: 'Play', icon: <FaPuzzlePiece /> },
         { path: '/events', label: 'Events', icon: <FaTrophy /> },
@@ -56,6 +59,7 @@ const StudentLayout = () => {
         { path: '/play', label: 'Play', icon: <FaPuzzlePiece /> },
         { path: '/events', label: 'Events', icon: <FaTrophy /> },
         { path: '/Dashboard', label: 'Arena', icon: <FaThLarge />, isSpecial: true },
+        { path: '/academy', label: 'Pro', icon: <FaRocket /> },
         { path: '/Dashboard/exams', label: 'Exams', icon: <FaClipboardList /> },
         { path: '/profile', label: 'Profile', icon: <FaUser /> },
     ];
@@ -85,7 +89,7 @@ const StudentLayout = () => {
                 to={item.path}
                 end={item.path === '/Dashboard'}
                 className={({ isActive }) =>
-                    `${styleClasses.base} ${isActive ? styleClasses.active : ''} ${item.isSpecial ? (styleClasses.special || '') : ''}`
+                    `${styleClasses.base} ${isActive ? styleClasses.active : ''} ${item.isSpecial ? (styleClasses.special || '') : ''} ${item.isHighlighted ? (styleClasses.highlighted || '') : ''}`
                 }
             >
                 <span className={styleClasses.icon}>{item.icon}</span>
@@ -134,6 +138,7 @@ const StudentLayout = () => {
                         renderNavItem(item, {
                             base: styles.navItem,
                             active: styles.active,
+                            highlighted: styles.highlighted,
                             icon: styles.navIcon,
                             labelClass: styles.navLabel,
                             showLabel: !isSidebarCollapsed,
@@ -150,6 +155,11 @@ const StudentLayout = () => {
                         {darkMode ? <FaSun /> : <FaMoon />}
                         {!isSidebarCollapsed && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
                     </button>
+
+                    <div className={styles.membershipTag}>
+                        <FaCrown className={styles.crownIcon} />
+                        {!isSidebarCollapsed && <span>QCFY Plus +</span>}
+                    </div>
 
                     {/* <NetworkStatus isCollapsed={isSidebarCollapsed} /> */}
 

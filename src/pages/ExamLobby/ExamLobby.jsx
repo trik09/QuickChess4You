@@ -116,7 +116,7 @@ const ExamLobby = () => {
   };
 
   const handleJoinClick = () => {
-    if (!user) { navigate(`/login?returnTo=${encodeURIComponent(`/exam/${id}/lobby`)}`); return; }
+    if (!user) { navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(`/exam/${id}/lobby`)}`); return; }
     if (exam?.accessCode) { setShowCodeModal(true); setAccessCodeInput(""); setCodeError(""); return; }
     executeJoin();
   };

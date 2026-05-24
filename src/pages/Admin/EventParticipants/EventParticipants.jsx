@@ -99,6 +99,11 @@ function EventParticipants() {
       render: (val) => (val ? <Badge variant="info">{val}</Badge> : <span className={styles.noRating}>None</span>)
     },
     {
+      key: "utrNumber",
+      label: "UTR Number",
+      render: (val) => (val ? <span style={{ fontWeight: 'bold', color: '#f59e0b', fontSize: '0.85rem' }}>{val}</span> : "—")
+    },
+    {
       key: "isApproved",
       label: "Status",
       render: (val) => (

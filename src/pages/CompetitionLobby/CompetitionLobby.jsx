@@ -31,6 +31,7 @@ import styles from "./CompetitionLobby.module.css";
 import ParticipantList from "./components/ParticipantList";
 import CompetitionTimer from "./components/CompetitionTimer";
 import PremiumLoader from "../../components/PremiumLoader/PremiumLoader";
+import FloatingChatWidget from "../../components/FloatingChatWidget/FloatingChatWidget";
 
 const CompetitionLobby = ({ isEvent = false }) => {
   const { id } = useParams();
@@ -85,7 +86,8 @@ const CompetitionLobby = ({ isEvent = false }) => {
     whatsappNumber: "",
     age: "",
     gender: "Male",
-    fideRating: ""
+    fideRating: "",
+    utrNumber: ""
   });
 
   // Pagination State
@@ -151,11 +153,13 @@ const CompetitionLobby = ({ isEvent = false }) => {
             }
             : p,
         );
-        // Re-sort by puzzles solved, then time
+        // Re-sort by score, then puzzles solved, then time
         return updated.sort((a, b) => {
-          if (b.puzzlesSolved !== a.puzzlesSolved)
-            return b.puzzlesSolved - a.puzzlesSolved;
-          return a.timeSpent - b.timeSpent;
+          if ((b.score || 0) !== (a.score || 0))
+            return (b.score || 0) - (a.score || 0);
+          if ((b.puzzlesSolved || 0) !== (a.puzzlesSolved || 0))
+            return (b.puzzlesSolved || 0) - (a.puzzlesSolved || 0);
+          return (a.timeSpent || 0) - (b.timeSpent || 0);
         });
       });
     };
@@ -178,6 +182,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
     socketService.on("competitionEnded", onCompetitionEnded);
     socketService.on("leaderboardUpdate", onLeaderboardUpdate);
     socketService.on("liveScoreUpdate", onLiveScoreUpdate);
+    socketService.on("eventLiveScoreUpdate", onLiveScoreUpdate);
     socketService.on("participantSubmitted", onParticipantSubmitted);
 
     // Cleanup
@@ -186,6 +191,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
       socketService.off("competitionEnded", onCompetitionEnded);
       socketService.off("leaderboardUpdate", onLeaderboardUpdate);
       socketService.off("liveScoreUpdate", onLiveScoreUpdate);
+      socketService.off("eventLiveScoreUpdate", onLiveScoreUpdate);
       socketService.off("participantSubmitted", onParticipantSubmitted);
     };
   }, [id, navigate]);
@@ -223,6 +229,19 @@ const CompetitionLobby = ({ isEvent = false }) => {
       });
     }
   }, [competitionState, participantState, navigate, id]);
+
+  // Auto-connect socket on mount for chat support
+  useEffect(() => {
+    if (id && user) {
+      console.log("[Lobby] Connecting socket for chat support");
+      socketService.connect({ 
+        competition: { 
+          id: id,
+          name: competition?.title || competition?.name || "Competition"
+        } 
+      }).catch(err => console.error("[Lobby] Socket connection failed:", err));
+    }
+  }, [id, user, competition?.title]);
 
   // Main Load Effect
   useEffect(() => {
@@ -452,7 +471,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
 
   const joinCompetitionWithCode = async (code = null) => {
     if (!user) {
-      navigate(`/login?returnTo=${encodeURIComponent(`/competition/${id}/lobby`)}`);
+      navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(`/competition/${id}/lobby`)}`);
       return;
     }
 
@@ -621,7 +640,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
 
   const handleJoin = () => {
     if (!user) {
-      navigate(`/login?returnTo=${encodeURIComponent(isEvent ? `/event/${id}/lobby` : `/competition/${id}/lobby`)}`);
+      navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(isEvent ? `/event/${id}/lobby` : `/competition/${id}/lobby`)}`);
       return;
     }
 
@@ -656,6 +675,15 @@ const CompetitionLobby = ({ isEvent = false }) => {
         "You have already submitted your score. Waiting for other players to finish...",
       );
       return;
+    }
+
+    // For events, check for active round type
+    if (isEvent && competition?.rounds?.length > 0) {
+      const activeRound = competition.rounds.find(r => r.status === 'LIVE') || competition.rounds[0];
+      if (activeRound.type === 'EXAM' && activeRound.examId) {
+        navigate(`/exam/${activeRound.examId}/lobby`);
+        return;
+      }
     }
 
     navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, {
@@ -769,6 +797,21 @@ const CompetitionLobby = ({ isEvent = false }) => {
               <FaTimes />
             </button>
             <h3>Register for Event</h3>
+            
+            {competition?.entryFee > 0 && (
+              <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
+                <p style={{ color: '#f59e0b', fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Entry Fee: ₹{competition.entryFee}
+                </p>
+                <div style={{ textAlign: 'center', background: '#fff', padding: '10px', borderRadius: '8px', width: 'fit-content', margin: '0 auto 10px' }}>
+                  <div style={{ width: '120px', height: '120px', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontSize: '0.7rem' }}>
+                    QR Code Space
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>Scan to pay and enter UTR number below</p>
+              </div>
+            )}
+
             <form onSubmit={handleRegSubmit} className={styles.regForm}>
               <div className={styles.formGroup}>
                 <label>Full Name *</label>
@@ -827,6 +870,19 @@ const CompetitionLobby = ({ isEvent = false }) => {
                   placeholder="Enter FIDE Rating if any"
                 />
               </div>
+
+              {competition?.entryFee > 0 && (
+                <div className={styles.formGroup}>
+                  <label>UTR Number / Transaction ID *</label>
+                  <input
+                    type="text"
+                    required
+                    value={regForm.utrNumber}
+                    onChange={(e) => setRegForm({ ...regForm, utrNumber: e.target.value })}
+                    placeholder="Enter 12-digit UTR number"
+                  />
+                </div>
+              )}
 
               <button type="submit" disabled={isSubmittingReg} className={styles.submitRegBtn}>
                 {isSubmittingReg ? "Submitting..." : "Submit Registration"}
@@ -930,6 +986,40 @@ const CompetitionLobby = ({ isEvent = false }) => {
         </div>
       </div>
 
+      {isEvent && competition?.rounds?.length > 0 && (
+        <div className={styles.lobbyCard} style={{ marginTop: '20px' }}>
+          <h2 className={styles.sectionTitle}>
+            <FaListUl className={styles.titleIcon} style={{ marginRight: '10px' }} /> Event Rounds
+          </h2>
+          <div className={styles.roundsTimeline} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
+            {competition.rounds.map((round, idx) => (
+              <div key={idx} className={styles.roundRow} style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ background: round.status === 'LIVE' ? '#22c55e' : '#334155', color: '#fff', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  {idx + 1}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: 0, fontSize: '1rem', color: '#fff' }}>{round.title}</h4>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>Type: {round.type === 'PUZZLE' ? 'Puzzle Arena' : 'Formal Exam'}</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                   <span style={{ 
+                     fontSize: '0.7rem', 
+                     padding: '4px 8px', 
+                     borderRadius: '4px', 
+                     background: round.status === 'LIVE' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(148, 163, 184, 0.1)',
+                     color: round.status === 'LIVE' ? '#22c55e' : '#94a3b8',
+                     fontWeight: 'bold',
+                     textTransform: 'uppercase'
+                   }}>
+                     {round.status || 'UPCOMING'}
+                   </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main Content Split Layout */}
       <div className={styles.lobbyMainContent}>
         <ParticipantList
@@ -995,6 +1085,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
           </ul>
         </div>
       </div>
+      <FloatingChatWidget competitionId={id} user={user} />
     </div>
   );
 };

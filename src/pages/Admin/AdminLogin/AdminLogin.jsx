@@ -30,7 +30,7 @@ function AdminLogin() {
       if (response.atoken) {
         // Store admin session using context
         adminLogin(
-          { email: formData.email },  // admin info
+          response.admin,             // complete admin info
           response.atoken             // admin JWT token
         );
 

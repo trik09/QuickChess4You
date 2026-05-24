@@ -358,6 +358,38 @@ export const adminAPI = {
       adminToken
     );
   },
+
+  // Fetch all sub-admins
+  getSubAdmins: async () => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest("/admin/sub-admins", { method: "GET" }, adminToken);
+  },
+
+  // Create sub-admin
+  createSubAdmin: async (adminData) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest("/admin/sub-admins", {
+      method: "POST",
+      body: JSON.stringify(adminData),
+    }, adminToken);
+  },
+
+  // Update sub-admin
+  updateSubAdmin: async (id, adminData) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(`/admin/sub-admins/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(adminData),
+    }, adminToken);
+  },
+
+  // Delete sub-admin
+  deleteSubAdmin: async (id) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(`/admin/sub-admins/${id}`, {
+      method: "DELETE",
+    }, adminToken);
+  },
 };
 
 /**
@@ -820,6 +852,13 @@ export const examAPI = {
   }
 };
 
+export const chatAPI = {
+  getChatHistory: async (competitionId) => {
+    const userToken = localStorage.getItem("token");
+    return apiRequest(`/live-competition/${competitionId}/chat`, { method: "GET" }, userToken);
+  }
+};
+
 export default {
   authAPI,
   adminAPI,
@@ -830,5 +869,7 @@ export default {
   quizAPI,
   examAPI,
   eventAPI,
+  chatAPI
 };
+
 
