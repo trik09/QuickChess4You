@@ -42,6 +42,7 @@ import blackBishop3 from "../../assets/pieces3/blackbishop.svg";
 import blackRook3 from "../../assets/pieces3/blackrook.svg";
 import blackQueen3 from "../../assets/pieces3/blackqueen.svg";
 import blackKing3 from "../../assets/pieces3/blackking.svg";
+import updatedStar from "../../assets/updated-star.svg";
 
 const pieceImageSets = {
   set1: {
@@ -184,6 +185,9 @@ function ChessBoard({
   showSolution = false,
   firstMoveBy = "w", // Default to white
   testSolveMode = false, // Added for Test Solve popup validation
+  isAnalysis = false, // Configured for larger board specifically on AnalyzePage
+  boardWrapperClass = "",
+  boardClass = "",
 }) {
   const { currentBoardColors, pieceSet } = useTheme();
   const [game, setGame] = useState(safeNewChess(fen));
@@ -215,6 +219,7 @@ function ChessBoard({
   const [promotionPending, setPromotionPending] = useState(null); // { from, to, color }
   const [capturedTargets, setCapturedTargets] = useState([]); // Array of captured squares
   const [captureTargets, setCaptureTargets] = useState([]);
+  const [captureMovesCount, setCaptureMovesCount] = useState(0); // Tracks moves used in capture puzzles
 
   // Tracked piece square for Source-Destination puzzles
   const [trackedSquare, setTrackedSquare] = useState(null); // Initial targets/pieces from config
@@ -237,6 +242,7 @@ function ChessBoard({
   const [arrows, setArrows] = useState([]);
   const [circles, setCircles] = useState([]);
   const arrowDragStateRef = useRef({ isDrawing: false, startSquare: null, startX: 0, startY: 0, rafId: null });
+  const arrowColorRef = useRef("#43732F");
 
   // ─── Keep a ref to the latest `interactive` prop ─────────────────────────────
   // This ensures drag/click handlers always read the current value even if they
@@ -289,6 +295,7 @@ function ChessBoard({
 
     // Initialize Capture Mode stuff
     setCapturedTargets([]);
+    setCaptureMovesCount(0);
     if (puzzleType === "capture" && captureConfig) {
       if (captureConfig.mode === 'objects') {
         setCaptureTargets(captureConfig.targets || []);
@@ -490,11 +497,43 @@ function ChessBoard({
     feedback,
   ]);
 
-  // Cleanup effect for mouse event listeners
+  // Keyboard listener for arrow colors
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!arrowDragStateRef.current.isDrawing) return;
+
+      const key = e.key.toLowerCase();
+      let newColor = null;
+      let markerId = "arrowhead";
+
+      if (e.shiftKey) {
+        if (key === 'g') { newColor = "#43732F"; markerId = "arrowhead"; }
+        else if (key === 'r') { newColor = "#F44336"; markerId = "arrowhead-red"; }
+        else if (key === 'y') { newColor = "#FFEB3B"; markerId = "arrowhead-yellow"; }
+        else if (key === 'b') { newColor = "#2196F3"; markerId = "arrowhead-blue"; }
+      }
+
+      if (newColor) {
+        arrowColorRef.current = newColor;
+        const lineNode = document.getElementById("current-arrow-line");
+        if (lineNode) {
+          lineNode.setAttribute("stroke", newColor);
+          lineNode.setAttribute("marker-end", `url(#${markerId})`);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Cleanup effect for mouse/touch event listeners
   useEffect(() => {
     return () => {
       document.removeEventListener("mousemove", mouseHandlersRef.current.move);
       document.removeEventListener("mouseup", mouseHandlersRef.current.up);
+      document.removeEventListener("touchmove", mouseHandlersRef.current.handleTouchMove);
+      document.removeEventListener("touchend", mouseHandlersRef.current.handleTouchEnd);
       if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
     };
   }, []);
@@ -605,6 +644,7 @@ function ChessBoard({
       setPossibleMoves([]);
       setFeedback(null);
       setCapturedTargets([]);
+      setCaptureMovesCount(0);
     }, delay);
   };
 
@@ -751,7 +791,7 @@ function ChessBoard({
     }
 
     // 1. Check if source piece is under attack (Resolve attacker first)
-    const isSourceAttacked = isSquareAttackedBy(from, opponentColor, piecesMap);
+   // const isSourceAttacked = isSquareAttackedBy(from, opponentColor, piecesMap);
 
     // 2. Check if destination is unsafe after move (Do NOT allow capture on unsafe destination)
     const nextPiecesMap = { ...piecesMap };
@@ -760,7 +800,7 @@ function ChessBoard({
     nextPiecesMap[to] = movingPiece;
     const isDestAttacked = isSquareAttackedBy(to, opponentColor, nextPiecesMap);
 
-    if (isSourceAttacked || isDestAttacked) {
+    if ( isDestAttacked) {
       playSound('wrong');
       setFeedback('wrong');
       if (onWrongMove) onWrongMove([...moveHistory, from + to]);
@@ -1044,6 +1084,7 @@ function ChessBoard({
   const handleCaptureMove = (from, to) => {
     const playerColor = captureConfig?.playerSide || userColor;
     const mode = captureConfig?.mode || 'objects';
+    const maxMoves = captureConfig?.maximumNoOfMoves || null;
 
     // For Pieces mode, we use the "illegal" logic where moves into attacked squares are rejected
     if (mode === 'pieces') {
@@ -1103,8 +1144,10 @@ function ChessBoard({
       const nextGame = safeNewChess(nextFen);
       setGame(nextGame);
 
-      // Check win condition using the NEW Pieces logic
-      // No opponent pieces remaining
+      const newMovesCount = captureMovesCount + 1;
+      setCaptureMovesCount(newMovesCount);
+
+      // Check win condition using the NEW Pieces logic — no opponent pieces remaining
       const opponentPiecesRemain = Object.values(newPieces).some(p => p.color === opponentColor);
       if (!opponentPiecesRemain) {
         setTimeout(() => {
@@ -1112,6 +1155,31 @@ function ChessBoard({
           playSound('solved');
           if (onPuzzleSolved) onPuzzleSolved(undefined, newHistory);
         }, 300);
+        if (onBoardStateChangeRef.current) onBoardStateChangeRef.current(nextFen, newHistory);
+        return;
+      }
+
+      // Check if move limit exceeded without solving
+      if (maxMoves && newMovesCount >= maxMoves && opponentPiecesRemain) {
+        setTimeout(() => {
+          playSound('wrong');
+          setFeedback('wrong');
+          if (onWrongMove) onWrongMove(newHistory);
+          // Reset after showing feedback
+          setTimeout(() => {
+            const resetGame = safeNewChess(initialFen);
+            setGame(resetGame);
+            setMoveHistory([]);
+            setLastMove(null);
+            setSelectedSquare(null);
+            setPossibleMoves([]);
+            setFeedback(null);
+            setCapturedTargets([]);
+            setCaptureMovesCount(0);
+          }, 1200);
+        }, 300);
+        if (onBoardStateChangeRef.current) onBoardStateChangeRef.current(nextFen, newHistory);
+        return;
       }
 
       if (onBoardStateChangeRef.current) onBoardStateChangeRef.current(nextFen, newHistory);
@@ -1154,12 +1222,46 @@ function ChessBoard({
     setGame(new Chess(newFen));
     setFeedback(null);
 
+    const newMovesCount = captureMovesCount + 1;
+    setCaptureMovesCount(newMovesCount);
+
+    // Check win condition first
     if (checkCaptureWinCondition(newCaptured)) {
       setTimeout(() => {
         setFeedback("solved");
         playSound("solved");
         if (onPuzzleSolved) onPuzzleSolved(undefined, newHistory);
       }, 300);
+      if (onBoardStateChange) onBoardStateChange(newFen, newHistory);
+      return;
+    }
+
+    // Check if move limit exceeded without capturing all targets
+    if (maxMoves && newMovesCount >= maxMoves && !checkCaptureWinCondition(newCaptured)) {
+      setTimeout(() => {
+        playSound('wrong');
+        setFeedback('wrong');
+        if (onWrongMove) onWrongMove(newHistory);
+        // Reset after showing feedback
+        setTimeout(() => {
+          const resetGame = safeNewChess(initialFen);
+          setGame(resetGame);
+          setMoveHistory([]);
+          setLastMove(null);
+          setSelectedSquare(null);
+          setPossibleMoves([]);
+          setFeedback(null);
+          setCapturedTargets([]);
+          setCaptureMovesCount(0);
+          if (captureConfig?.mode === 'objects') {
+            setCaptureTargets(captureConfig.targets || []);
+          } else {
+            setCaptureTargets(captureConfig?.enemyPieces || []);
+          }
+        }, 1200);
+      }, 300);
+      if (onBoardStateChange) onBoardStateChange(newFen, newHistory);
+      return;
     }
 
     if (onBoardStateChange) {
@@ -1440,6 +1542,7 @@ function ChessBoard({
 
   const [floatingSize, setFloatingSize] = useState(60);
 
+
   // Custom Mouse Drag Handlers
   useEffect(() => {
     mouseHandlersRef.current.arrowMove = (e) => {
@@ -1461,14 +1564,46 @@ function ChessBoard({
         const dy = rawY - startY;
         const length = Math.sqrt(dx * dx + dy * dy);
 
-        const lineNode = document.getElementById("current-arrow-line");
-        if (lineNode && length > 0) {
-          const ratio = Math.max(0, (length - 4.5)) / length;
-          const endX = startX + dx * ratio;
-          const endY = startY + dy * ratio;
+        // Determine current hover square to decide if we show the arrow
+        const squareSize = rect.width / 8;
+        const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
+        const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+        let hoverSquare = null;
+        if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
+          const currentFiles = userColor === "w" ? files : [...files].reverse();
+          const currentRanks = userColor === "w" ? ranks : [...ranks].reverse();
+          hoverSquare = getSquare(currentFiles[fileIndex], currentRanks[rankIndex]);
+        }
 
-          lineNode.setAttribute("x2", endX);
-          lineNode.setAttribute("y2", endY);
+        const isSameSquare = hoverSquare === arrowDragStateRef.current.startSquare;
+        const lineNode = document.getElementById("current-arrow-line");
+
+        if (lineNode) {
+          if (isSameSquare || !hoverSquare) {
+            lineNode.setAttribute("opacity", "0");
+          } else {
+            // SNAP TO CENTER: Instead of raw mouse coords, use target square center
+            const targetCenter = getSquareCenter(hoverSquare);
+            const startX = arrowDragStateRef.current.startX;
+            const startY = arrowDragStateRef.current.startY;
+
+            const snapDx = targetCenter.x - startX;
+            const snapDy = targetCenter.y - startY;
+            const snapLength = Math.sqrt(snapDx * snapDx + snapDy * snapDy);
+
+            if (snapLength === 0) {
+              lineNode.setAttribute("opacity", "0");
+            } else {
+              // Shortening ratio adjusted for seamless marker connection at center
+              const ratio = Math.max(0, (snapLength - 3.5)) / snapLength;
+              const endX = startX + snapDx * ratio;
+              const endY = startY + snapDy * ratio;
+
+              lineNode.setAttribute("x2", endX);
+              lineNode.setAttribute("y2", endY);
+              lineNode.setAttribute("opacity", "0.7");
+            }
+          }
         }
       });
     };
@@ -1507,7 +1642,11 @@ function ChessBoard({
           if (exists) {
             return prev.filter(a => !(a.from === arrowDragStateRef.current.startSquare && a.to === targetSquare));
           }
-          return [...prev, { from: arrowDragStateRef.current.startSquare, to: targetSquare }];
+          return [...prev, { 
+            from: arrowDragStateRef.current.startSquare, 
+            to: targetSquare, 
+            color: arrowColorRef.current 
+          }];
         });
       } else if (targetSquare === arrowDragStateRef.current.startSquare) {
         // Single right click on a square, toggle circle
@@ -1523,12 +1662,25 @@ function ChessBoard({
       }
     };
 
-    mouseHandlersRef.current.handleMouseMove = (e) => {
-      if (!boardRef.current || !wrapperRef.current) return;
+    // Helper: extract clientX/clientY from either a mouse or touch event
+    const getClientXY = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+      }
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+      }
+      return { clientX: e.clientX, clientY: e.clientY };
+    };
 
+    const handleDragMove = (e) => {
+      if (!boardRef.current || !wrapperRef.current) return;
+      if (e.cancelable) e.preventDefault(); // prevent scroll during drag
+
+      const { clientX, clientY } = getClientXY(e);
       const wrapperRect = wrapperRef.current.getBoundingClientRect();
-      const currentLogicalX = (e.clientX - wrapperRect.left) / scale;
-      const currentLogicalY = (e.clientY - wrapperRect.top) / scale;
+      const currentLogicalX = (clientX - wrapperRect.left) / scale;
+      const currentLogicalY = (clientY - wrapperRect.top) / scale;
 
       setDragPosition({
         x: currentLogicalX,
@@ -1538,8 +1690,8 @@ function ChessBoard({
       const rect = boardRef.current.getBoundingClientRect();
       const squareSize = rect.width / 8;
 
-      const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
-      const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+      const fileIndex = Math.floor((clientX - rect.left) / squareSize);
+      const rankIndex = Math.floor((clientY - rect.top) / squareSize);
 
       if (fileIndex >= 0 && fileIndex < 8 && rankIndex >= 0 && rankIndex < 8) {
         const currentFiles = userColor === "w" ? files : [...files].reverse();
@@ -1560,27 +1712,25 @@ function ChessBoard({
       }
     };
 
-    mouseHandlersRef.current.handleMouseUp = (e) => {
+    const handleDragEnd = (e) => {
       isMouseDownRef.current = false;
 
-      document.removeEventListener(
-        "mousemove",
-        mouseHandlersRef.current.handleMouseMove,
-      );
-      document.removeEventListener(
-        "mouseup",
-        mouseHandlersRef.current.handleMouseUp,
-      );
+      document.removeEventListener("mousemove", mouseHandlersRef.current.handleMouseMove);
+      document.removeEventListener("mouseup", mouseHandlersRef.current.handleMouseUp);
+      document.removeEventListener("touchmove", mouseHandlersRef.current.handleTouchMove);
+      document.removeEventListener("touchend", mouseHandlersRef.current.handleTouchEnd);
 
       const currentDraggedPiece = dragStateRef.current.draggedPiece;
       const currentPossibleMoves = dragStateRef.current.possibleMoves;
+
+      const { clientX, clientY } = getClientXY(e);
 
       let targetSquare = null;
       if (boardRef.current) {
         const rect = boardRef.current.getBoundingClientRect();
         const squareSize = rect.width / 8;
-        const fileIndex = Math.floor((e.clientX - rect.left) / squareSize);
-        const rankIndex = Math.floor((e.clientY - rect.top) / squareSize);
+        const fileIndex = Math.floor((clientX - rect.left) / squareSize);
+        const rankIndex = Math.floor((clientY - rect.top) / squareSize);
 
         if (
           fileIndex >= 0 &&
@@ -1618,6 +1768,11 @@ function ChessBoard({
         setPossibleMoves([]);
       }
     };
+
+    mouseHandlersRef.current.handleMouseMove = handleDragMove;
+    mouseHandlersRef.current.handleMouseUp = handleDragEnd;
+    mouseHandlersRef.current.handleTouchMove = handleDragMove;
+    mouseHandlersRef.current.handleTouchEnd = handleDragEnd;
   }, [userColor, scale]);
 
   const startArrowDrag = (square, e) => {
@@ -1630,13 +1785,18 @@ function ChessBoard({
       rafId: null
     };
 
+    // Reset to default green for new drag
+    arrowColorRef.current = "#43732F";
+
     const lineNode = document.getElementById("current-arrow-line");
     if (lineNode) {
       lineNode.setAttribute("x1", center.x);
       lineNode.setAttribute("y1", center.y);
       lineNode.setAttribute("x2", center.x);
       lineNode.setAttribute("y2", center.y);
-      lineNode.setAttribute("opacity", "0.7");
+      lineNode.setAttribute("stroke", "#43732F");
+      lineNode.setAttribute("marker-end", "url(#arrowhead)");
+      lineNode.setAttribute("opacity", "0"); // Hide initially until we move to another square
     }
 
     document.addEventListener("mousemove", mouseHandlersRef.current.arrowMove, { passive: false });
@@ -1670,9 +1830,13 @@ function ChessBoard({
     );
     setPossibleMoves(movesToSquares);
 
+    // Support both mouse and touch events
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
     const wrapperRect = wrapperRef.current.getBoundingClientRect();
-    const logicalX = (e.clientX - wrapperRect.left) / scale;
-    const logicalY = (e.clientY - wrapperRect.top) / scale;
+    const logicalX = (clientX - wrapperRect.left) / scale;
+    const logicalY = (clientY - wrapperRect.top) / scale;
     setDragPosition({
       x: logicalX,
       y: logicalY,
@@ -1688,6 +1852,7 @@ function ChessBoard({
     const offsetValue = (size / 2) / scale;
     setDragOffset({ x: offsetValue, y: offsetValue });
 
+    // Register mouse listeners
     document.addEventListener(
       "mousemove",
       mouseHandlersRef.current.handleMouseMove,
@@ -1696,6 +1861,18 @@ function ChessBoard({
     document.addEventListener(
       "mouseup",
       mouseHandlersRef.current.handleMouseUp,
+      { passive: false },
+    );
+
+    // Register touch listeners for mobile/tablet support
+    document.addEventListener(
+      "touchmove",
+      mouseHandlersRef.current.handleTouchMove,
+      { passive: false },
+    );
+    document.addEventListener(
+      "touchend",
+      mouseHandlersRef.current.handleTouchEnd,
       { passive: false },
     );
   };
@@ -1752,15 +1929,17 @@ function ChessBoard({
         }}
       >
         <defs>
-          <marker
-            id="arrowhead"
-            markerWidth="4"
-            markerHeight="4"
-            refX="2.5"
-            refY="2"
-            orient="auto"
-          >
+          <marker id="arrowhead" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
             <path d="M0,0 L4,2 L0,4 z" fill="#43732F" />
+          </marker>
+          <marker id="arrowhead-red" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
+            <path d="M0,0 L4,2 L0,4 z" fill="#F44336" />
+          </marker>
+          <marker id="arrowhead-yellow" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
+            <path d="M0,0 L4,2 L0,4 z" fill="#FFEB3B" />
+          </marker>
+          <marker id="arrowhead-blue" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
+            <path d="M0,0 L4,2 L0,4 z" fill="#2196F3" />
           </marker>
         </defs>
 
@@ -1805,10 +1984,15 @@ function ChessBoard({
 
           if (length === 0) return null;
 
-          // Shortening ratio adjusted for seamless marker connection
           const ratio = Math.max(0, (length - 3.5)) / length;
           const endX = start.x + dx * ratio;
           const endY = start.y + dy * ratio;
+
+          const color = arrow.color || "#43732F";
+          let markerId = "arrowhead";
+          if (color === "#F44336") markerId = "arrowhead-red";
+          else if (color === "#FFEB3B") markerId = "arrowhead-yellow";
+          else if (color === "#2196F3") markerId = "arrowhead-blue";
 
           return (
             <line
@@ -1817,11 +2001,11 @@ function ChessBoard({
               y1={start.y}
               x2={endX}
               y2={endY}
-              stroke="#43732F"
+              stroke={color}
               strokeWidth="1.8"
               strokeLinecap="round"
               opacity="0.7"
-              markerEnd="url(#arrowhead)"
+              markerEnd={`url(#${markerId})`}
             />
           );
         })}
@@ -1855,13 +2039,73 @@ function ChessBoard({
           overflow: 'hidden',
           position: 'relative'
         }}
+        className={`${styles.boardWrapper} ${isAnalysis ? styles.analysisBoardWrapper : ""} ${boardWrapperClass}`}
       >
         {feedback && (
           <div className={`${styles.feedback} ${styles[feedback]}`}>
             {feedback === "correct" &&
               (puzzleType === "kids" ? "Great job!" : "✓ Correct!")}
-            {feedback === "wrong" && "✗ Wrong Move!"}
+            {feedback === "wrong" && (
+              puzzleType === "capture" && captureConfig?.maximumNoOfMoves && captureMovesCount >= captureConfig.maximumNoOfMoves
+                ? `✗ Out of moves! (${captureConfig.maximumNoOfMoves} max)`
+                : "✗ Wrong Move!"
+            )}
             {feedback === "solved" && "Puzzle Solved!"}
+          </div>
+        )}
+
+        {/* Move Counter for Capture Puzzles */}
+        {puzzleType === "capture" && captureConfig?.maximumNoOfMoves && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '6px 12px',
+            backgroundColor: (() => {
+              const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+              if (remaining <= 0) return '#fee2e2';
+              if (remaining <= 2) return '#fef3c7';
+              return '#f0fdf4';
+            })(),
+            borderBottom: '2px solid',
+            borderColor: (() => {
+              const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+              if (remaining <= 0) return '#fca5a5';
+              if (remaining <= 2) return '#fcd34d';
+              return '#86efac';
+            })(),
+            fontSize: '14px',
+            fontWeight: '700',
+            transition: 'background-color 0.3s, border-color 0.3s',
+          }}>
+            <span style={{ fontSize: '16px' }}>🎯</span>
+            <span style={{
+              color: (() => {
+                const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+                if (remaining <= 0) return '#dc2626';
+                if (remaining <= 2) return '#d97706';
+                return '#16a34a';
+              })()
+            }}>
+              Moves: {captureMovesCount} / {captureConfig.maximumNoOfMoves}
+            </span>
+            <span style={{
+              marginLeft: '4px',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '12px',
+              fontWeight: '800',
+              backgroundColor: (() => {
+                const remaining = captureConfig.maximumNoOfMoves - captureMovesCount;
+                if (remaining <= 0) return '#dc2626';
+                if (remaining <= 2) return '#d97706';
+                return '#16a34a';
+              })(),
+              color: 'white',
+            }}>
+              {Math.max(0, captureConfig.maximumNoOfMoves - captureMovesCount)} left
+            </span>
           </div>
         )}
 
@@ -1898,7 +2142,7 @@ function ChessBoard({
           </div>
         )}
 
-        <div className={styles.board} ref={boardRef} style={{ position: 'relative' }}>
+        <div className={`${styles.board} ${isAnalysis ? styles.analysisBoard : ""} ${boardClass}`} ref={boardRef} style={{ position: 'relative' }}>
           {renderAnnotations()}
           {(userColor === 'w' ? ranks : [...ranks].reverse()).flatMap((rank, rankIndex) =>
             (userColor === 'w' ? files : [...files].reverse()).map((file, fileIndex) => {
@@ -1913,13 +2157,15 @@ function ChessBoard({
               if (puzzleType === 'capture' && (captureConfig?.mode === 'objects' || captureConfig?.targets?.length > 0)) {
                 const target = captureTargets.find(t => t.square === square);
                 if (target && !capturedTargets.includes(square)) {
-                  const isEmoji = ['pizza', 'chocolate', 'star', 'burger'].includes(target.item);
+                  const isEmoji = ['pizza', 'chocolate', 'star', '⭐', 'burger'].includes(target.item);
                   if (isEmoji) {
                     captureContent = (
                       <div className={styles.piece} style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-                        {target.item === 'pizza' ? '🍕' :
-                          target.item === 'chocolate' ? '🍫' :
-                            target.item === 'star' ? '⭐' : '🍔'}
+                        {(() => {
+                          const starIcon = <img src={updatedStar} alt="star" style={{ width: '40px', height: '40px' }} />;
+                          const icons = { pizza: '🍕', chocolate: '🍫', star: starIcon, '⭐': starIcon, burger: '🍔' };
+                          return icons[target.item] || '🍔';
+                        })()}
                       </div>
                     );
                   } else {
@@ -2013,6 +2259,17 @@ function ChessBoard({
                         className={`${styles.piece} ${isDragging && draggedPiece === square ? styles.dragSourcePiece : ''}`}
                         draggable={false}
                         onMouseDown={(e) => handleMouseDown(e, square)}
+                        onTouchStart={(e) => {
+                          if (!interactiveRef.current) return;
+                          if (feedback === 'solved') return;
+                          const piece = getPiece(square);
+                          const activeColor = puzzleType === 'illegal' ? getIllegalActiveColor() : game.turn();
+                          if (!piece || piece.color !== activeColor) return;
+                          e.preventDefault(); // prevent scroll/zoom
+                          clearAnnotations();
+                          isMouseDownRef.current = true;
+                          startDrag(square, e);
+                        }}
                         style={{
                           cursor: interactiveRef.current && game.turn() === piece.color && feedback !== 'solved'
                             ? 'grab'

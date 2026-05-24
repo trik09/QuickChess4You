@@ -130,6 +130,10 @@ function CompetitionList() {
           _id: comp._id,
           name: comp.title || comp.name,
           status: getCompetitionStatus(comp),
+          // Store raw values so the periodic status ticker can re-evaluate
+          _startTimeRaw: comp.startTime,
+          _durationMinutes: comp.duration,
+          _endTime: comp.endTime,
           startTime: comp.startTime
             ? new Date(comp.startTime).toLocaleString([], {
                 year: "numeric",
@@ -192,6 +196,25 @@ function CompetitionList() {
   useEffect(() => {
     fetchCompetitions();
   }, [fetchCompetitions]);
+
+  // Re-evaluate competition statuses every 30 seconds so the UI
+  // automatically transitions Upcoming → Live → ENDED without a manual refresh.
+  useEffect(() => {
+    const ticker = setInterval(() => {
+      setCompetitions(prev =>
+        prev.map(comp => ({
+          ...comp,
+          status: getCompetitionStatus({
+            startTime: comp._startTimeRaw,
+            duration: comp._durationMinutes,
+            endTime: comp._endTime
+          })
+        }))
+      );
+    }, 10_000); // every 10 seconds
+
+    return () => clearInterval(ticker);
+  }, []);
 
   // Sync filters to URL search params
   useEffect(() => {

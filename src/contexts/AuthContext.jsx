@@ -84,13 +84,13 @@ export const AuthProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Proactive refresh: refresh token periodically to keep it fresh
-  // With 7-day access tokens, we refresh every 6 days to ensure continuous sessions
-  // This only runs if the tab stays open
+  // Proactive refresh: keep the session alive while the tab is open.
+  // Access tokens expire in 30 min, so refresh every 25 minutes.
+  // This prevents mid-session expiry for active users.
   useEffect(() => {
     if (!getUser()) return;
 
-    const REFRESH_INTERVAL_MS = 6 * 24 * 60 * 60 * 1000; // 6 days
+    const REFRESH_INTERVAL_MS = 25 * 60 * 1000; // 25 minutes
     const interval = setInterval(() => {
       if (getUser()) {
         refreshSession();
@@ -107,7 +107,11 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setToken(null);
       clearUserAuth();
-      navigate("/?reason=session_expired");
+      // Preserve the current path so the login modal can redirect back after login
+      const currentPath = window.location.pathname + window.location.search;
+      const isHomePage = currentPath === "/" || currentPath.startsWith("/?");
+      const returnTo = isHomePage ? "" : `&returnTo=${encodeURIComponent(currentPath)}`;
+      navigate(`/?reason=session_expired${returnTo}`, { replace: true });
     };
 
     window.addEventListener("auth:expired", handleAuthExpired);

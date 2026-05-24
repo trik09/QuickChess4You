@@ -387,7 +387,7 @@ export const LiveCompetitionProvider = ({ children }) => {
   // Setup socket event listeners handled in persistent useEffect
 
   // Load competition puzzles - can be called manually with competitionId
-  const loadCompetitionPuzzles = async (competitionId) => {
+  const loadCompetitionPuzzles = async (competitionId, _retryCount = 0) => {
     if (!competitionId) {
       console.error("No competition ID provided to loadCompetitionPuzzles");
       return;
@@ -537,10 +537,27 @@ export const LiveCompetitionProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Failed to load puzzles:", error);
-      // Silent error handling during initialization to prevent toast spam
-      // Only show toast if this is a user-initiated action (not on page load)
+
+      // Retry once on 403 — this handles the race condition where the
+      // ParticipantModel record hasn't propagated to the DB yet right after
+      // participateInCompetition returns. The backend also retries internally,
+      // but a client-side retry covers any remaining edge cases.
+      const is403 = error?.status === 403 || error?.response?.status === 403 ||
+        error?.message?.toLowerCase().includes("not a participant") ||
+        error?.message?.toLowerCase().includes("participant");
+
+      if (is403 && _retryCount < 2) {
+        const delay = (_retryCount + 1) * 800; // 800ms, 1600ms
+        console.log(`[loadCompetitionPuzzles] 403 received, retrying in ${delay}ms (attempt ${_retryCount + 1})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return loadCompetitionPuzzles(competitionId, _retryCount + 1);
+      }
+
+      // After retries exhausted or non-403 error — show user-facing message
       const isInitialLoad = !competition;
-      if (!isInitialLoad) {
+      if (is403) {
+        toast.error("Could not load puzzles. Please refresh the page.", { id: "puzzle-load-error" });
+      } else if (!isInitialLoad) {
         toast.error("Failed to load competition puzzles");
       }
       // Don't throw error to prevent black page - return error info instead

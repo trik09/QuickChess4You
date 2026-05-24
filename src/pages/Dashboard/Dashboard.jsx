@@ -112,8 +112,8 @@ function Dashboard({ isEvent = false }) {
     });
 
   // Fetch Competitions/Events with backend pagination
-  const fetchCompetitions = useCallback(async () => {
-    setLoading(true);
+  const fetchCompetitions = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     setError("");
 
     try {
@@ -122,12 +122,11 @@ function Dashboard({ isEvent = false }) {
       if (activeTab === "All") {
         // ── "All" tab: same data as Live + Upcoming + Ended tabs combined.
         // Fire three parallel requests using the exact same params each tab uses.
-        const now = new Date();
-        const oneWeekFromNow = new Date(now);
-        oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
-
         const callAPI = (params) =>
           isEvent ? eventAPI.getAll(params) : competitionAPI.getAll(params);
+
+        const oneWeekFromNow = new Date();
+        oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
         const [liveRes, upcomingRes, endedRes] = await Promise.allSettled([
           callAPI({ status: "live", limit: 100, ...searchParam }),
@@ -173,51 +172,86 @@ function Dashboard({ isEvent = false }) {
         ...searchParam,
       };
 
+      const callAPI = (p) =>
+        isEvent ? eventAPI.getAll(p) : competitionAPI.getAll(p);
+
       if (activeTab === "Live") {
         params.status = "live";
+
+        const response = await callAPI(params);
+        if (response.success && Array.isArray(response.data)) {
+          // Filter client-side too — guards against stale DB entries where
+          // status=LIVE but endTime has already passed
+          const sorted = sortCompetitions(
+            response.data.map(formatComp).filter((c) => c.status === "Live")
+          );
+          setFilteredCompetitions(sorted);
+          if (response.pagination) {
+            setTotalPages(response.pagination.total || 1);
+            setTotalRecords(response.pagination.totalRecords || sorted.length);
+          } else {
+            setTotalPages(1);
+            setTotalRecords(sorted.length);
+          }
+        } else {
+          setFilteredCompetitions([]);
+          setTotalPages(1);
+          setTotalRecords(0);
+        }
+
       } else if (activeTab === "Upcoming") {
-        params.status = "upcoming";
+        // Fetch only upcoming competitions within the next 7 days.
+        // The backend already excludes competitions whose startTime has passed
+        // (query: status=UPCOMING AND startTime > now), so a competition that
+        // goes live will naturally drop off on the next 20s poll cycle.
         const oneWeekFromNow = new Date();
         oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
-        params.startBefore = oneWeekFromNow.toISOString();
+
+        const response = await callAPI({
+          ...params,
+          status: "upcoming",
+          startBefore: oneWeekFromNow.toISOString(),
+        });
+
+        if (response.success && Array.isArray(response.data)) {
+          const sorted = sortCompetitions(response.data.map(formatComp));
+          setFilteredCompetitions(sorted);
+          if (response.pagination) {
+            setTotalPages(response.pagination.total || 1);
+            setTotalRecords(response.pagination.totalRecords || sorted.length);
+          } else {
+            setTotalPages(1);
+            setTotalRecords(sorted.length);
+          }
+        } else {
+          setFilteredCompetitions([]);
+          setTotalPages(1);
+          setTotalRecords(0);
+        }
+
       } else if (activeTab === "Ended") {
         params.status = "ended";
-      }
 
-      const response = isEvent
-        ? await eventAPI.getAll(params)
-        : await competitionAPI.getAll(params);
-
-      if (response.success && Array.isArray(response.data)) {
-        const formatted = response.data.map(formatComp);
-
-        // Client-side status guard (clock may reclassify edge cases)
-        let filtered = formatted;
-        if (activeTab === "Live") filtered = formatted.filter((c) => c.status === "Live");
-        else if (activeTab === "Upcoming") filtered = formatted.filter((c) => c.status === "Upcoming");
-        else if (activeTab === "Ended") filtered = formatted.filter((c) => c.status === "Ended");
-
-        const sorted = sortCompetitions(filtered);
-        setCompetitions(sorted);
-        setFilteredCompetitions(sorted);
-
-        if (response.pagination) {
-          setTotalPages(response.pagination.total || 1);
-          setTotalRecords(response.pagination.totalRecords || sorted.length);
+        const response = await callAPI(params);
+        if (response.success && Array.isArray(response.data)) {
+          const sorted = sortCompetitions(response.data.map(formatComp));
+          setFilteredCompetitions(sorted);
+          if (response.pagination) {
+            setTotalPages(response.pagination.total || 1);
+            setTotalRecords(response.pagination.totalRecords || sorted.length);
+          } else {
+            setTotalPages(1);
+            setTotalRecords(sorted.length);
+          }
         } else {
+          setFilteredCompetitions([]);
           setTotalPages(1);
-          setTotalRecords(sorted.length);
+          setTotalRecords(0);
         }
-      } else {
-        setCompetitions([]);
-        setFilteredCompetitions([]);
-        setTotalPages(1);
-        setTotalRecords(0);
       }
     } catch (err) {
       console.error(`Failed to fetch ${isEvent ? "events" : "competitions"}:`, err);
       setError(`Failed to load ${isEvent ? "events" : "competitions"}.`);
-      setCompetitions([]);
       setFilteredCompetitions([]);
       setTotalPages(1);
       setTotalRecords(0);
@@ -228,6 +262,10 @@ function Dashboard({ isEvent = false }) {
 
   useEffect(() => {
     fetchCompetitions();
+
+    // Auto-refresh every 30 seconds to pick up new competitions added by admin
+    const interval = setInterval(() => fetchCompetitions(true), 5000);
+    return () => clearInterval(interval);
   }, [fetchCompetitions]);
 
   // Reset to page 1 when filters change
@@ -257,7 +295,13 @@ function Dashboard({ isEvent = false }) {
     return icons[iconIndex];
   };
 
-  const handleParticipate = (competition) => {
+  const handleParticipate = (competition, e) => {
+    // Prevent navigation if text is being selected
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+
     if (!isUserAuthenticated) {
       navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(isEvent ? `/event/${competition._id}/lobby` : `/competition/${competition._id}/lobby`)}`);
       return;
@@ -383,7 +427,7 @@ function Dashboard({ isEvent = false }) {
                   {currentCompetitions.map((comp, idx) => {
                     const arenaStyle = getArenaIcon(comp.title, idx);
                     return (
-                      <tr key={comp.id} onClick={() => handleParticipate(comp)} className={styles.tableRow}>
+                      <tr key={comp.id} onClick={(e) => handleParticipate(comp, e)} className={styles.tableRow}>
                         <td>
                           <div className={styles.arenaNameCell}>
                             <div className={styles.arenaIcon} style={{ backgroundColor: arenaStyle.bg, color: arenaStyle.color }}>
@@ -453,14 +497,14 @@ function Dashboard({ isEvent = false }) {
                             ) : comp.status === "Live" ? (
                               <button
                                 className={styles.modernJoinBtn}
-                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp); }}
+                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp, e); }}
                               >
                                 Join Now <FaChevronRight />
                               </button>
                             ) : (
                               <button
                                 className={styles.modernLobbyBtn}
-                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp); }}
+                                onClick={(e) => { e.stopPropagation(); handleParticipate(comp, e); }}
                               >
                                 Enter Lobby <FaChevronRight />
                               </button>
@@ -479,7 +523,7 @@ function Dashboard({ isEvent = false }) {
                 <div
                   key={comp.id}
                   className={`${styles.card} ${styles[comp.status.toLowerCase()]}`}
-                  onClick={() => handleParticipate(comp)}
+                  onClick={(e) => handleParticipate(comp, e)}
                   onMouseEnter={() => comp.status !== 'Ended' && handlePrefetch(comp._id)}
                 >
                   <div className={styles.cardMain}>

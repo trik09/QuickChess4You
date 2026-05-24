@@ -486,6 +486,18 @@ export const categoryAPI = {
     );
   },
 
+  // Delete category AND all its puzzles (confirmed cascade delete)
+  deleteCategoryWithPuzzles: async (id) => {
+    const adminToken = localStorage.getItem("atoken");
+    return apiRequest(
+      `/category/delete-category/${id}?deletePuzzles=true`,
+      {
+        method: "DELETE",
+      },
+      adminToken
+    );
+  },
+
   // Get category statistics
   getStats: async () => {
     const adminToken = localStorage.getItem("atoken");

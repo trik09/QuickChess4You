@@ -599,6 +599,22 @@ function Leaderboard({ isEvent }) {
                   </div>
                 </div>
 
+                {!isLive && competition?.startTime && (
+                  <div className={styles.eventEndInfo}>
+                    <div className={styles.eventDateLabel}>EVENT ENDED ON</div>
+                    <div className={styles.eventDateTime}>
+                      {new Date(competition.startTime).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {isLive && (
                   <button onClick={loadLeaderboard} className={styles.refreshBtn}>
                     <FaSync />

@@ -69,7 +69,7 @@
     padding-bottom: 0px;
     border-bottom: none;
     position: relative;
-    z-index: 10;
+    z-index: 20;
 }
 
 .racer-header h4 {
@@ -99,13 +99,26 @@
 }
 
 .puzzle-count {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-    font-size: 0.65rem;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #b0bec5;
+}
+
+.participants-count {
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #81d4fa;
+    font-size: 0.82rem;
 }
 
 [data-theme='light'] .racer-header h4 {
@@ -118,6 +131,12 @@
     background: rgba(92, 64, 51, 0.06);
     border-color: rgba(92, 64, 51, 0.1);
     color: #5c4033;
+}
+
+[data-theme='light'] .participants-count {
+    background: rgba(92, 64, 51, 0.06);
+    border-color: rgba(92, 64, 51, 0.1);
+    color: #1072b0;
 }
 
 .others-badge {
@@ -545,8 +564,8 @@
 .sun-region {
     position: absolute;
     right: 0;
-    top: calc(50% + 3px);
-    /* Align with planets and orbits */
+    top: calc(50% + 7px);
+    /* extra offset keeps sun clear of the header badge */
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -928,8 +947,6 @@
     transition: width 0.4s ease;
     background: rgba(255, 255, 255, 0.2);
 }
-
-/* Added missing closing brace */
 
 /* ---- "You" score highlight ---- */
 .planet-slot-score.score-you {

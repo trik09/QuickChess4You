@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from "react";
 import { useLiveCompetition } from "../../contexts/LiveCompetitionContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { deduplicateLeaderboard, normalizeUserId } from "../../features/liveCompetition/leaderboardUtils";
-import { FaGlobeAmericas, FaStar } from "react-icons/fa";
+import { FaGlobeAmericas, FaStar, FaUsers } from "react-icons/fa";
 import "./PuzzleRacer.css";
 
 // Planet Assets
@@ -166,13 +166,16 @@ const PuzzleRacer = ({
           Puzzle Galaxy
         </h4>
         <div className="race-info">
-          <span className="puzzle-count">{totalPuzzles} Puzzles</span>
-          {othersCount > 0 && (
+          {/*   <span className="puzzle-count">{totalPuzzles} Puzzles</span>   */}
+          <span className="participants-count">
+            <FaUsers /> {racers.length} {racers.length === 1 ? "Player" : "Players"}
+          </span>
+           {othersCount > 0 && (
             <span className="others-badge">
               <span className="others-icon"><FaStar /></span>
               +{othersCount} more
-            </span>
-          )}
+            </span> )}
+          
         </div>
       </div>
 

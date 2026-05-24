@@ -114,7 +114,13 @@ function ExamDashboard() {
     });
   };
 
-  const handleParticipate = (exam) => {
+  const handleParticipate = (exam, e) => {
+    // Prevent navigation if text is being selected
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+
     if (!isUserAuthenticated) {
       navigate(`/?reason=auth_required&returnTo=${encodeURIComponent(`/exam/${exam._id}/lobby`)}`);
       return;
@@ -197,7 +203,7 @@ function ExamDashboard() {
               </thead>
               <tbody>
                 {filteredExams.map((exam) => (
-                  <tr key={exam.id} onClick={() => handleParticipate(exam)} style={{ cursor: 'pointer' }}>
+                  <tr key={exam.id} onClick={(e) => handleParticipate(exam, e)} style={{ cursor: 'pointer' }}>
                     <td>
                       <span className={`${styles.statusPill} ${styles[exam.status.toLowerCase()]}`}>
                         {exam.status === 'Live' && <span className={styles.pulseDot}></span>}
@@ -237,7 +243,7 @@ function ExamDashboard() {
                       {exam.status === "Ended" ? (
                         <button 
                           className={styles.resultsBtn} 
-                          onClick={(e) => { e.stopPropagation(); handleParticipate(exam); }}
+                          onClick={(e) => { e.stopPropagation(); handleParticipate(exam, e); }}
                           style={{ padding: '8px 14px', fontSize: '0.85rem', borderRadius: '8px', width: 'auto' }}
                         >
                           <FaTrophy /> Leaderboard
@@ -245,7 +251,7 @@ function ExamDashboard() {
                       ) : (
                         <button 
                           className={styles.enterBtn} 
-                          onClick={(e) => { e.stopPropagation(); handleParticipate(exam); }}
+                          onClick={(e) => { e.stopPropagation(); handleParticipate(exam, e); }}
                           style={{ padding: '8px 14px', fontSize: '0.85rem', borderRadius: '8px', width: 'auto' }}
                         >
                           {exam.status === 'Live' ? 'Enter' : 'Lobby'} 

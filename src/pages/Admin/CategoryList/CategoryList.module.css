@@ -309,3 +309,77 @@
   color: #6c757d;
   margin-bottom: 2rem;
 }
+
+/* ── Delete Confirmation Modal ── */
+.deleteModal {
+  max-width: 480px;
+}
+
+.deleteModal .modalHeader {
+  background: #fff5f5;
+  border-bottom-color: #fde8e8;
+}
+
+.deleteModal .modalHeader h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c0392b;
+  font-size: 1.25rem;
+}
+
+.warnIcon {
+  color: #e74c3c;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.deleteModalBody {
+  padding: 1.5rem 2rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deleteModalBody p {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.puzzleWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #856404;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.puzzleWarnIcon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #d97706;
+}
+
+.noPuzzleNote {
+  color: #6c757d !important;
+  font-size: 0.88rem !important;
+}
+
+.irreversibleNote {
+  color: #6c757d !important;
+  font-size: 0.85rem !important;
+}
+
+.deleteModal .modalActions {
+  padding: 1rem 2rem 1.5rem;
+  margin-top: 0;
+  border-top: none;
+}

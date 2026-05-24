@@ -22,7 +22,8 @@
 
 /* --- DESKTOP SIDEBAR --- */
 .sidebar {
-    width: 260px;
+    width: 190px;
+    max-width: 190px;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -514,9 +515,9 @@
 /* --- MAIN CONTENT --- */
 .mainContent {
     flex: 1;
-    margin-left: 260px;
+    margin-left: 190px;
     /* padding: 18px; */
-    width: calc(100% - 260px);
+    width: calc(100% - 190px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

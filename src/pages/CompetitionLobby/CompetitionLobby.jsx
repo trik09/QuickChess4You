@@ -23,6 +23,7 @@ import {
   FaFire,
   FaChessKnight,
   FaTimes,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { MdWarning } from "react-icons/md";
 import { useRef } from "react";
@@ -113,7 +114,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
 
         toast.success(`${isEvent ? "Event" : "Competition"} Started! Redirecting...`);
 
-        navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, { 
+        navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, {
           replace: true,
           state: {
             competitionId: competitionRef.current?._id || id,
@@ -218,7 +219,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
     ) {
       hasAutoRedirectedRef.current = true;
       sessionStorage.setItem(`redirected_${id}`, "true");
-      navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, { 
+      navigate(isEvent ? `/live-event/${id}` : `/competition/${id}/puzzle`, {
         replace: true,
         state: {
           competitionId: competitionRef.current?._id || id,
@@ -343,11 +344,11 @@ const CompetitionLobby = ({ isEvent = false }) => {
               }
               const serverHasUser = res.leaderboard?.some(
                 (p) => String(p.userId) === String(currentUserId) ||
-                       String(p.userId?._id) === String(currentUserId)
+                  String(p.userId?._id) === String(currentUserId)
               );
               const prevHasUser = prev.some(
                 (p) => String(p.userId) === String(currentUserId) ||
-                       String(p.userId?._id) === String(currentUserId)
+                  String(p.userId?._id) === String(currentUserId)
               );
               // If server dropped the user but we had them, keep prev
               if (prevHasUser && !serverHasUser) return prev;
@@ -528,13 +529,13 @@ const CompetitionLobby = ({ isEvent = false }) => {
               const currentUserId = user?.id || user?._id;
               const serverHasCurrentUser = res.leaderboard?.some(
                 (p) => String(p.userId) === String(currentUserId) ||
-                       String(p.userId?._id) === String(currentUserId)
+                  String(p.userId?._id) === String(currentUserId)
               );
               if (!serverHasCurrentUser && currentUserId) {
                 setParticipants((prev) => {
                   const alreadyInPrev = prev.some(
                     (p) => String(p.userId) === String(currentUserId) ||
-                           String(p.userId?._id) === String(currentUserId)
+                      String(p.userId?._id) === String(currentUserId)
                   );
                   if (alreadyInPrev) return prev; // keep existing optimistic entry
                   return res.leaderboard || prev;
@@ -621,7 +622,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
       if (res.success || res.participant) {
         toast.success("Registration submitted! Waiting for approval.");
         setShowRegModal(false);
-        
+
         const regRes = await eventAPI.getUserRegistrations();
         if (regRes.success) {
           const myReg = regRes.data.find(r => r.eventId === id || r.eventId?._id === id);
@@ -823,7 +824,7 @@ const CompetitionLobby = ({ isEvent = false }) => {
                   placeholder="Enter your full name"
                 />
               </div>
-              
+
               <div className={styles.formGroup}>
                 <label>WhatsApp Number *</label>
                 <input
@@ -895,6 +896,14 @@ const CompetitionLobby = ({ isEvent = false }) => {
       {/* Header Card */}
       <div className={`${styles.lobbyCard} ${styles.headerCard}`}>
         <div className={styles.headerLeft}>
+          {/* Back button to return to competition list */}
+          <button
+            className={styles.actionBtn}
+            onClick={() => navigate('/dashboard')}
+            style={{ marginBottom: '8px' }}
+          >
+            <FaArrowLeft style={{ marginRight: '6px' }} /> Back
+          </button>
           <h1 className={styles.compTitle}>
             {competition?.title || competition?.name}
             <span className={styles.compDate}>

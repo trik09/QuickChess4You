@@ -7,6 +7,28 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
+    position: relative;
+    isolation: isolate;
+}
+
+.live-competition-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(rgba(8, 8, 8, 0.85), rgba(8, 8, 8, 0.85)), url('../../assets/blur-bg.avif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+    pointer-events: none;
+    transition: background-image 0.3s ease;
+}
+
+[data-theme='light'] .live-competition-page::before {
+    background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), url('../../assets/blur-bg.avif');
 }
 
 .game-container {
